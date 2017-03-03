@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!--  Mandelbrot Example -->
+	<bean id="mandelbrotModel" class="org.eclipse.scanning.example.detector.MandelbrotModel">
+		<property name="maxIterations"          value="500"/>
+		<property name="escapeRadius"           value="10.0"/>
+		<property name="columns"                value="301"/>
+		<property name="rows"                   value="241"/>
+		<property name="points"                 value="1000"/>
+		<property name="maxRealCoordinate"      value="1.5"/>
+		<property name="maxImaginaryCoordinate" value="1.2"/>
+		<property name="name"                   value="mandelbrot"/>
+		<property name="exposureTime"           value="0.1"/>
+		<property name="realAxisName"           value="stage_x"/>
+		<property name="imaginaryAxisName"      value="stage_y"/>
+	</bean>
+	<bean id="mandelbrotInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
+		<property name="id"          value="org.eclipse.scanning.example.detector.mandelbrotDetectorSpring"/>
+		<property name="label"       value="Mandelbrot Example Detector"/>
+		<property name="description" value="A Mandelbrot detector which is only used for testing"/>
+		<property name="icon"        value="org.eclipse.scanning.example/icons/mandelbrot.png"/> <!--  bundle must be on client for that, if it isn't a default icon is used -->
+	</bean>
+	
+	
+	
+	<!--  Dark Image Example -->
+	<bean id="darkImageModel" class="org.eclipse.scanning.example.detector.DarkImageModel">
+		<property name="name"          value="dkExmpl"/>
+		<property name="columns"       value="64"/>
+		<property name="rows"          value="60"/>
+		<property name="frequency"     value="10"/>
+	</bean>
+	<bean id="darkImageInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
+		<property name="id"          value="org.eclipse.scanning.example.detector.darkImageDetector"/>
+		<property name="label"       value="Dark Current Example Detector"/>
+		<property name="description" value="A detector which takes images at a frequency lower than the scan numbner to simulate a dark current reading."/>
+		<property name="icon"        value="org.eclipse.scanning.example/icons/darkcurrent.png"/> <!--  bundle must be on client for that, if it isn't a default icon is used -->
+	</bean>
+	
+	
+	<!--  Constant Velocity Example -->
+	<bean id="constantVelocityModel" class="org.eclipse.scanning.example.detector.ConstantVelocityModel">
+		<property name="name"           value="cvExmpl"/>
+		<property name="lineSize"       value="64"/>
+		<property name="channelCount"   value="60"/>
+		<property name="spectraSize"    value="10"/>
+		<property name="timeout"        value="100"/>
+	</bean>
+	<bean id="constantVelocityInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
+		<property name="id"          value="org.eclipse.scanning.example.detector.constantVelocityDevice"/>
+		<property name="label"       value="Constant Velocity Example Detector"/>
+		<property name="description" value="A detector which runs line scans within the arbitrary outer scan which it is given."/>
+	</bean>
+	
+</beans>

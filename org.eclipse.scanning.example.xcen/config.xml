@@ -1,0 +1,18 @@
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-2.5.xsd" >
+
+	<bean id="xcenServlet"  class="org.eclipse.scanning.example.xcen.consumer.XcenServlet" init-method="connect">
+
+        <property name="bundle"      value="org.eclipse.scanning.example.xcen"/>
+        <!--  TODO Insert your broker URI here see README.md -->
+        <property name="broker"      value="tcp://sci-serv5.diamond.ac.uk:61616" />
+	    <property name="submitQueue" value="dataacq.xcen.SUBMISSION_QUEUE" />
+	    <property name="statusSet"   value="dataacq.xcen.STATUS_QUEUE"   />
+	    <property name="statusTopic" value="dataacq.xcen.STATUS_TOPIC" />
+	    <property name="durable"     value="true" />
+	</bean>
+
+</beans>

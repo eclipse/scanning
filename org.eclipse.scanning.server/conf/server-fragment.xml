@@ -1,0 +1,85 @@
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+            http://www.springframework.org/schema/osgi
+            http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+	<!--  Config section to go in global config of Solstice server. -->
+
+	<bean id="scanServlet"  class="org.eclipse.scanning.server.servlet.ScanServlet" init-method="connect">
+
+        <property name="broker"      value="${org.eclipse.scanning.broker.uri}" />
+	    <property name="submitQueue" value="org.eclipse.scanning.submission.queue" />
+	    <property name="statusSet"   value="org.eclipse.scanning.status.set"   />
+	    <property name="statusTopic" value="org.eclipse.scanning.status.topic" />
+	    <property name="durable"     value="true" />
+	</bean>
+
+    <bean id="deviceServlet" class="org.eclipse.scanning.server.servlet.DeviceServlet" init-method="connect">
+       <property name="broker"          value="${org.eclipse.scanning.broker.uri}" />
+       <property name="requestTopic"    value="org.eclipse.scanning.request.device.topic" />
+       <property name="responseTopic"   value="org.eclipse.scanning.response.device.topic"   />
+    </bean>
+    
+    <bean id="positionerServlet" class="org.eclipse.scanning.server.servlet.PositionerServlet" init-method="connect">
+       <property name="broker"          value="${org.eclipse.scanning.broker.uri}" />
+       <property name="requestTopic"    value="org.eclipse.scanning.request.positioner.topic" />
+       <property name="responseTopic"   value="org.eclipse.scanning.response.positioner.topic"   />
+    </bean>
+    
+	<bean id="acquireServlet"  class="org.eclipse.scanning.server.servlet.AcquireServlet" init-method="connect">
+        <property name="broker"      value="${org.eclipse.scanning.broker.uri}" />
+	    <property name="requestTopic" value="org.eclipse.scanning.request.acquire.topic" />
+	    <property name="responseTopic"   value="org.eclipse.scanning.response.acquire.topic"   />
+	</bean>
+    
+    <bean id="dataServer" class="org.eclipse.dawnsci.remotedataset.server.DataServer" init-method="start">
+        <property name="port"     value="8690" />
+        <property name="bundle"   value="org.eclipse.dawnsci.remotedataset.server" /> <!-- Delete for real spring? -->
+    </bean>
+    
+
+	<import resource="example_detectors.xml"/>
+	<import resource="example_watchdogs.xml"/>
+
+	<!--  
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	Testing/example only section config do not copy to production. 
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	-->
+
+	<!--  Something to respond to xcen runs if they use the example xcen perspective -->
+	<bean id="xcenServlet"  class="org.eclipse.scanning.example.xcen.consumer.XcenServlet" init-method="connect">
+
+        <property name="bundle"      value="org.eclipse.scanning.example.xcen"/> <!-- TODO Delete for real spring? -->
+        <property name="broker"      value="${org.eclipse.scanning.broker.uri}" />
+	    <property name="submitQueue" value="dataacq.xcen.SUBMISSION_QUEUE" />
+	    <property name="statusSet"   value="dataacq.xcen.STATUS_QUEUE"   />
+	    <property name="statusTopic" value="dataacq.xcen.STATUS_TOPIC" />
+	    <property name="durable"     value="true" />
+	</bean>
+	
+	<!--  
+	      This service can come in from core bundles or optionally be defined in the spring layer
+	      In this case we want a server with no hardware so we mock out all the devices.
+	      The mock service does not read other spring files for the devices as the real
+	 -->
+	<bean id="scannableDeviceService" class="org.eclipse.scanning.example.scannable.MockScannableConnector" init-method="connect">
+        <property name="bundle"  value="org.eclipse.scanning.example"/> <!-- TODO Delete for real spring? -->
+        <property name="broker"  value="${org.eclipse.scanning.broker.uri}" />
+	</bean>
+    <osgi:service ref="scannableDeviceService" interface="org.eclipse.scanning.api.device.IScannableDeviceService"/>
+	
+    <bean id="filePathService" class="org.eclipse.scanning.example.file.MockFilePathService">
+        <property name="bundle"  value="org.eclipse.scanning.example"/> <!-- TODO Delete for real spring? -->
+	</bean>
+    <osgi:service ref="filePathService" interface="org.eclipse.scanning.api.scan.IFilePathService"/>
+	
+	<!--  End testing/example only-->
+
+</beans>

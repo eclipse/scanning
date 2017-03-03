@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.dawnsci.analysis.api.marshaller">
+      <marshaller
+            class="org.eclipse.scanning.points.serialization.PointsModelMarshaller"
+            id="org.eclipse.scanning.points.pointsModelMarshaller">
+      </marshaller>
+   </extension>
+   <extension
+         point="org.eclipse.dawnsci.analysis.api.classregistry">
+      <classregistry
+            class="org.eclipse.scanning.points.classregistry.ScanningAPIClassRegistry"
+            id="org.eclipse.scanning.points.scanningAPIEventScanClassRegistry">
+      </classregistry>
+   </extension>
+
+</plugin>

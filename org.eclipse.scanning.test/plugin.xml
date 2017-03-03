@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.scanning.api.generator">
+      <generator
+            class="org.eclipse.scanning.test.points.TestGenerator"
+            id="org.eclipse.scanning.test.points.testGenerator"
+            model="org.eclipse.scanning.test.points.TestGeneratorModel">
+      </generator>
+   </extension>
+   <extension
+         point="org.eclipse.scanning.api.device">
+      <device
+            id="org.eclipse.scanning.test.scan.mock.mockWritingMandelbrotDetector"
+            class="org.eclipse.scanning.test.scan.mock.MockWritingMandelbrotDetector"
+            model="org.eclipse.scanning.test.scan.mock.MockWritingMandlebrotModel">
+      </device>
+      <device
+             id="org.eclipse.scanning.test.scan.mock.mockWritableDetector"
+            class="org.eclipse.scanning.test.scan.mock.MockWritableDetector"
+            model="org.eclipse.scanning.test.scan.mock.MockDetectorModel">
+      </device>
+      <device
+             id="org.eclipse.scanning.test.scan.mock.mockWritingMandelbrotDetector"
+            class="org.eclipse.scanning.test.scan.mock.MockWritingMandelbrotDetector"
+            model="org.eclipse.scanning.test.scan.mock.MockWritingMandlebrotModel">
+      </device>
+   </extension>
+   <extension
+         point="org.eclipse.dawnsci.analysis.api.classregistry">
+      <classregistry
+            class="org.eclipse.scanning.test.ScanningTestClassRegistry"
+            id="org.eclipse.scanning.test.ScanningTestClassRegistry">
+      </classregistry>
+   </extension>
+
+</plugin>

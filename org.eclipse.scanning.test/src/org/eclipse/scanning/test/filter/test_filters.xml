@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!--  Setup Some Filters -->
+	<bean id="filter" class="org.eclipse.scanning.api.filter.Filter" init-method="register">
+		<property name="name" value="org.eclipse.scanning.scannableFilter"/>
+		<property name="excludes">
+			<list>
+				<value>qvach</value> <!--  Should not match anything --> 
+				<value>monitor1</value> <!--  The later include will override this -->
+				<value>a</value>
+				<value>b</value>
+				<value>c</value>
+				<value>beam.*</value>
+				<value>neXusScannable.*</value>
+			</list>
+		</property>
+		<property name="includes">
+			<list>
+				<value>monitor.*</value>
+				<value>beamcurrent</value>
+				<value>neXusScannable2</value>
+				<value>neXusScannable</value> <!--  Should not match anything -->
+				<value>rubbish</value> <!--  Should not match anything --> 
+			</list>
+		</property>
+        <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
+	</bean>
+
+</beans>

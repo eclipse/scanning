@@ -1,0 +1,33 @@
+<!-- 
+
+Example spring file to configure the various scanning services 
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans-2.5.xsd" >
+
+    <!-- SOA stuff for GDA Server -->
+	<bean id="scanServlet"  class="org.eclipse.scanning.server.servlet.ScanServlet" init-method="connect">
+
+        <property name="broker"      value="${org.eclipse.scanning.broker.uri}" />
+	    <property name="submitQueue" value="org.eclipse.scanning.submission.queue" />
+	    <property name="statusSet"   value="org.eclipse.scanning.status.set"   />
+	    <property name="statusTopic" value="org.eclipse.scanning.status.topic" />
+	    <property name="durable"     value="true" />
+	</bean>
+
+    <bean id="deviceServlet" class="org.eclipse.scanning.server.servlet.DeviceServlet" init-method="connect">
+       <property name="broker"          value="${org.eclipse.scanning.broker.uri}" />
+       <property name="requestTopic"    value="org.eclipse.scanning.request.device.topic" />
+       <property name="responseTopic"   value="org.eclipse.scanning.response.device.topic"   />
+    </bean>
+    
+    <bean id="positionerServlet" class="org.eclipse.scanning.server.servlet.PositionerServlet" init-method="connect">
+       <property name="broker"          value="${org.eclipse.scanning.broker.uri}" />
+       <property name="requestTopic"    value="org.eclipse.scanning.request.positioner.topic" />
+       <property name="responseTopic"   value="org.eclipse.scanning.response.positioner.topic"   />
+    </bean>
+
+</beans>

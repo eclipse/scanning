@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/org.eclipse.scanning.feature_1.0.0.qualifier.jar" id="org.eclipse.scanning.feature" version="1.0.0.qualifier"/>
+   <feature url="features/org.eclipse.scanning.ui.feature_1.0.0.qualifier.jar" id="org.eclipse.scanning.ui.feature" version="1.0.0.qualifier"/>
+</site>

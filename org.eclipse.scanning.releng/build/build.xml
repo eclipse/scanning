@@ -1,0 +1,8 @@
+
+<project name="Build daq-eclipse" default="build" basedir=".">
+
+<target name="build">
+	<echo message="Build not hooked yet!"/>
+</target>
+	
+</project>

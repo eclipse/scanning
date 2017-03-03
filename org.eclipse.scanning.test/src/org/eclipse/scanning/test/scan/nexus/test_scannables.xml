@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- This is only an example -->
+	<bean id="dcsModel" class="org.eclipse.scanning.example.scannable.MockScannableConfiguration">
+		<property name="xGapName"          value="s1gapX"/>
+		<property name="yGapName"          value="s1gapY"/>
+		<property name="xCentreName"       value="s1cenX"/>
+		<property name="yCentreName"       value="s1cenY"/>
+	</bean>
+	<bean id="dcs" class="org.eclipse.scanning.example.scannable.MockNeXusSlit" init-method="register">
+		<property name="name"              value="dcs"/> <!-- dcs = dummy configured scannable -->
+		<property name="model"             ref="dcsModel"/>
+		<property name="activated"         value="true"/> <!-- Use as a monitor with scans, we always want this NeXus information -->
+        <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
+	</bean>
+
+</beans>

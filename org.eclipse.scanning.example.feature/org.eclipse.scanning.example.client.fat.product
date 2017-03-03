@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="Scanning Example Client (DAWN)" uid="org.eclipse.scanning.example.client.fat.product" id="org.eclipse.platform.ide" version="1.0" useFeatures="true" includeLaunchers="true">
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-os ${target.os} -ws ${target.ws} -arch ${target.arch} -nl ${target.nl} -consoleLog -xml ${project_loc:org.eclipse.scanning.server}/conf/client-fragment.xml
+      </programArgs>
+      <vmArgs>-Dorg.eclipse.scanning.broker.uri=&quot;failover:(tcp://localhost:61616)?startupMaxReconnectAttempts=3&quot;
+-Dosgi.locking=none
+-Dlogback.configurationFile=${project_loc:org.eclipse.scanning.event}/config/logback.xml
+-Dosgi.framework.extensions=org.eclipse.fx.osgi
+-Dorg.eclipse.scanning.points.initJython=true
+-Dorg.eclipse.dawnsci.data.server.host=localhost
+-Dorg.eclipse.dawnsci.data.server.port=8690
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
+   </launcherArgs>
+
+   <launcher>
+      <solaris/>
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+   <vm>
+   </vm>
+
+   <plugins>
+   </plugins>
+
+   <features>
+      <feature id="org.eclipse.scanning.example.feature" version="1.0.0.qualifier"/>
+      <feature id="org.eclipse.scanning.example.ui.feature" version="1.0.0.qualifier"/>
+      <feature id="org.eclipse.scanning.feature" version="1.0.0.qualifier"/>
+      <feature id="org.eclipse.scanning.ui.feature" version="1.0.0.qualifier"/>
+      <feature id="org.eclipse.platform" version="4.5.2.v20160212-1500"/>
+      <feature id="org.eclipse.rcp" version="4.5.2.v20160212-1500"/>
+      <feature id="org.eclipse.dawnsci.feature" version="1.0.0.qualifier"/>
+      <feature id="org.eclipse.dawnsci.remotedataset.feature" version="1.0.0.qualifier"/>
+      <feature id="org.eclipse.dawnsci.third.feature" version="1.0.0"/>
+      <feature id="org.eclipse.emf.common" version="2.11.1.v20160208-0816"/>
+      <feature id="org.eclipse.emf.common.ui" version="2.10.1.v20160208-0841"/>
+      <feature id="org.eclipse.emf.ecore" version="2.11.2.v20160208-0816"/>
+      <feature id="org.eclipse.equinox.p2.core.feature" version="1.3.100.v20150527-1706"/>
+      <feature id="org.dawnsci.plotting.draw2d.feature"/>
+      <feature id="org.dawnsci.plotting.feature"/>
+      <feature id="org.dawnsci.conversion.feature" version="1.0.0.v20160810-1545"/>
+      <feature id="uk.ac.diamond.scisoft.core.feature"/>
+      <feature id="org.dawnsci.common.ui.feature"/>
+      <feature id="org.dawb.visualization.feature"/>
+      <feature id="uk.ac.diamond.scisoft.ui.feature"/>
+      <feature id="org.dawnsci.base.product.feature"/>
+   </features>
+
+
+</product>

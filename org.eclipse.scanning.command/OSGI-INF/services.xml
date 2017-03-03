@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="Command Services">
+   <implementation class="org.eclipse.scanning.command.Services"/>
+   <reference bind="setRunnableDeviceService" cardinality="0..1" interface="org.eclipse.scanning.api.device.IRunnableDeviceService" name="IRunnableDeviceService" policy="dynamic"/>
+   <reference bind="setEventService" cardinality="0..1" interface="org.eclipse.scanning.api.event.IEventService" name="IEventService" policy="dynamic"/>
+   <reference bind="setGeneratorService" cardinality="0..1" interface="org.eclipse.scanning.api.points.IPointGeneratorService" name="IPointGeneratorService" policy="dynamic"/>
+</scr:component>

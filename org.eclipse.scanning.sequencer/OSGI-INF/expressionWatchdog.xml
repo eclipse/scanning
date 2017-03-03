@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" enabled="true" immediate="true" name="Expression Watchdog">
+   <implementation class="org.eclipse.scanning.sequencer.watchdog.ExpressionWatchdog"/>
+   <reference bind="setExpressionService" cardinality="0..1" interface="org.eclipse.dawnsci.analysis.api.expressions.IExpressionService" name="IExpressionService" policy="dynamic"/>
+</scr:component>

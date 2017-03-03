@@ -1,0 +1,126 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.eclipse</groupId>
+	<artifactId>org.eclipse.scanning</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
+
+	<modules>
+        <module>org.eclipse.scanning.target.platform</module>
+		<module>../org.eclipse.dawnsci</module>
+
+		<module>org.eclipse.scanning.api</module>
+		<module>org.eclipse.scanning.command</module>
+		<module>org.eclipse.scanning.connector.epics</module>
+		<module>org.eclipse.scanning.event</module>
+		<module>org.eclipse.scanning.event.queues</module>
+		<module>org.eclipse.scanning.event.ui</module>
+		<module>org.eclipse.scanning.device.ui</module>
+		<module>org.eclipse.scanning.example</module>
+		<module>org.eclipse.scanning.example.xcen</module>
+		<module>org.eclipse.scanning.example.xcen.test</module>
+		<module>org.eclipse.scanning.example.xcen.ui</module>
+		<module>org.eclipse.scanning.malcolm.core</module>
+		<module>org.eclipse.scanning.points</module>
+		<module>org.eclipse.scanning.sequencer</module>
+		<module>org.eclipse.scanning.server</module>
+		<module>org.eclipse.scanning.test</module>	
+		<module>org.eclipse.scanning.connector.activemq</module>
+		<module>org.eclipse.scanning.connector.activemq.test</module>
+	</modules>
+
+	<properties>
+		<tycho-version>0.24.0</tycho-version>
+	</properties>
+	
+	<dependencies>
+	    <dependency>
+	      <groupId>junit</groupId>
+	      <artifactId>junit</artifactId>
+	      <version>4.11</version>
+	      <scope>test</scope>
+	    </dependency>
+    </dependencies>
+        
+    <build>
+      <plugins>
+		<plugin>
+			<groupId>org.eclipse.tycho</groupId>
+			<artifactId>tycho-maven-plugin</artifactId>
+			<version>${tycho-version}</version>
+			<extensions>true</extensions>
+		</plugin>
+		
+		<plugin>
+			<groupId>org.eclipse.tycho</groupId>
+			<artifactId>tycho-p2-repository-plugin</artifactId>
+			<version>${tycho-version}</version>
+			<configuration>
+				<includeAllDependencies>false</includeAllDependencies>
+			</configuration>
+		</plugin>
+		
+        <!-- This configures the target platform and the supported architectures. -->
+		<plugin>
+			<groupId>org.eclipse.tycho</groupId>
+			<artifactId>target-platform-configuration</artifactId>
+			<version>${tycho-version}</version>
+			<configuration>
+				<environments>
+					<environment>
+						<os>linux</os>
+						<ws>gtk</ws>
+						<arch>x86_64</arch>
+					</environment>
+				</environments>
+				<target>
+					<artifact>
+						<groupId>org.eclipse</groupId>
+						<artifactId>org.eclipse.scanning.target.platform</artifactId>
+						<version>1.0.0-SNAPSHOT</version>
+					</artifact>
+				</target>
+			</configuration>
+		</plugin>
+		   
+		<!--  Can run tests with 'mvn clean compile surefire:test -D -->       
+        <plugin>
+			<groupId>org.apache.maven.plugins</groupId>
+			<artifactId>maven-surefire-plugin</artifactId>
+			<version>2.19.1</version>
+			<configuration>
+                <testSourceDirectory>${basedir}/src</testSourceDirectory>
+                <testClassesDirectory>${basedir}/bin</testClassesDirectory>
+	            <excludes>
+	              <exclude>**repository/*</exclude>
+				  <exclude>org/eclipse/richbeans/**</exclude>
+				  <exclude>org/eclipse/dawnsci/**</exclude>
+	            </excludes>
+           		<includes>
+		          <include>${test.includes}</include>
+			    </includes>
+			</configuration>
+  		  </plugin>   
+  		            
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.10.3</version>
+            <configuration>
+                <reportOutputDirectory>./</reportOutputDirectory>
+                <destDir>../javadoc</destDir>
+                <failOnError>false</failOnError>
+            </configuration>
+          </plugin>
+      </plugins>
+   </build>
+   
+    
+ </project>
+	
+	
