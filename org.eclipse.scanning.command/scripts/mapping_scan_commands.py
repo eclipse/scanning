@@ -30,7 +30,7 @@ interest (ROI) when using grid(). They are: circ(), rect(), poly().
 #
 # - To server/main/_common/jython_server_facade.xml in your <beamline>-config,
 #   add a gda.jython.ScriptProject with path:
-#   ${gda.install.git.loc}/daq-eclipse.git/org.eclipse.scanning.command/scripts
+#   ${gda.install.git.loc}/scanning.git/org.eclipse.scanning.command/scripts
 #
 # - To localStation.py in your <beamline>-config, add the following line:
 #   from mapping_scan_commands import *

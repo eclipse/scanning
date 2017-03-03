@@ -6,11 +6,11 @@ sudo: required
 addons:
   sonarqube:
     token:
-      # See https://travis-ci.org/DiamondLightSource/daq-eclipse/settings, here be variables
+      # See https://travis-ci.org/eclipse/scanning/settings, here be variables
       # SONAR_TOKEN = SONAR_GITHUB_TOKEN = The sonar token at https://sonarqube.com/account/security/
       secure: $SONAR_TOKEN 
     github_token:
-      # See https://travis-ci.org/DiamondLightSource/daq-eclipse/settings, here be variables
+      # See https://travis-ci.org/eclipse/scanning/settings, here be variables
       # GITHUB_READ_REPO = https://github.com/settings/tokens sonarqube-travis  token ('repo' and 'admin:repo_hook' permissions)
       secure: $GITHUB_READ_REPO
       
@@ -65,7 +65,7 @@ before_install:
 # Run the build from org.eclipse.scanning
 install:
   - cd ../../eclipse
-  - mv ../DiamondLightSource/daq-eclipse org.eclipse.scanning
+  - mv ../eclipse/scanning org.eclipse.scanning
   - cd org.eclipse.scanning
  
 # Set LD_LIBRARY_PATH for the tests. Also set a variable that attempts to clear /tmp on the travis node to avoid it getting large

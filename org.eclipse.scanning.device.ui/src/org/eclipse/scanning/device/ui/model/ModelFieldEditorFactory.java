@@ -150,7 +150,7 @@ public class ModelFieldEditorFactory {
         	ed = getNumberEditor(field, clazz, parent);
         	
         } else if (IROI.class.isAssignableFrom(clazz)) { 
-        	throw new IllegalArgumentException("Have not ported RegionCellEditor to daq-eclipse yet!");
+        	throw new IllegalArgumentException("Have not ported RegionCellEditor to scanning yet!");
         	// TODO FIXME Need way of editing regions.
         	//ed = new RegionCellEditor(parent);
         	

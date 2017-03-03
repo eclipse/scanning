@@ -362,7 +362,7 @@ public class ScanPointGeneratorFactory {
 			dir = new File("../../diamond-jython.git/"+bundleName);
 			if (dir.exists()) return dir;
 			
-			dir = new File("../../daq-eclipse.git/"+bundleName);
+			dir = new File("../../scanning.git/"+bundleName);
 			if (dir.exists()) return dir;
 			
 			// These paths refer to finding things in the travis build 
