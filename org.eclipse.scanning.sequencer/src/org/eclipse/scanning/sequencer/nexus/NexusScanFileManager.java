@@ -71,6 +71,7 @@ public class NexusScanFileManager implements INexusScanFileManager {
 	private static final Logger logger = LoggerFactory.getLogger(NexusScanFileManager.class);
 
 	private final AbstractRunnableDevice<ScanModel> scanDevice;
+	private final IScannableDeviceService scannableDeviceService;
 	private ScanModel model;
 	private NexusScanInfo scanInfo;
 	private NexusFileBuilder fileBuilder;
@@ -103,6 +104,7 @@ public class NexusScanFileManager implements INexusScanFileManager {
 	
 	public NexusScanFileManager(AbstractRunnableDevice<ScanModel> scanDevice) {
 		this.scanDevice = scanDevice;
+		this.scannableDeviceService = scanDevice.getConnectorService();
 	}
 	
 	/**
@@ -122,7 +124,7 @@ public class NexusScanFileManager implements INexusScanFileManager {
 		this.model = model;
 		
 		final List<String> scannableNames = getScannableNames(model.getPositionIterable());
-		setMetadataScannables(model, scannableNames);
+		addLegacyPerScanMonitors(model, scannableNames);
 
 		this.scanInfo = createScanInfo(model, scannableNames);
 		
@@ -244,62 +246,79 @@ public class NexusScanFileManager implements INexusScanFileManager {
 	}
 
 	/**
-	 * Augments the set of metadata scannables in the model with: <ul>
-	 * <li>any scannables from the legacy spring configuration;</li>
-	 * <li>the required scannables of any scannables in the scan;</li>
+	 * Augments the set of monitors in the model with: <ul>
+	 * <li>any metadata scannables (called per-scan monitors in GDA9) from the legacy spring configuration;</li>
+	 * <li>the required scannables (as per-scan monitors) point of any scannables in the scan;</li>
 	 * </ul> 
 	 * @param model
 	 * @throws ScanningException
 	 */
 	@SuppressWarnings("deprecation")
-	private void setMetadataScannables(ScanModel model, Collection<String> scannableNames) throws ScanningException {
-		final IScannableDeviceService deviceConnectorService = scanDevice.getConnectorService();
-		
+	private void addLegacyPerScanMonitors(ScanModel model, Collection<String> scannableNames) throws ScanningException {
 		// build up the set of all metadata scannables
-		final Set<String> metadataScannableNames = new HashSet<>();
+		final Set<String> perScanMonitorNames = new HashSet<>();
 		
-		// add the metadata scannables in the model
-		if (model.getMonitors()!=null) {
-			Collection<IScannable<?>> perScan  = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN).collect(Collectors.toList());
-			metadataScannableNames.addAll(perScan.stream().map(m -> m.getName()).collect(Collectors.toSet()));
-		}
+		// add the names of the metadata scannables already in the model
+		Set<String> existingPerScanMonitorNames = model.getMonitors().stream()
+				.filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN)
+				.map(m -> m.getName()).collect(Collectors.toSet());
+		perScanMonitorNames.addAll(existingPerScanMonitorNames);
 		
 		// add the global metadata scannables, and the required metadata scannables for
-		// each scannable in the scan
-		metadataScannableNames.addAll(deviceConnectorService.getGlobalMetadataScannableNames());
+		// each scannable in the scan. These are from the legacy GDA8 location map
+		perScanMonitorNames.addAll(scannableDeviceService.getGlobalMetadataScannableNames());
 		
 		// the set of scannable names to check for dependencies
 		Set<String> scannableNamesToCheck = new HashSet<>();
-		scannableNamesToCheck.addAll(metadataScannableNames);
+		scannableNamesToCheck.addAll(perScanMonitorNames);
 		scannableNamesToCheck.addAll(scannableNames);
 		do {
 			// check the given set of scannable names for dependencies
 			// each iteration checks the scannable names added in the previous one
-			Set<String> requiredScannables = scannableNamesToCheck.stream().flatMap(
-					name -> deviceConnectorService.getRequiredMetadataScannableNames(name).stream())
-					.filter(name -> !metadataScannableNames.contains(name))
+			Set<String> requiredScannables = scannableNamesToCheck.stream()
+					.flatMap(name -> scannableDeviceService.getRequiredMetadataScannableNames(name).stream())
+					.filter(name -> !perScanMonitorNames.contains(name))
 					.collect(Collectors.toSet());
 			
-			metadataScannableNames.addAll(requiredScannables);
+			perScanMonitorNames.addAll(requiredScannables);
 			scannableNamesToCheck = requiredScannables;
 		} while (!scannableNamesToCheck.isEmpty());
 		
-		// remove any scannable names in the scan from the list of metadata scannables
-		metadataScannableNames.removeAll(scannableNames);
+		// remove any scannable names in the scan from the list of per scan monitors,
+		// as a scannable can only have one role within the scan
+		perScanMonitorNames.removeAll(scannableNames);
+		Set<String> scannablesToAdd = new HashSet<>(perScanMonitorNames.stream()
+				.filter(name -> !existingPerScanMonitorNames.contains(name))
+				.collect(Collectors.toSet()));
 		
-		// get the metadata scannables for the given names
-		final List<IScannable<?>> monitors = model.getMonitors() != null ? model.getMonitors() : new ArrayList<>();
-		for (String scannableName : metadataScannableNames) {
-			IScannable<?> metadataScannable = deviceConnectorService.getScannable(scannableName);
-			try {
-			    metadataScannable.setMonitorRole(MonitorRole.PER_SCAN);
-			} catch (IllegalArgumentException ne) {
-				continue;
-			}
-			monitors.add(metadataScannable);
+		// if there are any names of scannables to add, get the scannables for them,
+		// setting them to be per scan monitors
+		if (!scannablesToAdd.isEmpty()) {
+			final List<IScannable<?>> monitors = new ArrayList<>(model.getMonitors());
+			monitors.addAll(perScanMonitorNames.stream()
+				.map(name -> getPerScanMonitor(name)).collect(Collectors.toList()));
+
+			model.setMonitors(monitors);
+		}
+	}
+	
+	private IScannable<?> getPerScanMonitor(String monitorName) {
+		IScannable<?> scannable = null;
+		try {
+			scannable = scannableDeviceService.getScannable(monitorName);
+		} catch (ScanningException e) {
+			logger.error("No such scannable ''{}''", monitorName);
+			return null;
 		}
 		
-		model.setMonitors(monitors);
+		try {
+			scannable.setMonitorRole(MonitorRole.PER_SCAN);
+		} catch (IllegalArgumentException | ScanningException e) {
+			logger.error("Could not set scannable ''{}'' as per scan");
+			return null;
+		}
+
+		return scannable;
 	}
 	
 	private List<String> getScannableNames(Iterable<IPosition> gen) {
