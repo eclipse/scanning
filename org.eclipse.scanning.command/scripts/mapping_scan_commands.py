@@ -102,8 +102,8 @@ def mscan(path=None, mon=None, det=None, now=False, block=True,
     if (broker_uri is None):
         broker_uri = getScanningBrokerUri()
         
-    submit(scan_request(path, mon, det, allow_preprocess),
-           now, block, broker_uri)
+    submit(request=scan_request(path=path, mon=mon, det=det, allow_preprocess=allow_preprocess),
+           now=now, block=block, broker_uri=broker_uri)
 
 
 def submit(request, now=False, block=True,
