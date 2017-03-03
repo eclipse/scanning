@@ -19,7 +19,7 @@ import org.junit.runners.Suite.SuiteClasses;
 
 	AttributeTest.class,
 	BasicScanTest.class,
-	MetadataScannableTest.class,
+	PerScanMonitorTest.class,
 	ConstantVelocityTest.class,
 	DarkCurrentTest.class,
 	MalcolmScanTest.class,
