@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" name="org.eclipse.scanning.malcolm.core">
+   <implementation class="org.eclipse.scanning.malcolm.core.Services"/>
+   <reference bind="setConnectorService" cardinality="1..1" interface="org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService" name="IMalcolmConnectorService" policy="static"/>
+   <reference bind="setRunnableDeviceService" cardinality="1..1" interface="org.eclipse.scanning.api.device.IRunnableDeviceService" name="IRunnableDeviceService" policy="static"/> 
+</scr:component>

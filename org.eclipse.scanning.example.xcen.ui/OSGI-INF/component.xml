@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" deactivate="stop" immediate="true" name="Xcen Services">
+   <implementation class="org.eclipse.scanning.example.xcen.ui.XcenServices"/>
+   <reference bind="setLoaderService" cardinality="0..1" interface="org.eclipse.dawnsci.analysis.api.io.ILoaderService" name="ILoaderService" policy="dynamic"/>
+   <reference bind="setEventService" cardinality="0..1" interface="org.eclipse.scanning.api.event.IEventService" name="IEventService" policy="dynamic"/>
+</scr:component>

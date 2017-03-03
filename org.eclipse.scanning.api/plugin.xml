@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="generator" name="Scan Point Generator" schema="schema/generator.exsd"/>
+   <extension-point id="device" name="Runnable Device" schema="schema/device.exsd"/>
+   <extension-point id="resultsHandler" name="Open Results" schema="schema/resultsHandler.exsd"/>
+   <extension-point id="rerunHandler" name="Rerun" schema="schema/rerunHandler.exsd"/>
+   <extension-point id="modifyHandler" name="Modify Submitted Run" schema="schema/modifyHandler.exsd"/>
+   <extension-point id="stream" name="Stream Source" schema="schema/stream.exsd"/>
+
+</plugin>

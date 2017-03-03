@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<!--  Mandelbrot Example -->
+	<bean id="mandelbrotModel" class="org.eclipse.scanning.example.detector.MandelbrotModel">
+		<property name="maxIterations"          value="500"/>
+		<property name="escapeRadius"           value="10.0"/>
+		<property name="columns"                value="301"/>
+		<property name="rows"                   value="241"/>
+		<property name="points"                 value="1000"/>
+		<property name="maxRealCoordinate"      value="1.5"/>
+		<property name="maxImaginaryCoordinate" value="1.2"/>
+		<property name="name"                   value="mandelbrot"/>
+		<property name="exposureTime"           value="0.1"/>
+		<property name="realAxisName"           value="stage_x"/>
+		<property name="imaginaryAxisName"      value="stage_y"/>
+        <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
+	</bean>
+	<bean id="mandelbrotInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
+		<property name="id"          value="org.eclipse.scanning.example.detector.mandelbrotDetectorSpring"/>
+		<property name="label"       value="Mandelbrot Example Detector"/>
+		<property name="description" value="A Mandelbrot detector which is only used for testing"/>
+		<property name="icon"        value="org.eclipse.scanning.example/icons/mandelbrot.png"/> <!--  bundle must be on client for that, if it isn't a default icon is used -->
+        <property name="bundle"   value="org.eclipse.scanning.api" /> <!-- Delete for real spring? -->
+	</bean>
+	<bean id="mandelbrotDetector" class="org.eclipse.scanning.example.detector.MandelbrotDetector" init-method="register">
+		<property name="name"              value="mandelbrot"/>
+		<property name="model"             ref="mandelbrotModel"/>
+		<property name="deviceInformation" ref="mandelbrotInfo"/>
+		<property name="activated"         value="true"/> <!-- This means it is activated as the default device to use in a scan -->
+        <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
+	</bean>
+
+
+
+	<!--  Dark Image Example -->
+	<bean id="darkImageModel" class="org.eclipse.scanning.example.detector.DarkImageModel">
+		<property name="name"          value="dkExmpl"/>
+		<property name="columns"       value="64"/>
+		<property name="rows"          value="60"/>
+		<property name="frequency"     value="10"/>
+        <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
+	</bean>
+	<bean id="darkImageInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
+		<property name="id"          value="org.eclipse.scanning.example.detector.darkImageDetector"/>
+		<property name="label"       value="Dark Current Example Detector"/>
+		<property name="description" value="A detector which takes images at a frequency lower than the scan numbner to simulate a dark current reading."/>
+		<property name="icon"        value="org.eclipse.scanning.example/icons/darkcurrent.png"/> <!--  bundle must be on client for that, if it isn't a default icon is used -->
+        <property name="bundle"   value="org.eclipse.scanning.api" /> <!-- Delete for real spring? -->
+	</bean>
+	<bean id="darkImageDetector" class="org.eclipse.scanning.example.detector.DarkImageDetector" init-method="register">
+		<property name="name"              value="dkExmpl"/>
+		<property name="model"             ref="darkImageModel"/>
+		<property name="deviceInformation" ref="darkImageInfo"/>
+        <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
+	</bean>
+
+
+	<!--  Constant Velocity Example -->
+	<bean id="constantVelocityModel" class="org.eclipse.scanning.example.detector.ConstantVelocityModel">
+		<property name="name"           value="cvExmpl"/>
+		<property name="exposureTime"   value="0.1"/>
+		<property name="lineSize"       value="64"/>
+		<property name="channelCount"   value="60"/>
+		<property name="spectraSize"    value="10"/>
+		<property name="timeout"        value="100"/>
+        <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
+	</bean>
+	<bean id="constantVelocityInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
+		<property name="id"          value="org.eclipse.scanning.example.detector.constantVelocityDevice"/>
+		<property name="label"       value="Constant Velocity Example Detector"/>
+		<property name="description" value="A detector which runs line scans within the arbitrary outer scan which it is given."/>
+        <property name="bundle"   value="org.eclipse.scanning.api" /> <!-- Delete for real spring? -->
+	</bean>
+	<bean id="constantVelocityDevice" class="org.eclipse.scanning.example.detector.ConstantVelocityDevice" init-method="register">
+		<property name="name"              value="cvExmpl"/>
+		<property name="model"             ref="constantVelocityModel"/>
+		<property name="deviceInformation" ref="constantVelocityInfo"/>
+        <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
+	</bean>
+
+
+	<!--  Malcolm Example -->
+	<bean id="dummyMalcolmModel" class="org.eclipse.scanning.example.malcolm.DummyMalcolmModel">
+		<property name="name"                   value="malcolm"/>
+		<property name="exposureTime"           value="0.1"/>
+		<property name="axesToMove">
+			<list>
+				<value>stage_x</value>
+				<value>stage_y</value>
+			</list>
+		</property>
+        <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
+    </bean>
+	<bean id="dummyMalcolmInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
+		<property name="id"          value="org.eclipse.scanning.example.malcolm.dummyMalcolmDetectorSpring"/>
+		<property name="label"       value="Dummy Malcolm Detector"/>
+		<property name="description" value="A dummy malcolm detector which is only used for testing"/>
+		<property name="icon"        value="org.eclipse.scanning.example/icons/alarm-clock-select.png"/> <!--  bundle must be on client for that, if it isn't a default icon is used -->
+	</bean>
+	<bean id="dummyMalcolmDetector" class="org.eclipse.scanning.example.malcolm.DummyMalcolmDevice" init-method="register">
+		<property name="name"              value="malcolm"/>
+		<property name="model"             ref="dummyMalcolmModel"/>
+		<property name="deviceInformation" ref="dummyMalcolmInfo"/>
+		<property name="activated"         value="false"/> <!-- This means it is activated as the default device to use in a scan -->
+        <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
+	</bean>
+	
+	<!-- Dummy Malcolm Triggered Detector Example -->
+	<bean id="dummyMalcolmTriggeredModel" class="org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredModel">
+		<property name="name" value="dummyMalcolmTriggered"/>
+		<proeprty name="bundle" value="org.eclipse.scanning.example"/>
+	</bean>
+	
+	<bean id="dummyMalcolmTriggeredInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
+		<property name="id" value="org.eclipse.scanning.example.malcolm.dummyMalcolmTriggered"/>
+		<property name="label" value="A Dummy Malcolm Triggered Detector"/>
+		<property name="description" value="A dummy detector that is triggered by a dummy malcolm device, only used for testing"/>
+		<property name="bundle" value="org.eclipse.scanning.example"/>
+	</bean>
+	
+	<bean id="dummyMalcolmTriggeredDetector" class="org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredDetector" init-method="register">
+		<property name="name" value="dummyMalcolmTriggered"/>
+		<property name="model" ref="dummyMalcolmTriggeredModel"/>
+		<property name="deviceInformation" ref="dummyMalcolmTriggeredInfo"/>
+		<property name="activated" value="false"/>
+		<property name="bundle" value="org.eclipse.scanning.example"/>
+	</bean>
+	
+	<!-- Dummy Software or Hardware Triggered Detector Example -->
+	<bean id="dummyHardwareOrSoftwareTriggeredModel" class="org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredModel">
+		<property name="name" value="dummyHardwareOrSoftwareTriggered"/>
+		<proeprty name="bundle" value="org.eclipse.scanning.example"/>
+	</bean>
+	
+	<bean id="dummyHardwareOrSoftwareTriggeredInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
+		<property name="id" value="org.eclipse.scanning.example.malcolm.dummyHarwareOrSoftwareTriggered"/>
+		<property name="label" value="A Dummy Hardware or Software Triggered Detector"/>
+		<property name="description" value="A dummy detector that can be triggered by a dummy malcolm device or directly by GDA, only used for testing"/>
+		<property name="bundle" value="org.eclipse.scanning.example"/>
+	</bean>
+	
+	<bean id="dummyHardwareOrSoftwareTriggeredDetector" class="org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredDetector" init-method="register">
+		<property name="name" value="dummyHardwareOrSoftwareTriggered"/>
+		<property name="model" ref="dummyHardwareOrSoftwareTriggeredModel"/>
+		<property name="deviceInformation" ref="dummyHardwareOrSoftwareTriggeredInfo"/>
+		<property name="supportedScanModes">
+			<set>
+				<value type="org.eclipse.scanning.api.device.models.ScanMode">SOFTWARE</value>
+				<value type="org.eclipse.scanning.api.device.models.ScanMode">HARDWARE</value>
+			</set>
+		</property>
+		<property name="activated" value="false"/>
+		<property name="bundle" value="org.eclipse.scanning.example"/>
+	</bean>
+
+
+</beans>

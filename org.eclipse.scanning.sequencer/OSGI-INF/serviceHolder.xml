@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="Services for Acquisition Device">
+   <implementation class="org.eclipse.scanning.sequencer.ServiceHolder"/>
+   <reference bind="setFactory" cardinality="0..1" interface="org.eclipse.dawnsci.nexus.builder.NexusBuilderFactory" name="NexusBuilderFactory" policy="dynamic"/>
+   <reference bind="setOperationService" cardinality="0..1" interface="org.eclipse.dawnsci.analysis.api.processing.IOperationService" name="IOperationService" policy="dynamic"/>
+   <reference bind="setPersistenceService" cardinality="0..1" interface="org.eclipse.dawnsci.analysis.api.persistence.IPersistenceService" name="IPersistenceService" policy="dynamic"/>
+   <reference bind="setLoaderService" cardinality="0..1" interface="org.eclipse.dawnsci.analysis.api.io.ILoaderService" name="ILoaderService" policy="dynamic"/>
+   <reference bind="setEventService" cardinality="0..1" interface="org.eclipse.scanning.api.event.IEventService" name="IEventService" policy="dynamic"/>
+   <reference bind="setFilePathService" cardinality="0..1" interface="org.eclipse.scanning.api.scan.IFilePathService" name="IFilePathService" policy="dynamic"/>
+   <reference bind="setGeneratorService" cardinality="0..1" interface="org.eclipse.scanning.api.points.IPointGeneratorService" name="IPointGeneratorService" policy="dynamic"/>
+   <reference bind="setRunnableDeviceService" cardinality="1..1" interface="org.eclipse.scanning.api.device.IRunnableDeviceService" name="IRunnableDeviceService" policy="static"/>
+   <reference bind="setWatchdogService" cardinality="1..1" interface="org.eclipse.scanning.api.device.IDeviceWatchdogService" name="IDeviceWatchdogService" policy="static"/>
+   <reference bind="setParserService" cardinality="0..1" interface="org.eclipse.scanning.api.scan.IParserService" name="IParserService" policy="dynamic"/>
+   <reference bind="setMarshallerService" cardinality="0..1" interface="org.eclipse.dawnsci.analysis.api.persistence.IMarshallerService" name="IMarshallerService" policy="dynamic"/>
+</scr:component>

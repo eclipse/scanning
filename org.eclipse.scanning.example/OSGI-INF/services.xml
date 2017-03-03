@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" deactivate="stop" immediate="true" name="Scanning Example Services">
+   <implementation class="org.eclipse.scanning.example.Services"/>
+   <reference bind="setEventService" cardinality="0..1" interface="org.eclipse.scanning.api.event.IEventService" name="IEventService" policy="static"/>
+   <reference bind="setRunnableDeviceService" cardinality="0..1" interface="org.eclipse.scanning.api.device.IRunnableDeviceService" name="IRunnableDeviceService" policy="static"/>
+   <reference bind="setPointGeneratorService" cardinality="0..1" interface="org.eclipse.scanning.api.points.IPointGeneratorService" name="IPointGeneratorService" policy="static"/>
+   <reference bind="setScannableDeviceService" cardinality="0..1" interface="org.eclipse.scanning.api.device.IScannableDeviceService" name="IScannableDeviceService" policy="static"/>
+</scr:component>

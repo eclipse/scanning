@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	<description>
+		This file contains server objects which are required to use the new GDA Solstice / Eclipse Scanning experiment queue system.
+	</description>
+
+	<!-- Queue Service -->
+	<bean id="queueService" class="org.eclipse.scanning.event.queues.QueueService" init-method="init">
+		<property name="uri" value="${gda.activemq.broker.uri}" />
+		<property name="queueRoot" value="uk.ac.diamond.i15-1" />
+	</bean>
+	
+	<!-- Queue Controller -->
+	<bean id="queueControllerService" class="org.eclipse.scanning.event.queues.QueueControllerService"
+		init-method="init">
+	</bean>
+</beans>

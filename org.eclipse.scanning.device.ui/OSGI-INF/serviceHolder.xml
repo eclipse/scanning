@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" immediate="true" name="Service Holder for Scanning">
+   <implementation class="org.eclipse.scanning.device.ui.ServiceHolder"/>
+   <reference bind="setEventConnectorService" cardinality="0..1" interface="org.eclipse.scanning.api.event.IEventConnectorService" name="IEventConnectorService" policy="dynamic"/>
+   <reference bind="setEventService" cardinality="0..1" interface="org.eclipse.scanning.api.event.IEventService" name="IEventService" policy="dynamic"/>
+   <reference bind="setGeneratorService" cardinality="0..1" interface="org.eclipse.scanning.api.points.IPointGeneratorService" name="IPointGeneratorService" policy="dynamic"/>
+   <reference bind="setExpressionService" cardinality="0..1" interface="org.eclipse.dawnsci.analysis.api.expressions.IExpressionService" name="IExpressionService" policy="dynamic"/>
+   <reference bind="setLoaderService" cardinality="0..1" interface="org.eclipse.dawnsci.analysis.api.io.ILoaderService" name="ILoaderService" policy="dynamic"/>
+   <reference cardinality="0..1" interface="org.eclipse.scanning.api.ISpringParser" name="ISpringParser" policy="dynamic"/>
+   <reference bind="setInterfaceService" cardinality="1..1" interface="org.eclipse.scanning.api.ui.auto.IInterfaceService" name="IInterfaceService" policy="static"/>
+   <reference bind="setStashingService" cardinality="1..1" interface="org.eclipse.scanning.api.stashing.IStashingService" name="IStashingService" policy="static"/>
+</scr:component>

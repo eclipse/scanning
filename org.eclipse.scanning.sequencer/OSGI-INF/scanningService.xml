@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" immediate="false" name="Scanning Service">
+   <implementation class="org.eclipse.scanning.sequencer.RunnableDeviceServiceImpl"/>
+   <service>
+      <provide interface="org.eclipse.scanning.api.device.IRunnableDeviceService"/>
+   </service>
+   <reference bind="setDeviceConnectorService" cardinality="0..1" interface="org.eclipse.scanning.api.device.IScannableDeviceService" name="IDeviceConnectorService" policy="static" />
+</scr:component>

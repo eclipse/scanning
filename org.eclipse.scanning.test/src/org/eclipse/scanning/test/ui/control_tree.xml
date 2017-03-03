@@ -1,0 +1,65 @@
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+            http://www.springframework.org/schema/osgi
+            http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+	<!--  
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	Testing/example only section config do not copy to production. 
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	-->
+
+	<!-- Create some live controls for specific devices. -->
+	<bean id="Control_Factory" class="org.eclipse.scanning.api.scan.ui.ControlTree" init-method="globalize">
+		<property name="name" value="Control Factory" />
+	</bean>
+	
+	<bean id="Translations" class="org.eclipse.scanning.api.scan.ui.ControlGroup" init-method="add">
+		<property name="name" value="Translations" />
+		<property name="controls">
+			<list>
+				<ref bean="stage_x" />
+				<ref bean="stage_y" />
+				<ref bean="stage_z" />
+			</list>
+		</property>
+	</bean>
+	<bean id="ExperimentalConditions" class="org.eclipse.scanning.api.scan.ui.ControlGroup" init-method="add">
+		<property name="name" value="Experimental Conditions" />
+		<property name="controls">
+			<list>
+				<ref bean="T" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="stage_x" class="org.eclipse.scanning.api.scan.ui.ControlNode" init-method="add" >
+		<property name="displayName" value="Stage X" />
+		<property name="scannableName" value="stage_x" />
+		<property name="increment" value="0.1" />
+	</bean>
+	<bean id="stage_y" class="org.eclipse.scanning.api.scan.ui.ControlNode" init-method="add">
+		<property name="displayName" value="Stage Y" />
+		<property name="scannableName" value="stage_y" />
+		<property name="increment" value="0.1" />
+	</bean>
+	<bean id="stage_z" class="org.eclipse.scanning.api.scan.ui.ControlNode" init-method="add">
+		<property name="displayName" value="Stage Z" />
+		<property name="scannableName" value="stage_z" />
+		<property name="increment" value="0.1" />
+	</bean>
+	<bean id="T" class="org.eclipse.scanning.api.scan.ui.ControlNode" init-method="add">
+		<property name="displayName" value="Temperature" />
+		<property name="scannableName" value="temp" />
+		<property name="increment" value="1" />
+	</bean>
+	
+	<!--  End testing/example only-->
+
+</beans>

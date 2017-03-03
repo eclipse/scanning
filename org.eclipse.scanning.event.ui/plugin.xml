@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="org.dawnsci.commandserver.category"
+            name="Command Server">
+      </category>
+      <view
+            allowMultiple="true"
+            category="org.dawnsci.commandserver.category"
+            class="org.eclipse.scanning.event.ui.view.StatusQueueView"
+            icon="icons/computer--arrow.png"
+            id="org.eclipse.scanning.event.ui.queueView"
+            name="Queue"
+            restorable="true">
+      </view>
+      <view
+            allowMultiple="true"
+            category="org.dawnsci.commandserver.category"
+            class="org.eclipse.scanning.event.ui.view.ConsumerView"
+            icon="icons/hand-share.png"
+            id="org.eclipse.scanning.event.ui.consumerView"
+            name="Active Consumers"
+            restorable="true">
+      </view>
+      <view
+            category="org.dawnsci.commandserver.category"
+            class="org.eclipse.scanning.event.ui.view.StatusQueueLaunchView"
+            icon="icons/computer--pencil.png"
+            id="org.dawnsci.commandserver.ui.statusQueueLaunchView"
+            name="Queue Launcher"
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="org.eclipse.scanning.event.ui.preference.CommandInitializer">
+      </initializer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.eclipse.scanning.event.ui.preference.ActiveMQPage"
+            id="org.dawnsci.commandserver.ui.activemqPage"
+            name="Command Server Configuration">
+      </page>
+   </extension>
+
+</plugin>

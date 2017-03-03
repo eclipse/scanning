@@ -1,0 +1,40 @@
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:osgi="http://www.springframework.org/schema/osgi"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+            http://www.springframework.org/schema/beans
+            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+            http://www.springframework.org/schema/osgi
+            http://www.springframework.org/schema/osgi/spring-osgi.xsd">
+
+	<!--  
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	Testing/example only section config do not copy to production. 
+	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	-->
+
+	<!-- Create some live controls for specific devices. -->
+	<bean id="Control_Factory" class="org.eclipse.scanning.api.scan.ui.ControlTree" init-method="globalize">
+		<property name="name" value="Control Factory" />
+	</bean>
+	
+	<bean id="Machine" class="org.eclipse.scanning.api.scan.ui.ControlGroup" init-method="add">
+		<property name="name" value="Machine" />
+		<property name="controls">
+			<list>
+				<ref bean="current" />
+			</list>
+		</property>
+	</bean>
+	
+	<bean id="current" class="org.eclipse.scanning.api.scan.ui.ControlNode" init-method="add" >
+		<property name="displayName" value="Current" />
+		<property name="scannableName" value="beamcurrent" />
+		<property name="increment" value="0.1" />
+	</bean>
+	
+	<!--  End testing/example only-->
+
+</beans>

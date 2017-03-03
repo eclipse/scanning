@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.scanning.api.stream">
+      <stream
+            icon="icons/camera-lensEpics.png"
+            id="org.eclipse.scanning.connector.epicsv3.epicsStream"
+            label="EPICS Stream"
+            stream="org.eclipse.scanning.connector.epicsv3.streamconnection.EpicsConnection">
+      </stream>
+   </extension>
+
+</plugin>

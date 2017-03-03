@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="Test Event Service OSGi Declarative">
+   <implementation class="org.eclipse.scanning.test.event.ScanEventPluginTest"/>
+   <reference bind="setService" cardinality="1..1" interface="org.eclipse.scanning.api.event.IEventService" name="IEventService" policy="static"/>
+</scr:component>
