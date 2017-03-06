@@ -49,6 +49,11 @@ public class GridModel extends AbstractBoundingBoxModel {
 		setFastAxisName(fastName);
 		setSlowAxisName(slowName);
 	}
+	public GridModel(String fastName, String slowName, int fastCount, int slowCount) {
+		this(fastName, slowName);
+		setFastAxisPoints(fastCount);
+		setSlowAxisPoints(slowCount);
+	}
 
 	@MinimumValue("1")
 	public int getFastAxisPoints() {

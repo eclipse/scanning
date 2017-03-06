@@ -207,7 +207,7 @@ public class ScanProcessTest {
 		ScanBean scanBean = new ScanBean();
 		ScanRequest<?> scanRequest = new ScanRequest<>();
 		
-		CompoundModel cmodel = new CompoundModel<>(Arrays.asList(new StepModel("T", 290, 291, 2), new GridModel("xNex", "yNex")));
+		CompoundModel cmodel = new CompoundModel<>(Arrays.asList(new StepModel("T", 290, 291, 2), new GridModel("xNex", "yNex",2,2)));
 		cmodel.setRegions(Arrays.asList(new ScanRegion<IROI>(new RectangularROI(0, 0, 3, 3, 0), "xNex", "yNex")));
 		scanRequest.setCompoundModel(cmodel);
 		
@@ -240,7 +240,7 @@ public class ScanProcessTest {
 		
 		final int numPoints = 5;
 		CompoundModel cmodel = new CompoundModel<>(Arrays.asList(
-				new RepeatedPointModel("T1", numPoints, 290.2, 100), new GridModel("xNex", "yNex")));
+				new RepeatedPointModel("T1", numPoints, 290.2, 100), new GridModel("xNex", "yNex",2,2)));
 		cmodel.setRegions(Arrays.asList(new ScanRegion<IROI>(
 				new RectangularROI(0, 0, 3, 3, 0), "xNex", "yNex")));
 		scanRequest.setCompoundModel(cmodel);
