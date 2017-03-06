@@ -74,7 +74,7 @@ env:
  
 # compile and test
 script: 
- - mvn -q clean install surefire:test -Dtest.includes=org/eclipse/scanning/**/Suite.java 
+ - mvn -q clean install surefire:test -Dtest.includes=org/eclipse/scanning/test/All.java 
  - mvn -q surefire:test -Dtest.includes=org/eclipse/scanning/**/UISuite.java -Dlog4j.configuration=log4j.properties
  - sonar-scanner
  
