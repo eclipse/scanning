@@ -85,7 +85,6 @@ public class EpicsV4ConnectorTest {
 			assertEquals(DeviceState.IDLE, deviceState);
 
 		} catch (Exception ex) {
-			ex.printStackTrace();
 			fail(ex.getMessage());
 		} 
 	}
@@ -191,7 +190,6 @@ public class EpicsV4ConnectorTest {
 			}
 
 		} catch (Exception ex) {
-			ex.printStackTrace();
 			fail(ex.getMessage());
 		} 
 	}
@@ -248,7 +246,6 @@ public class EpicsV4ConnectorTest {
 			}
 
 		} catch (Exception ex) {
-			ex.printStackTrace();
 			fail(ex.getMessage());
 		}
 	}
