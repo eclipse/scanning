@@ -70,7 +70,7 @@ public class EpicsV4ConnectorTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void ConnectToValidDevice() throws Exception {
+	public void connectToValidDevice() throws Exception {
 
 		try {
 			// Start the dummy test device
@@ -95,7 +95,7 @@ public class EpicsV4ConnectorTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void ConnectToInvalidDevice() throws Exception {
+	public void connectToInvalidDevice() throws Exception {
 
 		try {
 			// Get the device
@@ -119,7 +119,7 @@ public class EpicsV4ConnectorTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void GetNonExistantAttribute() throws Exception {
+	public void getNonExistantAttribute() throws Exception {
 
 		try {
 			// Start the dummy test device
@@ -146,7 +146,7 @@ public class EpicsV4ConnectorTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void ConnectToValidDeviceButOfflineWhenConfigure() throws Exception {
+	public void connectToValidDeviceButOfflineWhenConfigure() throws Exception {
 
 		try {
 			// Start the dummy test device
@@ -200,7 +200,7 @@ public class EpicsV4ConnectorTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void ConnectToValidDeviceButOfflineWhenRun() throws Exception {
+	public void connectToValidDeviceButOfflineWhenRun() throws Exception {
 
 		try {
 			// Start the dummy test device
