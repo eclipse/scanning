@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.scan.nexus;
 
+import static org.eclipse.scanning.sequencer.nexus.SolsticeConstants.SCANNABLE_NAME_SOLSTICE_SCAN_MONITOR;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertAxes;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertIndices;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertScanNotFinished;
@@ -60,21 +61,21 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class MetadataScannableTest extends NexusTest {
+public class PerScanMonitorTest extends NexusTest {
 
 	
-    private IScannable<?> monitor;
-    private IScannable<?> metadataScannable;
+    private IScannable<?> perPointMonitor;
+    private IScannable<?> perScanMonitor;
 	private IScannable<Number> dcs;
     
     @Before
 	public void beforeTest() throws Exception {
-		monitor = connector.getScannable("monitor1");
-		metadataScannable = connector.getScannable("metadataScannable1");  // Ordinary scannable
+		perPointMonitor = connector.getScannable("monitor1");
+		perScanMonitor = connector.getScannable("metadataScannable1");  // Ordinary scannable
 		
 		// Make a few detectors and models...
 		PseudoSpringParser parser = new PseudoSpringParser();
-		parser.parse(MetadataScannableTest.class.getResourceAsStream("test_scannables.xml"));
+		parser.parse(PerScanMonitorTest.class.getResourceAsStream("test_scannables.xml"));
         
 		// TODO See this scannable which is a MockNeXusSlit
 		// Use NexusNodeFactory to create children as correct for http://confluence.diamond.ac.uk/pages/viewpage.action?pageId=37814632
@@ -85,18 +86,23 @@ public class MetadataScannableTest extends NexusTest {
 	@Test
 	public void modelCheck() throws Exception {
 		MockScannableConfiguration conf = new MockScannableConfiguration("s1gapX", "s1gapY", "s1cenX", "s1cenY");
-        assertEquals(conf, ((AbstractScannable)dcs).getModel());
+		assertEquals(conf, ((AbstractScannable<?>)dcs).getModel());
 	}
 	
 	@Test
-	public void testBasicScanWithMetadataScannable() throws Exception {
-		test(monitor, metadataScannable, 8, 5);
+	public void testBasicScanWithPerPointAndPerScanMonitors() throws Exception {
+		test(perPointMonitor, perScanMonitor, 8, 5);
 	}
 
+	@Test
+	public void testBasicScanWithPerScanMonitor() throws Exception {
+		test(null, perScanMonitor, 8, 5);
+	}
+	
 	@Ignore("dcs was supposed to be an NXslit, not an NXpositioner, so this test will need to be fixed later...")
 	@Test
 	public void testScanWithConfiguredScannable() throws Exception {
-		test(monitor, dcs, 8, 5);
+		test(perPointMonitor, dcs, 8, 5);
 	}
 
 	private void test(IScannable<?> monitor, IScannable<?> metadataScannable, int... shape) throws Exception {
@@ -152,9 +158,10 @@ public class MetadataScannableTest extends NexusTest {
 		final IPosition pos = scanModel.getPositionIterable().iterator().next();
 		final Collection<String> scannableNames = pos.getNames();
 
-		List<IScannable<?>> perPoint  = scanModel.getMonitors() != null
-				                      ? scanModel.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT).collect(Collectors.toList())
-				                      : null;
+		List<IScannable<?>> perPoint  = scanModel.getMonitors().stream()
+				.filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT)
+				.filter(scannable -> !scannable.getName().equals(SCANNABLE_NAME_SOLSTICE_SCAN_MONITOR))
+				.collect(Collectors.toList());
         final boolean hasMonitor = perPoint != null && !perPoint.isEmpty();
 		
 		String dataGroupName = hasMonitor ? perPoint.get(0).getName() : pos.getNames().get(0);
@@ -279,7 +286,7 @@ public class MetadataScannableTest extends NexusTest {
 	}
 
 	public static void setFileFactory(INexusFileFactory fileFactory) {
-		MetadataScannableTest.fileFactory = fileFactory;
+		PerScanMonitorTest.fileFactory = fileFactory;
 	}
 
 }
