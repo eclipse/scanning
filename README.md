@@ -4,7 +4,7 @@
 [![Build Status](https://api.travis-ci.org/eclipse/scanning.png)](https://travis-ci.org/eclipse/scanning)
 
 
-Scanning is an open source project for moving scientific instruments and writing [NeXus](https://github.com/nexusformat) compliant files. It is designed to be control system neutral, EPICS, TANGO etc. may be used. See [proposal](https://projects.eclipse.org/proposals/scanning) and [Getting Started](https://github.com/eclipse/scanning/blob/master/GETTINGSTARTED.pdf)
+Scanning is an open source project for moving scientific instruments and writing [NeXus](http://www.nexusformat.org/) compliant files. It is designed to be control system neutral, EPICS, TANGO etc. may be used. See [proposal](https://projects.eclipse.org/proposals/scanning) and [Getting Started](https://github.com/eclipse/scanning/blob/master/GETTINGSTARTED.pdf)
 
 # Adding Tests
 The test system is linked into Travis CI and your pull request will be checked with the build and test. Tests should not be added in the same bundle that created the feature but in a .test bundle which may be a fragment of the original bundle. This enables the build to remove test code from the binary easily because those bundles are not in the feature. NOTE This has the added benefit that your test bunles or fragment may have dependencies which the main bundle does not. For instance in org.eclipse.scanning.test we depend on almost eveything imaginable but of course this bundle is not part of the binary product.
