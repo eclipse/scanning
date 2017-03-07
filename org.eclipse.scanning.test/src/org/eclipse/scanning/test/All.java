@@ -11,7 +11,7 @@ import org.junit.runners.Suite.SuiteClasses;
  * 
  * Windows:		PATH=${project_loc:hdf.hdf5lib}\lib\${target.os}-${target.arch}
  * Linux:		LD_LIBRARY_PATH=${project_loc:hdf.hdf5lib}/lib/${target.os}-${target.arch}
- * Mac:			No sure perhaps LD_LIBRARY_PATH
+ * Mac:			Not sure perhaps LD_LIBRARY_PATH
  * 
  * @author Matthew Gerring
  *
