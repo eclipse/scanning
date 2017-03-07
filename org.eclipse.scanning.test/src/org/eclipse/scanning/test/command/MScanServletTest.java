@@ -21,25 +21,25 @@ public class MScanServletTest extends AbstractMScanTest {
 
 	@Test
 	public void testGridScan() throws Exception {
-		pi.exec("sr = scan_request(grid(axes=('xNex', 'yNex'), start=(0, 0), stop=(10, 10), count=(5, 5), snake=True), det=detector('mandelbrot', 0.1))");
+		pi.exec("sr = scan_request(grid(axes=('xNex', 'yNex'), start=(0, 0), stop=(10, 10), count=(2, 2), snake=True), det=detector('mandelbrot', 0.1))");
 		runAndCheck("sr", false, 20);
 	}
 	
 	@Test(expected=Exception.class)
 	public void testGridScanWrongAxis() throws Exception {
-		pi.exec("sr = scan_request(grid(axes=('x', 'y'), start=(0, 0), stop=(10, 10), count=(5, 5), snake=True), det=detector('mandelbrot', 0.1))");
+		pi.exec("sr = scan_request(grid(axes=('x', 'y'), start=(0, 0), stop=(10, 10), count=(2, 2), snake=True), det=detector('mandelbrot', 0.1))");
 		runAndCheck("sr", false, 20);
 	}
 	
 	@Test
 	public void testGridScanNoDetector() throws Exception {
-		pi.exec("sr = scan_request(grid(axes=('xNex', 'yNex'), start=(0, 0), stop=(10, 10), count=(5, 5), snake=True))");
+		pi.exec("sr = scan_request(grid(axes=('xNex', 'yNex'), start=(0, 0), stop=(10, 10), count=(2, 2), snake=True))");
 		runAndCheck("sr", false, 20);
 	}
 	
 	@Test
 	public void testGridWithROIScan() throws Exception {
-		pi.exec("sr = scan_request(grid(axes=('xNex', 'yNex'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=False, roi=[circ(origin=(0.0, 0.0), radius=1.0)]), det=detector('mandelbrot', 0.1))");
+		pi.exec("sr = scan_request(grid(axes=('xNex', 'yNex'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 2), snake=False, roi=[circ(origin=(0.0, 0.0), radius=1.0)]), det=detector('mandelbrot', 0.1))");
 		runAndCheck("sr", false, 20);
 	}
 	
