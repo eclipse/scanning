@@ -146,7 +146,7 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
-		scanner.latch(200, TimeUnit.MILLISECONDS);
+		scanner.latch(500, TimeUnit.MILLISECONDS);
 		
 		final IScannable<String>   mon  = connector.getScannable("portshutter");
 		mon.setPosition("Closed");
