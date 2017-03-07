@@ -16,6 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.hdf5.nexus.NexusFileFactoryHDF5;
@@ -251,11 +252,11 @@ public class ScanSpeedTest extends BrokerTest {
 
 		IPausableDevice<?> device = (IPausableDevice<?>)createDevice(10, scannables, detectors);
 		device.start(null);
-		Thread.sleep(10);
+		device.latch(500, TimeUnit.MILLISECONDS); // Latches until scan done.
 		device.pause();
-		Thread.sleep(100);
+		device.latch(100, TimeUnit.MILLISECONDS); // Latches until scan done.
 		device.resume();
-		device.latch(); // Latches until scan done.
+		device.latch(10, TimeUnit.SECONDS); // Latches until scan done.
 
 		for (IScannable<?> s : scannables) {
 			AnnotatedMockScannable ams = (AnnotatedMockScannable)s;

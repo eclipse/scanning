@@ -219,27 +219,28 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
+		scanner.latch(200, TimeUnit.MILLISECONDS);
 		controller.pause("test", null);  // Pausing externally should override any watchdog resume.
 		
 		final IScannable<String>   mon  = connector.getScannable("portshutter");
 		mon.setPosition("Closed");
 		mon.setPosition("Open");
-		Thread.sleep(100); // Watchdog should not start it again, it was paused first..
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 		
 		controller.resume("test");
 		
-		Thread.sleep(100); 
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertNotEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		mon.setPosition("Closed");
 		
-		Thread.sleep(100); 
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 		
 		controller.resume("test"); // The external resume should still not resume it
 
-		Thread.sleep(100);
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		controller.abort("test");
@@ -270,29 +271,29 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
-		Thread.sleep(25);  // Do a bit
+		scanner.latch(200, TimeUnit.MILLISECONDS);
 		controller.pause("test", null);   // Pausing externally should override any watchdog resume.
 		
 		topup.setPosition(0);    // Should do nothing, device is already paused
 		topup.setPosition(5000); // Gets it ready to think it has to resume
 		topup.setPosition(4000); // Will resume it because warmup passed
 		
-		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.		
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState()); // Should still be paused
 		
 		controller.resume("test");
 		
-		Thread.sleep(100);       	
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertNotEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		topup.setPosition(0);
 
-		Thread.sleep(100);       
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 		
 		controller.resume("test"); // It shouldn't because now topup has set to pause.
 
-		Thread.sleep(25);       // Ensure watchdog event has fired and it did something.		
+		scanner.latch(25, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		controller.abort("test");

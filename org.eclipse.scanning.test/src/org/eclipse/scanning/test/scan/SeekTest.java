@@ -2,6 +2,7 @@ package org.eclipse.scanning.test.scan;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -68,7 +69,7 @@ public class SeekTest extends AbstractAcquisitionTest {
     
 		try {
 			scanner.start(null);		
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+		    scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
 			
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();
@@ -107,9 +108,8 @@ public class SeekTest extends AbstractAcquisitionTest {
 		AbstractRunnableDevice<ScanModel> scanner = (AbstractRunnableDevice<ScanModel>)controller.getDevice();
     
 		try {
-			scanner.start(null);	
-			
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			scanner.start(null);				
+			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
 			
 			IPosition current = scanner.getPositioner().getPosition();
@@ -178,7 +178,8 @@ public class SeekTest extends AbstractAcquisitionTest {
 		});
 		try {
 			scanner.start(null);		
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			boolean ok = scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			assertFalse(ok);
 			scanner.pause();
 			
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();
@@ -213,7 +214,7 @@ public class SeekTest extends AbstractAcquisitionTest {
     
 		try {
 			scanner.start(null);		
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 
             assertTrue(Services.getRunnableDeviceService().getActiveScanner()!=null);
 			scanner.latch(10, TimeUnit.SECONDS);
@@ -233,7 +234,7 @@ public class SeekTest extends AbstractAcquisitionTest {
     
 		try {
 			scanner.start(null);		
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
 			
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();
@@ -257,7 +258,7 @@ public class SeekTest extends AbstractAcquisitionTest {
     
 		try {
 			scanner.start(null);		
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
 			
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();

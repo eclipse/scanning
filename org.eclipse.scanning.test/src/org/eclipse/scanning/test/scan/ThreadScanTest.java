@@ -11,11 +11,11 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.scan;
 
+import static org.junit.Assert.assertTrue;
+
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.device.IPausableDevice;
@@ -119,17 +119,10 @@ public class ThreadScanTest extends BrokerTest {
 													 long sleepTime, 
 													 boolean expectExceptions) throws Throwable {
 
-		final List<Throwable> exceptions = new ArrayList<>(1);
-		runDeviceInThread(device, exceptions);
+		device.start(null);
+		device.latch(100, TimeUnit.MILLISECONDS); // Let it get going.
 		
-		subscriber.addListener(new IScanListener() {
-			@Override
-			public void scanEventPerformed(ScanEvent e) {
-			    if (e.getBean().getMessage()!=null) {
-			    	// System.out.println(e.getBean().getMessage());
-			    }
-			}
-		});
+		final List<Throwable> exceptions = new ArrayList<>(1);		
 
 		final List<ScanBean> beans = new ArrayList<ScanBean>(IMAGE_COUNT);
 		createPauseEventListener(device, beans);	
@@ -176,9 +169,8 @@ public class ThreadScanTest extends BrokerTest {
 		}
 
 		// Wait for end of run for 30 seconds, otherwise we carry on (test will then likely fail)
-		if (device.getDeviceState()!=DeviceState.READY) {
-			device.latch(3, TimeUnit.SECONDS); // Wait until not running.
-		}
+		boolean ok = device.latch(30, TimeUnit.SECONDS); // Wait until not running.
+		assertTrue(ok);
 
 		if (exceptions.size()>0) throw exceptions.get(0);
 		
@@ -231,27 +223,6 @@ public class ThreadScanTest extends BrokerTest {
 		return scanner;
 	}
 
-
-	protected IRunnableDevice<?> runDeviceInThread(final IRunnableDevice<?> device, final List<Throwable> exceptions) throws Exception {
-		
-		final Thread runner = new Thread(new Runnable() {
-			public void run() {
-				try {
-					device.run(null);
-				} catch (Exception e) {
-					exceptions.add(e);
-				} // blocks until finished
-			}
-		}, "Malcolm test execution thread");
-		runner.start();
-		
-		// We sleep because this is a test
-		// which starts a thread running from the same location.
-		device.latch(100, TimeUnit.MILLISECONDS); // Let it get going.
-		// The idea is that using Malcolm will NOT require sleeps like we used to have.
-				
-		return device;
-	}
 	
 	protected synchronized void checkPauseResume(IPausableDevice<?> device, long pauseTime, boolean ignoreReady) throws Exception {
 		

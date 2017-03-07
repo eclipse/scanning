@@ -14,6 +14,7 @@ package org.eclipse.scanning.sequencer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -104,6 +105,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	 * 
 	 */
 	private CountDownLatch latch;
+	private List<Throwable> runExceptions = Collections.synchronizedList(new ArrayList<>(1));
 	
 	/**
 	 * Manages the positions we reach in the scan, including
@@ -307,13 +309,6 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 			RunnableDeviceServiceImpl.setCurrentScanningDevice(null);
 		}
 	}
-	
-	private void createScanLatch() {
-		if (latch!=null) latch.countDown();
-		if (latch==null || latch.getCount()>0) {
-			latch = new CountDownLatch(1);
-		}
-	}
 
 	private void positionComplete(IPosition pos) throws EventException, ScanningException {
     	positionComplete(pos, location.getStepNumber(), location.getOuterSize());
@@ -399,21 +394,32 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 			if (latch!=null) latch.countDown();
 		}
 	}
+	
+	private void createScanLatch() {
+		if (latch==null || latch.getCount()<1) {
+			latch = new CountDownLatch(1);
+			runExceptions.clear();
+		}
+	}
 
 	@Override
-	public void latch() throws InterruptedException {
+	public void latch() throws InterruptedException, ScanningException {
 		if (latch==null) return;
 		latch.await();
+		createException(runExceptions);
 	}
 	
 	@Override
-	public boolean latch(long time, TimeUnit unit) throws InterruptedException {
+	public boolean latch(long time, TimeUnit unit) throws InterruptedException, ScanningException {
 		if (latch==null) return true;
-		return latch.await(time, unit);
+		boolean ok = latch.await(time, unit);
+		createException(runExceptions);
+		return ok;
 	}
 
 	private void processException(Exception ne) throws ScanningException {
 		
+		runExceptions.add(ne);
 		if (!getBean().getStatus().isFinal()) getBean().setStatus(Status.FAILED);
 		getBean().setMessage(ne.getMessage());
 		try {

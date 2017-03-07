@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IDeviceController;
@@ -278,7 +279,7 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
-		Thread.sleep(50);  // Do a bit
+		scanner.latch(200, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 		
 		topup.setPosition(0);    // Should do nothing, device is already paused
@@ -322,29 +323,29 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
-		Thread.sleep(25);  // Do a bit
+		scanner.latch(200, TimeUnit.MILLISECONDS);
 		controller.pause("test", null);   // Pausing externally should override any watchdog resume.
 		
 		topup.setPosition(0);    // Should do nothing, device is already paused
 		topup.setPosition(5000); // Gets it ready to think it has to resume
 		topup.setPosition(4000); // Will resume it because warmup passed
 		
-		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.		
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState()); // Should still be paused
 		
 		controller.resume("test");
 		
-		Thread.sleep(100);       	
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertNotEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		topup.setPosition(0);
 
-		Thread.sleep(100);       
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 		
 		controller.resume("test"); // It shouldn't because now topup has set to pause.
 
-		Thread.sleep(25);       // Ensure watchdog event has fired and it did something.		
+		scanner.latch(25, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		controller.abort("test");

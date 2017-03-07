@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.annotation.scan.AnnotationManager;
@@ -165,7 +166,9 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 				}
 
 			} else {
-				((AbstractRunnableDevice<ScanModel>)controller.getDevice()).start(null);
+				controller.getDevice().start(null);
+				controller.getDevice().latch(500, TimeUnit.MILLISECONDS); // Wait for it to do 500ms in case of errors.
+				
 				if (bean.getScanRequest().getAfter()!=null) throw new EventException("Cannot run end script when scan is async.");
 				if (bean.getScanRequest().getEnd()!=null) throw new EventException("Cannot perform end position when scan is async.");
 			}

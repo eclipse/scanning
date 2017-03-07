@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IDeviceController;
@@ -115,6 +116,7 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
+		scanner.latch(200, TimeUnit.MILLISECONDS);
 		
 		final IScannable<Number>   mon  = connector.getScannable("beamcurrent");
 		mon.setPosition(0.1);
@@ -123,7 +125,7 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 		assertTrue(states.get(states.size()-1)==DeviceState.PAUSED);
 		
 		mon.setPosition(2.1);
-		Thread.sleep(100);
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertTrue(states.get(states.size()-1)==DeviceState.RUNNING);
 
 	}
@@ -144,15 +146,16 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
+		scanner.latch(200, TimeUnit.MILLISECONDS);
 		
 		final IScannable<String>   mon  = connector.getScannable("portshutter");
 		mon.setPosition("Closed");
-		Thread.sleep(100);
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		
 		assertTrue(states.get(states.size()-1)==DeviceState.PAUSED);
 		
 		mon.setPosition("Open");
-		Thread.sleep(100);
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertTrue(states.get(states.size()-1)==DeviceState.RUNNING);
 
 	}
@@ -160,7 +163,7 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 	@Test(expected=ScanningException.class)
 	public void scanDuringShutterClosed() throws Exception {
 
-		// Stop topup, we want to controll it programmatically.
+		// Stop topup, we want to control it programmatically.
 		final IScannable<String>   mon  = connector.getScannable("portshutter");
 		mon.setPosition("Closed");
 		
@@ -176,6 +179,7 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
+		scanner.latch(250, TimeUnit.MILLISECONDS); // Wait for an exception
 	}
 	
 	@Test
@@ -194,12 +198,13 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
+		scanner.latch(200, TimeUnit.MILLISECONDS);
 		controller.pause("test", null);  // Pausing externally should override any watchdog resume.
 		
 		final IScannable<String>   mon  = connector.getScannable("portshutter");
 		mon.setPosition("Closed");
 		mon.setPosition("Open");
-		Thread.sleep(100); // Watchdog should not start it again, it was paused first..
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(scanner.getDeviceState(), DeviceState.PAUSED);
 		
 		controller.abort("test");
@@ -224,27 +229,28 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
+		scanner.latch(200, TimeUnit.MILLISECONDS);
 		controller.pause("test", null);  // Pausing externally should override any watchdog resume.
 		
 		final IScannable<String>   mon  = connector.getScannable("portshutter");
 		mon.setPosition("Closed");
 		mon.setPosition("Open");
-		Thread.sleep(100); // Watchdog should not start it again, it was paused first..
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 		
 		controller.resume("test");
 		
-		Thread.sleep(100); 
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertNotEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		mon.setPosition("Closed");
 		
-		Thread.sleep(100); 
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 		
 		controller.resume("test"); // The external resume should still not resume it
 
-		Thread.sleep(100);
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		controller.abort("test");
