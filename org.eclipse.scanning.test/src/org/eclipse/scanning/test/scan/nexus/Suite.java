@@ -28,7 +28,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	MandelbrotRemoteTest.class,
 	MonitorTest.class,
 	ScanMetadataTest.class,
-	ScanProcessingTest.class,
+	ScanOperationPipelineTest.class,
 	ScanClusterProcessingTest.class,
 	SolsticeScanMonitorTest.class,
 	LinearScanTest.class,
