@@ -80,12 +80,12 @@ public class MockLegacyScannableConnector implements IScannableDeviceService {
 	}
 
 	@Override
-	public Set<String> getGlobalMetadataScannableNames() {
+	public Set<String> getGlobalPerScanMonitorNames() {
 		return globalMetadataScannableNames;
 	}
 
 	@Override
-	public Set<String> getRequiredMetadataScannableNames(String scannableName) {
+	public Set<String> getRequiredPerScanMonitorNames(String scannableName) {
 		return requiredMetadataScannableNames.getOrDefault(scannableName, Collections.emptySet());
 	}
 

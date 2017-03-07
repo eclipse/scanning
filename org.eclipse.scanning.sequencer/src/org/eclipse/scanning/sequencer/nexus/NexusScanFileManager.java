@@ -266,7 +266,7 @@ public class NexusScanFileManager implements INexusScanFileManager {
 		
 		// add the global metadata scannables, and the required metadata scannables for
 		// each scannable in the scan. These are from the legacy GDA8 location map
-		perScanMonitorNames.addAll(scannableDeviceService.getGlobalMetadataScannableNames());
+		perScanMonitorNames.addAll(scannableDeviceService.getGlobalPerScanMonitorNames());
 		
 		// the set of scannable names to check for dependencies
 		Set<String> scannableNamesToCheck = new HashSet<>();
@@ -276,7 +276,7 @@ public class NexusScanFileManager implements INexusScanFileManager {
 			// check the given set of scannable names for dependencies
 			// each iteration checks the scannable names added in the previous one
 			Set<String> requiredScannables = scannableNamesToCheck.stream()
-					.flatMap(name -> scannableDeviceService.getRequiredMetadataScannableNames(name).stream())
+					.flatMap(name -> scannableDeviceService.getRequiredPerScanMonitorNames(name).stream())
 					.filter(name -> !perScanMonitorNames.contains(name))
 					.collect(Collectors.toSet());
 			

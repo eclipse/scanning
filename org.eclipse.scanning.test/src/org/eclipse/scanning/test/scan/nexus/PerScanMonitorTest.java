@@ -22,21 +22,21 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.eclipse.dawnsci.analysis.api.tree.DataNode;
-import org.eclipse.dawnsci.analysis.api.tree.TreeFile;
 import org.eclipse.dawnsci.nexus.INexusFileFactory;
 import org.eclipse.dawnsci.nexus.NXdata;
 import org.eclipse.dawnsci.nexus.NXentry;
 import org.eclipse.dawnsci.nexus.NXinstrument;
 import org.eclipse.dawnsci.nexus.NXpositioner;
 import org.eclipse.dawnsci.nexus.NXroot;
-import org.eclipse.dawnsci.nexus.NexusFile;
-import org.eclipse.dawnsci.nexus.NexusUtils;
 import org.eclipse.january.DatasetException;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetUtils;
@@ -56,6 +56,7 @@ import org.eclipse.scanning.api.scan.event.IRunListener;
 import org.eclipse.scanning.api.scan.event.RunEvent;
 import org.eclipse.scanning.api.scan.models.ScanModel;
 import org.eclipse.scanning.example.scannable.MockScannableConfiguration;
+import org.eclipse.scanning.example.scannable.MockScannableConnector;
 import org.eclipse.scanning.server.application.PseudoSpringParser;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -63,26 +64,26 @@ import org.junit.Test;
 
 public class PerScanMonitorTest extends NexusTest {
 
-	
-    private IScannable<?> perPointMonitor;
-    private IScannable<?> perScanMonitor;
+	private IScannable<?> perPointMonitor;
+	private IScannable<?> perScanMonitor;
 	private IScannable<Number> dcs;
     
     @Before
 	public void beforeTest() throws Exception {
 		perPointMonitor = connector.getScannable("monitor1");
-		perScanMonitor = connector.getScannable("metadataScannable1");  // Ordinary scannable
+		perScanMonitor = connector.getScannable("perScanMonitor1");  // Ordinary scannable
 		
 		// Make a few detectors and models...
 		PseudoSpringParser parser = new PseudoSpringParser();
 		parser.parse(PerScanMonitorTest.class.getResourceAsStream("test_scannables.xml"));
-        
+		
 		// TODO See this scannable which is a MockNeXusSlit
 		// Use NexusNodeFactory to create children as correct for http://confluence.diamond.ac.uk/pages/viewpage.action?pageId=37814632
 		this.dcs = connector.getScannable("dcs"); // Scannable created by spring with a model.
 		dcs.setPosition(10.0);
+		((MockScannableConnector) connector).setGlobalPerScanMonitorNames();
 	}
-    
+
 	@Test
 	public void modelCheck() throws Exception {
 		MockScannableConfiguration conf = new MockScannableConfiguration("s1gapX", "s1gapY", "s1cenX", "s1cenY");
@@ -91,31 +92,48 @@ public class PerScanMonitorTest extends NexusTest {
 	
 	@Test
 	public void testBasicScanWithPerPointAndPerScanMonitors() throws Exception {
-		test(perPointMonitor, perScanMonitor, 8, 5);
+		test(perPointMonitor, perScanMonitor, "perScanMonitor1");
 	}
 
 	@Test
 	public void testBasicScanWithPerScanMonitor() throws Exception {
-		test(null, perScanMonitor, 8, 5);
+		test(null, perScanMonitor, "perScanMonitor1");
+	}
+	
+	@Test 
+	public void testBasicScanWithLegacyPerScanMonitor() throws Exception {
+		((MockScannableConnector) connector).setGlobalPerScanMonitorNames("perScanMonitor2");
+		test(perPointMonitor, perScanMonitor, "perScanMonitor1", "perScanMonitor2");
+	}
+	
+	@Test
+	public void testBasicScanWithLegacyAndPrerequisitePerScanMonitors() throws Exception {
+		((MockScannableConnector) connector).setGlobalPerScanMonitorPrerequisiteNames("perScanMonitor1", "perScanMonitor2");
+		((MockScannableConnector) connector).setGlobalPerScanMonitorNames("perScanMonitor3");
+		((MockScannableConnector) connector).setGlobalPerScanMonitorPrerequisiteNames("perScanMonitor3", "perScanMonitor4", "perScanMonitor5");
+		((MockScannableConnector) connector).setGlobalPerScanMonitorPrerequisiteNames("perScanMonitor5", "perScanMonitor6");
+		test(perPointMonitor, perScanMonitor, "perScanMonitor1", "perScanMonitor2",
+				"perScanMonitor3", "perScanMonitor4", "perScanMonitor5", "perScanMonitor6");
 	}
 	
 	@Ignore("dcs was supposed to be an NXslit, not an NXpositioner, so this test will need to be fixed later...")
 	@Test
 	public void testScanWithConfiguredScannable() throws Exception {
-		test(perPointMonitor, dcs, 8, 5);
+		test(perPointMonitor, dcs);
 	}
 
-	private void test(IScannable<?> monitor, IScannable<?> metadataScannable, int... shape) throws Exception {
-
+	private void test(IScannable<?> monitor, IScannable<?> perScanMonitor,
+			String... expectedPerScanMonitorNames) throws Exception {
+		int[] shape = new int[] { 8, 5 };
 		long before = System.currentTimeMillis();
 		// Tell configure detector to write 1 image into a 2D scan
-		IRunnableDevice<ScanModel> scanner = createStepScan(monitor, metadataScannable, shape);
+		IRunnableDevice<ScanModel> scanner = createStepScan(monitor, perScanMonitor, shape);
 		assertScanNotFinished(getNexusRoot(scanner).getEntry());
 		scanner.run(null);
 		long after = System.currentTimeMillis();
 		System.out.println("Running "+product(shape)+" points took "+(after-before)+" ms");
 
-		checkNexusFile(scanner, shape);
+		checkNexusFile(scanner, shape, expectedPerScanMonitorNames);
 	}
 	
 	private int product(int[] shape) {
@@ -124,7 +142,8 @@ public class PerScanMonitorTest extends NexusTest {
 		return total;
 	}
 
-	private void checkNexusFile(IRunnableDevice<ScanModel> scanner, int... sizes) throws Exception {
+	private void checkNexusFile(IRunnableDevice<ScanModel> scanner, int[] sizes,
+			String[] expectedPerScanMonitorNames) throws Exception {
 		
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 
@@ -140,9 +159,8 @@ public class PerScanMonitorTest extends NexusTest {
 		int[] shape = null;
 		
 		// check metadata scannables
-		if (scanModel.getMonitors() != null) {
-			checkMetadataScannables(scanModel, instrument);
-		}
+		checkPerScanMonitors(scanModel, instrument,
+				new HashSet<>(Arrays.asList(expectedPerScanMonitorNames)));
 		
 		final IPosition pos = scanModel.getPositionIterable().iterator().next();
 		final Collection<String> scannableNames = pos.getNames();
@@ -196,33 +214,41 @@ public class PerScanMonitorTest extends NexusTest {
 		}
 	}
 
-	private void checkMetadataScannables(final ScanModel scanModel, NXinstrument instrument) throws DatasetException {
+	private void checkPerScanMonitors(final ScanModel scanModel, NXinstrument instrument,
+			Set<String> expectedPerScanMonitorNames) throws DatasetException {
 		DataNode dataNode;
 		Dataset dataset;
-		Collection<IScannable<?>> perScan  = scanModel.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN).collect(Collectors.toList());
-		for (IScannable<?> metadataScannable : perScan) {
-			NXpositioner positioner = instrument.getPositioner(metadataScannable.getName());
+		Set<String> perScanMonitorNames = scanModel.getMonitors().stream()
+				.filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN)
+				.map(scannable -> scannable.getName()).collect(Collectors.toSet());
+		assertEquals(expectedPerScanMonitorNames, perScanMonitorNames);
+		
+		for (String perScanMonitorName : perScanMonitorNames) {
+			NXpositioner positioner = instrument.getPositioner(perScanMonitorName);
 			assertNotNull(positioner);
-			assertEquals(metadataScannable.getName(), positioner.getNameScalar());
+			assertEquals(perScanMonitorName, positioner.getNameScalar());
 			
-			dataNode = positioner.getDataNode("value_set"); // TODO should not be here for metadata scannable
+			int num = Integer.parseInt(perScanMonitorName.substring("perScanMonitor".length()));
+			double expectedValue = num * 10.0;
+			
+			dataNode = positioner.getDataNode("value_set"); // TODO should not be here for per scan monitor
 			assertNotNull(dataNode);
 			dataset = DatasetUtils.sliceAndConvertLazyDataset(dataNode.getDataset());
 			assertEquals(1, dataset.getSize());
 			assertEquals(Dataset.FLOAT64, dataset.getDType());
-			assertEquals(10.0, dataset.getElementDoubleAbs(0), 1e-15);
+			assertEquals(expectedValue, dataset.getElementDoubleAbs(0), 1e-15);
 			
 			dataNode = positioner.getDataNode(NXpositioner.NX_VALUE);
 			assertNotNull(dataNode);
 			dataset = DatasetUtils.sliceAndConvertLazyDataset(dataNode.getDataset());
 			assertEquals(1, dataset.getSize());
 			assertEquals(Dataset.FLOAT64, dataset.getDType());
-			assertEquals(10.0, dataset.getElementDoubleAbs(0), 1e-15);
+			assertEquals(expectedValue, dataset.getElementDoubleAbs(0), 1e-15);
 		}
 	}
 
 	private IRunnableDevice<ScanModel> createStepScan(IScannable<?> monitor,
-			IScannable<?> metadataScannable, int... size) throws Exception {
+			IScannable<?> perScanMonitor, int... size) throws Exception {
 		
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length];
 		// We add the outer scans, if any
@@ -242,11 +268,11 @@ public class PerScanMonitorTest extends NexusTest {
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
-		if (metadataScannable != null) {
-			metadataScannable.setMonitorRole(MonitorRole.PER_SCAN);
-			metadataScannable.setActivated(true);
+		if (perScanMonitor != null) {
+			perScanMonitor.setMonitorRole(MonitorRole.PER_SCAN);
+			perScanMonitor.setActivated(true);
 		}
-		smodel.setMonitors(monitor, metadataScannable);
+		smodel.setMonitors(monitor, perScanMonitor);
 		
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());
@@ -259,7 +285,7 @@ public class PerScanMonitorTest extends NexusTest {
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override
 			public void runWillPerform(RunEvent evt) throws ScanningException{
-                try {
+				try {
 					System.out.println("Running acquisition scan of size "+fgen.size());
 				} catch (GeneratorException e) {
 					throw new ScanningException(e);

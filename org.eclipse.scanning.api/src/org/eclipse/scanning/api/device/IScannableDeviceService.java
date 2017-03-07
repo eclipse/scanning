@@ -73,25 +73,25 @@ public interface IScannableDeviceService {
 	<T> IScannable<T> getScannable(String name) throws ScanningException;
 
 	/**
-	 * Returns the set of global metadata scannable names that should be added to all scans.
+	 * Returns the set of global per-scan monitors that should be added to all scans.
 	 * This is used to support legacy (GDA8) spring configurations. Should not be called
 	 * by client code.
-	 * @return global metadata scannable names
+	 * @return global per-scan monitor names
 	 */
 	@Deprecated
-	default Set<String> getGlobalMetadataScannableNames() {
+	default Set<String> getGlobalPerScanMonitorNames() {
 		return Collections.emptySet();
 	}
 	
 	/**
-	 * Returns the set of the names required metadata scannables for the given scannable name.
+	 * Returns the set of the names required per-scan monitors for the given scannable name.
 	 * This is used to support legacy (GDA8) spring configurations. Should not be called
 	 * by client code. 
-	 * @param scannableName scannable to get required metadata scannable names for
-	 * @return names of required metadata scannables for the scannable with the given name
+	 * @param scannableName scannable to get required per-scan monitor names for
+	 * @return names of required per-scan monitors for the scannable with the given name
 	 */
 	@Deprecated
-	default Set<String> getRequiredMetadataScannableNames(String scannableName) {
+	default Set<String> getRequiredPerScanMonitorNames(String scannableName) {
 		return Collections.emptySet();
 	}
 	
