@@ -132,18 +132,7 @@ public class BasicScanTest extends NexusTest {
 		return total;
 	}
 
-	private NXroot getNexusRoot(IRunnableDevice<ScanModel> scanner) throws Exception {
-		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
-
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		nf.close();
-		return (NXroot) nexusTree.getGroupNode();
-	}
-
-	private void checkNexusFile(IRunnableDevice<ScanModel> scanner, int... sizes) throws Exception {
+	protected void checkNexusFile(IRunnableDevice<ScanModel> scanner, int... sizes) throws Exception {
 		
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 

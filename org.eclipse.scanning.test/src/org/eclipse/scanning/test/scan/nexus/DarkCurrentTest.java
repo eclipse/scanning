@@ -99,16 +99,6 @@ public class DarkCurrentTest extends NexusTest {
 			}
 		});
 	}
-	
-	private NXroot getNexusRoot(IRunnableDevice<ScanModel> scanner) throws Exception {
-		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
-
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		return (NXroot) nexusTree.getGroupNode();
-	}
 
 	/**
 	 * This test fails if the chunking is not done by the detector.

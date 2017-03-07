@@ -82,17 +82,6 @@ public class MandelbrotAcquireTest extends NexusTest {
 		checkNexusFile(scanner);
 	}
 	
-	private NXroot getNexusRoot(IRunnableDevice<ScanModel> scanner) throws Exception {
-		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
-
-		INexusFileFactory fileFactory = org.eclipse.dawnsci.nexus.ServiceHolder.getNexusFileFactory();
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		return (NXroot) nexusTree.getGroupNode();
-	}
-	
 	private void checkNexusFile(IRunnableDevice<ScanModel> scanner) throws Exception {
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 		assertEquals(DeviceState.READY, scanner.getDeviceState());
