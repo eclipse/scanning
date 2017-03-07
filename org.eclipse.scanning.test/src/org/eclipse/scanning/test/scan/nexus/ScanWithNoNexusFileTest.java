@@ -51,12 +51,6 @@ public class ScanWithNoNexusFileTest extends NexusTest {
 		MandelbrotModel model = createMandelbrotModel();
 		detector = (IWritableDetector<MandelbrotModel>)dservice.createRunnableDevice(model);
 		assertNotNull(detector);
-		detector.addRunListener(new IRunListener() {
-			@Override
-			public void runPerformed(RunEvent evt) throws ScanningException{
-                //System.out.println("Ran mandelbrot detector @ "+evt.getPosition());
-			}
-		});
 	}
 	
 	@Test
