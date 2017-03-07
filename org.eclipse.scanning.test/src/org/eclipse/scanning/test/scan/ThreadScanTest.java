@@ -96,14 +96,14 @@ public class ThreadScanTest extends BrokerTest {
 	public void testPauseAndResume2Threads() throws Throwable {
 		
 		IPausableDevice<?> device = createConfiguredDevice(5, 5);
-		pause1000ResumeLoop(device, 2, 2000, false);
+		pause1000ResumeLoop(device, 2, 200, false);
 	}
 	
 	@Test
 	public void testPauseAndResume10Threads() throws Throwable {
 		
-		IPausableDevice<?> device = createConfiguredDevice(10, 10);
-		pause1000ResumeLoop(device, 10, 2000, false);
+		IPausableDevice<?> device = createConfiguredDevice(5, 5);
+		pause1000ResumeLoop(device, 10, 200, false);
 	}
 
 
@@ -132,7 +132,7 @@ public class ThreadScanTest extends BrokerTest {
 				public void run() {
 					try {
 						System.out.println("Running thread Thread"+current+". Device = "+device.getName());
-						checkPauseResume(device, 1000, true);
+						checkPauseResume(device, 100, true);
 
 					} catch(MalcolmDeviceOperationCancelledException mdoce) {
 						mdoce.printStackTrace();
@@ -156,7 +156,7 @@ public class ThreadScanTest extends BrokerTest {
 			if (sleepTime>0) {
 				Thread.sleep(sleepTime);
 			} else{
-				Thread.sleep(100);
+				Thread.sleep(10);
 				thread.join();
 			}
 		}
@@ -170,7 +170,7 @@ public class ThreadScanTest extends BrokerTest {
 
 		// Wait for end of run for 30 seconds, otherwise we carry on (test will then likely fail)
 		if (device.getDeviceState()!=DeviceState.READY) {
-			latch(30, TimeUnit.SECONDS, DeviceState.RUNNING, DeviceState.PAUSED, DeviceState.SEEKING); // Wait until not running.
+			latch(3, TimeUnit.SECONDS, DeviceState.RUNNING, DeviceState.PAUSED, DeviceState.SEEKING); // Wait until not running.
 		}
 
 		if (exceptions.size()>0) throw exceptions.get(0);
@@ -220,7 +220,7 @@ public class ThreadScanTest extends BrokerTest {
 		
 		// Configure a detector with a collection time.
 		MockDetectorModel dmodel = new MockDetectorModel();
-		dmodel.setExposureTime(0.1);
+		dmodel.setExposureTime(0.001);
 		dmodel.setName("detector");
 		IRunnableDevice<MockDetectorModel> detector = sservice.createRunnableDevice(dmodel);
 		
@@ -257,7 +257,7 @@ public class ThreadScanTest extends BrokerTest {
 		
 		// We sleep because this is a test
 		// which starts a thread running from the same location.
-		Thread.sleep(1000); // Let it get going.
+		Thread.sleep(100); // Let it get going.
 		// The idea is that using Malcolm will NOT require sleeps like we used to have.
 				
 		return device;
@@ -283,7 +283,7 @@ public class ThreadScanTest extends BrokerTest {
 
 		device.resume();  // start it going again, non-blocking
 
-		Thread.sleep(100);
+		Thread.sleep(10);
 		System.out.println("Device is resumed state is "+device.getDeviceState());
 	}
 
