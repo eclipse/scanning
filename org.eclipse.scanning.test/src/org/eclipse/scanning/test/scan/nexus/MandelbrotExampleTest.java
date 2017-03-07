@@ -109,7 +109,7 @@ public class MandelbrotExampleTest extends NexusTest {
 	public void testWriteTime2Dvs3D() throws Exception {
 
 		// Tell configure detector to write 1 image into a 2D scan
-		IRunnableDevice<ScanModel> scanner = createGridScan(detector, output, false, 8, 5);
+		IRunnableDevice<ScanModel> scanner = createGridScan(detector, output, false, 3, 2);
 		ScanModel mod = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 		IPosition first = mod.getPositionIterable().iterator().next();
 		detector.run(first);
@@ -122,7 +122,7 @@ public class MandelbrotExampleTest extends NexusTest {
 		
 		File soutput = File.createTempFile("test_mandel_nexus", ".nxs");
 		soutput.deleteOnExit();
-		scanner = createGridScan(detector, soutput, false, 10, 8, 5);
+		scanner = createGridScan(detector, soutput, false, 10, 3, 2);
 		mod = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 		first = mod.getPositionIterable().iterator().next();
 		detector.run(first);
@@ -138,12 +138,12 @@ public class MandelbrotExampleTest extends NexusTest {
 
 	@Test
 	public void test2DNexusScan() throws Exception {
-		testScan(false, 8, 5);
+		testScan(false, 3, 2);
 	}
 	
 	@Test
 	public void test2DSnakeNexusScan() throws Exception {
-		testScan(true, 8, 5);
+		testScan(true, 3, 2);
 	}
 	
 	@Test
@@ -436,7 +436,7 @@ public class MandelbrotExampleTest extends NexusTest {
 	private IRunnableDevice<ScanModel> createSpiralScan(final IRunnableDevice<?> detector, File file) throws Exception {
 		
 		SpiralModel spmodel = new SpiralModel("xNex","yNex");
-		spmodel.setScale(0.1);
+		spmodel.setScale(2.0);
 		spmodel.setBoundingBox(new BoundingBox(0,0,1,1));
 	
 		IPointGenerator<?> gen = gservice.createGenerator(spmodel);

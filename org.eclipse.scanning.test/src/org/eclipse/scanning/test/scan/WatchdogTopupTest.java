@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IDeviceController;
@@ -31,6 +32,7 @@ import org.eclipse.scanning.api.device.IDeviceWatchdog;
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableEventDevice;
 import org.eclipse.scanning.api.device.models.DeviceWatchdogModel;
+import org.eclipse.scanning.api.device.models.IDetectorModel;
 import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.scan.PositionEvent;
 import org.eclipse.scanning.api.scan.ScanningException;
@@ -47,6 +49,7 @@ import org.eclipse.scanning.test.messaging.FileUtils;
 import org.eclipse.scanning.test.scan.nexus.DummyMalcolmDeviceTest;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -56,10 +59,11 @@ import org.junit.runners.MethodSorters;
 public class WatchdogTopupTest extends AbstractWatchdogTest {
 
 	
-	private IDeviceWatchdog dog;
+	private static IDeviceWatchdog dog;
 	private File dir;
 		
-	void createWatchdogs() throws Exception {
+	@BeforeClass
+	public static void createWatchdogs() throws Exception {
 
 		// We create a device watchdog (done in spring for real server)
 		DeviceWatchdogModel model = new DeviceWatchdogModel();
@@ -68,13 +72,8 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		model.setWarmup(200);  // Unpause 200ms after
 		model.setTopupTime(150);
 		model.setPeriod(5000);
-		
-		final IScannable<Number>   topups  = connector.getScannable("topup");
-		final MockTopupScannable   topup   = (MockTopupScannable)topups;
-		assertNotNull(topup);
-		topup.setPosition(1000);
 
-		this.dog = new TopupWatchdog(model);
+		dog = new TopupWatchdog(model);
 		dog.setName("topupDog");
 		dog.activate();
 	}
@@ -94,7 +93,7 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		topup.disconnect();
 		topup.setPosition(1000);
 		
-		FileUtils.recursiveDelete(dir);
+		if (dir!=null) FileUtils.recursiveDelete(dir);
 
 	}
 	
@@ -158,12 +157,12 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 	
 	@Test
 	public void topupIn2DScan() throws Exception {
-        topupInScan(2);
+        topupInScan(2, 0.05);
 	}
 	
 	@Test
 	public void topupIn3DScan() throws Exception {
-        topupInScan(3);
+        topupInScan(3, 0.05);
 	}
 	
 	@Ignore("Needs to work and does but takes a long time so not part of main tests.")
@@ -178,7 +177,7 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		DummyMalcolmModel model = createModel();
 		IRunnableDevice<DummyMalcolmModel> malcolmDevice = sservice.createRunnableDevice(model, false);
       
-		topupInScan(malcolmDevice, model, 2);		
+		topupInScan(malcolmDevice, model, 2, 0.05);		
 	}
 	
 	@Test
@@ -187,7 +186,7 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		DummyMalcolmModel model = createModel();
 		IRunnableDevice<DummyMalcolmModel> malcolmDevice = sservice.createRunnableDevice(model, false);
       
-		topupInScan(malcolmDevice, model, 3);
+		topupInScan(malcolmDevice, model, 3, 0.05);
 	}
 	
 	@Test
@@ -196,30 +195,34 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		DummyMalcolmModel model = createModel();
 		IRunnableDevice<DummyMalcolmModel> malcolmDevice = sservice.createRunnableDevice(model, false);
       
-		topupInScan(malcolmDevice, model, 2);
+		topupInScan(malcolmDevice, model, 2, 0.05);
 		
 		// We do another one to see if 2 in a row are the problem
-		topupInScan(malcolmDevice, model, 3);
+		topupInScan(malcolmDevice, model, 3, 0.05);
 
 		// We do another one to see if 3 in a row are the problem
-		topupInScan(malcolmDevice, model, 3);
+		topupInScan(malcolmDevice, model, 3, 0.05);
 	}
 
 
 	private DummyMalcolmModel createModel() throws IOException {
 		
 		DummyMalcolmModel model = DummyMalcolmDeviceTest.createModel(dir);
-		model.setExposureTime(0.05);
+		model.setExposureTime(0.001);
 		model.setAxesToMove(Arrays.asList("x", "y"));
 		assertNotNull(model.getFileDir());
 		return model;
 	}
 
 	private void topupInScan(int size) throws Exception {
-		topupInScan(null, null, size);
+		topupInScan(detector, null, size, 0.001);
+	}
+	
+	private void topupInScan(int size, double exposureTime) throws Exception {
+		topupInScan(detector, null, size, exposureTime);
 	}
 
-	private <T> void topupInScan(IRunnableDevice<T> device, T detectorModel, int size) throws Exception {
+	private <T> void topupInScan(IRunnableDevice<T> device, T detectorModel, int size, double exposureTime) throws Exception {
 		
 		final IScannable<Number>   topups  = connector.getScannable("topup");
 		final MockTopupScannable   topup   = (MockTopupScannable)topups;
@@ -227,6 +230,12 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
         topup.start();
 		
 		// x and y are level 3
+        if (detectorModel!=null && detectorModel instanceof IDetectorModel) {
+        	((IDetectorModel)detectorModel).setExposureTime(exposureTime);
+        }
+        if (device!=null && device.getModel()!=null && device.getModel() instanceof IDetectorModel) {
+        	((IDetectorModel)device.getModel()).setExposureTime(exposureTime);
+        }
 		IDeviceController controller = createTestScanner(null, device, detectorModel, size);
 		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
 		
@@ -270,7 +279,7 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
-		Thread.sleep(50);  // Do a bit
+		scanner.latch(200, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 		
 		topup.setPosition(0);    // Should do nothing, device is already paused
@@ -299,6 +308,9 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		topup.setPosition(5000);
 
 		// x and y are level 3
+		if (detector!=null && detector.getModel()!=null && detector.getModel() instanceof IDetectorModel) {
+			((IDetectorModel)detector.getModel()).setExposureTime(0.05);
+		}
 		IDeviceController controller = createTestScanner(null);
 		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
 		
@@ -311,29 +323,29 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		});
 		
 		scanner.start(null);
-		Thread.sleep(25);  // Do a bit
+		scanner.latch(200, TimeUnit.MILLISECONDS);
 		controller.pause("test", null);   // Pausing externally should override any watchdog resume.
 		
 		topup.setPosition(0);    // Should do nothing, device is already paused
 		topup.setPosition(5000); // Gets it ready to think it has to resume
 		topup.setPosition(4000); // Will resume it because warmup passed
 		
-		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.		
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState()); // Should still be paused
 		
 		controller.resume("test");
 		
-		Thread.sleep(100);       	
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertNotEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		topup.setPosition(0);
 
-		Thread.sleep(100);       
+		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 		
 		controller.resume("test"); // It shouldn't because now topup has set to pause.
 
-		Thread.sleep(25);       // Ensure watchdog event has fired and it did something.		
+		scanner.latch(25, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		controller.abort("test");

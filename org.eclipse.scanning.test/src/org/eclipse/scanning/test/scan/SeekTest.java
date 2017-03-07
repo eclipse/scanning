@@ -2,6 +2,7 @@ package org.eclipse.scanning.test.scan;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -11,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.dawnsci.analysis.api.tree.DataNode;
@@ -28,13 +28,10 @@ import org.eclipse.january.dataset.IDataset;
 import org.eclipse.scanning.api.device.AbstractRunnableDevice;
 import org.eclipse.scanning.api.device.IDeviceController;
 import org.eclipse.scanning.api.device.IRunnableDevice;
-import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.PositionEvent;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
-import org.eclipse.scanning.api.scan.event.IRunListener;
-import org.eclipse.scanning.api.scan.event.RunEvent;
 import org.eclipse.scanning.api.scan.models.ScanModel;
 import org.eclipse.scanning.server.servlet.Services;
 import org.junit.After;
@@ -48,13 +45,13 @@ public class SeekTest extends AbstractAcquisitionTest {
 	private static INexusFileFactory factory;
 	
 	@BeforeClass
-	public static void createFactory() {
+	public static void createFactory() throws Exception {
 		factory = new NexusFileFactoryHDF5();
+		setupServices();
 	}
 	
 	@Before
-	public void setupServices() throws Exception {
-		super.setupServices();
+	public void createFile() throws Exception {
 		temp = File.createTempFile("test_seek", ".nxs");
 		temp.deleteOnExit();
 	}
@@ -72,7 +69,7 @@ public class SeekTest extends AbstractAcquisitionTest {
     
 		try {
 			scanner.start(null);		
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+		    scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
 			
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();
@@ -104,15 +101,15 @@ public class SeekTest extends AbstractAcquisitionTest {
 		
 		final String detectorName = "mandelbrot";
 		IDeviceController controller = createTestScanner(sservice.getRunnableDevice(detectorName),
+				                                         0.08,
 				                                         Arrays.asList("xNex", "yNex"),
 				                                         temp.getAbsolutePath());
 		
 		AbstractRunnableDevice<ScanModel> scanner = (AbstractRunnableDevice<ScanModel>)controller.getDevice();
     
 		try {
-			scanner.start(null);	
-			
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			scanner.start(null);				
+			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
 			
 			IPosition current = scanner.getPositioner().getPosition();
@@ -181,7 +178,8 @@ public class SeekTest extends AbstractAcquisitionTest {
 		});
 		try {
 			scanner.start(null);		
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			boolean ok = scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			assertFalse(ok);
 			scanner.pause();
 			
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();
@@ -216,7 +214,7 @@ public class SeekTest extends AbstractAcquisitionTest {
     
 		try {
 			scanner.start(null);		
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 
             assertTrue(Services.getRunnableDeviceService().getActiveScanner()!=null);
 			scanner.latch(10, TimeUnit.SECONDS);
@@ -236,7 +234,7 @@ public class SeekTest extends AbstractAcquisitionTest {
     
 		try {
 			scanner.start(null);		
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
 			
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();
@@ -260,7 +258,7 @@ public class SeekTest extends AbstractAcquisitionTest {
     
 		try {
 			scanner.start(null);		
-			scanner.latch(100, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
+			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
 			
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();

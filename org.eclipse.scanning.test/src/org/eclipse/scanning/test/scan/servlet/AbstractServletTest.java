@@ -208,8 +208,8 @@ public abstract class AbstractServletTest extends BrokerTest {
 		box.setSlowAxisLength(3);
 
 		GridModel gmodel = new GridModel();
-		gmodel.setSlowAxisPoints(5);
-		gmodel.setFastAxisPoints(5);
+		gmodel.setSlowAxisPoints(2);
+		gmodel.setFastAxisPoints(2);
 		gmodel.setBoundingBox(box);
 		gmodel.setFastAxisName("xNex");
 		gmodel.setSlowAxisName("yNex");
@@ -260,8 +260,8 @@ public abstract class AbstractServletTest extends BrokerTest {
 		box.setSlowAxisLength(3);
 
 		GridModel gmodel = new GridModel();
-		gmodel.setSlowAxisPoints(5);
-		gmodel.setFastAxisPoints(5);
+		gmodel.setSlowAxisPoints(2);
+		gmodel.setFastAxisPoints(2);
 		gmodel.setBoundingBox(box);
 		gmodel.setFastAxisName("xNex");
 		gmodel.setSlowAxisName("yNex");

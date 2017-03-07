@@ -37,6 +37,7 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.IRunnableEventDevice;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.device.IWritableDetector;
+import org.eclipse.scanning.api.device.models.IDetectorModel;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.points.IPointGenerator;
@@ -75,18 +76,19 @@ import org.eclipse.scanning.test.scan.mock.MockDetectorModel;
 import org.eclipse.scanning.test.scan.mock.MockWritableDetector;
 import org.eclipse.scanning.test.scan.mock.MockWritingMandelbrotDetector;
 import org.eclipse.scanning.test.scan.mock.MockWritingMandlebrotModel;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 
 public abstract class AbstractAcquisitionTest {
 
-	protected IRunnableDeviceService        sservice;
-	protected IScannableDeviceService       connector;
-	protected IPointGeneratorService        gservice;
-	protected IEventService                 eservice;
-	protected IWritableDetector<MockDetectorModel>       detector;
-	protected List<IPosition>               positions;
+	protected static IRunnableDeviceService        sservice;
+	protected static IScannableDeviceService       connector;
+	protected static IPointGeneratorService        gservice;
+	protected static IEventService                 eservice;
+	protected static IWritableDetector<MockDetectorModel>       detector;
 
-	public void setupServices() throws Exception {
+	protected static void setupServices() throws Exception {
 
 		// We wire things together without OSGi here 
 		// DO NOT COPY THIS IN NON-TEST CODE!
@@ -109,7 +111,7 @@ public abstract class AbstractAcquisitionTest {
 
 		MandelbrotModel model = new MandelbrotModel("xNex", "yNex");
 		model.setName("mandelbrot");
-		model.setExposureTime(0.05);
+		model.setExposureTime(0.001);
 		impl.createRunnableDevice(model);
 
 		gservice  = new PointGeneratorService();
@@ -118,16 +120,7 @@ public abstract class AbstractAcquisitionTest {
 		dmodel.setExposureTime(0.05);
 		dmodel.setName("detector");
 		detector = (IWritableDetector<MockDetectorModel>) sservice.createRunnableDevice(dmodel);
-		
-		positions = new ArrayList<>(20);
-		detector.addRunListener(new IRunListener() {
-			@Override
-			public void runPerformed(RunEvent evt) throws ScanningException{
-                //System.out.println("Ran mock detector @ "+evt.getPosition());
-                positions.add(evt.getPosition());
-			}
-		});
-		
+				
 		IDeviceWatchdogService wservice = new DeviceWatchdogService();
 		ServiceHolder.setWatchdogService(wservice);
 		Services.setWatchdogService(wservice);
@@ -144,10 +137,33 @@ public abstract class AbstractAcquisitionTest {
 		
 		ServiceHolder.setTestServices(new LoaderServiceMock(), new DefaultNexusBuilderFactory(), null, null, gservice);
 		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(new NexusFileFactoryHDF5());
+	
+	}
+	
+	protected List<IPosition>            positions;
+	protected IRunListener               runListener;
 
+	@Before
+	public void beforeTest() throws Exception {
+		positions = new ArrayList<>(20);
+		
+		runListener = new IRunListener() {
+			@Override
+			public void runPerformed(RunEvent evt) throws ScanningException{
+               //System.out.println("Ran mock detector @ "+evt.getPosition());
+               positions.add(evt.getPosition());
+			}
+		};
+
+		detector.addRunListener(runListener);
 	}
 
-	
+	@After
+	public void afterTest() throws Exception {
+		positions.clear();
+		detector.removeRunListener(runListener);
+	}
+
 	@AfterClass
 	public static void cleanup() throws Exception {
 		ServiceHolder.setRunnableDeviceService(null);
@@ -162,7 +178,11 @@ public abstract class AbstractAcquisitionTest {
 		return createTestScanner(monitor, device, dmodel, dims, null, null);
 	}
 	
-	protected <T> IDeviceController createTestScanner(IRunnableDevice<T> device, List<String> axisNames, String filePath) throws Exception {
+	protected <T> IDeviceController createTestScanner(IRunnableDevice<T> device, double exposureTime, List<String> axisNames, String filePath) throws Exception {
+		
+		if (device.getModel()!=null && device.getModel() instanceof IDetectorModel) {
+			((IDetectorModel)device.getModel()).setExposureTime(exposureTime);
+		}
 		return createTestScanner(null, device, null, 2, axisNames, filePath);
 	}
 	
