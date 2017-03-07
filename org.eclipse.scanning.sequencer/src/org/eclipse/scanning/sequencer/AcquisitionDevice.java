@@ -211,12 +211,18 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		
 		return manager;
 	}
+	
+	@Override
+	public void start(IPosition parent) throws ScanningException, InterruptedException {
+		createScanLatch();
+        super.start(parent);
+	}
 
 	@Override
 	public void run(IPosition parent) throws ScanningException, InterruptedException {
 		
-		
 		if (getDeviceState()!=DeviceState.READY) throw new ScanningException("The device '"+getName()+"' is not ready. It is in state "+getDeviceState());
+		createScanLatch();
 		
 		ScanModel model = getModel();
 		if (model.getPositionIterable()==null) throw new ScanningException("The model must contain some points to scan!");
@@ -231,8 +237,6 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 			RunnableDeviceServiceImpl.setCurrentScanningDevice(this); // Alows Jython to get and pause/seek.
 			
-			if (latch!=null) latch.countDown();
-			this.latch = new CountDownLatch(1);
 	        // TODO Should we validate the position iterator that all
 	        // the positions are valid before running the scan?
 	        // It was called limit checking in GDA.
@@ -304,6 +308,13 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		}
 	}
 	
+	private void createScanLatch() {
+		if (latch!=null) latch.countDown();
+		if (latch==null || latch.getCount()>0) {
+			latch = new CountDownLatch(1);
+		}
+	}
+
 	private void positionComplete(IPosition pos) throws EventException, ScanningException {
     	positionComplete(pos, location.getStepNumber(), location.getOuterSize());
 	}
@@ -561,11 +572,14 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	@Override
 	public void pause() throws ScanningException {
 		
-		if (getDeviceState() != DeviceState.RUNNING) {
-			throw new ScanningException(this, getName()+" is not running and cannot be paused! The state is "+getDeviceState());
-		}
 		try {
 			lock.lockInterruptibly();
+			if (getDeviceState() != DeviceState.RUNNING) {
+				throw new ScanningException(this, getName()+" is not running and cannot be paused! The state is "+getDeviceState());
+			}
+		} catch (ScanningException sne) {
+			lock.unlock();
+			throw sne;
 		} catch (Exception ne) {
 			throw new ScanningException(ne);
 		}
@@ -609,11 +623,14 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	@Override
 	public void resume() throws ScanningException {
 		
-		if (getDeviceState() != DeviceState.PAUSED) {
-			throw new ScanningException(this, getName()+" is not paused and cannot be resumed!");
-		}
 		try {
 			lock.lockInterruptibly();
+			if (getDeviceState() != DeviceState.PAUSED) {
+				throw new ScanningException(this, getName()+" is not paused and cannot be resumed!");
+			}
+		} catch (ScanningException sne) {
+			lock.unlock();
+			throw sne;
 		} catch (Exception ne) {
 			throw new ScanningException(ne);
 		}

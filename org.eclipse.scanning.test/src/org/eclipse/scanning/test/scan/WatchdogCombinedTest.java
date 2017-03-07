@@ -34,14 +34,16 @@ import org.eclipse.scanning.sequencer.expression.ServerExpressionService;
 import org.eclipse.scanning.sequencer.watchdog.ExpressionWatchdog;
 import org.eclipse.scanning.sequencer.watchdog.TopupWatchdog;
 import org.eclipse.scanning.server.servlet.Services;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class WatchdogCombinedTest extends AbstractWatchdogTest {
 
-	private IDeviceWatchdog edog, tdog;
+	private static IDeviceWatchdog edog, tdog;
 
-	@Override
-	void createWatchdogs() throws Exception {
+	@BeforeClass
+	public static void createWatchdogs() throws Exception {
 		
 		assertNotNull(connector.getScannable("beamcurrent"));
 		assertNotNull(connector.getScannable("portshutter"));
@@ -52,7 +54,7 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		DeviceWatchdogModel model = new DeviceWatchdogModel();
 		model.setExpression("beamcurrent >= 1.0 && !portshutter.equalsIgnoreCase(\"Closed\")");
 		
-		this.edog = new ExpressionWatchdog(model);
+		edog = new ExpressionWatchdog(model);
 		edog.activate();
 		
 		final IScannable<Number>   topups  = connector.getScannable("topup");
@@ -72,11 +74,30 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		model.setTopupTime(150);
 		model.setPeriod(5000);
 		
-		this.tdog = new TopupWatchdog(model);
+		tdog = new TopupWatchdog(model);
 		tdog.activate();
 
 	}
 
+	
+	@Before
+	public void before() throws Exception {
+		
+		final IScannable<Number>   topups  = connector.getScannable("topup");
+		final MockTopupScannable   topup   = (MockTopupScannable)topups;
+		assertNotNull(topup);
+		topup.disconnect();
+		Thread.sleep(120); // Make sure it stops, it sets value every 100ms but it should get interrupted
+		assertTrue(topup.isDisconnected());
+		topup.setPosition(1000);
+		assertTrue("Topup is "+topup.getPosition(), topup.getPosition().doubleValue()>=1000);
+		
+		assertNotNull(connector.getScannable("beamcurrent"));
+		assertNotNull(connector.getScannable("portshutter"));
+
+		connector.getScannable("beamcurrent").setPosition(5d);
+		connector.getScannable("portshutter").setPosition("Open");
+	}
 	
 	@Test
 	public void dogsSame() {

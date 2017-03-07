@@ -192,8 +192,7 @@ public class TopupWatchdog extends AbstractWatchdog implements IPositionListener
 		// We ignore events while processing an event. 
 		// Events are frequent and blocking is bad.
 		if (busy) { 
-			logger.trace("Event '"+model.getCountdownName()+"'@"+t+" has been ignored.");
-			System.out.println("Event '"+model.getCountdownName()+"'@"+t+" has been ignored.");
+			logger.info("Event '"+model.getCountdownName()+"'@"+t+" has been ignored.");
 			return;
 		}
 		

@@ -11,16 +11,14 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.scan;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 
 public abstract class AbstractWatchdogTest extends AbstractAcquisitionTest {
-
 	
-	abstract void createWatchdogs()  throws Exception;
-	
-	@Before
-	public void setupServices() throws Exception {
-		super.setupServices();
-		createWatchdogs();
+	@BeforeClass
+	public static void createServices() throws Exception {
+		setupServices();
 	}
+
+
 }

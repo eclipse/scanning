@@ -33,14 +33,17 @@ import org.eclipse.scanning.api.scan.event.RunEvent;
 import org.eclipse.scanning.sequencer.expression.ServerExpressionService;
 import org.eclipse.scanning.sequencer.watchdog.ExpressionWatchdog;
 import org.eclipse.scanning.server.servlet.Services;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class WatchdogShutterTest extends AbstractWatchdogTest {
 
 	
-	private IDeviceWatchdog dog;
+	private static IDeviceWatchdog dog;
 
-	void createWatchdogs() throws ScanningException {
+	@BeforeClass
+	public static void createWatchdogs() throws Exception {
 		
 		assertNotNull(connector.getScannable("beamcurrent"));
 		assertNotNull(connector.getScannable("portshutter"));
@@ -51,12 +54,20 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 		DeviceWatchdogModel model = new DeviceWatchdogModel();
 		model.setExpression("beamcurrent >= 1.0 && !portshutter.equalsIgnoreCase(\"Closed\")");
 		
-		this.dog = new ExpressionWatchdog(model);
+		dog = new ExpressionWatchdog(model);
 		dog.setName("expr1");
 		dog.activate();
 	}
 	
+	@Before
+	public void before() throws Exception {
+		assertNotNull(connector.getScannable("beamcurrent"));
+		assertNotNull(connector.getScannable("portshutter"));
 	
+		connector.getScannable("beamcurrent").setPosition(5d);
+		connector.getScannable("portshutter").setPosition("Open");
+	}
+
 	
 	@Test
 	public void dogsSame() {

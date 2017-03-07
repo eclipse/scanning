@@ -124,7 +124,7 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 		
 		// We delay by 500ms just so that we can 
 		// immediately throw any connection exceptions
-		Thread.sleep(500);
+		latch(500, TimeUnit.MILLISECONDS);
 		
 		// Re-throw any exception from the thread.
 		if (!exceptions.isEmpty()) {

@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.dawnsci.analysis.api.tree.DataNode;
@@ -28,13 +27,10 @@ import org.eclipse.january.dataset.IDataset;
 import org.eclipse.scanning.api.device.AbstractRunnableDevice;
 import org.eclipse.scanning.api.device.IDeviceController;
 import org.eclipse.scanning.api.device.IRunnableDevice;
-import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.PositionEvent;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
-import org.eclipse.scanning.api.scan.event.IRunListener;
-import org.eclipse.scanning.api.scan.event.RunEvent;
 import org.eclipse.scanning.api.scan.models.ScanModel;
 import org.eclipse.scanning.server.servlet.Services;
 import org.junit.After;
@@ -48,13 +44,13 @@ public class SeekTest extends AbstractAcquisitionTest {
 	private static INexusFileFactory factory;
 	
 	@BeforeClass
-	public static void createFactory() {
+	public static void createFactory() throws Exception {
 		factory = new NexusFileFactoryHDF5();
+		setupServices();
 	}
 	
 	@Before
-	public void setupServices() throws Exception {
-		super.setupServices();
+	public void createFile() throws Exception {
 		temp = File.createTempFile("test_seek", ".nxs");
 		temp.deleteOnExit();
 	}
@@ -104,6 +100,7 @@ public class SeekTest extends AbstractAcquisitionTest {
 		
 		final String detectorName = "mandelbrot";
 		IDeviceController controller = createTestScanner(sservice.getRunnableDevice(detectorName),
+				                                         0.08,
 				                                         Arrays.asList("xNex", "yNex"),
 				                                         temp.getAbsolutePath());
 		

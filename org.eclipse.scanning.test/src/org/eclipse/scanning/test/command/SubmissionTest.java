@@ -29,14 +29,15 @@ import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.event.EventServiceImpl;
 import org.eclipse.scanning.server.servlet.Services;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 
 public class SubmissionTest extends AbstractJythonTest {
 
 	protected static IEventService eservice;
-	protected IConsumer<ScanBean> consumer;
+	protected static IConsumer<ScanBean> consumer;
 
 	private static BlockingQueue<String> testLog;
 	// We'll use this to check that things happen in the right order.
@@ -44,19 +45,15 @@ public class SubmissionTest extends AbstractJythonTest {
 		testLog = new ArrayBlockingQueue<>(2);
 	}
 
-	@Before
-	public void start() throws Exception {
+	@BeforeClass
+	public static void start() throws Exception {
 
 		createMarshaller();
 		eservice = new EventServiceImpl(new ActivemqConnectorService());
 		Services.setEventService(eservice);
-
-		consumer = eservice.createConsumer(uri,
-				IEventService.SUBMISSION_QUEUE,
-				IEventService.STATUS_SET,
-				IEventService.STATUS_TOPIC,
-				IEventService.HEARTBEAT_TOPIC,
-				IEventService.CMD_TOPIC);
+		org.eclipse.scanning.command.Services.setEventService(eservice);
+		
+		consumer = eservice.createConsumer(uri);
 
 		consumer.setRunner(new IProcessCreator<ScanBean>() {
 			@Override
@@ -84,7 +81,7 @@ public class SubmissionTest extends AbstractJythonTest {
 		consumer.start();
 
 		// Put any old ScanRequest in the Python namespace.
-		pi.exec("sr = scan_request(step(my_scannable, 0, 10, 1), det=mandelbrot(0.1))");
+		pi.exec("sr = scan_request(step(my_scannable, 0, 10, 1), det=mandelbrot(0.001))");
 		
 		pi.exec("srNoDet = scan_request(step(my_scannable, 0, 10, 1))");
 
@@ -94,6 +91,10 @@ public class SubmissionTest extends AbstractJythonTest {
 	public void stop() throws EventException {
 		consumer.cleanQueue(consumer.getSubmitQueueName());
 		consumer.cleanQueue(consumer.getStatusSetName());
+	}
+	
+	@AfterClass
+	public static void disconnect() throws EventException {
 		consumer.disconnect();
 	}
 
