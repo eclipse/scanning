@@ -119,7 +119,7 @@ public abstract class AbstractMScanTest extends AbstractJythonTest {
 
 		MandelbrotModel model = new MandelbrotModel("xNex", "yNex");
 		model.setName("mandelbrot");
-		model.setExposureTime(0.00001);
+		model.setExposureTime(0.001);
 		impl.createRunnableDevice(model);
 		
 		ClusterProcessingModel cmodel = new ClusterProcessingModel();
@@ -130,7 +130,7 @@ public abstract class AbstractMScanTest extends AbstractJythonTest {
 		
 		model = new MandelbrotModel("xNex", "yNex");
 		model.setName("m");
-		model.setExposureTime(0.00001);
+		model.setExposureTime(0.001);
 		impl.createRunnableDevice(model);
 		
 		cmodel = new ClusterProcessingModel();
