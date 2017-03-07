@@ -120,7 +120,7 @@ public class ThreadScanTest extends BrokerTest {
 													 boolean expectExceptions) throws Throwable {
 
 		device.start(null);
-		device.latch(100, TimeUnit.MILLISECONDS); // Let it get going.
+		device.latch(200, TimeUnit.MILLISECONDS); // Let it get going.
 		
 		final List<Throwable> exceptions = new ArrayList<>(1);		
 
