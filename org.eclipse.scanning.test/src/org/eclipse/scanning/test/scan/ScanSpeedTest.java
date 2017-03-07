@@ -220,7 +220,7 @@ public class ScanSpeedTest extends BrokerTest {
 
 		IRunnableDevice<?> device = createDevice(100, scannables, detectors);
 		device.start(null);
-		Thread.sleep(10);
+		device.latch(500, TimeUnit.MILLISECONDS);
 		device.abort();
 		Thread.sleep(100);
 
