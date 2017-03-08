@@ -11,8 +11,6 @@
  *******************************************************************************/
 package org.eclipse.scanning.sequencer.analysis;
 
-import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
-import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.analysis.api.persistence.IPersistenceService;
 import org.eclipse.dawnsci.analysis.api.persistence.IPersistentFile;
 import org.eclipse.dawnsci.analysis.api.processing.IExecutionVisitor;
@@ -34,13 +32,10 @@ import org.eclipse.january.dataset.ILazyWriteableDataset;
 import org.eclipse.january.dataset.SliceND;
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.ValidationException;
-import org.eclipse.scanning.api.device.AbstractRunnableDevice;
-import org.eclipse.scanning.api.device.IWritableDetector;
-import org.eclipse.scanning.api.device.models.DeviceRole;
+import org.eclipse.scanning.api.annotation.scan.ScanFinally;
 import org.eclipse.scanning.api.device.models.ProcessingModel;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanningException;
-import org.eclipse.scanning.api.scan.rank.IScanRankService;
 import org.eclipse.scanning.api.scan.rank.IScanSlice;
 import org.eclipse.scanning.sequencer.ServiceHolder;
 
@@ -53,23 +48,26 @@ import org.eclipse.scanning.sequencer.ServiceHolder;
  * @author Matthew Gerring
  *
  */
-public class ProcessingRunnableDevice extends AbstractRunnableDevice<ProcessingModel> implements IWritableDetector<ProcessingModel>, INexusDevice<NXdetector> {
+public class ProcessingRunnableDevice extends SlicingRunnableDevice<ProcessingModel> implements INexusDevice<NXdetector> {
 	
 	private ILazyWriteableDataset processed;
-	private NexusScanInfo info;
+	private NexusScanInfo         info;
+
+	private IOperationService  oservice;
+	private IOperationContext  context;
+	
+	private IScanSlice   rslice;
+	private ILazyDataset data;
 
 
 	public ProcessingRunnableDevice() {
-		super(null); 
-		setLevel(100); // Runs at the end of the cycle by default.
-		setRole(DeviceRole.PROCESSING);
+		super(); 
 		this.model = new ProcessingModel(); // We start with an empty one in case they want to fill it in the UI.
 	}
 	
 	public NexusObjectProvider<NXdetector> getNexusProvider(NexusScanInfo info) throws NexusException {
 		NXdetector detector = createNexusObject(info);
-		NexusObjectWrapper<NXdetector> nexusProvider = new NexusObjectWrapper<NXdetector>(
-				getName(), detector);
+		NexusObjectWrapper<NXdetector> nexusProvider = new NexusObjectWrapper<NXdetector>(getName(), detector);
 
 		// Add all fields for any NXdata groups that this device creates
 		nexusProvider.setAxisDataFieldNames(NXdetector.NX_DATA);
@@ -79,15 +77,6 @@ public class ProcessingRunnableDevice extends AbstractRunnableDevice<ProcessingM
 
 		return nexusProvider;
 	}
-	
-	@Override
-	public void validate(ProcessingModel model) throws ValidationException {
-		if (model.getDataFile()==null) throw new ModelValidationException("The data file must be set!", model, "dataFile");
-		if (model.getOperationsFile()==null) throw new ModelValidationException("The operation file must be set!", model, "operationsFile");
-		if (model.getDetectorName()==null) throw new ModelValidationException("The detector name must be set!", model, "detectorName");
-		if (model.getTimeout()<=0) throw new ModelValidationException("The timeout must be greater than 0", model, "timeout");
-	}
-
 	public NXdetector createNexusObject(NexusScanInfo info)  throws NexusException {
 		
 		final NXdetector detector = NexusNodeFactory.createNXdetector();
@@ -100,44 +89,27 @@ public class ProcessingRunnableDevice extends AbstractRunnableDevice<ProcessingM
 
 		return detector;
 	}
-
-	private ILazyDataset       data;
-	private IOperationService  oservice;
-	private IOperationContext  context;
-
+	
 	@Override
-	public void run(IPosition loc) throws ScanningException, InterruptedException {
-
-		// We cannot run the processing until the earlier frames were definitely
-		// written. Therefore we do the processing in the write(...) 
-		// TODO This could be made more efficient, the processing could
-		// check that the data has written for a given slice and
-		// run in this method...
+	public void validate(ProcessingModel model) throws ValidationException {
+		super.validate(model);
+		if (model.getOperationsFile()==null) throw new ModelValidationException("The operation file must be set!", model, "operationsFile");
 	}
 	
-	private IScanSlice rslice;
-	
 	@Override
-	public boolean write(IPosition loc) throws ScanningException {
+	public boolean process(IPosition loc, IScanSlice rslice, ILazyDataset data, IDataset slice) throws ScanningException {
 
 		try {
-			// Get the frame
-			ILoaderService lservice = ServiceHolder.getLoaderService();
-			IDataHolder    holder   = lservice.getData(model.getDataFile(), new IMonitor.Stub());
 
-			// TODO Might not be correct place to find the detector. Ideally
-			// An object in INexusDevice interface should provide where the node is.
-			this.data = holder.getLazyDataset("/entry/instrument/"+model.getDetectorName()+"/data");
-
+			this.rslice = rslice;
+			this.data   = data;
+			
 			if (context==null) {
 				createOperationService();
-				processed.setChunking(info.createChunk(getImageShape()));
+				processed.setChunking(info.createChunk(getDataShape(data)));
 			}
 			
-			this.rslice = IScanRankService.getScanRankService().createScanSlice(loc, getImageShape());
-			SliceND slice = new SliceND(processed.getShape(), processed.getMaxShape(), rslice.getStart(), rslice.getStop(), rslice.getStep());
-			IDataset set = data.getSlice(slice);
-			context.setData(set); // Just this frame.
+			context.setData(slice); // Just this frame.
 	        oservice.execute(context);
 	        
 	        // TODO Write it!
@@ -147,10 +119,10 @@ public class ProcessingRunnableDevice extends AbstractRunnableDevice<ProcessingM
 		}
 		return true;
 	}
-
-	private int[] getImageShape() {
-		// TODO Hard coded to images
-		return new int[]{data.getShape()[data.getShape().length-2], data.getShape()[data.getShape().length-1]};
+	
+	@ScanFinally
+	public void clear() {
+		this.data = null;
 	}
 
 	private void createOperationService() throws ScanningException {
