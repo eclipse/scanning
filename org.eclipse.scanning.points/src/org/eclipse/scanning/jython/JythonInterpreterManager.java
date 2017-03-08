@@ -36,7 +36,7 @@ class JythonInterpreterManager {
 	 * Call to ensure that an interpreter is set up and configured and
 	 * able to load the relevant bundles.
 	 */
-	public static synchronized void setupSystemState() {
+	public static synchronized void setupSystemState(String... bundleNames) {
 		
 		ClassLoader loader=null;
 		if (configuredState==null) { // Relies on setupSystemState() being called early in the server startup.
@@ -55,16 +55,23 @@ class JythonInterpreterManager {
 	   	state.setClassLoader(loader);
     	
      	setJythonPaths(state);       // Tries to ensure that enough of jython is on the path
-     	setSpgGeneratorPaths(state); // Adds the scripts directory from points
+     	setSpgGeneratorPaths(state, bundleNames); // Adds the scripts directory from points
 	   	Py.setSystemState(state);
  
 	   	configuredState = state;
 	}
 
-	private static void setSpgGeneratorPaths(PySystemState state) {
+	private static void setSpgGeneratorPaths(PySystemState state, String... bundleNames) {
 		
-        final File pointsLocation = getBundleLocation("org.eclipse.scanning.points");
-        state.path.add(new PyString(pointsLocation.getAbsolutePath() + "/scripts/"));
+        File location = getBundleLocation("org.eclipse.scanning.points");
+        state.path.add(new PyString(location.getAbsolutePath() + "/scripts/"));
+        
+        if (bundleNames!=null) {
+        	for (String bundle : bundleNames) {
+                location = getBundleLocation(bundle);
+                state.path.add(new PyString(location.getAbsolutePath() + "/scripts/"));
+			}
+        }
 	}
 
 

@@ -52,64 +52,64 @@ public class ScanPointGeneratorFactory {
 	// These are the constructors for each Jython SPG interface. To add a new one just replace, 
 	// for example, "JArrayGenerator" with your new class and give the constructor a new name
 	// like "<YourClass>Factory"
-    public static JythonObjectFactory JLineGenerator1DFactory() {
-        return new JythonObjectFactory(Iterator.class, "jython_spg_interface", "JLineGenerator1D");
+    public static JythonObjectFactory<Iterator> JLineGenerator1DFactory() {
+        return new JythonObjectFactory<>(Iterator.class, "jython_spg_interface", "JLineGenerator1D");
     }
 
-	public static JythonObjectFactory JLineGenerator2DFactory() {
-        return new JythonObjectFactory(Iterator.class, "jython_spg_interface", "JLineGenerator2D");
+	public static JythonObjectFactory<Iterator> JLineGenerator2DFactory() {
+        return new JythonObjectFactory<>(Iterator.class, "jython_spg_interface", "JLineGenerator2D");
     }
 	
-    public static JythonObjectFactory JArrayGeneratorFactory() {
-        return new JythonObjectFactory(Iterator.class, "jython_spg_interface", "JArrayGenerator");
+    public static JythonObjectFactory<Iterator> JArrayGeneratorFactory() {
+        return new JythonObjectFactory<>(Iterator.class, "jython_spg_interface", "JArrayGenerator");
     }
 	
-    public static JythonObjectFactory JSpiralGeneratorFactory() {
-        return new JythonObjectFactory(Iterator.class, "jython_spg_interface", "JSpiralGenerator");
+    public static JythonObjectFactory<Iterator> JSpiralGeneratorFactory() {
+        return new JythonObjectFactory<>(Iterator.class, "jython_spg_interface", "JSpiralGenerator");
     }
 	
-    public static JythonObjectFactory JLissajousGeneratorFactory() {
-        return new JythonObjectFactory(Iterator.class, "jython_spg_interface", "JLissajousGenerator");
+    public static JythonObjectFactory<Iterator> JLissajousGeneratorFactory() {
+        return new JythonObjectFactory<>(Iterator.class, "jython_spg_interface", "JLissajousGenerator");
     }
 	
-    public static JythonObjectFactory JCompoundGeneratorFactory() {
-        return new JythonObjectFactory(SerializableIterator.class, "jython_spg_interface", "JCompoundGenerator");
+    public static JythonObjectFactory<SerializableIterator> JCompoundGeneratorFactory() {
+        return new JythonObjectFactory<>(SerializableIterator.class, "jython_spg_interface", "JCompoundGenerator");
     }
 	
-    public static JythonObjectFactory JRandomOffsetMutatorFactory() {
-        return new JythonObjectFactory(PyObject.class, "jython_spg_interface", "JRandomOffsetMutator");
+    public static JythonObjectFactory<PyObject> JRandomOffsetMutatorFactory() {
+        return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JRandomOffsetMutator");
     }
     
-    public static JythonObjectFactory JFixedDurationMutatorFactory() {
-        return new JythonObjectFactory(PyObject.class, "jython_spg_interface", "JFixedDurationMutator");
+    public static JythonObjectFactory<PyObject> JFixedDurationMutatorFactory() {
+        return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JFixedDurationMutator");
     }
     
-    public static JythonObjectFactory JCircularROIFactory() {
-        return new JythonObjectFactory(PyObject.class, "jython_spg_interface", "JCircularROI");
+    public static JythonObjectFactory<PyObject> JCircularROIFactory() {
+        return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JCircularROI");
     }
     
-    public static JythonObjectFactory JEllipticalROIFactory() {
-        return new JythonObjectFactory(PyObject.class, "jython_spg_interface", "JEllipticalROI");
+    public static JythonObjectFactory<PyObject> JEllipticalROIFactory() {
+        return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JEllipticalROI");
     }
     
-    public static JythonObjectFactory JPointROIFactory() {
-        return new JythonObjectFactory(PyObject.class, "jython_spg_interface", "JPointROI");
+    public static JythonObjectFactory<PyObject> JPointROIFactory() {
+        return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JPointROI");
     }
     
-    public static JythonObjectFactory JPolygonalROIFactory() {
-        return new JythonObjectFactory(PyObject.class, "jython_spg_interface", "JPolygonalROI");
+    public static JythonObjectFactory<PyObject> JPolygonalROIFactory() {
+        return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JPolygonalROI");
     }
     
-    public static JythonObjectFactory JRectangularROIFactory() {
-        return new JythonObjectFactory(PyObject.class, "jython_spg_interface", "JRectangularROI");
+    public static JythonObjectFactory<PyObject> JRectangularROIFactory() {
+        return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JRectangularROI");
     }
     
-    public static JythonObjectFactory JSectorROIFactory() {
-        return new JythonObjectFactory(PyObject.class, "jython_spg_interface", "JSectorROI");
+    public static JythonObjectFactory<PyObject> JSectorROIFactory() {
+        return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JSectorROI");
     }
     
-    public static JythonObjectFactory JExcluderFactory() {
-        return new JythonObjectFactory(PyObject.class, "jython_spg_interface", "JExcluder");
+    public static JythonObjectFactory<PyObject> JExcluderFactory() {
+        return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JExcluder");
     }
  
 }
