@@ -66,12 +66,9 @@ class JythonInterpreterManager {
         File location = getBundleLocation("org.eclipse.scanning.points");
         state.path.add(new PyString(location.getAbsolutePath() + "/scripts/"));
         
-<<<<<<< HEAD
         location = getBundleLocation("org.eclipse.scanning.sequencer");
         state.path.add(new PyString(location.getAbsolutePath() + "/scripts/"));
-        
-=======
->>>>>>> branch 'jython_refactor' of git@github.com:eclipse/scanning.git
+
         if (bundleNames!=null) {
         	for (String bundle : bundleNames) {
                 location = getBundleLocation(bundle);
