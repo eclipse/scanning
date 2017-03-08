@@ -287,6 +287,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	        	// Send an event about where we are in the scan
         		manager.invoke(PointEnd.class, pos);
 	        	positionComplete(pos);
+	        	
 	        }
 	        
 	        // On the last iteration we must wait for the final readout.

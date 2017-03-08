@@ -82,32 +82,11 @@ public class DarkCurrentTest extends NexusTest {
 		
 		detector = (IWritableDetector<MandelbrotModel>)dservice.createRunnableDevice(model);
 		assertNotNull(detector);
-		detector.addRunListener(new IRunListener() {
-			@Override
-			public void runPerformed(RunEvent evt) throws ScanningException{
-                //System.out.println("Ran mandelbrot detector @ "+evt.getPosition());
-			}
-		});
 
 		DarkImageModel dmodel = new DarkImageModel();
 		dark =  (IWritableDetector<DarkImageModel>)dservice.createRunnableDevice(dmodel);
 		assertNotNull(dark);
-		dark.addRunListener(new IRunListener() {
-			@Override
-			public void writePerformed(RunEvent evt) throws ScanningException{
-                // System.out.println("Wrote dark image @ "+evt.getPosition());
-			}
-		});
-	}
-	
-	private NXroot getNexusRoot(IRunnableDevice<ScanModel> scanner) throws Exception {
-		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
 
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		return (NXroot) nexusTree.getGroupNode();
 	}
 
 	/**

@@ -103,16 +103,6 @@ public class ConstantVelocityTest extends NexusTest {
 		testScan(2, 1, 1, 1, 1, 1, 1, 1);
 	}
 
-	private NXroot getNexusRoot(IRunnableDevice<ScanModel> scanner) throws Exception {
-		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
-
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		return (NXroot) nexusTree.getGroupNode();
-	}
-
 	private void testScan(int... shape) throws Exception {
 		
 		IRunnableDevice<ScanModel> scanner = createNestedStepScan(detector, shape); // Outer scan of another scannable, for instance temp.

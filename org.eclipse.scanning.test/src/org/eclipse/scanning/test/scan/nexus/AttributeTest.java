@@ -83,13 +83,6 @@ public class AttributeTest extends NexusTest{
 		
 		detector = (IWritableDetector<MandelbrotModel>)dservice.createRunnableDevice(model);
 		assertNotNull(detector);
-		detector.addRunListener(new IRunListener() {
-			@Override
-			public void runPerformed(RunEvent evt) throws ScanningException{
-                //System.out.println("Ran mandelbrot detector @ "+evt.getPosition());
-			}
-		});
-
 	}
 
 	@Test 

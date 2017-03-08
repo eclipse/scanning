@@ -221,16 +221,6 @@ public class ScanMetadataTest extends NexusTest {
 				throw new IllegalArgumentException("Unknown metadata type " + type);
 		}
 	}
-	
-	private NXroot getNexusRoot(IRunnableDevice<ScanModel> scanner) throws Exception {
-		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
-
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		return (NXroot) nexusTree.getGroupNode();
-	}
 
 	private void checkNexusFile(IRunnableDevice<ScanModel> scanner,
 			List<ScanMetadata> scanMetadata, int... sizes) throws Exception {

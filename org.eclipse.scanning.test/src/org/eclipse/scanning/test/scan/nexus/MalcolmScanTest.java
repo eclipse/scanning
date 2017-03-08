@@ -217,17 +217,6 @@ public class MalcolmScanTest extends NexusTest {
 		assertTrue(paths.stream().anyMatch(path -> path.endsWith("panda.h5")));
 	}
 	
-	private NXroot getNexusRoot(IRunnableDevice<ScanModel> scanner) throws Exception {
-		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
-		
-		INexusFileFactory fileFactory = ServiceHolder.getNexusFileFactory();
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		return (NXroot) nexusTree.getGroupNode();
-	}
-	
 	private Map<String, List<String>> getExpectedPrimaryDataFieldsPerDetector() {
 		Map<String, List<String>> primaryDataFieldsPerDetector = new HashMap<>();
 		for (DummyMalcolmControlledDetectorModel detectorModel : malcolmDevice.getModel().getDummyDetectorModels()) {
@@ -248,7 +237,7 @@ public class MalcolmScanTest extends NexusTest {
 		return expectedFileNames;
 	}
 	
-	private void checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake, int... sizes) throws Exception {
+	protected void checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake, int... sizes) throws Exception {
 		final DummyMalcolmModel dummyMalcolmModel = malcolmDevice.getModel();
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 		

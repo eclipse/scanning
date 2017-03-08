@@ -63,7 +63,7 @@ import org.eclipse.scanning.sequencer.ServiceHolder;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class ScanProcessingTest extends NexusTest {
+public class ScanOperationPipelineTest extends NexusTest {
 
 	@Ignore("It's gone flakey")
 	@Test
@@ -178,16 +178,6 @@ public class ScanProcessingTest extends NexusTest {
 		return scanner;
 	}
 
-	private NXroot getNexusRoot(IRunnableDevice<ScanModel> scanner) throws Exception {
-		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
-
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		return (NXroot) nexusTree.getGroupNode();
-	}
-
 	private void checkNexusFile(IRunnableDevice<ScanModel> scanner, int... sizes) throws Exception {
 		
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
@@ -245,7 +235,7 @@ public class ScanProcessingTest extends NexusTest {
 	}
 
 	public static void setFileFactory(INexusFileFactory fileFactory) {
-		ScanProcessingTest.fileFactory = fileFactory;
+		ScanOperationPipelineTest.fileFactory = fileFactory;
 	}
 
 }

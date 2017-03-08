@@ -11,25 +11,11 @@
  *******************************************************************************/
 package org.eclipse.scanning.api.device.models;
 
-import org.eclipse.scanning.api.ITimeoutable;
-import org.eclipse.scanning.api.annotation.ui.DeviceType;
 import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 import org.eclipse.scanning.api.annotation.ui.FileType;
 
-public class ProcessingModel implements ITimeoutable {
+public class ProcessingModel extends SlicingModel {
 
-	@FieldDescriptor(file=FileType.EXISTING_FILE)
-	private String   dataFile;
-	
-	/**
-	 * The name of the detector whose output we will be processing
-	 * 
-	 * This is used to figure out which part of the nexus file
-	 * to look at when processing.
-	 */
-	@FieldDescriptor(device=DeviceType.RUNNABLE, hint="The name of the detector whose output we will process.")
-	private String detectorName;
-	private String name;
 	
 	@FieldDescriptor(file=FileType.EXISTING_FILE, hint="A reference to any file created in the processing perspective.\n"
 			                                           + "The pipeline should be saved to file and the file must be\n"
@@ -43,17 +29,14 @@ public class ProcessingModel implements ITimeoutable {
 	@FieldDescriptor(visible=false)
 	private Object operation;
 
-	private long timeout = -1;
 	
 	public ProcessingModel() {
 		
 	}
 	
     public ProcessingModel(String detectorName, String dataFile, String operationsFile, long timeout) {
-    	this.detectorName   = detectorName;
-       	this.dataFile       = dataFile;
+    	super(detectorName,dataFile,timeout);
        	this.operationsFile = operationsFile;
-       	this.timeout        = timeout;
     }
 	
 	public String getOperationsFile() {
@@ -64,37 +47,19 @@ public class ProcessingModel implements ITimeoutable {
 		this.operationsFile = filePath;
 	}
 
-	public String getDataFile() {
-		return dataFile;
+	public Object getOperation() {
+		return operation;
 	}
 
-	public void setDataFile(String dataFile) {
-		this.dataFile = dataFile;
-	}
-
-	public String getDetectorName() {
-		return detectorName;
-	}
-
-	public void setDetectorName(String datasetPath) {
-		this.detectorName = datasetPath;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+	public void setOperation(Object operation) {
+		this.operation = operation;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((dataFile == null) ? 0 : dataFile.hashCode());
-		result = prime * result + ((detectorName == null) ? 0 : detectorName.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		int result = super.hashCode();
+		result = prime * result + ((operation == null) ? 0 : operation.hashCode());
 		result = prime * result + ((operationsFile == null) ? 0 : operationsFile.hashCode());
 		return result;
 	}
@@ -103,25 +68,15 @@ public class ProcessingModel implements ITimeoutable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		ProcessingModel other = (ProcessingModel) obj;
-		if (dataFile == null) {
-			if (other.dataFile != null)
+		if (operation == null) {
+			if (other.operation != null)
 				return false;
-		} else if (!dataFile.equals(other.dataFile))
-			return false;
-		if (detectorName == null) {
-			if (other.detectorName != null)
-				return false;
-		} else if (!detectorName.equals(other.detectorName))
-			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
+		} else if (!operation.equals(other.operation))
 			return false;
 		if (operationsFile == null) {
 			if (other.operationsFile != null)
@@ -129,21 +84,5 @@ public class ProcessingModel implements ITimeoutable {
 		} else if (!operationsFile.equals(other.operationsFile))
 			return false;
 		return true;
-	}
-
-	public long getTimeout() {
-		return timeout;
-	}
-
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
-	}
-
-	public Object getOperation() {
-		return operation;
-	}
-
-	public void setOperation(Object operation) {
-		this.operation = operation;
 	}
 }
