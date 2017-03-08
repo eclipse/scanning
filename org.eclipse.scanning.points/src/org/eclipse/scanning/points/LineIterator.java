@@ -22,7 +22,7 @@ import org.eclipse.scanning.api.points.models.CollatedStepModel;
 import org.eclipse.scanning.api.points.models.OneDEqualSpacingModel;
 import org.eclipse.scanning.api.points.models.OneDStepModel;
 import org.eclipse.scanning.api.points.models.StepModel;
-import org.eclipse.scanning.points.ScanPointGeneratorFactory.JythonObjectFactory;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyList;
 
 class LineIterator extends AbstractScanPointIterator {

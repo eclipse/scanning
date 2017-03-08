@@ -24,7 +24,6 @@ import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.GridModel;
-import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.eclipse.scanning.points.PySerializable;
