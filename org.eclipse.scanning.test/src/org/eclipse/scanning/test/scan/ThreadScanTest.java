@@ -55,7 +55,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore
 public class ThreadScanTest extends BrokerTest {
 	
 	private static IRunnableDeviceService     sservice;
