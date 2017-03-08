@@ -13,9 +13,13 @@ package org.eclipse.scanning.example.scannable;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.AbstractScannable;
@@ -37,7 +41,8 @@ public class MockScannableConnector implements IScannableDeviceService, IDisconn
 	protected String               broker;
 	private Map<String, INameable> cache;
 	private IPublisher<Location>   positionPublisher;
-	
+	private Set<String> globalPerScanMonitorNames;
+	private Map<String, Set<String>> perScanMonitorPrereqisites = new HashMap<>();
 	private boolean createIfNotThere = true;
 	
 	// Spring
@@ -96,23 +101,23 @@ public class MockScannableConnector implements IScannableDeviceService, IDisconn
 		MockScannable x = new MockNeXusScannable("x", 0d,  3, "mm");
 		x.setRealisticMove(true);
 		x.setRequireSleep(false);
-		x.setMoveRate(10000); // �m/s or 1 cm/s
+		x.setMoveRate(10000); // µm/s or 1 cm/s
 		register(x);
 		
 		MockScannable y = new MockNeXusScannable("y", 0d,  3, "mm");
 		y.setRealisticMove(true);
-		y.setMoveRate(100); // �m/s, faster than real?
+		y.setMoveRate(100); // µm/s, faster than real?
 		register(y);
 		
 		x = new MockNeXusScannable("stage_x", 0d,  3, "mm");
 		x.setRealisticMove(true);
 		x.setRequireSleep(false);
-		x.setMoveRate(10000); // �m/s or 1 cm/s
+		x.setMoveRate(10000); // µm/s or 1 cm/s
 		register(x);
 		
 		y = new MockNeXusScannable("stage_y", 0d,  3, "mm");
 		y.setRealisticMove(true);
-		y.setMoveRate(100); // �m/s, faster than real?
+		y.setMoveRate(100); // µm/s, faster than real?
 		register(y);
 
 		
@@ -150,7 +155,7 @@ public class MockScannableConnector implements IScannableDeviceService, IDisconn
 			register(mon);
 	    }
 		for (int i = 0; i < 10; i++) {
-			MockNeXusScannable metadataScannable = new MockNeXusScannable("metadataScannable"+i, 0d, 3);
+			MockNeXusScannable metadataScannable = new MockNeXusScannable("perScanMonitor"+i, 0d, 3);
 			metadataScannable.setMonitorRole(MonitorRole.PER_SCAN);
 			metadataScannable.setInitialPosition(i * 10.0);
 			register(metadataScannable);
@@ -181,6 +186,26 @@ public class MockScannableConnector implements IScannableDeviceService, IDisconn
 	@Override
 	public List<String> getScannableNames() throws ScanningException {
 		return cache.keySet().stream().filter(key -> cache.get(key) instanceof IScannable).collect(Collectors.toList());
+	}
+	
+	public void setGlobalPerScanMonitorNames(String... globalMetadataScannableNames) {
+		this.globalPerScanMonitorNames = new HashSet<>(Arrays.asList(globalMetadataScannableNames));
+	}
+	
+	@Override
+	public Set<String> getGlobalPerScanMonitorNames() {
+		return globalPerScanMonitorNames == null ? Collections.emptySet() : globalPerScanMonitorNames;
+	}
+	
+	public void setGlobalPerScanMonitorPrerequisiteNames(String metadataScannableName,
+			String... prerequisiteMetadataScannableNames) {
+		perScanMonitorPrereqisites.put(metadataScannableName,
+				new HashSet<>(Arrays.asList(prerequisiteMetadataScannableNames)));
+	}
+	
+	public Set<String> getRequiredPerScanMonitorNames(String scannableName) {
+		Set<String> prereqMetadataScannables = perScanMonitorPrereqisites.get(scannableName);
+		return prereqMetadataScannables == null ? Collections.emptySet() : prereqMetadataScannables;
 	}
 
 	@Override
