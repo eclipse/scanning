@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.scanning.api.points.IMutator;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.eclipse.scanning.points.ScanPointGeneratorFactory;
-import org.eclipse.scanning.points.ScanPointGeneratorFactory.JythonObjectFactory;
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
 
