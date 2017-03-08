@@ -16,7 +16,7 @@ import java.util.Iterator;
 
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.models.ArrayModel;
-import org.eclipse.scanning.points.ScanPointGeneratorFactory.JythonObjectFactory;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyList;
 
 class ArrayIterator extends AbstractScanPointIterator {

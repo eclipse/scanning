@@ -60,6 +60,7 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.device.models.ClusterProcessingModel;
 import org.eclipse.scanning.api.device.models.IDetectorModel;
+import org.eclipse.scanning.api.device.models.JythonModel;
 import org.eclipse.scanning.api.device.models.ProcessingModel;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.scan.DeviceState;
@@ -90,6 +91,7 @@ import org.eclipse.scanning.points.PointGeneratorService;
 import org.eclipse.scanning.points.serialization.PointsModelMarshaller;
 import org.eclipse.scanning.sequencer.RunnableDeviceServiceImpl;
 import org.eclipse.scanning.sequencer.analysis.ClusterProcessingRunnableDevice;
+import org.eclipse.scanning.sequencer.analysis.JythonDevice;
 import org.eclipse.scanning.sequencer.analysis.ProcessingRunnableDevice;
 import org.eclipse.scanning.server.servlet.Services;
 import org.eclipse.scanning.test.TmpTest;
@@ -145,6 +147,7 @@ public class NexusTest extends TmpTest {
 		impl._register(ClusterProcessingModel.class, ClusterProcessingRunnableDevice.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
 		impl._register(RandomLineModel.class, RandomLineDevice.class);
+		impl._register(JythonModel.class, JythonDevice.class);
 		
 		// TODO Perhaps put service setting in super class or utility
 		Services.setEventService(eservice);

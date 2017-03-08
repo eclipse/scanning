@@ -22,7 +22,6 @@ import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.ScanRegion;
-import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.junit.Before;
 
