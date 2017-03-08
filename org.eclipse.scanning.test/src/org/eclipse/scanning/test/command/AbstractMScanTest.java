@@ -190,8 +190,12 @@ public abstract class AbstractMScanTest extends AbstractJythonTest {
 
 	@AfterClass
 	public static void disconnect()  throws Exception {
-		servlet.getConsumer().cleanQueue(servlet.getSubmitQueue());
-		servlet.getConsumer().cleanQueue(servlet.getStatusSet());
+		try {
+			servlet.getConsumer().cleanQueue(servlet.getSubmitQueue());
+			servlet.getConsumer().cleanQueue(servlet.getStatusSet());
+		} catch (Exception ignored) {
+			// Not fatal if cannot clean them
+		}
 		servlet.disconnect();
 	}
 
