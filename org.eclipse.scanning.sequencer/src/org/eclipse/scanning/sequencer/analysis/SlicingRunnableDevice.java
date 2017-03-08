@@ -1,5 +1,7 @@
 package org.eclipse.scanning.sequencer.analysis;
 
+import java.util.Arrays;
+
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.january.IMonitor;
@@ -61,11 +63,12 @@ public abstract class SlicingRunnableDevice<T extends SlicingModel> extends Abst
 			IDataHolder    holder   = lservice.getData(model.getDataFile(), new IMonitor.Stub());
 			ILazyDataset data = holder.getLazyDataset("/entry/instrument/"+model.getDetectorName()+"/data");
 			
-			IScanSlice rslice = IScanRankService.getScanRankService().createScanSlice(loc, getDataShape(data));
+			int[] dshape = getDataShape(data);
+			IScanSlice rslice = IScanRankService.getScanRankService().createScanSlice(loc, dshape);
 			SliceND sliceData = new SliceND(data.getShape(), rslice.getStart(), rslice.getStop(), rslice.getStep());
 			IDataset slice = data.getSlice(sliceData);
 	
-			return process(loc, rslice, data, slice);
+			return process(new SliceDeviceContext(loc, rslice, data, slice));
 			
 		} catch (ScanningException se) {
 			throw se;
@@ -82,7 +85,7 @@ public abstract class SlicingRunnableDevice<T extends SlicingModel> extends Abst
 	 * @return
 	 * @throws ScanningException
 	 */
-	abstract boolean process(IPosition loc, IScanSlice rslice, ILazyDataset data, IDataset slice) throws ScanningException;
+	abstract boolean process(SliceDeviceContext context) throws ScanningException;
 
 
 	protected int[] getDataShape(ILazyDataset data) {

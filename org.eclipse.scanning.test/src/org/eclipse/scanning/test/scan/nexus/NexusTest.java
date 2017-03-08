@@ -80,6 +80,8 @@ import org.eclipse.scanning.example.detector.DarkImageDetector;
 import org.eclipse.scanning.example.detector.DarkImageModel;
 import org.eclipse.scanning.example.detector.MandelbrotDetector;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
+import org.eclipse.scanning.example.detector.RandomLineDevice;
+import org.eclipse.scanning.example.detector.RandomLineModel;
 import org.eclipse.scanning.example.file.MockFilePathService;
 import org.eclipse.scanning.example.malcolm.DummyMalcolmDevice;
 import org.eclipse.scanning.example.malcolm.DummyMalcolmModel;
@@ -142,6 +144,7 @@ public class NexusTest extends TmpTest {
 		impl._register(ProcessingModel.class, ProcessingRunnableDevice.class);
 		impl._register(ClusterProcessingModel.class, ClusterProcessingRunnableDevice.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
+		impl._register(RandomLineModel.class, RandomLineDevice.class);
 		
 		// TODO Perhaps put service setting in super class or utility
 		Services.setEventService(eservice);

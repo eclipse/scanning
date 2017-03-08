@@ -34,7 +34,6 @@ import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.annotation.scan.ScanFinally;
 import org.eclipse.scanning.api.device.models.ProcessingModel;
-import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.rank.IScanSlice;
 import org.eclipse.scanning.sequencer.ServiceHolder;
@@ -44,6 +43,8 @@ import org.eclipse.scanning.sequencer.ServiceHolder;
  * Runs any operation model.
  * 
  * TODO This device only deals with images currently. Make nD at some point...
+ * TODO This device is not finished and functional, it is not recommended to
+ * expose to users unless more testing and improvements have occurred.
  * 
  * @author Matthew Gerring
  *
@@ -97,23 +98,21 @@ public class ProcessingRunnableDevice extends SlicingRunnableDevice<ProcessingMo
 	}
 	
 	@Override
-	public boolean process(IPosition loc, IScanSlice rslice, ILazyDataset data, IDataset slice) throws ScanningException {
+	public boolean process(SliceDeviceContext sdcontext) throws ScanningException {
 
 		try {
 
-			this.rslice = rslice;
-			this.data   = data;
+			this.rslice = sdcontext.getScanSlice();
+			this.data   = sdcontext.getData();
 			
 			if (context==null) {
 				createOperationService();
 				processed.setChunking(info.createChunk(getDataShape(data)));
 			}
 			
-			context.setData(slice); // Just this frame.
+			context.setData(sdcontext.getSlice()); // Just this frame.
 	        oservice.execute(context);
-	        
-	        // TODO Write it!
-	        
+	        	        
 		} catch (Exception ne) {
 			throw new ScanningException("Cannot run processing from "+model.getOperationsFile(), ne);
 		}

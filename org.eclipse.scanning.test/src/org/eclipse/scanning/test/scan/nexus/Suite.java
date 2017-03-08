@@ -29,6 +29,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	MonitorTest.class,
 	ScanMetadataTest.class,
 	ScanOperationPipelineTest.class,
+	ScanAverageTest.class,
 	ScanClusterProcessingTest.class,
 	SolsticeScanMonitorTest.class,
 	LinearScanTest.class,
