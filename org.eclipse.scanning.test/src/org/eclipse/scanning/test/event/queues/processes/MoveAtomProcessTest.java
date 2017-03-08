@@ -91,7 +91,7 @@ public class MoveAtomProcessTest {
 		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
 		
-		pti.waitForExecutionEnd(200);
+		pti.waitForExecutionEnd(500);
 		assertEquals("Incorrect message after terminate", "Move aborted before completion (requested).", pti.getLastBroadcastBean().getMessage());
 		assertTrue("IPositioner not aborted", ((MockPositioner)mss.createPositioner()).isAborted());
 		assertFalse("Move should have been terminated", ((MockPositioner)mss.createPositioner()).isMoveComplete());
