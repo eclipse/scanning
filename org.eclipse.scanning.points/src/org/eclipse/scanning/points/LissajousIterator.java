@@ -13,12 +13,11 @@ package org.eclipse.scanning.points;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Point;
 import org.eclipse.scanning.api.points.models.LissajousModel;
-import org.eclipse.scanning.points.ScanPointGeneratorFactory.JythonObjectFactory;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
 

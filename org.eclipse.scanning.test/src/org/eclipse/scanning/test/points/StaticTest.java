@@ -15,11 +15,11 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.List;
 
-import org.eclipse.scanning.api.points.StaticPosition;
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.StaticPosition;
 import org.eclipse.scanning.api.points.models.StaticModel;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.junit.Before;

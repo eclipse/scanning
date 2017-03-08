@@ -9,7 +9,7 @@
  * Contributors:
  *    Matthew Gerring - initial API and implementation and/or initial documentation
  *******************************************************************************/
-package org.eclipse.scanning.points;
+package org.eclipse.scanning.jython;
 
 import java.util.List;
 import java.util.Vector;
