@@ -61,18 +61,20 @@ class JythonInterpreterManager {
 	   	configuredState = state;
 	}
 
+	private static final String SCRIPTS = "/scripts/";
+	
 	private static void setSpgGeneratorPaths(PySystemState state, String... bundleNames) {
 		
         File location = getBundleLocation("org.eclipse.scanning.points");
-        state.path.add(new PyString(location.getAbsolutePath() + "/scripts/"));
+        state.path.add(new PyString(location.getAbsolutePath() + SCRIPTS));
         
         location = getBundleLocation("org.eclipse.scanning.sequencer");
-        state.path.add(new PyString(location.getAbsolutePath() + "/scripts/"));
+        state.path.add(new PyString(location.getAbsolutePath() + SCRIPTS));
         
         if (bundleNames!=null) {
         	for (String bundle : bundleNames) {
                 location = getBundleLocation(bundle);
-                state.path.add(new PyString(location.getAbsolutePath() + "/scripts/"));
+                state.path.add(new PyString(location.getAbsolutePath() + SCRIPTS));
 			}
         }
 	}
@@ -97,8 +99,6 @@ class JythonInterpreterManager {
 	    	PySystemState.initialize(preprops, props, new String[]{}, loader);
 	    
 	    } catch (Throwable ne) {
-	    	System.out.print("Problem loading jython bundles!");
-	    	ne.printStackTrace();
 	    	logger.debug("Problem loading jython bundles!", ne);
 	    }
 	}
@@ -109,7 +109,7 @@ class JythonInterpreterManager {
     	ClassLoader jythonClassloader = ScanPointGeneratorFactory.class.getClassLoader();
     	
     	try { // For non-unit tests, attempt to use the OSGi classloader of this bundle.
-    		String jythonBundleName = System.getProperty("org.eclipse.scanning.jython.osgi.bundle.name", "uk.ac.diamond.jython");
+    		String jythonBundleName = getJythonBundleName();
     		CompositeClassLoader composite = new CompositeClassLoader(classLoader);
    	  	    // Classloader for org.eclipse.scanning.points
     		composite.addLast(ScanPointGeneratorFactory.class.getClassLoader());
@@ -125,12 +125,16 @@ class JythonInterpreterManager {
     	return jythonClassloader;
 	}
 
+	private static String getJythonBundleName() {
+		return System.getProperty("org.eclipse.scanning.jython.osgi.bundle.name", "uk.ac.diamond.jython");
+	}
+
 	private static void setJythonPaths(PySystemState state) {
     	        	
         try {
         	// Search for the Libs directory which should have been expanded out either
         	// directly into the bundle or into the 'jython2.7' folder.
-	    	String jythonBundleName = System.getProperty("org.eclipse.scanning.jython.osgi.bundle.name", "uk.ac.diamond.jython");
+    		String jythonBundleName = getJythonBundleName();
 
             File lib = getBundleLocation(jythonBundleName); // TODO Name the jython OSGi bundle without Diamond in it!
 	    	Iterator<Object> it = state.path.iterator();
@@ -160,12 +164,9 @@ class JythonInterpreterManager {
             	
             	state.toString();
 
-            	System.out.println(state.path);
-            }
+             }
             
         } catch (Exception ne) {
-        	System.out.println("Problem setting jython path to include scripts");
-        	ne.printStackTrace();
         	logger.debug("Problem setting jython path to include scripts!", ne);
         }
  	}
