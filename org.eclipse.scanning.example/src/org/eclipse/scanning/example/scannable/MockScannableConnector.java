@@ -87,11 +87,11 @@ public class MockScannableConnector implements IScannableDeviceService, IDisconn
 		register(new MockScannable("b", 10d, 1, "mm"));
 		register(new MockScannable("c", 10d, 1, "mm"));
 		
-		MockScannable p = new MockScannable("p", 10d, 2, "µm");
+		MockScannable p = new MockScannable("p", 10d, 2, "Âµm");
 		p.setActivated(true);
 		register(p);
-		register(new MockScannable("q", 10d, 2, "µm"));
-		register(new MockScannable("r", 10d, 2, "µm"));
+		register(new MockScannable("q", 10d, 2, "Âµm"));
+		register(new MockScannable("r", 10d, 2, "Âµm"));
 		
 		MockScannable x = new MockNeXusScannable("x", 0d,  3, "mm");
 		x.setRealisticMove(true);

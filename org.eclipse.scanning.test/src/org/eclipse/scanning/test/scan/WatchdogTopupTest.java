@@ -147,7 +147,7 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 				Thread.sleep(fastPeriod/10);
 			}
 			assertTrue("The max is "+max, max<600&&max>300);
-			assertTrue("The min is "+min, min<200&&min>-1);
+			assertTrue("The min is "+min, min<500&&min>-1);
 			
 		} finally {
 			topup.setPeriod(orig);

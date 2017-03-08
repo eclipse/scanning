@@ -1,5 +1,7 @@
 package org.eclipse.scanning.test;
 
+import org.eclipse.scanning.test.command.MScanServletTest;
+import org.eclipse.scanning.test.scan.ThreadScanTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
 
@@ -37,7 +39,12 @@ import org.junit.runners.Suite.SuiteClasses;
 	org.eclipse.scanning.test.scan.servlet.Suite.class,
 	org.eclipse.scanning.test.scan.Suite.class,
 	org.eclipse.scanning.test.stashing.Suite.class,
-	org.eclipse.scanning.test.validation.Suite.class
+	org.eclipse.scanning.test.validation.Suite.class,
+	
+	// Tests not reliable on travis which we run in All
+	MScanServletTest.class,
+	ThreadScanTest.class
+
 	
 })
 public class All {

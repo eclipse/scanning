@@ -139,15 +139,15 @@ public class ScannableViewerTest extends ShellTest {
 		assertEquals(6, bot.table(0).rowCount());
 		
 		IScannable<Double> p = Services.getConnector().getScannable("p");		
-		assertEquals(p.getPosition()+"    µm", bot.table(0).cell(5, 2));
+		assertEquals(p.getPosition()+"    Âµm", bot.table(0).cell(5, 2));
 		
 		p.setPosition(11.0);
 		synchExec(()->viewer.refresh()); // Shouldn't need this! Does not need it in the main UI.
-		assertEquals(p.getPosition()+"    µm", bot.table(0).cell(5, 2));
+		assertEquals(p.getPosition()+"    Âµm", bot.table(0).cell(5, 2));
 		
 		p.setPosition(10.0);
 		synchExec(()->viewer.refresh()); // Shouldn't need this! Does not need it in the main UI.
-		assertEquals(p.getPosition()+"    µm", bot.table(0).cell(5, 2));
+		assertEquals(p.getPosition()+"    Âµm", bot.table(0).cell(5, 2));
 	}
 
 	@Test
