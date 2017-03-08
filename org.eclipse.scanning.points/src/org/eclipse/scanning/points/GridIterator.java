@@ -21,7 +21,7 @@ import org.eclipse.scanning.api.points.models.GridModel;
 import org.eclipse.scanning.api.points.models.IBoundingBoxModel;
 import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
-import org.eclipse.scanning.points.ScanPointGeneratorFactory.JythonObjectFactory;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;

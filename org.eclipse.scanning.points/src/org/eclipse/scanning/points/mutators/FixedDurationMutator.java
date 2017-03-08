@@ -12,8 +12,8 @@
 package org.eclipse.scanning.points.mutators;
 
 import org.eclipse.scanning.api.points.IMutator;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.eclipse.scanning.points.ScanPointGeneratorFactory;
-import org.eclipse.scanning.points.ScanPointGeneratorFactory.JythonObjectFactory;
 
 public class FixedDurationMutator implements IMutator {
 
