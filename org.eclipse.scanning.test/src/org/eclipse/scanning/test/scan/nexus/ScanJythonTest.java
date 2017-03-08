@@ -62,7 +62,7 @@ public class ScanJythonTest extends NexusTest {
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, true, 2, 2);
 		scanner.run(null);
 	
-		//checkMax(scanner, 2, 2);
+		checkMax(scanner, 2, 2);
 	}
 	
 	@Test 
@@ -72,7 +72,7 @@ public class ScanJythonTest extends NexusTest {
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, true, 3, 1);
 		scanner.run(null);
 	
-		//checkMax(scanner, 3, 1);
+		checkMax(scanner, 3, 1);
 	}	
 	
 	@Test(expected=AssertionError.class)
@@ -81,7 +81,7 @@ public class ScanJythonTest extends NexusTest {
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, true, 2, 2);
 		scanner.run(null);
-		//checkMax(scanner, 3, 1);
+		checkMax(scanner, 3, 1);
 	}	
 
 	
@@ -100,7 +100,7 @@ public class ScanJythonTest extends NexusTest {
 		IRunnableDevice<ScanModel> scanner = createScanner(imagedetector, 2, true, 2, 2);
 		scanner.run(null);
 	
-		//checkMax(scanner, 2, 2);
+		checkMax(scanner, 2, 2);
 	}
 
 	private IRunnableDevice<ScanModel> createScanner(IRunnableDevice<?> device, int dataRank, boolean doAveraging, int... shape) throws Exception {
@@ -127,13 +127,13 @@ public class ScanJythonTest extends NexusTest {
 
 	private void checkMax(IRunnableDevice<ScanModel> scanner, int... scanShape) throws Exception {
 		
-		SlicingModel model = (SlicingModel)scanner.getModel().getDetectors().get(1).getModel();
+		JythonModel model = (JythonModel)scanner.getModel().getDetectors().get(1).getModel();
 		
 		ILoaderService lservice = ServiceHolder.getLoaderService();
 		IDataHolder    holder   = lservice.getData(model.getDataFile(), new IMonitor.Stub());
 
 		ILazyDataset data = holder.getLazyDataset("/entry/instrument/"+model.getDetectorName()+"/data");
-		ILazyDataset av   = holder.getLazyDataset("/entry/instrument/"+model.getDetectorName()+"_max/data");
+		ILazyDataset av   = holder.getLazyDataset("/entry/instrument/"+model.getDetectorName()+"_"+model.getName()+"/data");
 
 		assertTrue(Arrays.equals(scanShape, av.getShape()));
 		
@@ -146,7 +146,7 @@ public class ScanJythonTest extends NexusTest {
 				islice[i] = aslice[i] = new Slice(pos[i], pos[i]+1);
 			}
 			IDataset image = data.getSlice(islice);
-			double max1 = (Double)image.squeeze().max();
+			double max1 = (Double)image.max(false, false);
 			double max2 = av.getSlice(aslice).getDouble(0);
           
 			assertEquals(max1, max2, 0.00001);

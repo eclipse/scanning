@@ -43,11 +43,10 @@ public class AveragingSlicingDevice extends SlicingRunnableDevice<SlicingModel> 
 	@Override
 	public boolean process(SliceDeviceContext context) throws ScanningException {
 		
-		
+		averaged.setChunking(info.createChunk(getDataShape(context.getData())));
+		 		
 		double mean = (Double)context.getSlice().squeeze().mean();
 
-		averaged.setChunking(info.createChunk(getDataShape(context.getData())));
- 
 		IScanSlice sslice  = IScanRankService.getScanRankService().createScanSlice(context.getLocation());
 		SliceND    slicenD = new SliceND(averaged.getShape(), averaged.getMaxShape(), sslice.getStart(), sslice.getStop(), sslice.getStep());
 		try {

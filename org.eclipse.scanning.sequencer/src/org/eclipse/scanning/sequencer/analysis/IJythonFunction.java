@@ -9,5 +9,5 @@ public interface IJythonFunction {
 	 * @param slice
 	 * @return
 	 */
-	public IDataset function(IDataset slice);
+	public IDataset process(IDataset slice);
 }

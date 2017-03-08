@@ -13,6 +13,14 @@ class MaxFunction(IJythonFunction):
     
     def process(self, dataset):
         
-        max = dataset.max()
+        max = dataset.max(False, False)
         return DatasetFactory.createFromObject(max)
+
+
+class SumFunction(IJythonFunction):
+    
+    def process(self, dataset):
+        
+        sum = dataset.sum()
+        return DatasetFactory.createFromObject(sum)
        
