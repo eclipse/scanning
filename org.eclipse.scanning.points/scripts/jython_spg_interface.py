@@ -264,6 +264,25 @@ class JCompoundGenerator(JavaIteratorWrapper):
                 scan_name.add(axis)
                 
             self.dimension_names.add(scan_name)
+        for excluder in excluders:
+            # axes connected by excluders are "unrolled",
+            # unless we're considering a pair of line generators covered by
+            # a single rectangular ROI
+            matched_axes = [a for a in self.axes_ordering if a in excluder.axes]
+            if len(matched_axes) == 0:
+                continue
+            if len(matched_axes) == 2:
+                matched_g1 = [g for g in generators if matched_axes[0] in g.axes][0]
+                matched_g2 = [g for g in generators if matched_axes[1] in g.axes][0]
+                if isinstance(matched_g1, LineGenerator) \
+                        and isinstance(matched_g2, LineGenerator) \
+                        and len(excluder.rois) == 1 \
+                        and isinstance(excluder.rois[0], RectangularROI):
+                    continue
+            inner_axis = matched_axes[0]
+            inner_idx = self.axes_ordering.index(inner_axis)
+            for a in matched_axes[1:]:
+                self.index_locations[a] = inner_idx
         
         logging.debug("Index Locations:")
         logging.debug(self.index_locations)
