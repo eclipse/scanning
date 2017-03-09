@@ -47,7 +47,6 @@ public class DummyMalcolmModel extends MalcolmModel implements ITimeoutable {
 		setAxesToMove(axes); // determines the _set (i.e. demand) values to be written
 		setPositionerNames(axes); // determines the value (a.k.a rbv) values to be written
 		setDummyDetectorModels(Arrays.asList(detModel));
-		setTimeout(-1);
 	}
 	
 	public List<DummyMalcolmControlledDetectorModel> getDummyDetectorModels() {

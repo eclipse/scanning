@@ -22,7 +22,7 @@ import org.eclipse.scanning.api.annotation.ui.FileType;
 public class MalcolmModel extends AbstractDetectorModel implements IMalcolmModel {
 
 	public MalcolmModel() {
-		setTimeout(60*24); // 1 Day
+		setTimeout(60*60*24); // 1 Day
 	}
 	/**
 	 * The folder for malcolm to create its HDF5 files in. This is set by the scan, any value
