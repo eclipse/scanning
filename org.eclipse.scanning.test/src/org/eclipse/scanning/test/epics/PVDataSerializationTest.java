@@ -37,7 +37,6 @@ import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.connector.epics.EpicsV4ConnectorService;
 import org.eclipse.scanning.points.PointGeneratorService;
-import org.eclipse.scanning.points.mutators.FixedDurationMutator;
 import org.eclipse.scanning.points.mutators.RandomOffsetMutator;
 import org.epics.pvdata.factory.FieldFactory;
 import org.epics.pvdata.factory.PVDataFactory;
@@ -614,7 +613,6 @@ public class PVDataSerializationTest {
 		regions.add(new CircularROI(2, 6, 7));
 		
 		List<IMutator> mutators = new LinkedList<>();
-		mutators.add(new FixedDurationMutator(23));
 		
 		IPointGeneratorService pgService = new PointGeneratorService();
 		GridModel gm = new GridModel("stage_x", "stage_y");
@@ -1041,7 +1039,6 @@ public class PVDataSerializationTest {
 		regions.add(rRoi2);
 		
 		List<IMutator> mutators = new LinkedList<>();
-		mutators.add(new FixedDurationMutator(23));
 		
 		IPointGeneratorService pgService = new PointGeneratorService();
 		GridModel gm = new GridModel("stage_x", "stage_y");
