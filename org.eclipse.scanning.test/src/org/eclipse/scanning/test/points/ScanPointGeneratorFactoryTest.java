@@ -64,12 +64,13 @@ public class ScanPointGeneratorFactoryTest {
         JythonObjectFactory lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator2DFactory();
 
         PyList names = new PyList(Arrays.asList(new String[] {"X", "Y"}));
+        PyList units = new PyList(Arrays.asList(new String[] {"mm", "mm"}));
         double[] start = {1.0, 2.0};
         double[] stop = {5.0, 10.0};
         
         @SuppressWarnings("unchecked")
 		Iterator<IPosition> iterator = (Iterator<IPosition>) lineGeneratorFactory.createObject(
-				names, "mm", start, stop, 5);
+				names, units, start, stop, 5);
         
         List<Object> expected_points = new ArrayList<Object>();
 	    expected_points.add(new Point("X", 0, 1.0, "Y", 0, 2.0, false));
