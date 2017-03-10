@@ -12,11 +12,14 @@
 package org.eclipse.scanning.test.points;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.dawnsci.analysis.dataset.roi.RectangularROI;
 import org.eclipse.scanning.api.points.IPosition;
@@ -174,7 +177,7 @@ public class ScanPointGeneratorFactoryTest {
 	    expected_points.add(new Point("X", 2, 0.03768323863482717, "Y", 2, 0.05649510414594954, false));
 	    expected_points.add(new Point("X", 3, 0.05649510414594954, "Y", 3, 0.08464228865511125, false));
 	    expected_points.add(new Point("X", 4, 0.07527128613841116, "Y", 4, 0.1126691918405678, false));
-	    expected_points.add(new Point("X", 5, 0.0939999251732282, "Y", 5, 0.14053598593929348, false));
+	    expected_points.add(new Point("X", 5, 0.0939999251732282, "Y", 5, 0.14053598593929345, false));
 	    
 	    int index = 0;
         while (iterator.hasNext() && index < 6){  // Just get first few points
@@ -262,38 +265,28 @@ public class ScanPointGeneratorFactoryTest {
 		@SuppressWarnings("unchecked")
 		Iterator<IPosition> iterator = (Iterator<IPosition>)  compoundGeneratorFactory.createObject(
 				generators, excluders, mutators);
-        
-        List<Object> expected_points = new ArrayList<Object>();
-//	    expected_points.add(new MapPosition("x:0:1.1984860665000001, y:0:2.0248069105"));
-//	    expected_points.add(new MapPosition("x:1:2.328712106, y:0:1.674470636"));
-//	    expected_points.add(new MapPosition("x:2:3.0371860455, y:0:2.4094030615"));
-//	    expected_points.add(new MapPosition("x:3:3.9511518765, y:0:2.115850706"));
-//	    expected_points.add(new MapPosition("x:4:5.043717526, y:0:1.5626032015"));
-//	    expected_points.add(new MapPosition("x:0:0.6772733115, y:1:4.1939752055"));
-//	    expected_points.add(new MapPosition("x:1:1.5828061555000001, y:1:3.9489767459999996"));
-//	    expected_points.add(new MapPosition("x:2:3.3888981960000004, y:1:3.661987452"));
-//	    expected_points.add(new MapPosition("x:3:3.9093635265, y:1:4.2730717205"));
-//	    expected_points.add(new MapPosition("x:4:4.554744956, y:1:3.8436031415"));
-	    expected_points.add(new Point("x", 0, 1.0248069105000002, "y", 0, 2.1984860665));
-	    expected_points.add(new Point("x", 1, 1.674470636, "y", 0, 2.328712106));
-	    expected_points.add(new Point("x", 2, 3.4094030615, "y", 0, 2.0371860455));
-	    expected_points.add(new Point("x", 3, 4.115850706, "y", 0, 1.9511518765));
-	    expected_points.add(new Point("x", 4, 4.5626032015, "y", 0, 2.043717526));
-	    expected_points.add(new Point("x", 0, 1.1939752055, "y", 1, 3.6772733115));
-	    expected_points.add(new Point("x", 1, 1.9489767459999996, "y", 1, 3.5828061555000001));
-	    expected_points.add(new Point("x", 2, 2.661987452, "y", 1, 4.3888981960000004));
-	    expected_points.add(new Point("x", 3, 4.2730717205, "y", 1, 3.9093635265));
-	    expected_points.add(new Point("x", 4, 4.8436031415, "y", 1, 3.554744956));
-	    
-	    int index = 0;
-        while (iterator.hasNext() && index < 10){  // Just get first few points
 
-            Object point = iterator.next();
-            assertEquals(expected_points.get(index), point);
-            expected_points.add(point);
-
-        	index++;
-        }
-        assertEquals(10, index);
-    }
+		List<IPosition> vanilla_points = new ArrayList<IPosition>(10);
+		vanilla_points.add(new Point("x", 0, 1.0, "y", 0, 2.0));
+		vanilla_points.add(new Point("x", 1, 2.0, "y", 0, 2.0));
+		vanilla_points.add(new Point("x", 2, 3.0, "y", 0, 2.0));
+		vanilla_points.add(new Point("x", 3, 4.0, "y", 0, 2.0));
+		vanilla_points.add(new Point("x", 4, 5.0, "y", 0, 2.0));
+		vanilla_points.add(new Point("x", 0, 1.0, "y", 1, 4.0));
+		vanilla_points.add(new Point("x", 1, 2.0, "y", 1, 4.0));
+		vanilla_points.add(new Point("x", 2, 3.0, "y", 1, 4.0));
+		vanilla_points.add(new Point("x", 3, 4.0, "y", 1, 4.0));
+		vanilla_points.add(new Point("x", 4, 5.0, "y", 1, 4.0));
+		Iterator<IPosition> itV = vanilla_points.iterator();
+		while (iterator.hasNext() && itV.hasNext()) {
+			IPosition point = iterator.next();
+			IPosition vp = itV.next();
+			assertEquals(vp.getIndices(), point.getIndices());
+			assertEquals(vp.getNames(), point.getNames());
+			for (String axis : vp.getNames()) {
+				assertEquals(vp.getValue(axis), point.getValue(axis), (double) maxOffset.get(axis));
+			}
+		}
+		assertFalse(itV.hasNext());
+	}
 }
