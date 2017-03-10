@@ -50,12 +50,13 @@
       <feature id="org.eclipse.equinox.p2.core.feature" version="1.3.100.v20150527-1706"/>
       <feature id="org.dawnsci.plotting.draw2d.feature"/>
       <feature id="org.dawnsci.plotting.feature"/>
-      <feature id="org.dawnsci.conversion.feature" version="1.0.0.v20160810-1545"/>
       <feature id="uk.ac.diamond.scisoft.core.feature"/>
       <feature id="org.dawnsci.common.ui.feature"/>
       <feature id="org.dawb.visualization.feature"/>
       <feature id="uk.ac.diamond.scisoft.ui.feature"/>
       <feature id="org.dawnsci.base.product.feature"/>
+      <feature id="org.dawnsci.conversion.feature" version="1.0.0.v20170303-1656"/>
+      <feature id="org.eclipse.scanning.third.feature" version="1.0.0.qualifier"/>
    </features>
 
 
