@@ -13,6 +13,8 @@ package org.eclipse.scanning.test.epics;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -72,7 +74,6 @@ public class PVDataSerializationTest {
 		this.connectorService = new EpicsV4ConnectorService();
 	}
 	
-	@Ignore // TODO Un-Ignore when excluders are fixed in python
 	@Test
 	public void TestCircularROI() throws Exception {
 
@@ -93,7 +94,9 @@ public class PVDataSerializationTest {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
 
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
-		
+
+		Union union = fieldCreate.createVariantUnion();
+
 		Structure expectedCircularRoiStructure = fieldCreate.createFieldBuilder().
 				addArray("centre", ScalarType.pvDouble).
 				add("radius", ScalarType.pvDouble).
@@ -101,13 +104,13 @@ public class PVDataSerializationTest {
 				createStructure();
 		
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
-				addArray("scannables", ScalarType.pvString).
-				add("roi", expectedCircularRoiStructure).				
+				setId("scanpointgenerator:excluder/ROIExcluder:1.0").
+				addArray("axes", ScalarType.pvString).
+				addArray("rois", union).
 				createStructure();
-
-		Union union = fieldCreate.createVariantUnion();
 		
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
+				add("duration", ScalarType.pvDouble).
 				addArray("mutators", union).				
 				addArray("generators", union).				
 				addArray("excluders", union).	
@@ -115,19 +118,24 @@ public class PVDataSerializationTest {
 				createStructure();
 		
 		PVStructure expectedExcluderPVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
-		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "scannables");
+		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] scannables = new String[] {"stage_x", "stage_y"};
 		scannablesVal.put(0, scannables.length, scannables, 0);
 		
-		PVStructure expectedROIPVStructure = expectedExcluderPVStructure.getStructureField("roi");
+		PVStructure expectedROIPVStructure = pvDataCreate.createPVStructure(expectedCircularRoiStructure);
+		PVUnionArray rois = expectedExcluderPVStructure.getSubField(PVUnionArray.class, "rois");
 
 		PVDoubleArray centreVal = expectedROIPVStructure.getSubField(PVDoubleArray.class, "centre");
 		double[] centre = new double[] {6, 7};
 		centreVal.put(0, centre.length, centre, 0);
 		PVDouble radiusVal = expectedROIPVStructure.getSubField(PVDouble.class, "radius");
 		radiusVal.put(2);
-		
-		
+
+		PVUnion[] roiArray = new PVUnion[1];
+		roiArray[0] = pvDataCreate.createPVUnion(union);
+		roiArray[0].set(expectedROIPVStructure);
+		rois.put(0, roiArray.length, roiArray, 0);
+
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
 		PVUnionArray excluders = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "excluders");
 		
@@ -144,7 +152,6 @@ public class PVDataSerializationTest {
 		assertEquals(expectedCompGenPVStructure.getSubField("excluders"), pvStructure.getSubField("excluders"));
 	}
 	
-	@Ignore // TODO Un-Ignore when excluders are fixed in python
 	@Test
 	public void TestEllipticalROI() throws Exception {
 
@@ -169,20 +176,21 @@ public class PVDataSerializationTest {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
 
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
+
+		Union union = fieldCreate.createVariantUnion();
 		
 		Structure expectedEllipticalRoiStructure = fieldCreate.createFieldBuilder().
 				addArray("semiaxes", ScalarType.pvDouble).
 				addArray("centre", ScalarType.pvDouble).
 				add("angle", ScalarType.pvDouble).
-				setId("scanpointgenerator:roi/EllipticalROI:1.0").					
+				setId("scanpointgenerator:roi/EllipticalROI:1.0").
 				createStructure();
 		
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
-				addArray("scannables", ScalarType.pvString).
-				add("roi", expectedEllipticalRoiStructure).				
+				addArray("axes", ScalarType.pvString).
+				addArray("rois", union).
+				setId("scanpointgenerator:excluder/ROIExcluder:1.0").
 				createStructure();
-
-		Union union = fieldCreate.createVariantUnion();
 		
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).				
@@ -192,11 +200,12 @@ public class PVDataSerializationTest {
 				createStructure();
 		
 		PVStructure expectedExcluderPVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
-		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "scannables");
+		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] scannables = new String[] {"stage_x", "stage_y"};
 		scannablesVal.put(0, scannables.length, scannables, 0);
 		
-		PVStructure expectedROIPVStructure = expectedExcluderPVStructure.getStructureField("roi");
+		PVStructure expectedROIPVStructure = pvDataCreate.createPVStructure(expectedEllipticalRoiStructure);
+		PVUnionArray rois = expectedExcluderPVStructure.getSubField(PVUnionArray.class, "rois");
 
 		PVDoubleArray semiaxesVal = expectedROIPVStructure.getSubField(PVDoubleArray.class, "semiaxes");
 		double[] semiaxes = new double[] {7, 8};
@@ -206,8 +215,12 @@ public class PVDataSerializationTest {
 		centreVal.put(0, centre.length, centre, 0);
 		PVDouble angleVal = expectedROIPVStructure.getSubField(PVDouble.class, "angle");
 		angleVal.put(1.5);
-		
-		
+	
+		PVUnion[] roiArray = new PVUnion[1];
+		roiArray[0] = pvDataCreate.createPVUnion(union);
+		roiArray[0].set(expectedROIPVStructure);
+		rois.put(0, roiArray.length, roiArray, 0);
+	
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
 		PVUnionArray generators = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "excluders");
 		
@@ -219,7 +232,7 @@ public class PVDataSerializationTest {
 		
 		// Marshal and check against expected
 		PVStructure pvStructure = connectorService.pvMarshal(scan);
-		
+
 		assertEquals(expectedCompGenPVStructure.getStructure().getField("excluders"), pvStructure.getStructure().getField("excluders"));
 		assertEquals(expectedCompGenPVStructure.getSubField("excluders"), pvStructure.getSubField("excluders"));
 	}
@@ -268,7 +281,8 @@ public class PVDataSerializationTest {
 		assertEquals(expectedCompGenPVStructure.getSubField("excluders"), pvStructure.getSubField("excluders"));
 	}
 	
-	@Ignore // TODO Un-Ignore when excluders are fixed in python
+	@Ignore // TODO: Allow Java Generator construction without calling CompoundGenerator.prepare,
+	        // to allow "empty" scans to be described
 	@Test
 	public void TestPointROI() throws Exception {
 
@@ -303,12 +317,12 @@ public class PVDataSerializationTest {
 				createStructure();
 		
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
-				addArray("scannables", ScalarType.pvString).
+				addArray("axes", ScalarType.pvString).
 				add("roi", expectedPointRoiStructure).				
 				createStructure();
 		
 		Structure expectedCircleExcluderStructure = fieldCreate.createFieldBuilder().
-				addArray("scannables", ScalarType.pvString).
+				addArray("axes", ScalarType.pvString).
 				add("roi", expectedCircularRoiStructure).				
 				createStructure();
 
@@ -322,7 +336,7 @@ public class PVDataSerializationTest {
 				createStructure();
 		
 		PVStructure expectedExcluderPVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
-		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "scannables");
+		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] scannables = new String[] {"stage_x", "stage_y"};
 		scannablesVal.put(0, scannables.length, scannables, 0);
 		
@@ -334,7 +348,7 @@ public class PVDataSerializationTest {
 		
 		// Create Expected for Circle too
 		PVStructure expectedCircleExcluderPVStructure = pvDataCreate.createPVStructure(expectedCircleExcluderStructure);
-		PVStringArray circleScannablesVal = expectedCircleExcluderPVStructure.getSubField(PVStringArray.class, "scannables");
+		PVStringArray circleScannablesVal = expectedCircleExcluderPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] circleScannables = new String[] {"stage_x", "stage_y"};
 		circleScannablesVal.put(0, circleScannables.length, circleScannables, 0);
 		
@@ -364,8 +378,7 @@ public class PVDataSerializationTest {
 		assertEquals(expectedCompGenPVStructure.getStructure().getField("excluders"), pvStructure.getStructure().getField("excluders"));
 		assertEquals(expectedCompGenPVStructure.getSubField("excluders"), pvStructure.getSubField("excluders"));
 	}
-	
-	@Ignore // Ignore until the Polygon roi in python has been changed to accept two arrays.
+
 	@Test
 	public void TestPolygonalROI() throws Exception {
 
@@ -375,7 +388,6 @@ public class PVDataSerializationTest {
 		diamond.insertPoint(new double[] { 3, 1.5 });
 		diamond.insertPoint(new double[] { 1.5, 3 });
 		diamond.insertPoint(new double[] { 0, 1.5 });
-		diamond.insertPoint(new double[] { 1.5, 0 });
 		regions.add(diamond);
 		
 		IPointGeneratorService pgService = new PointGeneratorService();
@@ -391,41 +403,49 @@ public class PVDataSerializationTest {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
 
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
-		
-		Structure expectedCircularRoiStructure = fieldCreate.createFieldBuilder().
-				addArray("centre", ScalarType.pvDouble).
-				add("radius", ScalarType.pvDouble).
-				setId("scanpointgenerator:roi/CircularROI:1.0").					
+
+		Union union = fieldCreate.createVariantUnion();
+
+		Structure expectedRoiStructure = fieldCreate.createFieldBuilder().
+				addArray("points_x", ScalarType.pvDouble).
+				addArray("points_y", ScalarType.pvDouble).
+				setId("scanpointgenerator:roi/PolygonalROI:1.0").
 				createStructure();
 		
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
-				addArray("scannables", ScalarType.pvString).
-				add("roi", expectedCircularRoiStructure).				
+				addArray("axes", ScalarType.pvString).
+				addArray("rois", union).
+				setId("scanpointgenerator:excluder/ROIExcluder:1.0").
 				createStructure();
 
-		Union union = fieldCreate.createVariantUnion();
-		
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
+				addArray("mutators", union).
+				add("duration", ScalarType.pvDouble).
 				addArray("generators", union).				
 				addArray("excluders", union).	
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 		
 		PVStructure expectedExcluderPVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
-		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "scannables");
+		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] scannables = new String[] {"stage_x", "stage_y"};
 		scannablesVal.put(0, scannables.length, scannables, 0);
-		
-		PVStructure expectedROIPVStructure = expectedExcluderPVStructure.getStructureField("roi");
 
-		PVDoubleArray centreVal = expectedROIPVStructure.getSubField(PVDoubleArray.class, "centre");
-		double[] centre = new double[] {6, 7};
-		centreVal.put(0, centre.length, centre, 0);
-		PVDouble radiusVal = expectedROIPVStructure.getSubField(PVDouble.class, "radius");
-		radiusVal.put(2);
-		
-		
+		PVStructure expectedROIPVStructure = pvDataCreate.createPVStructure(expectedRoiStructure);
+		PVUnionArray rois = expectedExcluderPVStructure.getSubField(PVUnionArray.class, "rois");
+
+		PVDoubleArray xVal = expectedROIPVStructure.getSubField(PVDoubleArray.class, "points_x");
+		double[] points_x = new double[] {1.5, 3, 1.5, 0};
+		xVal.put(0, points_x.length, points_x, 0);
+		PVDoubleArray yVal = expectedROIPVStructure.getSubField(PVDoubleArray.class, "points_y");
+		double[] points_y = new double[] {0, 1.5, 3, 1.5};
+		yVal.put(0, points_y.length, points_y, 0);
+
+		PVUnion[] roiArray = new PVUnion[1];
+		roiArray[0] = pvDataCreate.createPVUnion(union);
+		roiArray[0].set(expectedROIPVStructure);
+		rois.put(0, roiArray.length, roiArray, 0);
+
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
 		PVUnionArray generators = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "excluders");
 		
@@ -442,7 +462,6 @@ public class PVDataSerializationTest {
 		assertEquals(expectedCompGenPVStructure.getSubField("excluders"), pvStructure.getSubField("excluders"));
 	}
 	
-	@Ignore // TODO Un-Ignore when excluders are fixed in python
 	@Test
 	public void TestRectangularROI() throws Exception {
 
@@ -467,6 +486,7 @@ public class PVDataSerializationTest {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
 
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
+		Union union = fieldCreate.createVariantUnion();
 		
 		Structure expectedCircularRoiStructure = fieldCreate.createFieldBuilder().
 				addArray("start", ScalarType.pvDouble).
@@ -477,13 +497,13 @@ public class PVDataSerializationTest {
 				createStructure();
 		
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
-				addArray("scannables", ScalarType.pvString).
-				add("roi", expectedCircularRoiStructure).				
+				setId("scanpointgenerator:excluder/ROIExcluder:1.0").
+				addArray("axes", ScalarType.pvString).
+				addArray("rois", union).
 				createStructure();
-
-		Union union = fieldCreate.createVariantUnion();
 		
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
+				add("duration", ScalarType.pvDouble).
 				addArray("mutators", union).				
 				addArray("generators", union).				
 				addArray("excluders", union).	
@@ -491,11 +511,12 @@ public class PVDataSerializationTest {
 				createStructure();
 		
 		PVStructure expectedExcluderPVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
-		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "scannables");
+		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] scannables = new String[] {"stage_x", "stage_y"};
 		scannablesVal.put(0, scannables.length, scannables, 0);
 		
-		PVStructure expectedROIPVStructure = expectedExcluderPVStructure.getStructureField("roi");
+		PVStructure expectedROIPVStructure = pvDataCreate.createPVStructure(expectedCircularRoiStructure);
+		PVUnionArray rois = expectedExcluderPVStructure.getSubField(PVUnionArray.class, "rois");
 
 		PVDoubleArray startVal = expectedROIPVStructure.getSubField(PVDoubleArray.class, "start");
 		double[] start = new double[] {7, 3};
@@ -506,8 +527,12 @@ public class PVDataSerializationTest {
 		heightVal.put(16);
 		PVDouble angleVal = expectedROIPVStructure.getSubField(PVDouble.class, "angle");
 		angleVal.put(1.2);
-		
-		
+
+		PVUnion[] roiUnionArray = new PVUnion[1];
+		roiUnionArray[0] = pvDataCreate.createPVUnion(union);
+		roiUnionArray[0].set(expectedROIPVStructure);
+		rois.put(0, roiUnionArray.length, roiUnionArray, 0);
+
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
 		PVUnionArray generators = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "excluders");
 		
@@ -524,7 +549,6 @@ public class PVDataSerializationTest {
 		assertEquals(expectedCompGenPVStructure.getSubField("excluders"), pvStructure.getSubField("excluders"));
 	}
 	
-	@Ignore // TODO Un-Ignore when excluders are fixed in python
 	@Test
 	public void TestSectorROI() throws Exception {
 
@@ -532,8 +556,8 @@ public class PVDataSerializationTest {
 		List<IROI> regions = new LinkedList<>();
 		SectorROI sRoi = new SectorROI();
 		sRoi.setPoint(new double[]{12, 1});
-		sRoi.setRadii(4, 11);
-		sRoi.setAngles(1.1, 2.8);
+		sRoi.setRadii(1, 11);
+		sRoi.setAngles(0, Math.PI);
 		regions.add(sRoi);
 		
 		IPointGeneratorService pgService = new PointGeneratorService();
@@ -549,8 +573,10 @@ public class PVDataSerializationTest {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
 
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
-		
-		Structure expectedCircularRoiStructure = fieldCreate.createFieldBuilder().
+
+		Union union = fieldCreate.createVariantUnion();
+
+		Structure expectedRoiStructure = fieldCreate.createFieldBuilder().
 				addArray("radii", ScalarType.pvDouble).
 				addArray("angles", ScalarType.pvDouble).
 				addArray("centre", ScalarType.pvDouble).
@@ -558,38 +584,45 @@ public class PVDataSerializationTest {
 				createStructure();
 		
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
-				addArray("scannables", ScalarType.pvString).
-				add("roi", expectedCircularRoiStructure).				
+				addArray("axes", ScalarType.pvString).
+				addArray("rois", union).
+				setId("scanpointgenerator:excluder/ROIExcluder:1.0").
 				createStructure();
 
-		Union union = fieldCreate.createVariantUnion();
-		
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
+				addArray("mutators", union).
+				add("duration", ScalarType.pvDouble).
 				addArray("generators", union).				
 				addArray("excluders", union).	
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 		
 		PVStructure expectedExcluderPVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
-		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "scannables");
+		PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] scannables = new String[] {"stage_x", "stage_y"};
 		scannablesVal.put(0, scannables.length, scannables, 0);
 		
-		PVStructure expectedROIPVStructure = expectedExcluderPVStructure.getStructureField("roi");
+		PVStructure expectedROIPVStructure = pvDataCreate.createPVStructure(expectedRoiStructure);
+		PVUnionArray rois = expectedExcluderPVStructure.getSubField(PVUnionArray.class, "rois");
 
 		PVDoubleArray centreVal = expectedROIPVStructure.getSubField(PVDoubleArray.class, "centre");
 		double[] centre = new double[] {12, 1};
 		centreVal.put(0, centre.length, centre, 0);
 		PVDoubleArray radiiVal = expectedROIPVStructure.getSubField(PVDoubleArray.class, "radii");
-		double[] radii = new double[] {4, 11};
+		double[] radii = new double[] {1, 11};
 		radiiVal.put(0, radii.length, radii, 0);
 		PVDoubleArray anglesVal = expectedROIPVStructure.getSubField(PVDoubleArray.class, "angles");
-		double[] angles = new double[] {1.1, 2.8};
+		double[] angles = new double[] {0, Math.PI};
 		anglesVal.put(0, angles.length, angles, 0);
-		
-		
+
+		PVUnion[] roiArray = new PVUnion[1];
+		roiArray[0] = pvDataCreate.createPVUnion(union);
+		roiArray[0].set(expectedROIPVStructure);
+		rois.put(0, roiArray.length, roiArray, 0);
+
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
+		PVDouble durationVal = expectedCompGenPVStructure.getSubField(PVDouble.class, "duration");
+		durationVal.put(-1);
 		PVUnionArray generators = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "excluders");
 		
 		PVUnion[] unionArray = new PVUnion[1];
@@ -600,72 +633,11 @@ public class PVDataSerializationTest {
 		
 		// Marshal and check against expected
 		PVStructure pvStructure = connectorService.pvMarshal(scan);
-		
+
 		assertEquals(expectedCompGenPVStructure.getStructure().getField("excluders"), pvStructure.getStructure().getField("excluders"));
 		assertEquals(expectedCompGenPVStructure.getSubField("excluders"), pvStructure.getSubField("excluders"));
 	}
-	
-	@Test
-	public void TestFixedDurationMutator() throws Exception {
 
-		// Create test generator
-		List<IROI> regions = new LinkedList<>();
-		regions.add(new CircularROI(2, 6, 7));
-		
-		List<IMutator> mutators = new LinkedList<>();
-		
-		IPointGeneratorService pgService = new PointGeneratorService();
-		GridModel gm = new GridModel("stage_x", "stage_y");
-		gm.setSnake(true);
-		gm.setSlowAxisPoints(5);
-		gm.setFastAxisPoints(10);
-		
-		IPointGenerator<GridModel> temp = pgService.createGenerator(gm, regions);
-		IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
-		
-		CompoundModel<?> cm = (CompoundModel<?>) scan.getModel();
-		cm.setMutators(mutators);
-					
-		// Create the expected PVStructure
-		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-
-		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
-		
-		Structure expectedFixedDurationMutatorStructure = fieldCreate.createFieldBuilder().
-				add("duration", ScalarType.pvDouble).
-				setId("scanpointgenerator:mutator/FixedDurationMutator:1.0").					
-				createStructure();
-
-		Union union = fieldCreate.createVariantUnion();
-		
-		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
-				addArray("generators", union).				
-				addArray("excluders", union).	
-				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
-				createStructure();
-		
-		PVStructure expectedMutatorPVStructure = pvDataCreate.createPVStructure(expectedFixedDurationMutatorStructure);
-		PVDouble durationVal = expectedMutatorPVStructure.getSubField(PVDouble.class, "duration");
-		durationVal.put(23);
-		
-		
-		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
-		PVUnionArray generators = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "mutators");
-		
-		PVUnion[] unionArray = new PVUnion[1];
-		unionArray[0] = pvDataCreate.createPVUnion(union);
-		unionArray[0].set(expectedMutatorPVStructure);
-				
-		generators.put(0, unionArray.length, unionArray, 0);
-		
-		// Marshal and check against expected
-		PVStructure pvStructure = connectorService.pvMarshal(scan);
-		
-		assertEquals(expectedCompGenPVStructure.getStructure().getField("mutators"), pvStructure.getStructure().getField("excluders"));
-		assertEquals(expectedCompGenPVStructure.getSubField("mutators"), pvStructure.getSubField("mutators"));
-	}
-	
 	@Test
 	public void TestRandomOffsetMutator() throws Exception {
 
@@ -760,42 +732,46 @@ public class PVDataSerializationTest {
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
 		
 		Structure expectedGeneratorsStructure = fieldCreate.createFieldBuilder().
-				add("num", ScalarType.pvInt).
+				addArray("axes", ScalarType.pvString).
 				addArray("start", ScalarType.pvDouble).
-				add("units", ScalarType.pvString).
+				add("alternate", ScalarType.pvBoolean).
+				addArray("units", ScalarType.pvString).
 				addArray("stop", ScalarType.pvDouble).
-				addArray("name", ScalarType.pvString).
-				add("alternate_direction", ScalarType.pvBoolean).
+				add("size", ScalarType.pvInt).
 				setId("scanpointgenerator:generator/LineGenerator:1.0").					
 				createStructure();
 
 		Union union = fieldCreate.createVariantUnion();
 		
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
+				addArray("mutators", union).
+				add("duration", ScalarType.pvDouble).
 				addArray("generators", union).				
 				addArray("excluders", union).	
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 		
 		PVStructure expectedGeneratorsPVStructure = pvDataCreate.createPVStructure(expectedGeneratorsStructure);
-		PVStringArray nameVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "name");
+		PVStringArray nameVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] name = new String[] {"x"};
 		nameVal.put(0, name.length, name, 0);
-		PVString unitsVal = expectedGeneratorsPVStructure.getSubField(PVString.class, "units");
-		unitsVal.put("mm");
+		PVStringArray unitsVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "units");
+		String[] units = new String[] {"mm"};
+		unitsVal.put(0, units.length, units, 0);
 		PVDoubleArray startVal = expectedGeneratorsPVStructure.getSubField(PVDoubleArray.class, "start");
 		double[] start = new double[] {3};
 		startVal.put(0, start.length, start, 0);
 		PVDoubleArray stopVal = expectedGeneratorsPVStructure.getSubField(PVDoubleArray.class, "stop");
 		double[] stop = new double[] {4};
 		stopVal.put(0, stop.length, stop, 0);
-		PVInt numVal = expectedGeneratorsPVStructure.getSubField(PVInt.class, "num");
+		PVInt numVal = expectedGeneratorsPVStructure.getSubField(PVInt.class, "size");
 		numVal.put(5);
-		PVBoolean adVal = expectedGeneratorsPVStructure.getSubField(PVBoolean.class, "alternate_direction");
+		PVBoolean adVal = expectedGeneratorsPVStructure.getSubField(PVBoolean.class, "alternate");
 		adVal.put(false);
 		
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
+		PVDouble durationVal = expectedCompGenPVStructure.getSubField(PVDouble.class, "duration");
+		durationVal.put(-1);
 		PVUnionArray generators = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "generators");
 		
 		PVUnion[] unionArray = new PVUnion[1];
@@ -836,44 +812,47 @@ public class PVDataSerializationTest {
 				createStructure();
 		
 		Structure expectedGeneratorsStructure = fieldCreate.createFieldBuilder().
-				add("box", expectedBoxStructure).
-				add("units", ScalarType.pvString).
-				add("num_points", ScalarType.pvInt).
-				add("num_lobes", ScalarType.pvInt).
-				addArray("names", ScalarType.pvString).
-				setId("scanpointgenerator:generator/LissajousGenerator:1.0").					
+				addArray("axes", ScalarType.pvString).
+				add("lobes", ScalarType.pvInt).
+				addArray("centre", ScalarType.pvDouble).
+				addArray("units", ScalarType.pvString).
+				add("size", ScalarType.pvInt).
+				addArray("span", ScalarType.pvDouble).
+				setId("scanpointgenerator:generator/LissajousGenerator:1.0").
 				createStructure();
 
 		Union union = fieldCreate.createVariantUnion();
 		
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("mutators", union).
+				add("duration", ScalarType.pvDouble).
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 		
 		PVStructure expectedGeneratorsPVStructure = pvDataCreate.createPVStructure(expectedGeneratorsStructure);
-		PVStringArray nameVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "names");
+		PVStringArray nameVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] name = new String[] {"fan", "san"};
 		nameVal.put(0, name.length, name, 0);
-		PVString unitsVal = expectedGeneratorsPVStructure.getSubField(PVString.class, "units");
-		unitsVal.put("mm");
-		PVInt numPointsVal = expectedGeneratorsPVStructure.getSubField(PVInt.class, "num_points");
+		PVStringArray unitsVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "units");
+		String[] units = new String[] {"mm", "mm"};
+		unitsVal.put(0, units.length, units, 0);
+		PVInt numPointsVal = expectedGeneratorsPVStructure.getSubField(PVInt.class, "size");
 		numPointsVal.put(20);
-		PVInt numLobesVal = expectedGeneratorsPVStructure.getSubField(PVInt.class, "num_lobes");
+		PVInt numLobesVal = expectedGeneratorsPVStructure.getSubField(PVInt.class, "lobes");
 		numLobesVal.put(4);
 		
-		PVStructure expectedBoxPVStructure = expectedGeneratorsPVStructure.getStructureField("box");
-		PVDoubleArray centreVal = expectedBoxPVStructure.getSubField(PVDoubleArray.class, "centre");
+		PVDoubleArray centreVal = expectedGeneratorsPVStructure.getSubField(PVDoubleArray.class, "centre");
 		double[] centre = new double[] {5.0, -2};
 		centreVal.put(0, centre.length, centre, 0);
-		PVDouble widthVal = expectedBoxPVStructure.getSubField(PVDouble.class, "width");
-		widthVal.put(10);
-		PVDouble heightVal = expectedBoxPVStructure.getSubField(PVDouble.class, "height");
-		heightVal.put(6);
+		PVDoubleArray spanVal = expectedGeneratorsPVStructure.getSubField(PVDoubleArray.class, "span");
+		double[] span = new double[] {10, 6};
+		spanVal.put(0, span.length, span, 0);
 		
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
+		PVDouble durationVal = expectedCompGenPVStructure.getSubField(PVDouble.class, "duration");
+		durationVal.put(-1);
 		PVUnionArray generators = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "generators");
 		
 		PVUnion[] unionArray = new PVUnion[1];
@@ -884,7 +863,7 @@ public class PVDataSerializationTest {
 
 		// Marshal and check against expected
 		PVStructure pvStructure = connectorService.pvMarshal(scan);
-		
+
 		assertEquals(expectedCompGenPVStructure.getStructure(), pvStructure.getStructure());
 		assertEquals(expectedCompGenPVStructure, pvStructure);
 	}
@@ -903,11 +882,11 @@ public class PVDataSerializationTest {
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
 		
 		Structure expectedGeneratorsStructure = fieldCreate.createFieldBuilder().
+				addArray("axes", ScalarType.pvString).
 				addArray("centre", ScalarType.pvDouble).
 				add("scale", ScalarType.pvDouble).
-				add("units", ScalarType.pvString).
-				addArray("names", ScalarType.pvString).
-				add("alternate_direction", ScalarType.pvBoolean).
+				add("alternate", ScalarType.pvBoolean).
+				addArray("units", ScalarType.pvString).
 				add("radius", ScalarType.pvDouble).
 				setId("scanpointgenerator:generator/SpiralGenerator:1.0").					
 				createStructure();
@@ -915,18 +894,20 @@ public class PVDataSerializationTest {
 		Union union = fieldCreate.createVariantUnion();
 		
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
+				addArray("mutators", union).
+				add("duration", ScalarType.pvDouble).
 				addArray("generators", union).				
 				addArray("excluders", union).	
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 		
 		PVStructure expectedGeneratorsPVStructure = pvDataCreate.createPVStructure(expectedGeneratorsStructure);
-		PVStringArray nameVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "names");
+		PVStringArray nameVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] name = new String[] {"x", "y"};
 		nameVal.put(0, name.length, name, 0);
-		PVString unitsVal = expectedGeneratorsPVStructure.getSubField(PVString.class, "units");
-		unitsVal.put("mm");
+		PVStringArray unitsVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "units");
+		String[] units = new String[] {"mm", "mm"};
+		unitsVal.put(0, units.length, units, 0);
 		PVDoubleArray centreVal = expectedGeneratorsPVStructure.getSubField(PVDoubleArray.class, "centre");
 		double[] centre = new double[] {1, 7};
 		centreVal.put(0, centre.length, centre, 0);
@@ -934,10 +915,12 @@ public class PVDataSerializationTest {
 		scaleVal.put(2);
 		PVDouble radiusVal = expectedGeneratorsPVStructure.getSubField(PVDouble.class, "radius");
 		radiusVal.put(2.23606797749979);
-		PVBoolean adVal = expectedGeneratorsPVStructure.getSubField(PVBoolean.class, "alternate_direction");
+		PVBoolean adVal = expectedGeneratorsPVStructure.getSubField(PVBoolean.class, "alternate");
 		adVal.put(false);
 		
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
+		PVDouble durationVal = expectedCompGenPVStructure.getSubField(PVDouble.class, "duration");
+		durationVal.put(-1);
 		PVUnionArray generators = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "generators");
 		
 		PVUnion[] unionArray = new PVUnion[1];
@@ -948,7 +931,7 @@ public class PVDataSerializationTest {
 		
 		// Marshal and check against expected
 		PVStructure pvStructure = connectorService.pvMarshal(scan);
-		
+
 		assertEquals(expectedCompGenPVStructure.getStructure(), pvStructure.getStructure());
 		assertEquals(expectedCompGenPVStructure, pvStructure);
 	}
@@ -970,42 +953,46 @@ public class PVDataSerializationTest {
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
 		
 		Structure expectedGeneratorsStructure = fieldCreate.createFieldBuilder().
-				add("num", ScalarType.pvInt).
+				addArray("axes", ScalarType.pvString).
 				addArray("start", ScalarType.pvDouble).
-				add("units", ScalarType.pvString).
+				add("alternate", ScalarType.pvBoolean).
+				addArray("units", ScalarType.pvString).
 				addArray("stop", ScalarType.pvDouble).
-				addArray("name", ScalarType.pvString).
-				add("alternate_direction", ScalarType.pvBoolean).
+				add("size", ScalarType.pvInt).
 				setId("scanpointgenerator:generator/LineGenerator:1.0").					
 				createStructure();
 
 		Union union = fieldCreate.createVariantUnion();
 		
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
+				addArray("mutators", union).
+				add("duration", ScalarType.pvDouble).
 				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 		
 		PVStructure expectedGeneratorsPVStructure = pvDataCreate.createPVStructure(expectedGeneratorsStructure);
-		PVStringArray nameVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "name");
+		PVStringArray nameVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "axes");
 		String[] name = new String[] {"x"};
 		nameVal.put(0, name.length, name, 0);
-		PVString unitsVal = expectedGeneratorsPVStructure.getSubField(PVString.class, "units");
-		unitsVal.put("mm");
+		PVStringArray unitsVal = expectedGeneratorsPVStructure.getSubField(PVStringArray.class, "units");
+		String[] units = new String[] {"mm"};
+		unitsVal.put(0, units.length, units, 0);
 		PVDoubleArray startVal = expectedGeneratorsPVStructure.getSubField(PVDoubleArray.class, "start");
 		double[] start = new double[] {3};
 		startVal.put(0, start.length, start, 0);
 		PVDoubleArray stopVal = expectedGeneratorsPVStructure.getSubField(PVDoubleArray.class, "stop");
 		double[] stop = new double[] {4};
 		stopVal.put(0, stop.length, stop, 0);
-		PVInt numVal = expectedGeneratorsPVStructure.getSubField(PVInt.class, "num");
+		PVInt numVal = expectedGeneratorsPVStructure.getSubField(PVInt.class, "size");
 		numVal.put(5);
-		PVBoolean adVal = expectedGeneratorsPVStructure.getSubField(PVBoolean.class, "alternate_direction");
+		PVBoolean adVal = expectedGeneratorsPVStructure.getSubField(PVBoolean.class, "alternate");
 		adVal.put(false);
 		
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
+		PVDouble durationVal = expectedCompGenPVStructure.getSubField(PVDouble.class, "duration");
+		durationVal.put(-1);
 		PVUnionArray generators = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "generators");
 		
 		PVUnion[] unionArray = new PVUnion[1];
@@ -1020,25 +1007,30 @@ public class PVDataSerializationTest {
 		assertEquals(expectedCompGenPVStructure.getStructure(), pvStructure.getStructure());
 		assertEquals(expectedCompGenPVStructure, pvStructure);
 	}
-	
-	@Ignore // TODO Un-Ignore when excluders are fixed in python
+
 	@Test
 	public void TestFullCompoundGenerator() throws Exception {
+
+		// This test will not behave as expected if either rectangular region has angle == 0
+		// This is due to the LineGenerators being "trimmed" in this case by CompoundGenerator
 
 		// Create test generator
 		List<IROI> regions = new LinkedList<>();
 		RectangularROI rRoi1 = new RectangularROI();
-		rRoi1.setPoint(new double[]{7, 3});
+		rRoi1.setPoint(new double[]{2, 1});
 		rRoi1.setLengths(5, 16);
 		rRoi1.setAngle(Math.PI / 2.0);
 		regions.add(rRoi1);
 		RectangularROI rRoi2 = new RectangularROI();
-		rRoi2.setPoint(new double[]{-4, 40});
+		rRoi2.setPoint(new double[]{-2, 2});
 		rRoi2.setLengths(9, 16);
 		rRoi2.setAngle(0);
 		regions.add(rRoi2);
 		
 		List<IMutator> mutators = new LinkedList<>();
+		Map<String, Double> offsets = new HashMap<String, Double>();
+		offsets.put("stage_x", 0.5);
+		mutators.add(new RandomOffsetMutator(112, Arrays.asList(new String[] {"stage_x"}), offsets));
 		
 		IPointGeneratorService pgService = new PointGeneratorService();
 		GridModel gm = new GridModel("stage_x", "stage_y");
@@ -1056,7 +1048,9 @@ public class PVDataSerializationTest {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
 
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
-		
+
+		Union union = fieldCreate.createVariantUnion();
+
 		Structure expectedCircularRoiStructure = fieldCreate.createFieldBuilder().
 				addArray("start", ScalarType.pvDouble).
 				add("width", ScalarType.pvDouble).
@@ -1066,29 +1060,34 @@ public class PVDataSerializationTest {
 				createStructure();
 		
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
-				addArray("scannables", ScalarType.pvString).
-				add("roi", expectedCircularRoiStructure).				
+				addArray("axes", ScalarType.pvString).
+				addArray("rois", union).
+				setId("scanpointgenerator:excluder/ROIExcluder:1.0").
 				createStructure();
-		
-		Structure expectedFixedDurationMutatorStructure = fieldCreate.createFieldBuilder().
-				add("duration", ScalarType.pvDouble).
-				setId("scanpointgenerator:mutator/FixedDurationMutator:1.0").					
+
+		Structure expectedOffsets = fieldCreate.createFieldBuilder().
+				add("stage_x", ScalarType.pvDouble).
+				createStructure();
+		Structure expectedRandomOffsetMutatorStructure = fieldCreate.createFieldBuilder().
+				add("seed", ScalarType.pvInt).
+				addArray("axes", ScalarType.pvString).
+				add("max_offset", expectedOffsets).
+				setId("scanpointgenerator:mutator/RandomOffsetMutator:1.0").
 				createStructure();
 		
 		Structure expectedLineGeneratorsStructure = fieldCreate.createFieldBuilder().
-				add("num", ScalarType.pvInt).
+				addArray("axes", ScalarType.pvString).
 				addArray("start", ScalarType.pvDouble).
-				add("units", ScalarType.pvString).
+				add("alternate", ScalarType.pvBoolean).
+				addArray("units", ScalarType.pvString).
 				addArray("stop", ScalarType.pvDouble).
-				addArray("name", ScalarType.pvString).
-				add("alternate_direction", ScalarType.pvBoolean).
+				add("size", ScalarType.pvInt).
 				setId("scanpointgenerator:generator/LineGenerator:1.0").					
 				createStructure();
-
-		Union union = fieldCreate.createVariantUnion();
 		
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
+				addArray("mutators", union).
+				add("duration", ScalarType.pvDouble).
 				addArray("generators", union).				
 				addArray("excluders", union).	
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
@@ -1096,14 +1095,15 @@ public class PVDataSerializationTest {
 		
 		// Excluders
 		PVStructure expectedExcluder1PVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
-		PVStringArray scannables1Val = expectedExcluder1PVStructure.getSubField(PVStringArray.class, "scannables");
+		PVStringArray scannables1Val = expectedExcluder1PVStructure.getSubField(PVStringArray.class, "axes");
 		String[] scannables1 = new String[] {"stage_x", "stage_y"};
 		scannables1Val.put(0, scannables1.length, scannables1, 0);
 		
-		PVStructure expectedROI1PVStructure = expectedExcluder1PVStructure.getStructureField("roi");
+		PVStructure expectedROI1PVStructure = pvDataCreate.createPVStructure(expectedCircularRoiStructure);
+		PVUnionArray rois1 = expectedExcluder1PVStructure.getSubField(PVUnionArray.class, "rois");
 
 		PVDoubleArray startVal1 = expectedROI1PVStructure.getSubField(PVDoubleArray.class, "start");
-		double[] start1 = new double[] {7, 3};
+		double[] start1 = new double[] {2, 1};
 		startVal1.put(0, start1.length, start1, 0);
 		PVDouble widthVal1 = expectedROI1PVStructure.getSubField(PVDouble.class, "width");
 		widthVal1.put(5);
@@ -1111,16 +1111,22 @@ public class PVDataSerializationTest {
 		heightVal1.put(16);
 		PVDouble angleVal1 = expectedROI1PVStructure.getSubField(PVDouble.class, "angle");
 		angleVal1.put(Math.PI / 2.0);
+
+		PVUnion[] roi1Array = new PVUnion[1];
+		roi1Array[0] = pvDataCreate.createPVUnion(union);
+		roi1Array[0].set(expectedROI1PVStructure);
+		rois1.put(0, roi1Array.length, roi1Array, 0);
 		
 		PVStructure expectedExcluder2PVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
-		PVStringArray scannables2Val = expectedExcluder2PVStructure.getSubField(PVStringArray.class, "scannables");
+		PVStringArray scannables2Val = expectedExcluder2PVStructure.getSubField(PVStringArray.class, "axes");
 		String[] scannables2 = new String[] {"stage_x", "stage_y"};
 		scannables2Val.put(0, scannables2.length, scannables2, 0);
 		
-		PVStructure expectedROI2PVStructure = expectedExcluder2PVStructure.getStructureField("roi");
+		PVStructure expectedROI2PVStructure = pvDataCreate.createPVStructure(expectedCircularRoiStructure);
+		PVUnionArray rois2 = expectedExcluder2PVStructure.getSubField(PVUnionArray.class, "rois");
 
 		PVDoubleArray startVal2 = expectedROI2PVStructure.getSubField(PVDoubleArray.class, "start");
-		double[] start2 = new double[] {-4, 40};
+		double[] start2 = new double[] {-2, 2};
 		startVal2.put(0, start2.length, start2, 0);
 		PVDouble widthVal2 = expectedROI2PVStructure.getSubField(PVDouble.class, "width");
 		widthVal2.put(9);
@@ -1128,49 +1134,64 @@ public class PVDataSerializationTest {
 		heightVal2.put(16);
 		PVDouble angleVal2 = expectedROI2PVStructure.getSubField(PVDouble.class, "angle");
 		angleVal2.put(0);
-		
+
+		PVUnion[] roi2Array = new PVUnion[1];
+		roi2Array[0] = pvDataCreate.createPVUnion(union);
+		roi2Array[0].set(expectedROI2PVStructure);
+		rois2.put(0, roi2Array.length, roi2Array, 0);
+
 		// Mutators
-		PVStructure expectedMutatorPVStructure = pvDataCreate.createPVStructure(expectedFixedDurationMutatorStructure);
-		PVDouble durationVal = expectedMutatorPVStructure.getSubField(PVDouble.class, "duration");
-		durationVal.put(23);
+		PVStructure expectedMutatorPVStructure = pvDataCreate.createPVStructure(expectedRandomOffsetMutatorStructure);
+		PVStructure expectedOffsetPVStructure = expectedMutatorPVStructure.getStructureField("max_offset");
+		PVDouble offsetVal = expectedOffsetPVStructure.getSubField(PVDouble.class, "stage_x");
+		offsetVal.put(0.5);
+		PVInt seedVal = expectedMutatorPVStructure.getSubField(PVInt.class, "seed");
+		seedVal.put(112);
+		PVStringArray axesVal = expectedMutatorPVStructure.getSubField(PVStringArray.class, "axes");
+		String[] axes = new String[] {"stage_x"};
+		axesVal.put(0, axes.length, axes, 0);
 		
 		// Generators
 		PVStructure expectedGeneratorsPVStructure1 = pvDataCreate.createPVStructure(expectedLineGeneratorsStructure);
-		PVStringArray nameVal1 = expectedGeneratorsPVStructure1.getSubField(PVStringArray.class, "name");
+		PVStringArray nameVal1 = expectedGeneratorsPVStructure1.getSubField(PVStringArray.class, "axes");
 		String[] name1 = new String[] {"stage_y"};
 		nameVal1.put(0, name1.length, name1, 0);
-		PVString unitsVal1 = expectedGeneratorsPVStructure1.getSubField(PVString.class, "units");
-		unitsVal1.put("mm");
+		PVStringArray unitsVal1 = expectedGeneratorsPVStructure1.getSubField(PVStringArray.class, "units");
+		String[] units1 = new String[] {"mm"};
+		unitsVal1.put(0, units1.length, units1, 0);
 		PVDoubleArray gstartVal1 = expectedGeneratorsPVStructure1.getSubField(PVDoubleArray.class, "start");
-		double[] gstart1 = new double[] {8.3};
+		double[] gstart1 = new double[] {2.7};
 		gstartVal1.put(0, gstart1.length, gstart1, 0);
 		PVDoubleArray stopVal1 = expectedGeneratorsPVStructure1.getSubField(PVDoubleArray.class, "stop");
-		double[] stop1 = new double[] {50.7};
+		double[] stop1 = new double[] {16.3};
 		stopVal1.put(0, stop1.length, stop1, 0);
-		PVInt numVal1 = expectedGeneratorsPVStructure1.getSubField(PVInt.class, "num");
+		PVInt numVal1 = expectedGeneratorsPVStructure1.getSubField(PVInt.class, "size");
 		numVal1.put(5);
-		PVBoolean adVal1 = expectedGeneratorsPVStructure1.getSubField(PVBoolean.class, "alternate_direction");
+		PVBoolean adVal1 = expectedGeneratorsPVStructure1.getSubField(PVBoolean.class, "alternate");
 		adVal1.put(false);
 		
 		PVStructure expectedGeneratorsPVStructure2 = pvDataCreate.createPVStructure(expectedLineGeneratorsStructure);
-		PVStringArray nameVal = expectedGeneratorsPVStructure2.getSubField(PVStringArray.class, "name");
+		PVStringArray nameVal = expectedGeneratorsPVStructure2.getSubField(PVStringArray.class, "axes");
 		String[] name = new String[] {"stage_x"};
 		nameVal.put(0, name.length, name, 0);
-		PVString unitsVal = expectedGeneratorsPVStructure2.getSubField(PVString.class, "units");
-		unitsVal.put("mm");
+		PVStringArray unitsVal = expectedGeneratorsPVStructure2.getSubField(PVStringArray.class, "units");
+		String[] units2 = new String[] {"mm"};
+		unitsVal.put(0, units2.length, units2, 0);
 		PVDoubleArray startVal = expectedGeneratorsPVStructure2.getSubField(PVDoubleArray.class, "start");
-		double[] start = new double[] {-8.2};
+		double[] start = new double[] {-12.95};
 		startVal.put(0, start.length, start, 0);
 		PVDoubleArray stopVal = expectedGeneratorsPVStructure2.getSubField(PVDoubleArray.class, "stop");
-		double[] stop = new double[] {6.200000000000001};
+		double[] stop = new double[] {5.950000000000003};
 		stopVal.put(0, stop.length, stop, 0);
-		PVInt numVal = expectedGeneratorsPVStructure2.getSubField(PVInt.class, "num");
+		PVInt numVal = expectedGeneratorsPVStructure2.getSubField(PVInt.class, "size");
 		numVal.put(10);
-		PVBoolean adVal = expectedGeneratorsPVStructure2.getSubField(PVBoolean.class, "alternate_direction");
+		PVBoolean adVal = expectedGeneratorsPVStructure2.getSubField(PVBoolean.class, "alternate");
 		adVal.put(true);
 		
 		
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
+		PVDouble durationVal = expectedCompGenPVStructure.getSubField(PVDouble.class, "duration");
+		durationVal.put(-1);
 		PVUnionArray excluders = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "excluders");
 		
 		PVUnion[] unionArray = new PVUnion[2];
