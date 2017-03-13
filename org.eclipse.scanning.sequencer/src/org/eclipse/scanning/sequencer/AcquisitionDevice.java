@@ -597,7 +597,11 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		try {
 			awaitPaused = true;
 			if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
-				if (device instanceof IPausableDevice) ((IPausableDevice)device).pause();
+				if (device.getDeviceState() == DeviceState.RUNNING) {
+					if (device instanceof IPausableDevice) ((IPausableDevice)device).pause();
+				} else {
+					logger.info("Device " + device.getName() + " wasn't running to pause");
+				}
 			}
 			setDeviceState(DeviceState.PAUSED);
 			
@@ -645,10 +649,18 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		try {
 			awaitPaused = false;
 			if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
-				if (device instanceof IPausableDevice) ((IPausableDevice)device).resume();
+				if (device.getDeviceState() == DeviceState.PAUSED) {
+					if (device instanceof IPausableDevice) ((IPausableDevice)device).resume();
+				} else {
+					logger.info("Device " + device.getName() + " wasn't paused to resume");
+				}
 			}
 			paused.signalAll();
-			// Notify of running is in checkPaused()
+			// Notify of running is in checkPaused() but if it's in an inner scan, this wont be called so set states here
+			if (location.isInnerScan()) {
+				getBean().setStatus(Status.RESUMED);
+        		setDeviceState(DeviceState.RUNNING);
+			}
 			
 		} catch (ScanningException s) {
 			throw s;
@@ -663,6 +675,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	@Override
 	public void positionPerformed(PositionEvent evt) throws ScanningException {
 		if (location.isInnerScan()) {
+			location.setStepNumber(evt.getPosition().getStepIndex());
 			innerPositionPercentComplete();
 		}
 	}

@@ -357,6 +357,8 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	
 	private int scanRank;
 	
+	DeviceState deviceState;
+	
 	// the dummy devices are responsible for writing the nexus files 
 	private Map<String, IDummyMalcolmControlledDevice> devices = null;
 	
@@ -507,10 +509,15 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	
 	@Override
 	protected void setDeviceState(DeviceState nstate) throws ScanningException {
-		super.setDeviceState(nstate);
+		deviceState = nstate;
 		if (state != null) {
 			state.setValue(nstate.toString());
 		}
+	}
+	
+	@Override
+	public DeviceState getDeviceState() throws ScanningException {
+		return deviceState;
 	}
 	
 	@PreConfigure
@@ -804,6 +811,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	@Override
 	public void resume() throws ScanningException {
 		paused = false;
+		setDeviceState(DeviceState.RUNNING);
 	}
 	
 	@Override
