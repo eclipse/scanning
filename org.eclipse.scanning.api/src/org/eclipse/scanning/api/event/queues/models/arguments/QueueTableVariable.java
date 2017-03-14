@@ -17,16 +17,26 @@ public class QueueTableVariable<A, V> extends QueueVariableDecorator<A, V> {
 	private IQueueValue<Map<A, V>> table;
 
 	/**
-	 * Construct new LookupArg from an {@link IQueueValue} containing a lookup 
-	 * table ({@link Map}) and an {@link IQueueValue} which provides a key. The
-	 *  key is used to select the value from the table.
+	 * Construct new QueueTableVariable from an {@link IQueueValue} containing 
+	 * a lookup table ({@link Map}) and an {@link IQueueValue} which provides 
+	 * a key. The key is used to select the value from the table. A name can 
+	 * also optionally be provided for this variable.
 	 * 
+	 * @param name String name for argument
 	 * @param arg Supplying the key
 	 * @param lookupTable Containing keys and values to be returned
 	 */
-	public QueueTableVariable(IQueueValue<A> arg, IQueueValue<Map<A, V>> table) {
-		super(arg);
+	public QueueTableVariable(String name, IQueueValue<A> arg, IQueueValue<Map<A, V>> table) {
+		super(name, arg);
 		this.table = table;
+	}
+	
+	/**
+	 * Construct a new QueueTableVariable without a name (for full details, 
+	 * {@see #QueueTableVariable(String, IQueueValue, IQueueValue)})
+	 */
+	public QueueTableVariable(IQueueValue<A> arg, IQueueValue<Map<A, V>> table) {
+		this(null, arg, table);
 	}
 
 	@Override

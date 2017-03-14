@@ -13,6 +13,7 @@ import org.eclipse.scanning.api.event.queues.models.QueueModelException;
  */
 public class QueueValue<V> implements IQueueValue<V> {
 	
+	private String name;
 	private V value;
 	
 	/**
@@ -21,6 +22,11 @@ public class QueueValue<V> implements IQueueValue<V> {
 	 * @param parameter value V to be stored in this argument.
 	 */
 	public QueueValue(V value) {
+		this(null, value);
+	}
+	
+	public QueueValue(String name, V value) {
+		this.name = name;
 		this.value = value;
 	}
 
@@ -38,5 +44,15 @@ public class QueueValue<V> implements IQueueValue<V> {
 	public void setValue(V value) {
 		this.value = value;
 	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	} 
 	
 }

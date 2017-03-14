@@ -12,10 +12,12 @@ package org.eclipse.scanning.api.event.queues.models.arguments;
 public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, V> {
 	
 	protected IQueueValue<A> arg;
+	private String name;
 	protected V value;
 	
-	protected QueueVariableDecorator(IQueueValue<A> arg) {
+	protected QueueVariableDecorator(String name, IQueueValue<A> arg) {
 		this.arg = arg;
+		this.name = name;
 	}
 	
 	@Override
@@ -39,4 +41,15 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 	 * determine the value of this ArgDecorator.
 	 */
 	protected abstract V processArg(A parameter);
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = name;
+	}
+
 }

@@ -10,6 +10,10 @@ package org.eclipse.scanning.api.event.queues.models.arguments;
  */
 public interface IQueueValue<V> {
 	
+	public String getName();
+	
+	public void setName(String name);
+	
 	/**
 	 * Calculate the new value of this IQueueValue and return it.
 	 * 
