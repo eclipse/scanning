@@ -81,8 +81,8 @@ public class ExampleMalcolmDeviceTest {
 			regions.add(new CircularROI(4, 8, 9));
 			
 			IPointGeneratorService pgService = new PointGeneratorService();
-			IPointGenerator<SpiralModel> temp = pgService
-					.createGenerator(new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
+			IPointGenerator<SpiralModel> temp = pgService.createGenerator(
+					new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
 			IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
 			
 			ExampleMalcolmModel pmac1 = new ExampleMalcolmModel();
@@ -91,7 +91,7 @@ public class ExampleMalcolmDeviceTest {
 
 			// Set the generator on the device
 			// Cannot set the generator from @PreConfigure in this unit test.
-			((AbstractMalcolmDevice)modelledDevice).setPointGenerator(scan);
+			((AbstractMalcolmDevice<?>)modelledDevice).setPointGenerator(scan);
 			
 			// Call configure
 			modelledDevice.configure(pmac1);
