@@ -43,14 +43,6 @@ public class ModelArgsTest {
 		assertEquals("Arg has wrong value", 12., argumA.evaluate(), 0);
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" }) //This is what I'm testing
-	@Test
-	public void testCreateArgumentWithoutValue() {
-		QueueValue argumAA = new QueueValue(String.class);
-		argumAA.setValue("Fish");
-		argumAA.setValue(5);
-	}
-	
 	@Test
 	public void testListArgument() {
 		//Return value-by-index from Arg
