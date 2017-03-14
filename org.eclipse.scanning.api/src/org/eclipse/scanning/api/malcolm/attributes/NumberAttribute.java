@@ -22,8 +22,8 @@ public class NumberAttribute extends MalcolmAttribute {
 	
 	public static final String NUMBER_ID = "malcolm:core/NumberMeta:";
 	
-	String dtype;
-	Number value;
+	private String dtype;
+	private Number value;
 	
 	public String getDtype() {
 		return dtype;

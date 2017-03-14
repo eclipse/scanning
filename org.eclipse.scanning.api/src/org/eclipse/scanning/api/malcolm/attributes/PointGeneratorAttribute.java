@@ -21,7 +21,7 @@ package org.eclipse.scanning.api.malcolm.attributes;
 public class PointGeneratorAttribute extends MalcolmAttribute {
 	public static final String POINTGENERATOR_ID = "malcolm:core/PointGenerator:";
 	
-	Object value;
+	private Object value;
 
 	@Override
 	public Object getValue() {
