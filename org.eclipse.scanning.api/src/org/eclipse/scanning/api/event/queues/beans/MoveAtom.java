@@ -33,7 +33,7 @@ public class MoveAtom extends QueueAtom {
 	 */
 	private static final long serialVersionUID = 20161021L;
 	
-	private Map<String, Object> positionConfig;
+	private Map<String, Object> positionerConfig;
 	
 	/**
 	 * No arg constructor for JSON
@@ -43,101 +43,99 @@ public class MoveAtom extends QueueAtom {
 	}
 	
 	/**
-	 * Constructor with required arguments to configure one motor position.
+	 * Constructor with required arguments to configure one positioner.
 	 * 
 	 * @param mvName String automatically/user supplied name for this move. 
-	 * @param moveDev String name of motor to move.
-	 * @param tgt Object target to move motor to.
-	 * @param runTime long Duration of this move in ms.
-
+	 * @param positionDev String name of positioner to move.
+	 * @param target Object target to move positioner to.
 	 */
-	public MoveAtom(String mvName, String moveDev, Object tgt, long runTime) {
+	public MoveAtom(String mvName, String positionDev, Object target) {
 		super();
 		setName(mvName);
-		this.runTime = runTime;
 		
-		positionConfig = new LinkedHashMap<String, Object>();
-		positionConfig.put(moveDev, tgt);
+		positionerConfig = new LinkedHashMap<String, Object>();
+		positionerConfig.put(positionDev, target);
 	}
 	
 	/**
-	 * Constructor with required arguments for multiple motor positions.
+	 * Constructor with required arguments for multiple positioners.
 	 * 
 	 * @param mvName String automatically/user supplied name for this move.
-	 * @param config Map of form String motor name Object target position
-	 * @param runTime
+	 * @param positionerConfig Map of form: String positionerDev name 
+	 *                                      Object target position.
 	 */
-	public MoveAtom(String mvName, Map<String, Object> config, long runTime) {
+	public MoveAtom(String mvName, Map<String, Object> positionerConfig) {
 		super();
 		setName(mvName);
-		this.runTime = runTime;
-		positionConfig = config;
+		this.positionerConfig = positionerConfig;
 	}
 	
 	/**
-	 * Return all the names of the motors controlled by this MoveAtom.
+	 * Return all the names of the positioners controlled by this MoveAtom.
 	 * 
-	 * @return List of String names of the motors in the configuration.
+	 * @return List of String names of the positioners in the configuration.
 	 */
-	public List<String> getMotorNames() {
-		return new ArrayList<String>(positionConfig.keySet());
+	public List<String> getPositionerNames() {
+		return new ArrayList<String>(positionerConfig.keySet());
 	}
 	
 	/**
-	 * Return the tgt to which this motor will be moved to.
+	 * Return the target to which the given positioner will be moved to.
 	 * 
-	 * @param moveDev String name of motor to move.
+	 * @param positionDev String name of positioner to move.
 	 * @return Object representing the target move position.
 	 */
-	public Object get(String moveDev) {
-		return positionConfig.get(moveDev);
+	public Object getPositioner(String positionDev) {
+		return positionerConfig.get(positionDev);
 	}
 	
 	/**
-	 * Change or add a new motor to be moved by this MoveAtom.
+	 * Change or add a new positioner to be moved by this MoveAtom.
 	 * 
-	 * @param moveDev String name of motor to move.
-	 * @param tgt Object target to move motor to.
+	 * @param positionDev String name of motor to move.
+	 * @param target Object target to move motor to.
 	 */
-	public void put(String moveDev, Object tgt) {
-		positionConfig.put(moveDev, tgt);
+	public void putPositioner(String positionDev, Object target) {
+		positionerConfig.put(positionDev, target);
 	}
 	
 	/**
-	 * Remove a motor from the configuration of this MoveAtom.
+	 * Remove a positioner from the configuration of this MoveAtom.
 	 * 
-	 * @param moveDev String name of motor to move.
+	 * @param positionDev String name of motor to move.
 	 */
-	public void remove(String moveDev) {
-		positionConfig.remove(moveDev);
+	public void removePositioner(String positionDev) {
+		positionerConfig.remove(positionDev);
 	}
 	
 	/**
-	 * Report the number of motors whose positions are set by this MoveAtom.
+	 * Report the number of positioners whose positions are set by this 
+	 * MoveAtom.
 	 * 
 	 * @return int number of motors in the configuration.
 	 */
 	public int size() {
-		return positionConfig.size();
+		return positionerConfig.size();
 	}
 
 	/**
-	 * Return complete set of motor names and target positions.
+	 * Return complete set of positioner names and target positions.
 	 * 
-	 * @return Map<String, Object> String key name of motor and Object target.
+	 * @return Map<String, Object> String key name of positionDev and Object 
+	 *         target.
 	 */
 	public Map<String, Object> getPositionConfig() {
-		return positionConfig;
+		return positionerConfig;
 	}
 
 	/**
-	 * Change the complete set of motor names and target positions.
+	 * Change the complete set of positioner names and target positions.
 	 * 
-	 * @param positionConfig Map<String, Object> String key name of motor and 
-	 *                       Object target.
+	 * @param positionConfig Map<String, Object> String key name of 
+	 *                       positionDev and Object target.
 	 */
 	public void setPositionConfig(Map<String, Object> positionConfig) {
-		this.positionConfig = positionConfig;
+		this.positionerConfig = positionConfig;
 	}
 
 	@Override
@@ -145,7 +143,7 @@ public class MoveAtom extends QueueAtom {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result
-				+ ((positionConfig == null) ? 0 : positionConfig.hashCode());
+				+ ((positionerConfig == null) ? 0 : positionerConfig.hashCode());
 		result = prime * result + (int) (runTime ^ (runTime >>> 32));
 		return result;
 	}
@@ -159,10 +157,10 @@ public class MoveAtom extends QueueAtom {
 		if (getClass() != obj.getClass())
 			return false;
 		MoveAtom other = (MoveAtom) obj;
-		if (positionConfig == null) {
-			if (other.positionConfig != null)
+		if (positionerConfig == null) {
+			if (other.positionerConfig != null)
 				return false;
-		} else if (!positionConfig.equals(other.positionConfig))
+		} else if (!positionerConfig.equals(other.positionerConfig))
 			return false;
 		if (runTime != other.runTime)
 			return false;
