@@ -13,11 +13,11 @@
 
 package org.eclipse.scanning.example.malcolm;
 
-import static org.eclipse.scanning.malcolm.core.MalcolmDatasetType.MONITOR;
-import static org.eclipse.scanning.malcolm.core.MalcolmDatasetType.POSITION_SET;
-import static org.eclipse.scanning.malcolm.core.MalcolmDatasetType.POSITION_VALUE;
-import static org.eclipse.scanning.malcolm.core.MalcolmDatasetType.PRIMARY;
-import static org.eclipse.scanning.malcolm.core.MalcolmDatasetType.SECONDARY;
+import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.MONITOR;
+import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.POSITION_SET;
+import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.POSITION_VALUE;
+import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.PRIMARY;
+import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.SECONDARY;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,6 +62,7 @@ import org.eclipse.scanning.api.malcolm.MalcolmTable;
 import org.eclipse.scanning.api.malcolm.attributes.BooleanAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.ChoiceAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.MalcolmAttribute;
+import org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType;
 import org.eclipse.scanning.api.malcolm.attributes.NumberAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.StringArrayAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.StringAttribute;
@@ -77,7 +78,6 @@ import org.eclipse.scanning.api.scan.rank.IScanRankService;
 import org.eclipse.scanning.api.scan.rank.IScanSlice;
 import org.eclipse.scanning.example.Services;
 import org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice;
-import org.eclipse.scanning.malcolm.core.MalcolmDatasetType;
 import org.eclipse.scanning.sequencer.SubscanModerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
