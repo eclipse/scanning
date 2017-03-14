@@ -1,28 +1,29 @@
 package org.eclipse.scanning.test.event.queues.api;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.eclipse.scanning.api.event.queues.models.QueueModelException;
-import org.eclipse.scanning.api.event.queues.models.arguments.Arg;
-import org.eclipse.scanning.api.event.queues.models.arguments.ArrayArg;
-import org.eclipse.scanning.api.event.queues.models.arguments.IArg;
-import org.eclipse.scanning.api.event.queues.models.arguments.LookupArg;
+import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
+import org.eclipse.scanning.api.event.queues.models.arguments.IQueueVariable;
+import org.eclipse.scanning.api.event.queues.models.arguments.QueueListVariable;
+import org.eclipse.scanning.api.event.queues.models.arguments.QueueTableVariable;
+import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 import org.junit.Before;
 import org.junit.Test;
 
 public class ModelArgsTest {
 	
-	private Double[] simpleArray;
+	private List<Double> simpleList;
 	private Map<String, Double> simpleTable;
-	private Map<String, Double[]> complexTable;
+	private Map<String, List<Double>> complexTable;
 	
 	@Before
 	public void setUp() {
-		simpleArray = new Double[]{88., -7.9, 20.356};
+		simpleList = Arrays.asList(88., -7.9, 20.356);
 		
 		simpleTable = new HashMap<>();
 		simpleTable.put("111", 34.);
@@ -30,64 +31,58 @@ public class ModelArgsTest {
 		simpleTable.put("311", 100.);
 		
 		complexTable = new HashMap<>();
-		complexTable.put("111", new Double[]{34., -5.4});
-		complexTable.put("211", new Double[]{88., -7.9});
-		complexTable.put("311", new Double[]{100., 1.6});
+		complexTable.put("111", Arrays.asList(34., -5.4));
+		complexTable.put("211", Arrays.asList(88., -7.9));
+		complexTable.put("311", Arrays.asList(100., 1.6));
 	}
 	
 	@Test
 	public void testSimpleArgument() {		
-		IArg argumA = new Arg(12.);
+		IQueueValue<Double> argumA = new QueueValue<>(12.);
 		argumA.evaluate();
-		assertEquals("Arg has wrong value", 12., argumA.getValue());
+		assertEquals("Arg has wrong value", 12., argumA.evaluate(), 0);
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" }) //This is what I'm testing
+	@Test
+	public void testCreateArgumentWithoutValue() {
+		QueueValue argumAA = new QueueValue(String.class);
+		argumAA.setValue("Fish");
+		argumAA.setValue(5);
 	}
 	
 	@Test
-	public void testArrayArgument() {
+	public void testListArgument() {
 		//Return value-by-index from Arg
-		Arg baseArg = new Arg(0);
-		ArrayArg argumD = new ArrayArg(baseArg, simpleArray);
-		argumD.evaluate();
-		assertEquals("ArrayArg has wrong value at index 0", 88., argumD.getValue());
+		IQueueVariable<Integer, Double> argumD = new QueueListVariable<>(new QueueValue<>(0), new QueueValue<>(simpleList));
+		assertEquals("ArrayArg has wrong value at index 0", 88., argumD.evaluate(), 0);
 		
 		//Return value-by-index from function
-		assertEquals("ArrayArg has wrong value at index 1", -7.9, argumD.index(1));
-		assertEquals("ArrayArg has wrong value at index 2", 20.356, argumD.index(2));
+		argumD.setArg(new QueueValue<>(1));
+		assertEquals("ArrayArg has wrong value at index 1", -7.9, argumD.evaluate(), 0);
+		argumD.setArg(new QueueValue<>(2));
+		assertEquals("ArrayArg has wrong value at index 2", 20.356, argumD.evaluate(), 0);
 	}
 	
 	@Test
 	public void testLookupArgument() {
 		//First a simple lookup to return a single value
-		Arg baseArg = new Arg<>("311");
-		IArg argumB = new LookupArg(baseArg, simpleTable);
-		argumB.evaluate();
-		assertEquals("LookupArg has wrong value for string 311", 100., argumB.getValue());
+		IQueueValue<Double> argumB = new QueueTableVariable<>(new QueueValue<>("311"), new QueueValue<>(simpleTable));
+		assertEquals("LookupArg has wrong value for string 311", 100., argumB.evaluate(), 0);
 		
 		//Second a slightly more complicated one: return an array
-		IArg<Double[]> argumC = new LookupArg(baseArg, complexTable);
-		argumC.evaluate();
-		assertArrayEquals("LookupArg has wrong value for string 311", new Double[]{100., 1.6}, argumC.getValue());
+		IQueueValue<List<Double>> argumC = new QueueTableVariable<>(new QueueValue<>("311"), new QueueValue<>(complexTable));
+		assertEquals("LookupArg has wrong value for string 311", Arrays.asList(100., 1.6), argumC.evaluate());
 	}
 	
 	@Test
-	public void testDecoratedLookup() {
-		Arg baseArg = new Arg<>("211");
-		ArrayArg argumF = new ArrayArg(new LookupArg(baseArg, complexTable));
-		assertEquals("Decorated argument has wrong value for string 211, index 1", -7.9, argumF.index(1));
+	public void testQueueValueStacking() {
+		QueueValue<String> baseArg = new QueueValue<>("211");
+		IQueueVariable<Integer, Double> argumF = new QueueListVariable<>(new QueueValue<>(1),new QueueTableVariable<>(baseArg, new QueueValue<>(complexTable)));
+		assertEquals("Decorated argument has wrong value for string 211, index 1", -7.9, argumF.evaluate(), 0);
 		
-		baseArg = new Arg<>("111");
-		ArrayArg argumG = new ArrayArg(new LookupArg(baseArg, complexTable), 1);
-		argumG.evaluate();
-		assertEquals("Decorated argument has wrong value for string 111, index 1", -5.4, argumG.getValue());
-		
-		baseArg = new Arg<>("111");
-		argumG = new ArrayArg(new LookupArg(baseArg, complexTable));
-		try {
-			argumG.evaluate();
-		} catch (QueueModelException qme) {
-			//Expected. If the user doesn't supply an index, the evaluation will fail.
-		}
-		
+		baseArg.setValue("111");
+		assertEquals("Decorated argument has wrong value for string 111, index 1", -5.4, argumF.evaluate(), 0);
 	}
 
 }
