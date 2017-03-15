@@ -130,32 +130,28 @@ public class MalcolmAttributesSerializationTest {
 		assertEquals(attrib, newAttrib);
 	}
 	
-	/**
-	 * This test is ignored as point generators are not serializable to json.
-	 * This means that the point generator attribute of a malcolm device is not accessible on the client.
-	 * Point generators are currently serialized to be sent from the server to the malcolm device
-	 * over EPICS by converting them to a dict in python.
-	 * Ideally we should be serializing the model rather than the generator.
-	 * @throws Exception
-	 */
 	@Test
-	@Ignore("point generators are not serializable to json")
 	public void testSerializePointGeneratorAttribute() throws Exception {
-		BoundingBox box = new BoundingBox();
-		box.setFastAxisStart(0);
-		box.setSlowAxisStart(0);
-		box.setFastAxisLength(3);
-		box.setSlowAxisLength(3);
+//		BoundingBox box = new BoundingBox();
+//		box.setFastAxisStart(0);
+//		box.setSlowAxisStart(0);
+//		box.setFastAxisLength(3);
+//		box.setSlowAxisLength(3);
+//		
+//		GridModel gridModel = new GridModel("x", "y");
+//		gridModel.setFastAxisPoints(20);
+//		gridModel.setSlowAxisPoints(50);
+//		gridModel.setBoundingBox(box);
+//		
+//		CompoundModel<?> compoundModel = new CompoundModel<>(gridModel);
+//		
+//		IPointGeneratorService genService = new PointGeneratorService();
+//		IPointGenerator<?> gen = genService.createCompoundGenerator(compoundModel);
 		
-		GridModel gridModel = new GridModel("x", "y");
-		gridModel.setFastAxisPoints(20);
-		gridModel.setSlowAxisPoints(50);
-		gridModel.setBoundingBox(box);
-		
-		CompoundModel<?> compoundModel = new CompoundModel<>(gridModel);
-		
-		IPointGeneratorService genService = new PointGeneratorService();
-		IPointGenerator<?> gen = genService.createCompoundGenerator(compoundModel);
+		// It seems that point generator attribute just stores a map, so we just test that
+		Map<String, String> map = new HashMap<>();
+		map.put("key", "value");
+		map.put("foo", "bar");
 		
 		PointGeneratorAttribute attrib = new PointGeneratorAttribute();
 		attrib.setName("pointGeneratorAttribute");
@@ -163,7 +159,7 @@ public class MalcolmAttributesSerializationTest {
 		attrib.setDescription("Description of a point generator attribute");
 		attrib.setTags(new String[] { "foo", "bar" });
 		attrib.setWriteable(true);
-		attrib.setValue(gen);
+		attrib.setValue(map);
 		
 		String json = service.marshal(attrib);
 		PointGeneratorAttribute newAttrib = service.unmarshal(json, PointGeneratorAttribute.class);

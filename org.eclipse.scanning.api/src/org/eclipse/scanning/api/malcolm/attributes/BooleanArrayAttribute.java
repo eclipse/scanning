@@ -20,7 +20,7 @@ import java.util.Arrays;
  * @author Matt Taylor
  *
  */
-public class BooleanArrayAttribute extends MalcolmAttribute {
+public class BooleanArrayAttribute extends MalcolmAttribute<boolean[]> {
 	public static final String BOOLEANARRAY_ID = "malcolm:core/BooleanArrayMeta:";
 	
 	private boolean value[];

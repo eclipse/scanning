@@ -18,7 +18,7 @@ package org.eclipse.scanning.api.malcolm.attributes;
  * @author Matt Taylor
  *
  */
-public class StringArrayAttribute extends MalcolmAttribute {
+public class StringArrayAttribute extends MalcolmAttribute<String[]> {
 	public static final String STRINGARRAY_ID = "malcolm:core/StringArrayMeta:";
 	
 	private String[] value;

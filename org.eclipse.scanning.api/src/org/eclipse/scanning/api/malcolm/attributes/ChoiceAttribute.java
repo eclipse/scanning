@@ -20,7 +20,7 @@ import java.util.Arrays;
  * @author Matt Taylor
  *
  */
-public class ChoiceAttribute extends MalcolmAttribute {
+public class ChoiceAttribute extends MalcolmAttribute<String> {
 	public static final String CHOICE_ID = "malcolm:core/ChoiceMeta:";
 	
 	private String[] choices;

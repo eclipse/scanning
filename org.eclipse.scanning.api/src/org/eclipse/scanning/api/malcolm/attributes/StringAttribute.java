@@ -18,7 +18,7 @@ package org.eclipse.scanning.api.malcolm.attributes;
  * @author Matt Taylor
  *
  */
-public class StringAttribute extends MalcolmAttribute {
+public class StringAttribute extends MalcolmAttribute<String> {
 	
 	public static final String STRING_ID = "malcolm:core/StringMeta:";
 	

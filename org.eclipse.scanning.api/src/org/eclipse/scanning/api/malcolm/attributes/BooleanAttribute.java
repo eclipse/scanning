@@ -18,7 +18,7 @@ package org.eclipse.scanning.api.malcolm.attributes;
  * @author Matt Taylor
  *
  */
-public class BooleanAttribute extends MalcolmAttribute {
+public class BooleanAttribute extends MalcolmAttribute<Boolean> {
 	public static final String BOOLEAN_ID = "malcolm:core/BooleanMeta:";
 	
 	private boolean value;

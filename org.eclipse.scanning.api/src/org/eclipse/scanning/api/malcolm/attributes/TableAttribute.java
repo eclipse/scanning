@@ -24,7 +24,7 @@ import org.eclipse.scanning.api.malcolm.MalcolmTable;
  * @author Matt Taylor
  *
  */
-public class TableAttribute extends MalcolmAttribute {
+public class TableAttribute extends MalcolmAttribute<MalcolmTable> {
 	public static final String TABLE_ID = "malcolm:core/TableMeta:";
 	
 	private MalcolmTable tableValue;

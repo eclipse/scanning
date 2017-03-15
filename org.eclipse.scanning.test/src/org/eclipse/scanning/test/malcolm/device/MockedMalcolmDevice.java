@@ -30,7 +30,7 @@ import org.eclipse.january.dataset.Random;
 import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
-import org.eclipse.scanning.api.malcolm.attributes.MalcolmAttribute;
+import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
 import org.eclipse.scanning.api.malcolm.event.MalcolmEventBean;
 import org.eclipse.scanning.api.malcolm.models.MapMalcolmModel;
 import org.eclipse.scanning.api.points.IPosition;
@@ -397,19 +397,20 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 		// TODO Auto-generated method stub
 		
 	}
-	
+
 	@Override
-	public Object getAttributeValue(String attribute) {
-		return null;
-	}
-	
-	@Override
-	public List<MalcolmAttribute> getAllAttributes() {
+	public <T> IDeviceAttribute<T> getAttribute(String attributeName) throws ScanningException {
 		return null;
 	}
 
 	@Override
-	public Object getAttribute(String attribute) throws ScanningException {
+	public List<IDeviceAttribute<?>> getAllAttributes() throws ScanningException {
 		return null;
 	}
+
+	@Override
+	public <T> T getAttributeValue(String attributeName) throws ScanningException {
+		return null;
+	}
+	
 }

@@ -13,6 +13,7 @@ package org.eclipse.scanning.api.device;
 
 import java.util.List;
 
+import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
@@ -24,18 +25,26 @@ import org.eclipse.scanning.api.scan.ScanningException;
 public interface IAttributableDevice {
 
 	/**
-	 * Gets the an attribute on the device
+	 * Gets the attribute on the device with the given name.
+	 * @param attributeName name of attribute
+	 * @return the attribute with the given name
+	 * @throws ScanningException if the attribute cannot be retrieved for any reason
 	 */
-	public Object getAttribute(String attribute) throws ScanningException;
+	public <T> IDeviceAttribute<T> getAttribute(String attributeName) throws ScanningException;
 	
 	/**
-	 * Gets a list of all attributes on the device
+	 * Gets a list of all attributes on the device.
+	 * @return all attributes
+	 * @throws ScanningException if the attributes cannot be retrieved for any reason 
 	 */
-	public <A> List<A> getAllAttributes() throws ScanningException;
+	public List<IDeviceAttribute<?>> getAllAttributes() throws ScanningException;
 	
 	/**
 	 * Gets the value of an attribute on the device
+	 * @param attributeName 
+	 * @return attribute value
+	 * @throws ScanningException if the attribute value cannot be retrieved for any reason 
 	 */
-	public <A> A getAttributeValue(String attribute) throws ScanningException;
+	public <T> T getAttributeValue(String attributeName) throws ScanningException;
 
 }

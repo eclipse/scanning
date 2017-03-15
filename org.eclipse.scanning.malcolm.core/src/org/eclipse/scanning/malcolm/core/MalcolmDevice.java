@@ -15,11 +15,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.annotation.scan.PointStart;
@@ -29,6 +29,7 @@ import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
+import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.MalcolmAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.NumberAttribute;
 import org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService;
@@ -589,48 +590,43 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	}
 	
-	public Object getAttribute(String attribute) throws MalcolmDeviceException {
-		final MalcolmMessage message = connectionDelegate.createGetMessage(attribute);
+	public <T> IDeviceAttribute<T> getAttribute(String attributeName) throws MalcolmDeviceException {
+		final MalcolmMessage message = connectionDelegate.createGetMessage(attributeName);
 		final MalcolmMessage reply   = connector.send(this, message);
 		if (reply.getType()==Type.ERROR) {
 			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
 		}
-		return reply.getValue();
+		
+		Object result = reply.getValue();
+		if (!(result instanceof MalcolmAttribute)) {
+			throw new MalcolmDeviceException("No such attribute: " + attributeName);
+		}
+		
+		@SuppressWarnings("unchecked")
+		IDeviceAttribute<T> attribute = (IDeviceAttribute<T>) result;
+		return attribute;
 	}
 	
-	public List<MalcolmAttribute> getAllAttributes() throws MalcolmDeviceException {
-		List<MalcolmAttribute> attributeList = new LinkedList<MalcolmAttribute>();
-		String endpoint = "";
-		final MalcolmMessage message = connectionDelegate.createGetMessage(endpoint);
+	public List<IDeviceAttribute<?>> getAllAttributes() throws MalcolmDeviceException {
+		final MalcolmMessage message = connectionDelegate.createGetMessage("");
 		final MalcolmMessage reply   = connector.send(this, message);
 		if (reply.getType()==Type.ERROR) {
 			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
 		}
 		
-		Object wholeBlock = reply.getValue();
 		
-		if (wholeBlock instanceof Map) {
-			Map wholeBlockMap = (Map)wholeBlock;
-			
-			for (Object entry : wholeBlockMap.values()) {
-				if (entry instanceof MalcolmAttribute) {
-					attributeList.add((MalcolmAttribute)entry);
-				}
-			}
-		}
-		
-		return attributeList;
+		@SuppressWarnings("unchecked")
+		Map<String, Object> wholeBlockMap = (Map<String, Object>) reply.getValue();
+		return wholeBlockMap.values().stream().
+				filter(MalcolmAttribute.class::isInstance).map(IDeviceAttribute.class::cast).
+				collect(Collectors.toList());
 	}
 	
 	/**
 	 * Gets the value of an attribute on the device
 	 */
-	public Object getAttributeValue(String attributeName) throws MalcolmDeviceException {
-		Object attribute = getAttribute(attributeName);
-		if (attribute instanceof MalcolmAttribute) {
-			MalcolmAttribute malcolmAttribute = (MalcolmAttribute)attribute;
-			return malcolmAttribute.getValue();
-		}
-		return attribute;
+	public <T> T getAttributeValue(String attributeName) throws MalcolmDeviceException {
+		IDeviceAttribute<T> attribute = getAttribute(attributeName);
+		return attribute.getValue();
 	}
 }

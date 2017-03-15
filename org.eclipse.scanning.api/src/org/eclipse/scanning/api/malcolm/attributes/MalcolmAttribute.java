@@ -18,27 +18,40 @@ import java.util.Arrays;
  * Encapsulates an attribute as read from a malcolm device
  * 
  * @author Matt Taylor
- *
+ * @param <T> the type of the attribute's value
  */
-public abstract class MalcolmAttribute {
+public abstract class MalcolmAttribute<T> implements IDeviceAttribute<T> {
+	
 	private String name;
 	private String description;
 	private String[] tags;
 	private boolean writeable;
 	private String label;
 	
+	/* (non-Javadoc)
+	 * @see org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute#getName()
+	 */
+	@Override
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
+	/* (non-Javadoc)
+	 * @see org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute#getDescription()
+	 */
+	@Override
 	public String getDescription() {
 		return description;
 	}
 	public void setDescription(String description) {
 		this.description = description;
 	}
+	/* (non-Javadoc)
+	 * @see org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute#getTags()
+	 */
+	@Override
 	public String[] getTags() {
 		return tags;
 	}
@@ -51,13 +64,22 @@ public abstract class MalcolmAttribute {
 	public void setWriteable(boolean writeable) {
 		this.writeable = writeable;
 	}
+	/* (non-Javadoc)
+	 * @see org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute#getLabel()
+	 */
+	@Override
 	public String getLabel() {
 		return label;
 	}
 	public void setLabel(String label) {
 		this.label = label;
 	}
-	public abstract Object getValue();
+	/* (non-Javadoc)
+	 * @see org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute#getValue()
+	 */
+	@Override
+	public abstract T getValue();
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -77,7 +99,7 @@ public abstract class MalcolmAttribute {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MalcolmAttribute other = (MalcolmAttribute) obj;
+		MalcolmAttribute<?> other = (MalcolmAttribute<?>) obj;
 		if (description == null) {
 			if (other.description != null)
 				return false;
