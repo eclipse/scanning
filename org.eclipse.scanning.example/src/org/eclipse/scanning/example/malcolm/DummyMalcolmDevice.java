@@ -352,11 +352,13 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 
 	private boolean firstRunCompleted = false;
 	
-	private int stepIndex = 0;
+	private int stepIndex = 1;
 	
 	private boolean paused = false;
 	
 	private int scanRank;
+	
+	DeviceState deviceState;
 	
 	// the dummy devices are responsible for writing the nexus files 
 	private Map<String, IDummyMalcolmControlledDevice> devices = null;
@@ -477,6 +479,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		// which is required for the datasets for the scannables
 		totalSteps.setValue(64);
 		configuredSteps.setValue(64);
+		stepIndex = 1;
 		List<String> axesToMoveList = model.getAxesToMove();
 		if (axesToMoveList != null) {
 			this.axesToMove.setValue((axesToMoveList.toArray(new String[axesToMoveList.size()])));
@@ -508,10 +511,15 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	
 	@Override
 	protected void setDeviceState(DeviceState nstate) throws ScanningException {
-		super.setDeviceState(nstate);
+		deviceState = nstate;
 		if (state != null) {
 			state.setValue(nstate.toString());
 		}
+	}
+	
+	@Override
+	public DeviceState getDeviceState() throws ScanningException {
+		return deviceState;
 	}
 	
 	@PreConfigure
@@ -674,7 +682,6 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		Iterable<IPosition> innerScanPositions = moderator.getInnerIterable();
 		
 		// get each dummy device to write its position at each inner scan position
-		stepIndex = 0;
 		for (IPosition innerScanPosition : innerScanPositions) {
 			final long pointStartTime = System.nanoTime();
 			final long targetDuration = (long) (model.getExposureTime() * 1000000000.0); // nanoseconds
@@ -702,7 +709,6 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 			innerScanPosition.setStepIndex(stepIndex++);
 			firePositionComplete(innerScanPosition);
 		}
-		stepIndex = 0;
 		
 		status.setValue("Finished writing");
 		setDeviceState(DeviceState.READY);
@@ -802,11 +808,13 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	
 	@Override
 	public void pause() throws ScanningException {
+		setDeviceState(DeviceState.PAUSED);
 		paused = true;
 	}
 	
 	@Override
 	public void resume() throws ScanningException {
+		setDeviceState(DeviceState.RUNNING);
 		paused = false;
 	}
 	
