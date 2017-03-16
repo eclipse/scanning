@@ -13,7 +13,7 @@ class MaxFunction(IJythonFunction):
     
     def process(self, dataset):
         
-        max = dataset.max()
+        max = dataset.max(False, False)
         return DatasetFactory.createFromObject(max)
 
 
