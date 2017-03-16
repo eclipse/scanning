@@ -13,7 +13,6 @@ package org.eclipse.scanning.api.device.models;
 
 import org.eclipse.scanning.api.INameable;
 import org.eclipse.scanning.api.ITimeoutable;
-import org.eclipse.scanning.api.annotation.MinimumValue;
 
 
 /**

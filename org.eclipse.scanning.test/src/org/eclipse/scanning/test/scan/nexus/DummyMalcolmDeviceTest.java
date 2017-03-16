@@ -12,6 +12,9 @@
 
 package org.eclipse.scanning.test.scan.nexus;
 
+import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_FILENAME;
+import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_PATH;
+import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_RANK;
 import static org.eclipse.scanning.example.malcolm.DummyMalcolmDevice.FILE_EXTENSION_HDF5;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -147,7 +150,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 		DummyMalcolmModel model = createModel(malcolmOutputDir);
 		IRunnableDevice<DummyMalcolmModel> malcolmDevice = dservice.createRunnableDevice(model, false);
 		// Cannot set the generator from @PreConfigure in this unit test.
-		((AbstractMalcolmDevice)malcolmDevice).setPointGenerator(getGenerator(2, 2));// Generator isn't actually used by the test malcolm device
+		((AbstractMalcolmDevice<?>)malcolmDevice).setPointGenerator(getGenerator(2, 2));// Generator isn't actually used by the test malcolm device
 		int scanRank = 2;
 		assertNotNull(malcolmDevice);
 		malcolmDevice.configure(model);
@@ -164,7 +167,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 		IRunnableDevice<DummyMalcolmModel> malcolmDevice = dservice.createRunnableDevice(model, false);
 		int scanRank = 3;
 		// Cannot set the generator from @PreConfigure in this unit test.
-		((AbstractMalcolmDevice)malcolmDevice).setPointGenerator(getGenerator(2, 2, 2));// Generator isn't actually used by the test malcolm device
+		((AbstractMalcolmDevice<?>) malcolmDevice).setPointGenerator(getGenerator(2, 2, 2));// Generator isn't actually used by the test malcolm device
 		malcolmDevice.configure(model);
 
 		NexusScanInfo nexusScanInfo = new NexusScanInfo();
@@ -192,7 +195,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 		MalcolmTable table = (MalcolmTable) datasetsValue;
 		Map<String, NXentry> nexusEntries = new HashMap<>();
 		for (Map<String, Object> datasetRow : table) {
-			String filename = (String) datasetRow.get(AbstractMalcolmDevice.DATASETS_TABLE_COLUMN_FILENAME);
+			String filename = (String) datasetRow.get(DATASETS_TABLE_COLUMN_FILENAME);
 			
 			// load the nexus entry for the file (may be cached from a previous dataset)
 			NXentry entry = nexusEntries.get(filename);
@@ -202,7 +205,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 			}
 			assertNotNull(entry);
 			
-			String path = (String) datasetRow.get(AbstractMalcolmDevice.DATASETS_TABLE_COLUMN_PATH);
+			String path = (String) datasetRow.get(DATASETS_TABLE_COLUMN_PATH);
 
 			String[] pathSegments = path.split("/");
 			assertEquals("", pathSegments[0]); // first element is empty as path starts with '/'
@@ -218,7 +221,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 			DataNode dataNode = groupNode.getDataNode(pathSegments[pathSegments.length - 1]);
 			assertNotNull(dataNode);
 			
-			int datasetRank = ((Integer) datasetRow.get(AbstractMalcolmDevice.DATASETS_TABLE_COLUMN_RANK)).intValue();
+			int datasetRank = ((Integer) datasetRow.get(DATASETS_TABLE_COLUMN_RANK)).intValue();
 			assertEquals(datasetRank, dataNode.getRank()); 
 			
 			// assert that the uniquekeys dataset is present

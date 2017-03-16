@@ -11,8 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.api.malcolm.attributes;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Arrays;
 
 import org.eclipse.scanning.api.malcolm.MalcolmTable;
 
@@ -23,12 +22,11 @@ import org.eclipse.scanning.api.malcolm.MalcolmTable;
  * @author Matt Taylor
  *
  */
-public class TableAttribute extends MalcolmAttribute {
+public class TableAttribute extends MalcolmAttribute<MalcolmTable> {
 	public static final String TABLE_ID = "malcolm:core/TableMeta:";
 	
-	MalcolmTable tableValue;
-	String[] headings;
-	List<MalcolmAttribute> elements = new LinkedList<MalcolmAttribute>();
+	private MalcolmTable tableValue;
+	private String[] headings;
 	
 	@Override
 	public MalcolmTable getValue() {
@@ -43,4 +41,33 @@ public class TableAttribute extends MalcolmAttribute {
 	public void setHeadings(String[] headings) {
 		this.headings = headings;
 	}
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + Arrays.hashCode(headings);
+		result = prime * result + ((tableValue == null) ? 0 : tableValue.hashCode());
+		return result;
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		TableAttribute other = (TableAttribute) obj;
+		if (!Arrays.equals(headings, other.headings))
+			return false;
+		if (tableValue == null) {
+			if (other.tableValue != null)
+				return false;
+		} else if (!tableValue.equals(other.tableValue))
+			return false;
+		return true;
+	}
+	
 }

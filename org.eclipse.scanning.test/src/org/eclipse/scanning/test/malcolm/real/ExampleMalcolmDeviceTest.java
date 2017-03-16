@@ -24,7 +24,7 @@ import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
 import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.malcolm.MalcolmTable;
-import org.eclipse.scanning.api.malcolm.attributes.MalcolmAttribute;
+import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.StringAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.TableAttribute;
 import org.eclipse.scanning.api.points.IPointGenerator;
@@ -81,8 +81,8 @@ public class ExampleMalcolmDeviceTest {
 			regions.add(new CircularROI(4, 8, 9));
 			
 			IPointGeneratorService pgService = new PointGeneratorService();
-			IPointGenerator<SpiralModel> temp = pgService
-					.createGenerator(new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
+			IPointGenerator<SpiralModel> temp = pgService.createGenerator(
+					new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
 			IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
 			
 			ExampleMalcolmModel pmac1 = new ExampleMalcolmModel();
@@ -91,7 +91,7 @@ public class ExampleMalcolmDeviceTest {
 
 			// Set the generator on the device
 			// Cannot set the generator from @PreConfigure in this unit test.
-			((AbstractMalcolmDevice)modelledDevice).setPointGenerator(scan);
+			((AbstractMalcolmDevice<?>)modelledDevice).setPointGenerator(scan);
 			
 			// Call configure
 			modelledDevice.configure(pmac1);
@@ -100,7 +100,7 @@ public class ExampleMalcolmDeviceTest {
 			modelledDevice.run(null);
 
 			// Get a list of all attributes on the device
-			List<MalcolmAttribute> attribs = modelledDevice.getAllAttributes();
+			List<IDeviceAttribute<?>> attribs = modelledDevice.getAllAttributes();
 			assertEquals(11, attribs.size());
 
 			boolean stateFound = false;
@@ -117,7 +117,7 @@ public class ExampleMalcolmDeviceTest {
 			boolean aIsNotWriteable = false;
 			boolean bIsWriteable = false;
 
-			for (MalcolmAttribute ma : attribs) {
+			for (IDeviceAttribute<?> ma : attribs) {
 				if (ma.getName().equals("state")) {
 					stateFound = true;
 				} else if (ma.getName().equals("status")) {

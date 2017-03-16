@@ -13,11 +13,11 @@
 
 package org.eclipse.scanning.example.malcolm;
 
-import static org.eclipse.scanning.malcolm.core.MalcolmDatasetType.MONITOR;
-import static org.eclipse.scanning.malcolm.core.MalcolmDatasetType.POSITION_SET;
-import static org.eclipse.scanning.malcolm.core.MalcolmDatasetType.POSITION_VALUE;
-import static org.eclipse.scanning.malcolm.core.MalcolmDatasetType.PRIMARY;
-import static org.eclipse.scanning.malcolm.core.MalcolmDatasetType.SECONDARY;
+import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.MONITOR;
+import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.POSITION_SET;
+import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.POSITION_VALUE;
+import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.PRIMARY;
+import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.SECONDARY;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,7 +61,9 @@ import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 import org.eclipse.scanning.api.malcolm.MalcolmTable;
 import org.eclipse.scanning.api.malcolm.attributes.BooleanAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.ChoiceAttribute;
+import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.MalcolmAttribute;
+import org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType;
 import org.eclipse.scanning.api.malcolm.attributes.NumberAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.StringArrayAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.StringAttribute;
@@ -77,7 +79,6 @@ import org.eclipse.scanning.api.scan.rank.IScanRankService;
 import org.eclipse.scanning.api.scan.rank.IScanSlice;
 import org.eclipse.scanning.example.Services;
 import org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice;
-import org.eclipse.scanning.malcolm.core.MalcolmDatasetType;
 import org.eclipse.scanning.sequencer.SubscanModerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -347,7 +348,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	private TableAttribute datasets;
 	private TableAttribute layout;
 
-	private Map<String, MalcolmAttribute> allAttributes;
+	private Map<String, MalcolmAttribute<?>> allAttributes;
 
 	private boolean firstRunCompleted = false;
 	
@@ -764,14 +765,15 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	}
 
 	@Override
-	public Object getAttributeValue(String attribute) throws MalcolmDeviceException {
+	public <T> T getAttributeValue(String attributeName) throws MalcolmDeviceException {
 		try {
 			updateAttributesWithLatestValues();
 		} catch (ScanningException e) {
 			throw new MalcolmDeviceException(e.getMessage());
 		}
 		
-		MalcolmAttribute malcolmAttribute = allAttributes.get(attribute);
+		@SuppressWarnings("unchecked")
+		IDeviceAttribute<T> malcolmAttribute = (IDeviceAttribute<T>) allAttributes.get(attributeName);
 		if (malcolmAttribute != null) {
 			return malcolmAttribute.getValue();
 		}
@@ -779,13 +781,15 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	}
 
 	@Override
-	public Object getAttribute(String attribute) throws ScanningException {
+	public <T> IDeviceAttribute<T> getAttribute(String attributeName) throws ScanningException {
 		updateAttributesWithLatestValues();
 		
-		return allAttributes.get(attribute);
+		@SuppressWarnings("unchecked")
+		IDeviceAttribute<T> attribute = (IDeviceAttribute<T>) allAttributes.get(attributeName);
+		return attribute;
 	}
 	
-	public void setAttributeValue(String attributeName, Object value) throws ScanningException {
+	public <T> void setAttributeValue(String attributeName, T value) throws ScanningException {
 		Object attr = getAttribute(attributeName);
 		if (attr==null) throw new ScanningException("There is no attribute called "+attributeName);
 		try {
@@ -807,7 +811,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	}
 	
 	@Override
-	public List<MalcolmAttribute> getAllAttributes() throws ScanningException {
+	public List<IDeviceAttribute<?>> getAllAttributes() throws ScanningException {
 		updateAttributesWithLatestValues();
 		
 		return new ArrayList<>(allAttributes.values());

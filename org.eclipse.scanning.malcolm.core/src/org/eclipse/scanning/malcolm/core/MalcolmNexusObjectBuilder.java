@@ -11,15 +11,17 @@
  *******************************************************************************/
 package org.eclipse.scanning.malcolm.core;
 
-import static org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice.DATASETS_TABLE_COLUMN_FILENAME;
-import static org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice.DATASETS_TABLE_COLUMN_NAME;
-import static org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice.DATASETS_TABLE_COLUMN_PATH;
-import static org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice.DATASETS_TABLE_COLUMN_RANK;
-import static org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice.DATASETS_TABLE_COLUMN_TYPE;
-import static org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice.DATASETS_TABLE_COLUMN_UNIQUEID;
+import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.ATTRIBUTE_NAME_DATASETS;
+import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_FILENAME;
+import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_NAME;
+import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_PATH;
+import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_RANK;
+import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_TYPE;
+import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_UNIQUEID;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +37,7 @@ import org.eclipse.dawnsci.nexus.builder.NexusObjectWrapper;
 import org.eclipse.scanning.api.device.models.IMalcolmModel;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
 import org.eclipse.scanning.api.malcolm.MalcolmTable;
+import org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
@@ -47,15 +50,26 @@ import org.eclipse.scanning.api.scan.ScanningException;
 class MalcolmNexusObjectBuilder<M extends IMalcolmModel> {
 	
 	private static final String PROPERTY_NAME_UNIQUE_KEYS = "uniqueKeys";
-
-	private final AbstractMalcolmDevice<M> malcolmDevice;
+	
+	private static final Map<MalcolmDatasetType, NexusBaseClass> nexusClassForDatasetType;
+	
+	private final IMalcolmDevice<M> malcolmDevice;
 	
 	// The name (last segment only) of the malcolm output dir
 	private final String malcolmOutputDirName;
 	
 	private final Map<String, NexusObjectWrapper<NXobject>> nexusWrappers;
 	
-	MalcolmNexusObjectBuilder(AbstractMalcolmDevice<M> malcolmDevice) {
+	static {
+		nexusClassForDatasetType = new EnumMap<>(MalcolmDatasetType.class);
+		nexusClassForDatasetType.put(MalcolmDatasetType.PRIMARY, NexusBaseClass.NX_DETECTOR);
+		nexusClassForDatasetType.put(MalcolmDatasetType.SECONDARY, NexusBaseClass.NX_POSITIONER);
+		nexusClassForDatasetType.put(MalcolmDatasetType.MONITOR, NexusBaseClass.NX_MONITOR);
+		nexusClassForDatasetType.put(MalcolmDatasetType.POSITION_VALUE, NexusBaseClass.NX_POSITIONER);
+		nexusClassForDatasetType.put(MalcolmDatasetType.POSITION_SET, NexusBaseClass.NX_POSITIONER);
+	}
+
+	MalcolmNexusObjectBuilder(IMalcolmDevice<M> malcolmDevice) {
 		this.malcolmDevice = malcolmDevice;
 		nexusWrappers = new HashMap<>();
 		malcolmOutputDirName = new File(malcolmDevice.getModel().getFileDir()).getName();
@@ -69,8 +83,7 @@ class MalcolmNexusObjectBuilder<M extends IMalcolmModel> {
 	 * @throws ScanningException 
 	 */
 	public List<NexusObjectProvider<?>> buildNexusObjects(NexusScanInfo scanInfo) throws ScanningException {
-		MalcolmTable datasetsTable = (MalcolmTable) malcolmDevice.getAttributeValue(
-				AbstractMalcolmDevice.ATTRIBUTE_NAME_DATASETS);
+		MalcolmTable datasetsTable = (MalcolmTable) malcolmDevice.getAttributeValue(ATTRIBUTE_NAME_DATASETS);
 		
 		for (Map<String, Object> datasetRow : datasetsTable) {
 			final String datasetFullName = (String) datasetRow.get(DATASETS_TABLE_COLUMN_NAME);
@@ -86,8 +99,8 @@ class MalcolmNexusObjectBuilder<M extends IMalcolmModel> {
 			final String datasetName = nameSegments[1];
 			
 			// get the nexus object and its wrapper, creating it if necessary
-			final NexusObjectWrapper<NXobject> nexusWrapper = getNexusProvider(deviceName,
-					datasetType.getNexusBaseClass());
+			final NexusObjectWrapper<NXobject> nexusWrapper =
+					getNexusProvider(deviceName, nexusClassForDatasetType.get(datasetType));
 			final NXobject nexusObject = nexusWrapper.getNexusObject();
 
 			// create the external link to the hdf5 file written by the malcolm device

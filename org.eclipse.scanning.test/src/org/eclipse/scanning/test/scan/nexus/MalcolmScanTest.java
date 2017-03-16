@@ -15,8 +15,8 @@ import static org.eclipse.scanning.example.malcolm.DummyMalcolmDevice.FILE_EXTEN
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertAxes;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertDataNodesEqual;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertIndices;
-import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertSolsticeScanGroup;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertSignal;
+import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertSolsticeScanGroup;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -38,17 +38,12 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.eclipse.dawnsci.analysis.api.tree.DataNode;
-import org.eclipse.dawnsci.analysis.api.tree.TreeFile;
-import org.eclipse.dawnsci.nexus.INexusFileFactory;
 import org.eclipse.dawnsci.nexus.NXdata;
 import org.eclipse.dawnsci.nexus.NXdetector;
 import org.eclipse.dawnsci.nexus.NXentry;
 import org.eclipse.dawnsci.nexus.NXinstrument;
 import org.eclipse.dawnsci.nexus.NXpositioner;
 import org.eclipse.dawnsci.nexus.NXroot;
-import org.eclipse.dawnsci.nexus.NexusFile;
-import org.eclipse.dawnsci.nexus.NexusUtils;
-import org.eclipse.dawnsci.nexus.ServiceHolder;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.PositionIterator;
 import org.eclipse.scanning.api.annotation.scan.FileDeclared;
@@ -91,7 +86,7 @@ public class MalcolmScanTest extends NexusTest {
 		
 		malcolmDevice = dservice.createRunnableDevice(model);
 		assertNotNull(malcolmDevice);
-		((AbstractMalcolmDevice<DummyMalcolmModel>) malcolmDevice).addRunListener(new IRunListener() {
+		((AbstractMalcolmDevice<?>) malcolmDevice).addRunListener(new IRunListener() {
 			@Override
 			public void runPerformed(RunEvent evt) throws ScanningException {
 				System.out.println("Ran test malcolm device @ " + evt.getPosition());
@@ -397,7 +392,7 @@ public class MalcolmScanTest extends NexusTest {
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(malcolmDevice);
 		// Cannot set the generator from @PreConfigure in this unit test.
-		((AbstractMalcolmDevice)malcolmDevice).setPointGenerator(gen);
+		((AbstractMalcolmDevice<?>)malcolmDevice).setPointGenerator(gen);
 		
 		// Create a file to scan into.
 		smodel.setFilePath(file.getAbsolutePath());

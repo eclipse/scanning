@@ -24,7 +24,7 @@ import java.util.Map;
  */
 public class MalcolmTable implements Iterable<Map<String, Object>> {
 	
-	private Map<String, ArrayList<Object>> tableData;
+	private Map<String, List<Object>> tableData;
 	private Map<String, Class<?>> tableDataTypes;
 	private List<String> headings;
 	private int numRows;
@@ -41,7 +41,7 @@ public class MalcolmTable implements Iterable<Map<String, Object>> {
 	 * @param dataTypes a map of the data types for each column, this map must have the
 	 *    same keys as the tableAsMap
 	 */
-	public MalcolmTable(Map<String, ArrayList<Object>> tableAsMap, Map<String, Class<?>> dataTypes) {
+	public MalcolmTable(Map<String, List<Object>> tableAsMap, Map<String, Class<?>> dataTypes) {
 		if (tableAsMap == null || dataTypes == null) throw new NullPointerException();
 		if (tableAsMap.size() != dataTypes.size()) {
 			throw new IllegalArgumentException("The given arguments are not of the same size");
@@ -81,7 +81,7 @@ public class MalcolmTable implements Iterable<Map<String, Object>> {
 	}
 	
 	public List<Object> getColumn(String columnName) {
-		ArrayList<Object> column = tableData.get(columnName);
+		List<Object> column = tableData.get(columnName);
 		if (column != null) {
 			return tableData.get(columnName);
 		}
@@ -89,7 +89,7 @@ public class MalcolmTable implements Iterable<Map<String, Object>> {
 	}
 	
 	public Class<?> getColumnClass(String columnName) {
-		ArrayList<Object> column = tableData.get(columnName);
+		List<Object> column = tableData.get(columnName);
 		if (column != null) {
 			return tableDataTypes.get(columnName);
 		}
@@ -152,12 +152,18 @@ public class MalcolmTable implements Iterable<Map<String, Object>> {
 		
 	}
 
-	public Map<String, ArrayList<Object>> getTableData() {
+	public Map<String, List<Object>> getTableData() {
 		return tableData;
 	}
 
-	public void setTableData(Map<String, ArrayList<Object>> tableData) {
+	public void setTableData(Map<String, List<Object>> tableData) {
 		this.tableData = tableData;
+		// also sets the number of rows.
+		int numRows = tableData.values().iterator().next().size();
+		if (tableData.values().stream().anyMatch(column -> column.size() != numRows)) {
+			throw new IllegalArgumentException("All columns must have the same size");
+		}
+		this.numRows = numRows;
 	}
 
 	public Map<String, Class<?>> getTableDataTypes() {
