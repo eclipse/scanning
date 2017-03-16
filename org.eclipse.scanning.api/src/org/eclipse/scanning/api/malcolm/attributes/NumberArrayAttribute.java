@@ -18,11 +18,11 @@ package org.eclipse.scanning.api.malcolm.attributes;
  * @author Matt Taylor
  *
  */
-public class NumberArrayAttribute extends MalcolmAttribute {
+public class NumberArrayAttribute extends MalcolmAttribute<Number[]> {
 	public static final String NUMBERARRAY_ID = "malcolm:core/NumberArrayMeta:";
 	
-	String dtype;
-	Number value[];
+	private String dtype;
+	private Number value[];
 	
 	public String getDtype() {
 		return dtype;

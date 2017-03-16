@@ -17,6 +17,7 @@ import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.models.ClusterProcessingModel;
 import org.eclipse.scanning.api.device.models.ProcessingModel;
+import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.GridModel;
@@ -31,7 +32,6 @@ import org.eclipse.scanning.example.malcolm.DummyMalcolmModel;
 import org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredDetector;
 import org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredModel;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;
-import org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.eclipse.scanning.points.validation.ValidatorService;
 import org.eclipse.scanning.sequencer.RunnableDeviceServiceImpl;
@@ -86,7 +86,7 @@ public abstract class AbstractValidationTest {
 		device.getModel().setFileDir(dir.getAbsolutePath());
 		
 		// Just for testing, we make the detector legal.
-		AbstractMalcolmDevice<?> mdevice = (AbstractMalcolmDevice<?>)device;
+		IMalcolmDevice<?> mdevice = (IMalcolmDevice<?>)device;
 		GridModel gmodel = new GridModel("stage_x", "stage_y");
 		gmodel.setBoundingBox(new BoundingBox(10, -10, 100, -100));
 		// Cannot set the generator from @PreConfigure in this unit test.
