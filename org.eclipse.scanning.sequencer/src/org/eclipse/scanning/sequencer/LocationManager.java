@@ -155,32 +155,15 @@ public final class LocationManager {
 	}
 
 	public int getOverallCount() {
-		return (outerCount * innerSize) + getStepNumber() + 1; 
+		return getStepNumber(); 
 	}
 
 	/**
-	 * TODO This code is copied from AcquisitionDevice but 
-	 * it is not clear if/how it works. The stepnumber was
-	 * used however this is the global position in the scan
-	 * so presumably the maths are wrong.
-	 * 
+	 * Returns the total percent complete for the scan(s)
 	 * @return
 	 */
 	public double getOuterPercent() {
-		
-		double innerPercentComplete = 0;
-		if (stepNumber > -1) {
-			innerPercentComplete = (double) (stepNumber + 1) / innerSize;
-		}
-		double outerPercentComplete = 0;
-		if (outerCount > -1) {
-			outerPercentComplete = ((double) (outerCount) / outerSize) * 100;
-		}
-		double innerPercentOfOuter = 100 / (double) outerSize;
-		innerPercentOfOuter *= innerPercentComplete;
-		outerPercentComplete += innerPercentOfOuter;
-		
-		return outerPercentComplete;
+		return ((double) (getOverallCount()) / getTotalSize()) * 100;
 	}
 
 }

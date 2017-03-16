@@ -312,7 +312,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	}
 
 	private void positionComplete(IPosition pos) throws EventException, ScanningException {
-    	positionComplete(pos, location.getStepNumber(), location.getOuterSize());
+    	positionComplete(pos, location.getOuterCount(), location.getOuterSize());
 	}
 
 	private void fireFirst(IPosition firstPosition) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, ScanningException, EventException {
@@ -597,10 +597,13 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		try {
 			awaitPaused = true;
 			if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
-				if (device.getDeviceState() == DeviceState.RUNNING) {
-					if (device instanceof IPausableDevice) ((IPausableDevice)device).pause();
+				DeviceState currentState = device.getDeviceState();
+				if (currentState.isRunning()) {
+					if (device instanceof IPausableDevice) {
+						((IPausableDevice)device).pause();
+					}
 				} else {
-					logger.info("Device " + device.getName() + " wasn't running to pause");
+					logger.info("Device " + device.getName() + " wasn't running to pause. Was + " + currentState);
 				}
 			}
 			setDeviceState(DeviceState.PAUSED);
@@ -636,8 +639,12 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		
 		try {
 			lock.lockInterruptibly();
-			if (getDeviceState() != DeviceState.PAUSED) {
-				throw new ScanningException(this, getName()+" is not paused and cannot be resumed!");
+			DeviceState currentDeviceState = getDeviceState();
+			if (currentDeviceState == DeviceState.RUNNING) {
+				logger.warn("An attempt was made to resume a running device: " + getName());
+				return;
+			} else if (currentDeviceState != DeviceState.PAUSED) {
+				throw new ScanningException(this, getName()+" is not paused and cannot be resumed! State was " + currentDeviceState);
 			}
 		} catch (ScanningException sne) {
 			lock.unlock();
@@ -649,10 +656,13 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		try {
 			awaitPaused = false;
 			if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
-				if (device.getDeviceState() == DeviceState.PAUSED) {
-					if (device instanceof IPausableDevice) ((IPausableDevice)device).resume();
+				DeviceState currentState = device.getDeviceState();
+				if (currentState == DeviceState.PAUSED) {
+					if (device instanceof IPausableDevice) {
+						((IPausableDevice)device).resume();
+					}
 				} else {
-					logger.info("Device " + device.getName() + " wasn't paused to resume");
+					logger.info("Device " + device.getName() + " wasn't paused to resume. Was + " + currentState);
 				}
 			}
 			paused.signalAll();
