@@ -57,7 +57,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
  * <img src="./doc/device_state.png" />
 
  * @author Matthew Gerring
- * @param <T> 
+ * @param <T> the type of the model for this malcolm device
  *
  */
 public interface IMalcolmDevice<T> extends IRunnableEventDevice<T>, IMalcolmEventPublisher, ILatchableDevice, IAttributableDevice, IValidator<T> {

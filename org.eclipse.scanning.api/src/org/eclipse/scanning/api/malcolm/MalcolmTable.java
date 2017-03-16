@@ -158,7 +158,7 @@ public class MalcolmTable implements Iterable<Map<String, Object>> {
 
 	public void setTableData(Map<String, List<Object>> tableData) {
 		this.tableData = tableData;
-		// also sets the number of rows. Note
+		// also sets the number of rows.
 		int numRows = tableData.values().iterator().next().size();
 		if (tableData.values().stream().anyMatch(column -> column.size() != numRows)) {
 			throw new IllegalArgumentException("All columns must have the same size");
