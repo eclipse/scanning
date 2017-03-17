@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2016 Diamond Light Source Ltd.
+# Copyright (c) 2016, 2017 Diamond Light Source Ltd.
 #
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
@@ -9,8 +9,9 @@
 # Contributors:
 #    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
+
 import math as m
 
 from scanpointgenerator.compat import range_, np
@@ -22,113 +23,65 @@ from scanpointgenerator.core import Point
 class LissajousGenerator(Generator):
     """Generate the points of a Lissajous curve"""
 
-    def __init__(self, names, units, box, num_lobes,
-            num_points=None, alternate_direction=False):
+    def __init__(self, axes, units, centre, span, lobes, size=None, alternate=False):
         """
         Args:
-            names (list(str)): The scannable names e.g. ["x", "y"]
-            units (str): The scannable units e.g. "mm"
-            box(dict): Dictionary of centre, width and height representing
-                box to fill with points
-            num_lobes(int): Number of x-direction lobes for curve; will
-                have num_lobes+1 y-direction lobes
-            num_points(int): The number of points to fill the Lissajous
-                curve. Default is 250 * num_lobes
+            axes (list(str)): The scannable axes e.g. ["x", "y"]
+            units (list(str)): The scannable units e.g. ["mm", "mm"]
+            centre (list(float)): The centre of the lissajous curve
+            span (list(float)): The [height, width] of the curve
+            num(int): Number of x-direction lobes for curve; will
+                have lobes+1 y-direction lobes
+            size(int): The number of points to fill the Lissajous
+                curve. Default is 250 * lobes
         """
 
-        self.names = names
-        self.units = units
-        self.points = None
-        self.points_lower = None
-        self.points_upper = None
-        self.alternate_direction = alternate_direction
+        self.axes = axes
+        self.units = {d:u for d,u in zip(axes, units)}
+        self.alternate = alternate
 
-        if len(self.names) != len(set(self.names)):
+        if len(self.axes) != len(set(self.axes)):
             raise ValueError("Axis names cannot be duplicated; given %s" %
-                             names)
+                             axes)
 
-        num_lobes = int(num_lobes)
+        lobes = int(lobes)
 
-        self.x_freq = num_lobes
-        self.y_freq = num_lobes + 1
-        self.x_max = box['width']/2
-        self.y_max = box['height']/2
-        self.centre = box['centre']
-        self.num = num_points
+        self.x_freq = lobes
+        self.y_freq = lobes + 1
+        self.x_max, self.y_max = span[0]/2, span[1]/2
+        self.centre = centre
+        self.size = size
 
         # Phase needs to be 0 for even lobes and pi/2 for odd lobes to start
         # at centre for odd and at right edge for even
-        self.phase_diff = m.pi/2 * (num_lobes % 2)
-        if num_points is None:
-            self.num = num_lobes * 250
-        self.increment = 2*m.pi/self.num
+        self.phase_diff = m.pi/2 * (lobes % 2)
+        if size is None:
+            self.size = lobes * 250
+        self.increment = 2*m.pi/self.size
 
-        self.position_units = {self.names[0]: units, self.names[1]: units}
-        self.index_dims = [self.num]
-        gen_name = "Lissajous"
-        for axis_name in self.names[::-1]:
-            gen_name = axis_name + "_" + gen_name
-        self.index_names = [gen_name]
-
-        self.axes = self.names  # For GDA
-
-    def _calc_arrays(self, offset):
+    def prepare_arrays(self, index_array):
+        arrays = {}
         x0, y0 = self.centre[0], self.centre[1]
         A, B = self.x_max, self.y_max
         a, b = self.x_freq, self.y_freq
         d = self.phase_diff
-        f = lambda t: y0 + A * np.sin(a * 2 * m.pi * (t+offset)/self.num + d)
-        x = f(np.arange(self.num))
-        f = lambda t: B * np.sin(b * 2 * m.pi * (t+offset)/self.num)
-        y = f(np.arange(self.num))
-        return x, y
-
-    def produce_points(self):
-        self.points = {}
-        self.points_lower = {}
-        self.points_upper = {}
-
-        x = self.names[0]
-        y = self.names[1]
-        self.points[x], self.points[y] = self._calc_arrays(0)
-        self.points_upper[x], self.points_upper[y] = self._calc_arrays(0.5)
-        self.points_lower[x], self.points_lower[y] = self._calc_arrays(-0.5)
-
-    def _calc(self, i):
-        """Calculate the coordinate for a given index"""
-        x = self.centre[0] + \
-            self.x_max * m.sin(self.x_freq * i * self.increment +
-                               self.phase_diff)
-        y = self.centre[1] + \
-            self.y_max * m.sin(self.y_freq * i * self.increment)
-
-        return x, y
-
-    def iterator(self):
-        for i in range_(self.num):
-            p = Point()
-            p.positions[self.names[0]], p.positions[self.names[1]] = self._calc(i)
-            p.lower[self.names[0]], p.lower[self.names[1]] = self._calc(i - 0.5)
-            p.upper[self.names[0]], p.upper[self.names[1]] = self._calc(i + 0.5)
-            p.indexes = [i]
-
-            yield p
+        fx = lambda t: x0 + A * np.sin(a * 2*m.pi * t/self.size + d)
+        fy = lambda t: y0 + B * np.sin(b * 2*m.pi * t/self.size)
+        arrays[self.axes[0]] = fx(index_array)
+        arrays[self.axes[1]] = fy(index_array)
+        return arrays
 
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 
-        box = dict()
-        box['centre'] = self.centre
-        box['width'] = self.x_max * 2
-        box['height'] = self.y_max * 2
-
         d = dict()
         d['typeid'] = self.typeid
-        d['names'] = self.names
-        d['units'] = list(self.position_units.values())[0]
-        d['box'] = box
-        d['num_lobes'] = self.x_freq
-        d['num_points'] = self.num
+        d['axes'] = self.axes
+        d['units'] = [self.units[a] for a in self.axes]
+        d['centre'] = self.centre
+        d['span'] = [self.x_max * 2, self.y_max * 2]
+        d['lobes'] = self.x_freq
+        d['size'] = self.size
 
         return d
 
@@ -144,10 +97,11 @@ class LissajousGenerator(Generator):
             LissajousGenerator: New LissajousGenerator instance
         """
 
-        names = d['names']
+        axes = d['axes']
         units = d['units']
-        box = d['box']
-        num_lobes = d['num_lobes']
-        num_points = d['num_points']
+        centre = d['centre']
+        span = d['span']
+        lobes = d['lobes']
+        size = d['size']
 
-        return cls(names, units, box, num_lobes, num_points)
+        return cls(axes, units, centre, span, lobes, size)

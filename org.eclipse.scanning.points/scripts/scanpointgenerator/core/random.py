@@ -8,8 +8,7 @@
 #
 # Contributors:
 #    Gary Yendell - initial API and implementation and/or initial documentation
-#    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
 
 class Random(object):

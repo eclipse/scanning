@@ -7,10 +7,10 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #
 # Contributors:
-#    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
+
 from scanpointgenerator.core import ROI
 
 
@@ -29,9 +29,9 @@ class PointROI(ROI):
         return x * x + y * y <= epsilon * epsilon
 
     def mask_points(self, points, epsilon=0):
-        x = points[0]
+        x = points[0].copy()
         x -= self.point[0]
-        y = points[1]
+        y = points[1].copy()
         y -= self.point[1]
         x *= x
         y *= y

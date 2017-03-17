@@ -7,9 +7,10 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #
 # Contributors:
+#    Tom Cobb - initial API and implementation and/or initial documentation
 #    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
 
 class ROI(object):

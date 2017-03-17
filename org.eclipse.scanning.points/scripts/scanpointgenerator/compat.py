@@ -9,8 +9,9 @@
 # Contributors:
 #    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
+
 import os
 
 try:
@@ -21,7 +22,7 @@ except NameError:
 
 
 if os.name == 'java':
-    import scanpointgenerator.numjy as numpy
+    import numjy as numpy
 else:
     import numpy
 

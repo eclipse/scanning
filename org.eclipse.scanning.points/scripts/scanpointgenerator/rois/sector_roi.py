@@ -7,10 +7,10 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #
 # Contributors:
-#    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
+
 from math import hypot, atan2, pi
 
 from scanpointgenerator.core import ROI
@@ -62,8 +62,8 @@ class SectorROI(ROI):
         return theta <= sweep
 
     def mask_points(self, points):
-        x = points[0]
-        y = points[1]
+        x = points[0].copy()
+        y = points[1].copy()
         x -= self.centre[0]
         y -= self.centre[1]
         r2 = (np.square(x) + np.square(y))
@@ -76,7 +76,9 @@ class SectorROI(ROI):
         phi_s = phi_1 - phi_0
         phi_x -= phi_0 + 2*pi
         phi_x %= 2*pi
-        mask = (r2 <= self.radii[1]) & (r2 >= self.radii[0])
+        mask = np.full(len(x), 1, dtype=np.int8)
+        mask &= r2 <= self.radii[1]
+        mask &= r2 >= self.radii[0]
         mask &= (phi_x <= phi_s)
         return mask
 

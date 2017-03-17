@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2016 Diamond Light Source Ltd.
+# Copyright (c) 2016, 2017 Diamond Light Source Ltd.
 #
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
@@ -7,10 +7,14 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #
 # Contributors:
+#    Tom Cobb - initial API and implementation and/or initial documentation
 #    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
+
+from scanpointgenerator import CompoundGenerator, RectangularROI, CircularROI
+
 MARKER_SIZE = 10
 
 
@@ -21,13 +25,17 @@ def plot_generator(gen, excluder=None, show_indexes=True):
     from scipy import interpolate
 
     if excluder is not None:
-        roi = excluder.roi
-        overlay = plt.subplot(111, aspect='equal')
-        if roi.name == "Rectangle":
-            lower_left = (roi.centre[0] - roi.width/2, roi.centre[1] - roi.height/2)
-            overlay.add_patch(Rectangle(lower_left, roi.width, roi.height, fill=False))
-        if roi.name == "Circle":
-            overlay.add_patch(Circle(roi.centre, roi.radius, fill=False))
+        for roi in excluder.rois:
+            overlay = plt.subplot(111, aspect='equal')
+            if isinstance(roi, RectangularROI):
+                overlay.add_patch(Rectangle(roi.start, roi.width, roi.height, fill=False))
+            if isinstance(roi, CircularROI):
+                overlay.add_patch(Circle(roi.centre, roi.radius, fill=False))
+
+    if not isinstance(gen, CompoundGenerator):
+        excluders = [] if excluder is None else [excluder]
+        gen = CompoundGenerator([gen], excluders, [])
+    gen.prepare()
 
     # points for spline generation
     x, y = [], []
@@ -74,9 +82,9 @@ def plot_generator(gen, excluder=None, show_indexes=True):
         y.append(point.upper.get("y", 0))
 
     # # Plot labels
-    plt.xlabel("X (%s)" % gen.position_units["x"])
-    if "y" in gen.position_units:
-        plt.ylabel("Y (%s)" % gen.position_units["y"])
+    plt.xlabel("X (%s)" % gen.units["x"])
+    if "y" in gen.units:
+        plt.ylabel("Y (%s)" % gen.units["y"])
     else:
         plt.tick_params(left='off', labelleft='off')
 
@@ -113,6 +121,6 @@ def plot_generator(gen, excluder=None, show_indexes=True):
         for i, x, y in zip(capi, capx, capy):
             plt.annotate(i, (x, y), xytext=(MARKER_SIZE/2, MARKER_SIZE/2),
                          textcoords='offset points')
-        indexes = ["%s (size %d)" % z for z in zip(gen.index_names, gen.index_dims)]
-        plt.title("Dataset: [%s]" % (", ".join(indexes)))
+        #indexes = ["%s (size %d)" % z for z in zip(gen.index_names, gen.index_dims)]
+        #plt.title("Dataset: [%s]" % (", ".join(indexes)))
     plt.show()
