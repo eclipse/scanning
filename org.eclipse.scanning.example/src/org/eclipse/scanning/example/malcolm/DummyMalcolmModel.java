@@ -18,6 +18,8 @@ import java.util.List;
 
 import org.eclipse.scanning.api.ITimeoutable;
 import org.eclipse.scanning.api.device.models.MalcolmModel;
+import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
+import org.eclipse.scanning.api.points.IPosition;
 
 /**
  * A Malcolm Model for a {@link DummyMalcolmDevice}. This model describes which nexus files
@@ -31,8 +33,20 @@ public class DummyMalcolmModel extends MalcolmModel implements ITimeoutable {
 	
 	private List<DummyMalcolmControlledDetectorModel> dummyDetectorModels = Collections.emptyList();
 
+	/**
+	 * The positioner names are the names of the datasets written by the dummy malcolm device.
+	 * This will normally be the same as {@link #getAxesToMove()}.
+	 * At each position in the scan the value written to that dataset will be the value for that
+	 * name in the {@link IPosition} for that point of the scan if it contains a value for that
+	 * name, otherwise a random value will be written.
+	 * 
+	 */
 	private List<String> positionerNames;
 	
+	/**
+	 * The monitor datasets to write. These will be written to with random at each
+	 * position in the scan. 
+	 */
 	private List<String> monitorNames;
 	
 	public DummyMalcolmModel() {
@@ -74,6 +88,19 @@ public class DummyMalcolmModel extends MalcolmModel implements ITimeoutable {
 
 	public void setMonitorNames(List<String> monitorNames) {
 		this.monitorNames = monitorNames;
+	}
+
+	/**
+	 * Sets the axes to move, as returned by {@link IMalcolmDevice#getAxesToMove()}. Also
+	 * sets the {@link #positionerNames} which determine what datasets are written by the
+	 * {@link DummyMalcolmDevice}.
+	 * @see org.eclipse.scanning.api.device.models.MalcolmModel#setAxesToMove(java.util.List)
+	 */
+	@Override
+	public void setAxesToMove(List<String> axesToMove) {
+		// overridden to make it easy to change the positioner names at the same time.
+		super.setAxesToMove(axesToMove);
+		setPositionerNames(axesToMove);
 	}
 
 }
