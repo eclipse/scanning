@@ -48,7 +48,7 @@ class SpiralIterator extends AbstractScanPointIterator {
         JythonObjectFactory spiralGeneratorFactory = ScanPointGeneratorFactory.JSpiralGeneratorFactory();
 
         PyList names =  new PyList(Arrays.asList(new String[] {xName, yName}));
-        String units = "mm";
+        PyList units = new PyList(Arrays.asList(new String[] {"mm", "mm"}));
         PyList centre = new PyList(Arrays.asList(new Double[] {xCentre, yCentre}));
         double radius = maxRadius;
         double scale = model.getScale();

@@ -7,10 +7,10 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #
 # Contributors:
-#    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
+
 from math import cos, sin
 
 from scanpointgenerator.core import ROI
@@ -43,9 +43,9 @@ class EllipticalROI(ROI):
         return (x * x) / (rx * rx) + (y * y) / (ry * ry) <= 1
 
     def mask_points(self, points):
-        x = points[0]
+        x = points[0].copy()
         x -= self.centre[0]
-        y = points[1]
+        y = points[1].copy()
         y -= self.centre[1]
         if self.angle != 0:
             phi = -self.angle

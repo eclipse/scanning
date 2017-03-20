@@ -43,7 +43,6 @@ import org.eclipse.scanning.api.points.IMutator;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.models.CompoundModel;
-import org.eclipse.scanning.points.mutators.FixedDurationMutator;
 import org.eclipse.scanning.sequencer.SubscanModerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -438,7 +437,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 		double exposureTime = model.getExposureTime();
 
 		if (pointGenerator != null) { // TODO could the point generator be null here?
-			List<IMutator> mutators = Arrays.asList(new FixedDurationMutator(exposureTime));
+			List<IMutator> mutators = new ArrayList<IMutator>();
 			((CompoundModel<?>) pointGenerator.getModel()).setMutators(mutators);
 		}
 		

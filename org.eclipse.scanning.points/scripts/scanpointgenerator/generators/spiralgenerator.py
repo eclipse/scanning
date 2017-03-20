@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2016 Diamond Light Source Ltd.
+# Copyright (c) 2016, 2017 Diamond Light Source Ltd.
 #
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
@@ -9,8 +9,9 @@
 # Contributors:
 #    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
+
 import math as m
 
 from scanpointgenerator.compat import range_, np
@@ -22,111 +23,66 @@ from scanpointgenerator.core import Point
 class SpiralGenerator(Generator):
     """Generate the points of an Archimedean spiral"""
 
-    def __init__(self, names, units, centre, radius, scale=1.0,
-                 alternate_direction=False):
+    def __init__(self, axes, units, centre, radius, scale=1.0,
+                 alternate=False):
         """
         Args:
-            names (list(str)): The scannable names e.g. ["x", "y"]
-            units (str): The scannable units e.g. "mm"
+            axes (list(str)): The scannable axes e.g. ["x", "y"]
+            units (list(str)): The scannable units e.g. ["mm", "mm"]
             centre(list): List of two coordinates of centre point of spiral
             radius(float): Maximum radius of spiral
             scale(float): Gap between spiral arcs; higher scale gives
                 fewer points for same radius
-            alternate_direction(bool): Specifier to reverse direction if
+            alternate(bool): Specifier to reverse direction if
                 generator is nested
         """
 
-        self.names = names
-        self.units = units
+        self.axes = axes
         self.centre = centre
         self.radius = radius
         self.scale = scale
-        self.alternate_direction = alternate_direction
-        self.points = None
-        self.points_lower = None
-        self.points_upper = None
+        self.alternate = alternate
+        self.units = {d:u for d,u in zip(axes, units)}
 
-        if len(self.names) != len(set(self.names)):
+        if len(self.axes) != len(set(self.axes)):
             raise ValueError("Axis names cannot be duplicated; given %s" %
-                             names)
+                             axes)
 
-        self.alpha = m.sqrt(4 * m.pi)  # Theta scale factor
-        self.beta = scale / (2 * m.pi)  # Radius scale factor
-        self.num = self._end_point(self.radius) + 1
-
-        self.position_units = {names[0]: units, names[1]: units}
-        self.index_dims = [self._end_point(self.radius)]
-        gen_name = "Spiral"
-        for axis_name in self.names[::-1]:
-            gen_name = axis_name + "_" + gen_name
-        self.index_names = [gen_name]
-
-        self.axes = self.names  # For GDA
-
-    def _calc_arrays(self, offset):
         # spiral equation : r = b * phi
         # scale = 2 * pi * b
         # parameterise phi with approximation:
         # phi(t) = k * sqrt(t) (for some k)
         # number of possible t is solved by sqrt(t) = max_r / b*k
-        b = self.scale / (2 * m.pi)
-        k = m.sqrt(4 * m.pi) # magic scaling factor for our angle steps
-        size = (self.radius) / (b * k)
-        size *= size
-        size = int(size) + 1 # TODO: Why the +1 ???
-        phi_t = lambda t: k * np.sqrt(t + offset)
-        phi = phi_t(np.arange(size))
+        self.alpha = m.sqrt(4 * m.pi)  # Theta scale factor = k
+        self.beta = scale / (2 * m.pi)  # Radius scale factor = b
+        self.size = int((self.radius / (self.alpha * self.beta)) ** 2) + 1
+
+    def prepare_arrays(self, index_array):
+        arrays = {}
+        b = self.beta
+        k = self.alpha
+        size = self.size
+        # parameterise phi with approximation:
+        # phi(t) = k * sqrt(t) (for some k)
+        phi_t = lambda t: k * np.sqrt(t + 0.5)
+        phi = phi_t(index_array)
         x = self.centre[0] + b * phi * np.sin(phi)
         y = self.centre[1] + b * phi * np.cos(phi)
-        return x, y
-
-    def produce_points(self):
-        self.points = {}
-        self.points_lower = {}
-        self.points_upper = {}
-        x = self.names[0]
-        y = self.names[1]
-        self.points_lower[x], self.points_lower[y] = self._calc_arrays(0)
-        self.points[x], self.points[y] = self._calc_arrays(0.5)
-        self.points_upper[x], self.points_upper[y] = self._calc_arrays(1.)
-
-    def _calc(self, i):
-        """Calculate the coordinate for a given index"""
-        theta = self.alpha * m.sqrt(i)
-        radius = self.beta * theta
-        x = self.centre[0] + radius * m.sin(theta)
-        y = self.centre[1] + radius * m.cos(theta)
-
-        return x, y
-
-    def _end_point(self, radius):
-        """Calculate the index of the final point contained by circle"""
-        return int((radius / (self.alpha * self.beta)) ** 2)
-
-    def iterator(self):
-        for i in range_(0, self._end_point(self.radius) + 1):
-            p = Point()
-            p.indexes = [i]
-
-            i += 0.5  # Offset so lower bound of first point is not less than 0
-
-            p.positions[self.names[0]], p.positions[self.names[1]] = self._calc(i)
-            p.upper[self.names[0]], p.upper[self.names[1]] = self._calc(i + 0.5)
-            p.lower[self.names[0]], p.lower[self.names[1]] = self._calc(i - 0.5)
-
-            yield p
+        arrays[self.axes[0]] = x
+        arrays[self.axes[1]] = y
+        return arrays
 
     def to_dict(self):
         """Convert object attributes into a dictionary"""
 
         d = dict()
         d['typeid'] = self.typeid
-        d['names'] = self.names
-        d['units'] = list(self.position_units.values())[0]
+        d['axes'] = self.axes
+        d['units'] = [self.units[a] for a in self.axes]
         d['centre'] = self.centre
         d['radius'] = self.radius
         d['scale'] = self.scale
-        d['alternate_direction'] = self.alternate_direction
+        d['alternate'] = self.alternate
 
         return d
 
@@ -142,11 +98,11 @@ class SpiralGenerator(Generator):
             SpiralGenerator: New SpiralGenerator instance
         """
 
-        names = d['names']
+        axes = d['axes']
         units = d['units']
         centre = d['centre']
         radius = d['radius']
         scale = d['scale']
-        alternate_direction = d['alternate_direction']
+        alternate = d['alternate']
 
-        return cls(names, units, centre, radius, scale, alternate_direction)
+        return cls(axes, units, centre, radius, scale, alternate)

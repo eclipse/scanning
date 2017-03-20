@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2016 Diamond Light Source Ltd.
+# Copyright (c) 2016, 2017 Diamond Light Source Ltd.
 #
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
@@ -7,9 +7,10 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #
 # Contributors:
+#    Tom Cobb - initial API and implementation and/or initial documentation
 #    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
 
 class Mutator(object):
@@ -19,16 +20,17 @@ class Mutator(object):
     # Lookup table for mutator subclasses
     _mutator_lookup = {}
 
-    def mutate(self, iterator):
+    def mutate(self, point, index):
         """
-        Abstract method to take each point from the given iterator, apply a
-        mutation and then yield the new point
+        Abstract method to take a point, apply a mutation and then return the
+        new point
 
         Args:
-            iterator(iter): Iterator to mutate
+            Point: point to mutate
+            Index: one-dimensional linear index of point
 
-        Yields:
-            Point: Mutated points from generator
+        Returns:
+            Point: Mutated point
         """
         raise NotImplementedError
 

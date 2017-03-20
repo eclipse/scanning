@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2016 Diamond Light Source Ltd.
+# Copyright (c) 2016, 2017 Diamond Light Source Ltd.
 #
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
@@ -7,168 +7,79 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #
 # Contributors:
+#    Tom Cobb - initial API and implementation and/or initial documentation
 #    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
-from scanpointgenerator.compat import range_
+
+from scanpointgenerator.compat import np
 from scanpointgenerator.core import Generator
-from scanpointgenerator.core import Point
 
 
 @Generator.register_subclass("scanpointgenerator:generator/ArrayGenerator:1.0")
 class ArrayGenerator(Generator):
-    """Generate a given n-dimensional array of points"""
+    """Generate points fron a given list of positions"""
 
-    def __init__(self, name, units, points, lower_bounds=None, upper_bounds=None):
+    def __init__(self, axis, units, points, alternate=False):
         """
         Args:
-            name (str/list(str)): ND list of scannable names
-                e.g. "x" or ["x", "y"]
-            units (str): The scannable units. E.g. "mm"
-            points (list): List of ND lists of coordinates
-                e.g. [1.0, 2.0, 3.0] or [[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]]
-            lower_bounds (list): List of ND lists of lower bound coordinates
-            upper_bounds (list): List of ND lists of upper bound coordinates
+            axis (str): The scannable axis name
+            units (str): The scannable units.
+            points (list(double)): array positions
+            alternate (bool): Alternate directions
         """
 
-        if not isinstance(name, list):
-            name = [name]
-        if not isinstance(points[0], list):
-            points = [[point] for point in points]
-            if upper_bounds is not None:
-                upper_bounds = [[point] for point in upper_bounds]
-            if lower_bounds is not None:
-                lower_bounds = [[point] for point in lower_bounds]
+        self.alternate = alternate
+        self.points = np.array(points, dtype=np.float64)
+        self.size = len(self.points)
+        self.axes = [axis]
+        self.units = {axis:units}
 
-        self.name = name
-        self.points = points
-        self.upper_bounds = upper_bounds
-        self.lower_bounds = lower_bounds
-
-        if len(self.name) != len(set(self.name)):
-            raise ValueError("Axis names cannot be duplicated; given %s" %
-                             name)
-
-        for point in self.points:
-            if len(point) != len(self.name):
-                raise ValueError(
-                    "Dimensions of name, start and stop do not match")
-        if self.upper_bounds is not None:
-            for point in self.upper_bounds:
-                if len(point) != len(self.name):
-                    raise ValueError(
-                        "Dimensions of name, start and stop do not match")
-        if self.lower_bounds is not None:
-            for point in self.lower_bounds:
-                if len(point) != len(self.name):
-                    raise ValueError(
-                        "Dimensions of name, start and stop do not match")
-
-        self.num = len(points)
-
-        self.position_units = {}
-        for dimension in self.name:
-            self.position_units[dimension] = units
-        self.index_dims = [self.num]
-        self.index_names = self.name
-
-        self.axes = self.name  # For GDA
-
-    def iterator(self):
-
-        for i in range_(self.num):
-
-            point = Point()
-            for axis, coordinate in enumerate(self.points[i]):
-                point.positions[self.name[axis]] = coordinate
-
-                if self.upper_bounds is None:
-                    upper = self._calculate_upper_bound(i, axis, coordinate)
-                else:
-                    upper = self.upper_bounds[i][axis]
-                point.upper[self.name[axis]] = upper
-
-                if self.lower_bounds is None:
-                    lower = self._calculate_lower_bound(i, axis, coordinate)
-                else:
-                    lower = self.lower_bounds[i][axis]
-                point.lower[self.name[axis]] = lower
-
-            point.indexes = [i]
-            yield point
-
-    def _calculate_upper_bound(self, index, axis, coordinate):
-        """
-        Calculate upper bound for coordinate; if final coordinate then
-        calculate lower bound and extrapolate upper
-
-        Args:
-            index(int): Index of coordinate in list
-            axis(int): Index of coordinate axis in list
-            coordinate(float): Coordinate to calculate bounds for
-
-        Returns:
-            float: Upper bound of coordinate
-        """
-
-        if index == self.num - 1:
-            lower = (coordinate + self.points[index - 1][axis]) / 2
-            upper = coordinate + (coordinate - lower)
-        else:
-            upper = (self.points[index + 1][axis] + coordinate) / 2
-        return upper
-
-    def _calculate_lower_bound(self, index, axis, coordinate):
-        """
-        Calculate lower bound for coordinate; if first coordinate then
-        calculate upper bound and extrapolate lower
-
-        Args:
-            index(int): Index of coordinate in list
-            axis(int): Index of coordinate axis in list
-            coordinate(float): Coordinate to calculate bounds for
-
-        Returns:
-            float: Lower bound of coordinate
-        """
-
-        if index == 0:
-            upper = (self.points[index + 1][axis] + coordinate) / 2
-            lower = coordinate - (upper - coordinate)
-        else:
-            lower = (coordinate + self.points[index - 1][axis]) / 2
-        return lower
+    def prepare_arrays(self, index_array):
+        points = self.points
+        # add linear extension to ends of points, representing t=-1 and t=N+1
+        v_left = points[0] - (points[1] - points[0])
+        v_right = points[-1] + (points[-1] - points[-2])
+        shape = points.shape
+        shape = (shape[0] + 2,) + shape[1:]
+        extended = np.empty(shape, dtype=points.dtype)
+        extended[1:-1] = points
+        extended[0] = v_left
+        extended[-1] = v_right
+        points = extended
+        index_floor = np.floor(index_array).astype(np.int32)
+        epsilon = index_array - index_floor
+        index_floor += 1
+        values = points[index_floor] + epsilon * (points[index_floor+1] - points[index_floor])
+        return {self.axes[0]:values}
 
     def to_dict(self):
-        """Convert object attributes into a dictionary"""
+        """Serialize ArrayGenerator to dictionary"""
 
-        d = dict()
-        d['typeid'] = self.typeid
-        d['name'] = self.name
-        d['units'] = list(self.position_units.values())[0]
-        d['points'] = self.points
-        d['lower_bounds'] = self.lower_bounds
-        d['upper_bounds'] = self.upper_bounds
-
+        d = {
+                "typeid":self.typeid,
+                "axis":self.axes[0],
+                "units":self.units[self.axes[0]],
+                "points":self.points.tolist(),
+                "alternate":self.alternate,
+            }
         return d
 
     @classmethod
     def from_dict(cls, d):
         """
-        Create a ArrayGenerator instance from a serialised dictionary
+        Create a ArrayGenerator from serialized form.
 
         Args:
-            d(dict): Dictionary of attributes
+            d (dict): Serialized generator
 
         Returns:
             ArrayGenerator: New ArrayGenerator instance
         """
 
-        name = d['name']
-        units = d['units']
-        points = d['points']
-        lower_bounds = d['lower_bounds']
-        upper_bounds = d['upper_bounds']
-
-        return cls(name, units, points, lower_bounds, upper_bounds)
+        axis = d["axis"]
+        units = d["units"]
+        alternate = d["alternate"]
+        points = d["points"]
+        return cls(axis, units, points, alternate)

@@ -46,12 +46,13 @@ class LissajousIterator extends AbstractScanPointIterator {
         								model.getBoundingBox().getSlowAxisStart() + height / 2});
 
         PyList names =  new PyList(Arrays.asList(new String[] {xName, yName}));
+        PyList units = new PyList(Arrays.asList(new String[] {"mm", "mm"}));
         int numLobes = (int) (model.getA() / model.getB());
         int numPoints = model.getPoints();
         
         @SuppressWarnings("unchecked")
 		Iterator<IPosition> iterator = (Iterator<IPosition>) lissajousGeneratorFactory.createObject(
-				names, "mm", box, numLobes, numPoints);
+				names, units, box, numLobes, numPoints);
         pyIterator = iterator;
 	}
 

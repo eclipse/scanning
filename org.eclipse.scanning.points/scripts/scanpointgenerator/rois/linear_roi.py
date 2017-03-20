@@ -7,10 +7,10 @@
 # http://www.eclipse.org/legal/epl-v10.html
 #
 # Contributors:
-#    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
+
 from math import cos, sin
 
 from scanpointgenerator.core import ROI
@@ -62,7 +62,9 @@ class LinearROI(ROI):
 
         # test for being past segment end-points
         dp = x * cphi + y * sphi
-        mask = (dp >= 0) & (dp <= self.length)
+        mask = np.full(len(x), True, dtype=np.int8)
+        mask &= dp >= 0
+        mask &= dp <= self.length
 
         # distance is scalar projection (dot-product) of
         # point difference to line normal (normal = (sphi, -cphi))

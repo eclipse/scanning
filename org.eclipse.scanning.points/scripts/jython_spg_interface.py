@@ -23,7 +23,6 @@ from scanpointgenerator import SpiralGenerator
 from scanpointgenerator import LissajousGenerator
 from scanpointgenerator import CompoundGenerator
 from scanpointgenerator import RandomOffsetMutator
-from scanpointgenerator import FixedDurationMutator
 from scanpointgenerator import CircularROI
 from scanpointgenerator import EllipticalROI
 from scanpointgenerator import PointROI
@@ -31,6 +30,7 @@ from scanpointgenerator import PolygonalROI
 from scanpointgenerator import RectangularROI
 from scanpointgenerator import SectorROI
 from scanpointgenerator import Excluder
+from scanpointgenerator import ROIExcluder
 
 ## Logging
 import logging
@@ -79,7 +79,7 @@ class JavaIteratorWrapper(SerializableIterator):
         return self.generator.to_dict()
     
     def size(self):
-        return self.generator.num
+        return self.generator.size
 
 
 class JLineGenerator1D(JavaIteratorWrapper):
@@ -91,7 +91,9 @@ class JLineGenerator1D(JavaIteratorWrapper):
         super(JLineGenerator1D, self).__init__()
         
         self.name = name
-        self.generator = LineGenerator(name, units, start, stop, num_points, alternate_direction)
+        line_gen = LineGenerator(name, units, start, stop, num_points, alternate_direction)
+        self.generator = CompoundGenerator([line_gen], [], [])
+        self.generator.prepare()
         logging.debug(self.generator.to_dict())
     
     def _iterator(self):
@@ -116,7 +118,9 @@ class JLineGenerator2D(JavaIteratorWrapper):
         stop = stop.tolist()
         
         self.names = names
-        self.generator = LineGenerator(names, units, start, stop, num_points, alternate_direction)
+        line_gen = LineGenerator(names, units, start, stop, num_points, alternate_direction)
+        self.generator = CompoundGenerator([line_gen], [], [])
+        self.generator.prepare()
         logging.debug(self.generator.to_dict())
     
     def _iterator(self):
@@ -145,7 +149,9 @@ class JArrayGenerator(JavaIteratorWrapper):
         points = points.tolist()  # Convert from array to list
         
         self.name = name
-        self.generator = ArrayGenerator(name, units, points)
+        array_gen = ArrayGenerator(name, units, points)
+        self.generator = CompoundGenerator([array_gen], [], [])
+        self.generator.prepare()
         logging.debug(self.generator.to_dict())
     
     def _iterator(self):
@@ -168,7 +174,9 @@ class JSpiralGenerator(JavaIteratorWrapper):
         super(JSpiralGenerator, self).__init__()
         
         self.names = names
-        self.generator = SpiralGenerator(names, units, centre, radius, scale, alternate_direction)
+        spiral_gen = SpiralGenerator(names, units, centre, radius, scale, alternate_direction)
+        self.generator = CompoundGenerator([spiral_gen], [], [])
+        self.generator.prepare()
         logging.debug(self.generator.to_dict())
 
     def _iterator(self):
@@ -196,7 +204,10 @@ class JLissajousGenerator(JavaIteratorWrapper):
         super(JLissajousGenerator, self).__init__()
         
         self.names = names
-        self.generator = LissajousGenerator(names, units, box, num_lobes, num_points)
+        liss_gen = LissajousGenerator(names, units, box["centre"],
+                [box["width"], box["height"]], num_lobes, num_points)
+        self.generator = CompoundGenerator([liss_gen], [], [])
+        self.generator.prepare()
         logging.debug(self.generator.to_dict())
     
     def _iterator(self):
@@ -220,11 +231,11 @@ class JCompoundGenerator(JavaIteratorWrapper):
     Create a CompoundGenerator and wrap the points into java Point objects
     """
 
-    def __init__(self, iterators, excluders, mutators):
+    def __init__(self, iterators, excluders, mutators, duration=-1):
         super(JCompoundGenerator, self).__init__()
         
         try:  # If JavaIteratorWrapper
-            generators = [iterator.generator for iterator in iterators]
+            generators = [g for t in iterators for g in t.generator.generators]
         except AttributeError:  # Else call get*() of Java iterator
             generators = [iterator.getPyIterator().generator for iterator in iterators]
         logging.debug("Generators passed to JCompoundGenerator:")
@@ -253,13 +264,32 @@ class JCompoundGenerator(JavaIteratorWrapper):
                 scan_name.add(axis)
                 
             self.dimension_names.add(scan_name)
+        for excluder in excluders:
+            # axes connected by excluders are "unrolled",
+            # unless we're considering a pair of line generators covered by
+            # a single rectangular ROI
+            matched_axes = [a for a in self.axes_ordering if a in excluder.axes]
+            if len(matched_axes) == 0:
+                continue
+            if len(matched_axes) == 2:
+                matched_g1 = [g for g in generators if matched_axes[0] in g.axes][0]
+                matched_g2 = [g for g in generators if matched_axes[1] in g.axes][0]
+                if isinstance(matched_g1, LineGenerator) \
+                        and isinstance(matched_g2, LineGenerator) \
+                        and len(excluder.rois) == 1 \
+                        and isinstance(excluder.rois[0], RectangularROI):
+                    continue
+            inner_axis = matched_axes[0]
+            inner_idx = self.axes_ordering.index(inner_axis)
+            for a in matched_axes[1:]:
+                self.index_locations[a] = inner_idx
         
         logging.debug("Index Locations:")
         logging.debug(self.index_locations)
         logging.debug("Axes Ordering:")
         logging.debug(self.axes_ordering)
         
-        self.generator = CompoundGenerator(generators, excluders, mutators)
+        self.generator = CompoundGenerator(generators, excluders, mutators, duration=duration)
         self.generator.prepare()
         
         logging.debug("CompoundGenerator:")
@@ -312,16 +342,10 @@ class JRandomOffsetMutator(object):
         self.py_mutator = RandomOffsetMutator(seed, axes, max_offset)
         logging.debug(self.py_mutator.to_dict())
         
-class JFixedDurationMutator(object):
-    
-    def __init__(self, duration):
-        self.py_mutator = FixedDurationMutator(duration)
-        logging.debug(self.py_mutator.to_dict())
-        
 class JExcluder(object):
     
     def __init__(self, roi, scannables):
-        self.py_excluder = Excluder(roi.py_roi, scannables)
+        self.py_excluder = ROIExcluder([roi.py_roi], scannables)
         logging.debug(self.py_excluder.to_dict())
         
 class JCircularROI(object):
@@ -344,8 +368,8 @@ class JPointROI(object):
         
 class JPolygonalROI(object):
     
-    def __init__(self, points):
-        self.py_roi = PolygonalROI(points)
+    def __init__(self, points_x, points_y):
+        self.py_roi = PolygonalROI(points_x, points_y)
         logging.debug(self.py_roi.to_dict())
         
 class JRectangularROI(object):

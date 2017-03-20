@@ -1,5 +1,5 @@
 ###
-# Copyright (c) 2016 Diamond Light Source Ltd.
+# Copyright (c) 2016, 2017 Diamond Light Source Ltd.
 #
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Eclipse Public License v1.0
@@ -9,8 +9,9 @@
 # Contributors:
 #    Gary Yendell - initial API and implementation and/or initial documentation
 #    Charles Mita - initial API and implementation and/or initial documentation
-# 
+#
 ###
+
 from scanpointgenerator.core import ROI
 import math as m
 
@@ -35,9 +36,9 @@ class CircularROI(ROI):
             return True
 
     def mask_points(self, points):
-        x = points[0]
+        x = points[0].copy()
         x -= self.centre[0]
-        y = points[1]
+        y = points[1].copy()
         y -= self.centre[1]
         # use in place operations as much as possible (to save array creation)
         x *= x

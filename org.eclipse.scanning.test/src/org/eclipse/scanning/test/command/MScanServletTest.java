@@ -39,7 +39,7 @@ public class MScanServletTest extends AbstractMScanTest {
 	
 	@Test
 	public void testGridWithROIScan() throws Exception {
-		pi.exec("sr = scan_request(grid(axes=('xNex', 'yNex'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 2), snake=False, roi=[circ(origin=(0.0, 0.0), radius=1.0)]), det=detector('mandelbrot', 0.001))");
+		pi.exec("sr = scan_request(grid(axes=('xNex', 'yNex'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 2), snake=False, roi=[circ(origin=(0.0, 1.0), radius=2.0)]), det=detector('mandelbrot', 0.001))");
 		runAndCheck("sr", false, 5);
 	}
 	
