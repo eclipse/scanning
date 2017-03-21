@@ -56,8 +56,12 @@ import org.eclipse.scanning.api.points.IMutator;
  *     ]
  *     mutators : [
  *        {
- *           FixedDurationMutator: {
- *            duration: 23.1
+ *           RandomOffsetMutator: {
+ *            seed: 10
+ *            axes: ["x"]
+ *            max_offset: {
+ *              "x":0.1
+ *            }
  *           }
  *        }
  *     ]
