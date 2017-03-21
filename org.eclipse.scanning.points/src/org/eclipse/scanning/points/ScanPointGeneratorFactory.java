@@ -79,11 +79,7 @@ public class ScanPointGeneratorFactory {
     public static JythonObjectFactory<PyObject> JRandomOffsetMutatorFactory() {
         return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JRandomOffsetMutator");
     }
-    
-    public static JythonObjectFactory<PyObject> JFixedDurationMutatorFactory() {
-        return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JFixedDurationMutator");
-    }
-    
+
     public static JythonObjectFactory<PyObject> JCircularROIFactory() {
         return new JythonObjectFactory<>(PyObject.class, "jython_spg_interface", "JCircularROI");
     }
