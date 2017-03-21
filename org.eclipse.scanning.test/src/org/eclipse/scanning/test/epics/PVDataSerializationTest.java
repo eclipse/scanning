@@ -664,6 +664,7 @@ public class PVDataSerializationTest {
 		
 		CompoundModel<?> cm = (CompoundModel<?>) scan.getModel();
 		cm.setMutators(mutators);
+		cm.setDuration(2.5);
 					
 		// Create the expected PVStructure
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
@@ -1043,6 +1044,7 @@ public class PVDataSerializationTest {
 		
 		CompoundModel<?> cm = (CompoundModel<?>) scan.getModel();
 		cm.setMutators(mutators);
+		cm.setDuration(1.5);
 					
 		// Create the expected PVStructure
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
@@ -1191,7 +1193,7 @@ public class PVDataSerializationTest {
 		
 		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
 		PVDouble durationVal = expectedCompGenPVStructure.getSubField(PVDouble.class, "duration");
-		durationVal.put(-1);
+		durationVal.put(1.5);
 		PVUnionArray excluders = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "excluders");
 		
 		PVUnion[] unionArray = new PVUnion[2];
