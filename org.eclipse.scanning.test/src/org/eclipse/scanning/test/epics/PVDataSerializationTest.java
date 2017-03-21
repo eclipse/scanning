@@ -31,6 +31,7 @@ import org.eclipse.dawnsci.analysis.dataset.roi.SectorROI;
 import org.eclipse.scanning.api.points.IMutator;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
+import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.GridModel;
@@ -987,6 +988,71 @@ public class PVDataSerializationTest {
 		stopVal.put(0, stop.length, stop, 0);
 		PVInt numVal = expectedGeneratorsPVStructure.getSubField(PVInt.class, "size");
 		numVal.put(5);
+		PVBoolean adVal = expectedGeneratorsPVStructure.getSubField(PVBoolean.class, "alternate");
+		adVal.put(false);
+		
+		PVStructure expectedCompGenPVStructure = pvDataCreate.createPVStructure(expectedCompGenStructure);
+		PVDouble durationVal = expectedCompGenPVStructure.getSubField(PVDouble.class, "duration");
+		durationVal.put(-1);
+		PVUnionArray generators = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "generators");
+		
+		PVUnion[] unionArray = new PVUnion[1];
+		unionArray[0] = pvDataCreate.createPVUnion(union);
+		unionArray[0].set(expectedGeneratorsPVStructure);
+				
+		generators.put(0, unionArray.length, unionArray, 0);
+		
+		// Marshal and check against expected
+		PVStructure pvStructure = connectorService.pvMarshal(scan);
+		
+		assertEquals(expectedCompGenPVStructure.getStructure(), pvStructure.getStructure());
+		assertEquals(expectedCompGenPVStructure, pvStructure);
+	}
+	
+	@Test
+	public void TestArrayGenerator() throws Exception {
+
+		// Create test generator
+		List<IROI> regions = new LinkedList<>();
+		
+		IPointGeneratorService pgService = new PointGeneratorService();
+		ArrayModel stepModel = new ArrayModel();
+		stepModel.setName("x");
+		stepModel.setPositions(new double [] {1, 2, 3, 4});
+		IPointGenerator<ArrayModel> temp = pgService.createGenerator(stepModel, regions);
+		IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
+		
+		// Create the expected PVStructure
+		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
+
+		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
+		
+		Structure expectedGeneratorsStructure = fieldCreate.createFieldBuilder().
+				add("alternate", ScalarType.pvBoolean).
+				add("units", ScalarType.pvString).
+				add("axis", ScalarType.pvString).
+				addArray("points", ScalarType.pvDouble).
+				setId("scanpointgenerator:generator/ArrayGenerator:1.0").					
+				createStructure();
+
+		Union union = fieldCreate.createVariantUnion();
+		
+		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
+				addArray("mutators", union).
+				add("duration", ScalarType.pvDouble).
+				addArray("generators", union).				
+				addArray("excluders", union).
+				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
+				createStructure();
+		
+		PVStructure expectedGeneratorsPVStructure = pvDataCreate.createPVStructure(expectedGeneratorsStructure);
+		PVString nameVal = expectedGeneratorsPVStructure.getSubField(PVString.class, "axis");
+		nameVal.put("x");
+		PVString unitsVal = expectedGeneratorsPVStructure.getSubField(PVString.class, "units");
+		unitsVal.put("mm");
+		PVDoubleArray pointsVal = expectedGeneratorsPVStructure.getSubField(PVDoubleArray.class, "points");
+		double[] points = new double[] {1, 2, 3, 4};
+		pointsVal.put(0, points.length, points, 0);
 		PVBoolean adVal = expectedGeneratorsPVStructure.getSubField(PVBoolean.class, "alternate");
 		adVal.put(false);
 		
