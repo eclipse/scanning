@@ -338,7 +338,7 @@ public class ExampleMalcolmDeviceTest {
 
 			configurePVStructure.getUnionArrayField("generator.excluders").put(0, crUnionArray.length, crUnionArray, 0);
 
-			configurePVStructure.getSubField(PVDouble.class, "generator.duration").put(-1);
+			configurePVStructure.getSubField(PVDouble.class, "generator.duration").put(23.1);
 
 			PVString fileDirVal = configurePVStructure.getSubField(PVString.class, "fileDir");
 			fileDirVal.put("/TestFile/Dir");

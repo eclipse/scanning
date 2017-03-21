@@ -71,10 +71,11 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 		
         Object[] excluders = getExcluders(gen.getModel().getRegions());
         Object[] mutators = getMutators(gen.getModel().getMutators());
+        double duration = gen.getModel().getDuration();
         
         @SuppressWarnings("unchecked")
 		SerializableIterator<IPosition> iterator = (SerializableIterator<IPosition>)  compoundGeneratorFactory.createObject(
-				iterators, excluders, mutators);
+				iterators, excluders, mutators, duration);
         
         index = -1;
         pyIterator = iterator;
