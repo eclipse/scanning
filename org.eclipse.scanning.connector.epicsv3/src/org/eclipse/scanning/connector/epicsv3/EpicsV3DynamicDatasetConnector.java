@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.cosylab.epics.caj.CAJChannel;
 
+import gov.aps.jca.CAException;
 import gov.aps.jca.Channel;
 import gov.aps.jca.Monitor;
 import gov.aps.jca.dbr.DBR;
@@ -37,6 +38,7 @@ import gov.aps.jca.dbr.DBR_Double;
 import gov.aps.jca.dbr.DBR_Float;
 import gov.aps.jca.dbr.DBR_Int;
 import gov.aps.jca.dbr.DBR_Short;
+import gov.aps.jca.dbr.DBR_String;
 import gov.aps.jca.event.MonitorEvent;
 import gov.aps.jca.event.MonitorListener;
 
@@ -76,24 +78,24 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 
 	LinkedList<IDataListener> listeners = new LinkedList<>();
 	
+	int dim0, dim1, dim2;
+
 	int height = 0;
 	int width = 0;
 	int rgbChannels = 0;
+
 	int numDimensions = 0;
 	String colourMode = "";
 	String dataTypeStr = "";
 	
 	String arrayPluginName;
 	String dataChannelPV = "";
-	String dim1PV = "";
 	String dim0PV = "";
+	String dim1PV = "";
 	String dim2PV = "";
 	String numDimensionsPV = "";
 	String colourModePV = "";
 	String dataTypePV = "";
-	
-	String currentWidthPV = "";
-	String currentHeightPV = "";
 	
 	DBRType dataType = null;
 	
@@ -110,8 +112,8 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 	public EpicsV3DynamicDatasetConnector(String arrayPluginName) {
 		this.arrayPluginName = arrayPluginName;
 		dataChannelPV = arrayPluginName + arrayDataSuffix;      
-		dim1PV = arrayPluginName + arraySize1Suffix;            
 		dim0PV = arrayPluginName + arraySize0Suffix;            
+		dim1PV = arrayPluginName + arraySize1Suffix;            
 		dim2PV = arrayPluginName + arraySize2Suffix;            
 		numDimensionsPV = arrayPluginName + numDimensionsSuffix;
 		colourModePV = arrayPluginName + colourModeSuffix;      
@@ -199,63 +201,32 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 			dataTypeCh = ec.createChannel(dataTypePV);
 			
 			dataType = dataChannel.getFieldType();
-			
+			dim0 = ec.cagetInt(dim0Ch);
+			dim1 = ec.cagetInt(dim1Ch);
+			dim2 = ec.cagetInt(dim2Ch);
 			numDimensions = ec.cagetInt(numDimCh);
-
 			colourMode = ec.cagetString(colourModeCh);
-
 			dataTypeStr = ec.cagetString(dataTypeCh);
 			
-			int dataSize = 0;
-			
-			if (colourMode.equals(monoColourMode)) {
-				width = ec.cagetInt(dim0Ch);
-				height = ec.cagetInt(dim1Ch);
-				
-				currentWidthPV = dim0PV;
-				currentHeightPV = dim1PV;
-				
-				dataSize = height * width;
-			} else {
-				if (colourMode.equals("RGB2")) {
-					rgbChannels = ec.cagetInt(dim1Ch);
-					width = ec.cagetInt(dim0Ch);
-					height = ec.cagetInt(dim2Ch);
-					currentWidthPV = dim0PV;
-					currentHeightPV = dim2PV;
-				} else if (colourMode.equals("RGB3")) {
-					rgbChannels = ec.cagetInt(dim2Ch);
-					width = ec.cagetInt(dim0Ch);
-					height = ec.cagetInt(dim1Ch);
-					currentWidthPV = dim0PV;
-					currentHeightPV = dim1PV;
-				} else {
-					rgbChannels = ec.cagetInt(dim0Ch);
-					width = ec.cagetInt(dim1Ch);
-					height = ec.cagetInt(dim2Ch);
-					currentWidthPV = dim1PV;
-					currentHeightPV = dim2PV;
-				} 
-				
-				dataSize = height * width * rgbChannels;
-			}
+			int dataSize = getDataSize();
+			// Without specifying data size in cagets, they will always try to get max data size, which could be >> actual data, causing timeouts.
 
 			DBR dbr = dataChannel.get(dataType, dataSize);
 			
 			if (dataType.equals(DBRType.BYTE)) {
-				ec.cagetByteArray(dataChannel); // Without doing this, the dbr isn't populated with the actual data
+				ec.cagetByteArray(dataChannel, dataSize); // Without doing this, the dbr isn't populated with the actual data
 				handleByte(dbr);
 			} else if (dataType.equals(DBRType.SHORT)) {
-				ec.cagetShortArray(dataChannel); // Without doing this, the dbr isn't populated with the actual data
+				ec.cagetShortArray(dataChannel, dataSize); // Without doing this, the dbr isn't populated with the actual data
 				handleShort(dbr);
 			} else if (dataType.equals(DBRType.INT)) {
-				ec.cagetIntArray(dataChannel); // Without doing this, the dbr isn't populated with the actual data
+				ec.cagetIntArray(dataChannel, dataSize); // Without doing this, the dbr isn't populated with the actual data
 				handleInt(dbr);
 			} else if (dataType.equals(DBRType.FLOAT)) {
-				ec.cagetFloatArray(dataChannel); // Without doing this, the dbr isn't populated with the actual data
+				ec.cagetFloatArray(dataChannel, dataSize); // Without doing this, the dbr isn't populated with the actual data
 				handleFloat(dbr);
 			} else if (dataType.equals(DBRType.DOUBLE)) {
-				ec.cagetDoubleArray(dataChannel); // Without doing this, the dbr isn't populated with the actual data
+				ec.cagetDoubleArray(dataChannel, dataSize); // Without doing this, the dbr isn't populated with the actual data
 				handleDouble(dbr);
 			} else {
 				logger.error("Unknown DBRType - " + dataType);
@@ -266,7 +237,8 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 			ec.setMonitor(dim0Ch, new EpicsMonitorListener());
 			ec.setMonitor(dim1Ch, new EpicsMonitorListener());
 			ec.setMonitor(dim2Ch, new EpicsMonitorListener());
-				
+			ec.setMonitor(colourModeCh, new EpicsMonitorListener());
+			ec.setMonitor(numDimCh, new EpicsMonitorListener());
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error(e.getMessage());
@@ -277,9 +249,12 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 
 	@Override
 	public void disconnect() throws DatasetException {
-		ec.destroy(dataChannel);
-		ec.destroy(dim0Ch);
-		ec.destroy(dim1Ch);
+		if (dataChannel != null)	ec.destroy(dataChannel);
+		if (dim0Ch != null)			ec.destroy(dim0Ch);
+		if (dim1Ch != null)			ec.destroy(dim1Ch);
+		if (dim2Ch != null)			ec.destroy(dim2Ch);
+		if (colourModeCh != null)	ec.destroy(colourModeCh);
+		if (numDimCh != null)		ec.destroy(numDimCh);
 	}
 
 	@Override
@@ -299,6 +274,56 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		return false;
 	}
 	
+	private int getDataSize() {
+		String currentWidthPV;
+		String currentHeightPV;
+		String rgbChannelsPV;
+
+		if (colourMode.equals(monoColourMode)) {
+
+			width = dim0;		currentWidthPV = dim0PV;
+			height = dim1;		currentHeightPV = dim1PV;
+			rgbChannels = 1;	rgbChannelsPV = dim2PV;
+
+		} else {
+			if (colourMode.equals("RGB2")) {
+
+				width = dim0;		currentWidthPV = dim0PV;
+				height = dim2;		currentHeightPV = dim2PV;
+				rgbChannels = dim1;	rgbChannelsPV = dim1PV;
+
+			} else if (colourMode.equals("RGB3")) {
+
+				width = dim0;		currentWidthPV = dim0PV;
+				height = dim1;		currentHeightPV = dim1PV;
+				rgbChannels = dim2;	rgbChannelsPV = dim2PV;
+
+			} else {
+
+				width = dim1;		currentWidthPV = dim1PV;
+				height = dim2;		currentHeightPV = dim2PV;
+				rgbChannels = dim0;	rgbChannelsPV = dim0PV;
+			} 
+		}
+		// Ensure that we never return a data size less than 1.
+
+		// EPICS takes a data size of 0 as maximum possible size, which causes it to ask for more data than is available. 
+
+		if (width <= 1) {
+			logger.warn("Image width {} from {}, assuming a width of at least 1. Check that plugin is receiving images.", width, currentWidthPV);
+			width = 1;
+		}
+		if (height <= 1) {
+			logger.warn("Image height {} from {}, assuming a height of at least 1. Check that plugin is receiving images.", height, currentHeightPV);
+			height = 1;
+		}
+		if (rgbChannels < 1) {
+			logger.warn("Image channels {} from {}, assuming a at least 1 channel. Check that plugin is receiving images.", rgbChannels, rgbChannelsPV);
+			rgbChannels = 1;
+		}
+		return height * width * rgbChannels;
+	}
+
 	/**
 	 * Handles a byte DBR, updating the dataset with the data from the DBR
 	 * @param dbr
@@ -320,24 +345,17 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		}
 		
 		if (latestData != null) {
+			int dataSize = getDataSize();
 
-			if (numDimensions == 2) {
-				int dataSize = height * width;
-				if (latestData.length != dataSize) {
-					if (dataSize > latestData.length) {
-						logger.warn("Warning: Image size is larger than data array size");
-					}
-					latestData = Arrays.copyOf(latestData, dataSize);
+			if (latestData.length != dataSize) {
+				if (dataSize > latestData.length) {
+					logger.warn("Warning: Image size is larger than data array size");
 				}
+				latestData = Arrays.copyOf(latestData, dataSize);
+			}
+			if (numDimensions == 2) {
 				dataset = DatasetFactory.createFromObject(latestData, new int[]{height, width});
 			} else {
-				int dataSize = height * width * rgbChannels;
-				if (latestData.length != dataSize) {
-					if (dataSize > latestData.length) {
-						logger.warn("Warning: Image size is larger than data array size");
-					}
-					latestData = Arrays.copyOf(latestData, dataSize);
-				}
 				dataset = DatasetFactory.createFromObject(Dataset.RGB, latestData, new int[]{height, width});
 			}
 		}
@@ -353,25 +371,17 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		short[] latestData = Arrays.copyOf(dbrb.getShortValue(), dbrb.getShortValue().length);
 		
 		if (latestData != null) {
-			
+			int dataSize = getDataSize();
 
-			if (numDimensions == 2) {
-				int dataSize = height * width;
-				if (latestData.length != dataSize) {
-					if (dataSize > latestData.length) {
-						logger.warn("Warning: Image size is larger than data array size");
-					}
-					latestData = Arrays.copyOf(latestData, dataSize);
+			if (latestData.length != dataSize) {
+				if (dataSize > latestData.length) {
+					logger.warn("Warning: Image size is larger than data array size");
 				}
+				latestData = Arrays.copyOf(latestData, dataSize);
+			}
+			if (numDimensions == 2) {
 				dataset = DatasetFactory.createFromObject(latestData, new int[]{height, width});
 			} else {
-				int dataSize = height * width * rgbChannels;
-				if (latestData.length != dataSize) {
-					if (dataSize > latestData.length) {
-						logger.warn("Warning: Image size is larger than data array size");
-					}
-					latestData = Arrays.copyOf(latestData, dataSize);
-				}
 				dataset = DatasetFactory.createFromObject(Dataset.RGB, latestData, new int[]{height, width});
 			}
 		}
@@ -387,24 +397,17 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		int[] latestData = Arrays.copyOf(dbrb.getIntValue(), dbrb.getIntValue().length);
 		
 		if (latestData != null) {
+			int dataSize = getDataSize();
 
-			if (numDimensions == 2) {
-				int dataSize = height * width;
-				if (latestData.length != dataSize) {
-					if (dataSize > latestData.length) {
-						logger.warn("Warning: Image size is larger than data array size");
-					}
-					latestData = Arrays.copyOf(latestData, dataSize);
+			if (latestData.length != dataSize) {
+				if (dataSize > latestData.length) {
+					logger.warn("Warning: Image size is larger than data array size");
 				}
+				latestData = Arrays.copyOf(latestData, dataSize);
+			}
+			if (numDimensions == 2) {
 				dataset = DatasetFactory.createFromObject(latestData, new int[]{height, width});
 			} else {
-				int dataSize = height * width * rgbChannels;
-				if (latestData.length != dataSize) {
-					if (dataSize > latestData.length) {
-						logger.warn("Warning: Image size is larger than data array size");
-					}
-					latestData = Arrays.copyOf(latestData, dataSize);
-				}
 				dataset = DatasetFactory.createFromObject(Dataset.RGB, latestData, new int[]{height, width});
 			}
 		}
@@ -420,24 +423,17 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		float[] latestData = Arrays.copyOf(dbrb.getFloatValue(), dbrb.getFloatValue().length);
 		
 		if (latestData != null) {
+			int dataSize = getDataSize();
 
-			if (numDimensions == 2) {
-				int dataSize = height * width;
-				if (latestData.length != dataSize) {
-					if (dataSize > latestData.length) {
-						logger.warn("Warning: Image size is larger than data array size");
-					}
-					latestData = Arrays.copyOf(latestData, dataSize);
+			if (latestData.length != dataSize) {
+				if (dataSize > latestData.length) {
+					logger.warn("Warning: Image size is larger than data array size");
 				}
+				latestData = Arrays.copyOf(latestData, dataSize);
+			}
+			if (numDimensions == 2) {
 				dataset = DatasetFactory.createFromObject(latestData, new int[]{height, width});
 			} else {
-				int dataSize = height * width * rgbChannels;
-				if (latestData.length != dataSize) {
-					if (dataSize > latestData.length) {
-						logger.warn("Warning: Image size is larger than data array size");
-					}
-					latestData = Arrays.copyOf(latestData, dataSize);
-				}
 				dataset = DatasetFactory.createFromObject(Dataset.RGB, latestData, new int[]{height, width});
 			}
 		}
@@ -453,24 +449,17 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		double[] latestData = Arrays.copyOf(dbrb.getDoubleValue(), dbrb.getDoubleValue().length);
 		
 		if (latestData != null) {
+			int dataSize = getDataSize();
 
-			if (numDimensions == 2) {
-				int dataSize = height * width;
-				if (latestData.length != dataSize) {
-					if (dataSize > latestData.length) {
-						logger.warn("Warning: Image size is larger than data array size"); 
-					}
-					latestData = Arrays.copyOf(latestData, dataSize);
+			if (latestData.length != dataSize) {
+				if (dataSize > latestData.length) {
+					logger.warn("Warning: Image size is larger than data array size");
 				}
+				latestData = Arrays.copyOf(latestData, dataSize);
+			}
+			if (numDimensions == 2) {
 				dataset = DatasetFactory.createFromObject(latestData, new int[]{height, width});
 			} else {
-				int dataSize = height * width * rgbChannels;
-				if (latestData.length != dataSize) {
-					if (dataSize > latestData.length) {
-						logger.warn("Warning: Image size is larger than data array size");
-					}
-					latestData = Arrays.copyOf(latestData, dataSize);
-				}
 				dataset = DatasetFactory.createFromObject(Dataset.RGB, latestData, new int[]{height, width});
 			}
 		}
@@ -484,16 +473,14 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		@Override
 		public void monitorChanged(MonitorEvent arg0) {
 			try {
-				
 				Object source = arg0.getSource();
 				
 				if (source instanceof CAJChannel) {
 					CAJChannel chan = (CAJChannel) source;
 					String channelName = chan.getName();
+					DBR dbr = arg0.getDBR();
 					
 					if (channelName.equalsIgnoreCase(dataChannelPV)) {
-						DBR dbr = arg0.getDBR();
-						
 						if (dataType.equals(DBRType.BYTE)) {
 							handleByte(dbr);
 						} else if (dataType.equals(DBRType.SHORT)) {
@@ -518,39 +505,62 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 							}
 							lastSystemTime = timeNow;
 						}
-						
-					} else if (channelName.equalsIgnoreCase(currentWidthPV)) {
-						DBR dbr = arg0.getDBR();
+					} else if (channelName.equalsIgnoreCase(dim0PV)) {
 						DBR_Int dbri = (DBR_Int)dbr;
-						if (width != dbri.getIntValue()[0]) {
-							width = dbri.getIntValue()[0];
-							dataChannelMonitor.removeMonitorListener(dataChannelMonitorListener);
-							int dataSize = height * width;
-							if (numDimensions == 3) {
-								dataSize *= rgbChannels;
-							}
-							dataChannelMonitor = ec.setMonitor(dataChannel, dataChannelMonitorListener, dataSize);
+						int value = dbri.getIntValue()[0];
+						if (dim0 != value) {
+							dim0 = value;
+							logger.debug("New value {} for {}", value, dim0PV);
+							updateDataChannelMonitor();
 						}
-					} else if (channelName.equalsIgnoreCase(currentHeightPV)) {
-						DBR dbr = arg0.getDBR();
+					} else if (channelName.equalsIgnoreCase(dim1PV)) {
 						DBR_Int dbri = (DBR_Int)dbr;
-						if (height != dbri.getIntValue()[0]) {
-							height = dbri.getIntValue()[0];
-							dataChannelMonitor.removeMonitorListener(dataChannelMonitorListener);
-							int dataSize = height * width;
-							if (numDimensions == 3) {
-								dataSize *= rgbChannels;
-							}
-							dataChannelMonitor = ec.setMonitor(dataChannel, dataChannelMonitorListener, dataSize);
+						int value = dbri.getIntValue()[0];
+						if (dim1 != value) {
+							dim1 = value;
+							logger.debug("New value {} for {}", value, dim1PV);
+							updateDataChannelMonitor();
 						}
+					} else if (channelName.equalsIgnoreCase(dim2PV)) {
+						DBR_Int dbri = (DBR_Int)dbr;
+						int value = dbri.getIntValue()[0];
+						if (dim2 != value) {
+							dim2 = value;
+							logger.debug("New value {} for {}", value, dim2PV);
+							updateDataChannelMonitor();
+						}
+					} else if (channelName.equalsIgnoreCase(numDimensionsPV)) {
+						DBR_Int dbri = (DBR_Int)dbr;
+						int value = dbri.getIntValue()[0];
+						if (numDimensions != value) {
+							numDimensions = value;
+							logger.debug("New value {} from {}", value, numDimensionsPV);
+							updateDataChannelMonitor();
+						}
+					} else if (channelName.equalsIgnoreCase(colourModePV)) {
+						DBR_String dbrs = (DBR_String)dbr;
+						String value = dbrs.getStringValue()[0];
+						if (colourMode != value) {
+							colourMode = value;
+							logger.debug("New value '{} 'from {}", value, colourModePV);
+							updateDataChannelMonitor();
+						}
+					} else {
+						logger.debug("New value from {}, ignoring: {}", channelName, dbr);
 					}
 				}
-				
 			} catch (Exception e) {
 				logger.error(e.getMessage());
 				e.printStackTrace();
 			}
 		}
-		
+	}
+
+	private void updateDataChannelMonitor() throws CAException, InterruptedException {
+		int[] were = {height, width, rgbChannels};
+		dataChannelMonitor.removeMonitorListener(dataChannelMonitorListener);
+		int dataSize = getDataSize();
+		logger.debug("New value of height {} width {} and channels {} (were {})", height, width, rgbChannels, were);
+		dataChannelMonitor = ec.setMonitor(dataChannel, dataChannelMonitorListener, dataSize);
 	}
 }
