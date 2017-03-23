@@ -78,7 +78,9 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 
 	LinkedList<IDataListener> listeners = new LinkedList<>();
 	
-	int dim0, dim1, dim2;
+	int dim0,
+		dim1,
+		dim2;
 
 	int height = 0;
 	int width = 0;
@@ -208,7 +210,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 			colourMode = ec.cagetString(colourModeCh);
 			dataTypeStr = ec.cagetString(dataTypeCh);
 			
-			int dataSize = getDataSize();
+			int dataSize = calculateAndUpdateDataSize();
 			// Without specifying data size in cagets, they will always try to get max data size, which could be >> actual data, causing timeouts.
 
 			DBR dbr = dataChannel.get(dataType, dataSize);
@@ -249,12 +251,24 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 
 	@Override
 	public void disconnect() throws DatasetException {
-		if (dataChannel != null)	ec.destroy(dataChannel);
-		if (dim0Ch != null)			ec.destroy(dim0Ch);
-		if (dim1Ch != null)			ec.destroy(dim1Ch);
-		if (dim2Ch != null)			ec.destroy(dim2Ch);
-		if (colourModeCh != null)	ec.destroy(colourModeCh);
-		if (numDimCh != null)		ec.destroy(numDimCh);
+		if (   null != dataChannel) {
+			ec.destroy(dataChannel);
+		}
+		if (   null != dim0Ch)	{
+			ec.destroy(dim0Ch);
+		}
+		if (   null != dim1Ch) {
+			ec.destroy(dim1Ch);
+		}
+		if (   null != dim2Ch) {
+			ec.destroy(dim2Ch);
+		}
+		if (   null != colourModeCh) {
+			ec.destroy(colourModeCh);
+		}
+		if (null != numDimCh) {
+			ec.destroy(numDimCh);
+		}
 	}
 
 	@Override
@@ -274,35 +288,51 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		return false;
 	}
 	
-	private int getDataSize() {
+	private int calculateAndUpdateDataSize() {
 		String currentWidthPV;
 		String currentHeightPV;
 		String rgbChannelsPV;
 
 		if (colourMode.equals(monoColourMode)) {
 
-			width = dim0;		currentWidthPV = dim0PV;
-			height = dim1;		currentHeightPV = dim1PV;
-			rgbChannels = 1;	rgbChannelsPV = dim2PV;
+			width = dim0;
+			height = dim1;
+			rgbChannels = 1;
+
+			currentWidthPV = dim0PV;
+			currentHeightPV = dim1PV;
+			rgbChannelsPV = dim2PV;
 
 		} else {
 			if (colourMode.equals("RGB2")) {
 
-				width = dim0;		currentWidthPV = dim0PV;
-				height = dim2;		currentHeightPV = dim2PV;
-				rgbChannels = dim1;	rgbChannelsPV = dim1PV;
+				width = dim0;
+				height = dim2;
+				rgbChannels = dim1;
+
+				currentWidthPV = dim0PV;
+				currentHeightPV = dim2PV;
+				rgbChannelsPV = dim1PV;
 
 			} else if (colourMode.equals("RGB3")) {
 
-				width = dim0;		currentWidthPV = dim0PV;
-				height = dim1;		currentHeightPV = dim1PV;
-				rgbChannels = dim2;	rgbChannelsPV = dim2PV;
+				width = dim0;
+				height = dim1;
+				rgbChannels = dim2;
+
+				currentWidthPV = dim0PV;
+				currentHeightPV = dim1PV;
+				rgbChannelsPV = dim2PV;
 
 			} else {
 
-				width = dim1;		currentWidthPV = dim1PV;
-				height = dim2;		currentHeightPV = dim2PV;
-				rgbChannels = dim0;	rgbChannelsPV = dim0PV;
+				width = dim1;
+				height = dim2;
+				rgbChannels = dim0;
+
+				currentWidthPV = dim1PV;
+				currentHeightPV = dim2PV;
+				rgbChannelsPV = dim0PV;
 			} 
 		}
 		// Ensure that we never return a data size less than 1.
@@ -345,7 +375,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		}
 		
 		if (latestData != null) {
-			int dataSize = getDataSize();
+			int dataSize = calculateAndUpdateDataSize();
 
 			if (latestData.length != dataSize) {
 				if (dataSize > latestData.length) {
@@ -371,7 +401,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		short[] latestData = Arrays.copyOf(dbrb.getShortValue(), dbrb.getShortValue().length);
 		
 		if (latestData != null) {
-			int dataSize = getDataSize();
+			int dataSize = calculateAndUpdateDataSize();
 
 			if (latestData.length != dataSize) {
 				if (dataSize > latestData.length) {
@@ -397,7 +427,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		int[] latestData = Arrays.copyOf(dbrb.getIntValue(), dbrb.getIntValue().length);
 		
 		if (latestData != null) {
-			int dataSize = getDataSize();
+			int dataSize = calculateAndUpdateDataSize();
 
 			if (latestData.length != dataSize) {
 				if (dataSize > latestData.length) {
@@ -423,7 +453,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		float[] latestData = Arrays.copyOf(dbrb.getFloatValue(), dbrb.getFloatValue().length);
 		
 		if (latestData != null) {
-			int dataSize = getDataSize();
+			int dataSize = calculateAndUpdateDataSize();
 
 			if (latestData.length != dataSize) {
 				if (dataSize > latestData.length) {
@@ -449,7 +479,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 		double[] latestData = Arrays.copyOf(dbrb.getDoubleValue(), dbrb.getDoubleValue().length);
 		
 		if (latestData != null) {
-			int dataSize = getDataSize();
+			int dataSize = calculateAndUpdateDataSize();
 
 			if (latestData.length != dataSize) {
 				if (dataSize > latestData.length) {
@@ -510,7 +540,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 						int value = dbri.getIntValue()[0];
 						if (dim0 != value) {
 							dim0 = value;
-							logger.debug("New value {} for {}", value, dim0PV);
+							logger.debug("New dim0PV value {} for {}", value, dim0PV);
 							updateDataChannelMonitor();
 						}
 					} else if (channelName.equalsIgnoreCase(dim1PV)) {
@@ -518,7 +548,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 						int value = dbri.getIntValue()[0];
 						if (dim1 != value) {
 							dim1 = value;
-							logger.debug("New value {} for {}", value, dim1PV);
+							logger.debug("New dim1PV value {} for {}", value, dim1PV);
 							updateDataChannelMonitor();
 						}
 					} else if (channelName.equalsIgnoreCase(dim2PV)) {
@@ -526,7 +556,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 						int value = dbri.getIntValue()[0];
 						if (dim2 != value) {
 							dim2 = value;
-							logger.debug("New value {} for {}", value, dim2PV);
+							logger.debug("New dim2PV value {} for {}", value, dim2PV);
 							updateDataChannelMonitor();
 						}
 					} else if (channelName.equalsIgnoreCase(numDimensionsPV)) {
@@ -534,7 +564,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 						int value = dbri.getIntValue()[0];
 						if (numDimensions != value) {
 							numDimensions = value;
-							logger.debug("New value {} from {}", value, numDimensionsPV);
+							logger.debug("New numDimensionsPV value {} from {}", value, numDimensionsPV);
 							updateDataChannelMonitor();
 						}
 					} else if (channelName.equalsIgnoreCase(colourModePV)) {
@@ -542,7 +572,7 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 						String value = dbrs.getStringValue()[0];
 						if (colourMode != value) {
 							colourMode = value;
-							logger.debug("New value '{} 'from {}", value, colourModePV);
+							logger.debug("New colourModePV value '{} 'from {}", value, colourModePV);
 							updateDataChannelMonitor();
 						}
 					} else {
@@ -554,13 +584,14 @@ public class EpicsV3DynamicDatasetConnector implements IDatasetConnector {
 				e.printStackTrace();
 			}
 		}
-	}
 
-	private void updateDataChannelMonitor() throws CAException, InterruptedException {
-		int[] were = {height, width, rgbChannels};
-		dataChannelMonitor.removeMonitorListener(dataChannelMonitorListener);
-		int dataSize = getDataSize();
-		logger.debug("New value of height {} width {} and channels {} (were {})", height, width, rgbChannels, were);
-		dataChannelMonitor = ec.setMonitor(dataChannel, dataChannelMonitorListener, dataSize);
+		private void updateDataChannelMonitor() throws CAException, InterruptedException {
+			int[] were = {height, width, rgbChannels};
+			dataChannelMonitor.removeMonitorListener(dataChannelMonitorListener);
+			int dataSize = calculateAndUpdateDataSize();
+			logger.debug("New value for height {} width {} channels {} numDimensions {} or colourMode {} "+
+					"(height, width & channels were {})", height, width, rgbChannels, numDimensions, colourMode, were);
+			dataChannelMonitor = ec.setMonitor(dataChannel, dataChannelMonitorListener, dataSize);
+		}
 	}
 }
