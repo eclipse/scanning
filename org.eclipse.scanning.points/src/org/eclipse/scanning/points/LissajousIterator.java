@@ -60,15 +60,9 @@ class LissajousIterator extends AbstractScanPointIterator {
 
 	@Override
 	public boolean hasNext() {
-		Point point;
-		
-		while (pyIterator.hasNext()) {
-			point = (Point) pyIterator.next();
-			
-			if (gen.containsPoint(point)) {
-				currentPoint = point;
-				return true;
-			}
+		if (pyIterator.hasNext()) {
+			currentPoint = (Point) pyIterator.next();
+			return true;
 		}
 		
 		return false;

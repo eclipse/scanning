@@ -97,24 +97,12 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
     
 	@Override
 	public boolean hasNext() {
-		// TODO: Commented out until Python ROIs are ready
-		IPosition point;
-//		double x;
-//		double y;
-		
-		while (pyIterator.hasNext()) {
-			point = pyIterator.next();
-//			x = point.getX();
-//			y = point.getY();
-//			
-//			if (gen.containsPoint(x, y)) {
-			currentPoint = point;
+		if (pyIterator.hasNext()) {
+			currentPoint = pyIterator.next();
 			index++;
-			if (currentPoint!=null) currentPoint.setStepIndex(index);
+			currentPoint.setStepIndex(index);
 			return true;
-//			}
 		}
-		
 		return false;
 	}
 
