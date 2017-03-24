@@ -276,7 +276,8 @@ class JCompoundGenerator(JavaIteratorWrapper):
                 if isinstance(matched_g1, LineGenerator) \
                         and isinstance(matched_g2, LineGenerator) \
                         and len(excluder.rois) == 1 \
-                        and isinstance(excluder.rois[0], RectangularROI):
+                        and isinstance(excluder.rois[0], RectangularROI) \
+                        and excluder.rois[0].angle == 0:
                     continue
             inner_axis = matched_axes[0]
             inner_idx = self.axes_ordering.index(inner_axis)
