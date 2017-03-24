@@ -20,7 +20,11 @@ package org.eclipse.scanning.api.points.models;
  */
 public class OneDEqualSpacingModel extends AbstractBoundingLineModel implements IBoundingLineModel {
 
-	private int points;
+	private int points = 5;
+	
+	public OneDEqualSpacingModel() {
+		setName("Equal Spacing");
+	}
 	
 	public int getPoints() {
 		return points;
