@@ -20,6 +20,8 @@ import java.util.Set;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.scan.ScanningException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Clients do not need to consume this service, it is used to provide connection
@@ -48,6 +50,8 @@ import org.eclipse.scanning.api.scan.ScanningException;
  */
 public interface IScannableDeviceService {
 	
+	static final Logger logger = LoggerFactory.getLogger(IScannableDeviceService.class);
+
 	/**
 	 * Used to register a device. This is required so that spring may create
 	 * detectors and call the register method by telling the detector to register
@@ -107,13 +111,17 @@ public interface IScannableDeviceService {
 		final Collection<String> names = getScannableNames();
 		final Collection<DeviceInformation<?>> ret = new ArrayList<>(names.size());
 		for (String name : names) {
-	
-			IScannable<?> device = getScannable(name);
-			if (device==null) throw new ScanningException("There is no created device called '"+name+"'");
-	
-			DeviceInformation<?> info = new DeviceInformation<Object>(name);
-			Util.merge(info, device);
-			ret.add(info);
+			try {
+				final IScannable<?> device = getScannable(name);
+				if (device == null) {
+					throw new ScanningException("There is no created device called '" + name + "'");
+				}
+				final DeviceInformation<?> info = new DeviceInformation<Object>(name);
+				Util.merge(info, device);
+				ret.add(info);
+			} catch (Exception e) {
+				logger.warn("Failure getting device information for " + name, e);
+			}
 		}
 		return ret;
 	}
