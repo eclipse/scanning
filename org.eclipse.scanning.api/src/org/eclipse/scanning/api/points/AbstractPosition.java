@@ -14,10 +14,13 @@ package org.eclipse.scanning.api.points;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 public abstract class AbstractPosition implements IPosition, Serializable {
@@ -60,7 +63,8 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		final int prime = 31;
 		int result = 1;
 		long temp;
-		final Collection<String> names   = getNames();
+		final List<String> names = new ArrayList<String>(getNames());
+		Collections.sort(names);
 		for (String name : names) {
 			Object val = get(name);
 			if (val instanceof Number) {
@@ -96,9 +100,11 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 				return false;
 		}
 
-		final Collection<String> ours   = getNames();
-		final Collection<String> theirs = ((IPosition)obj).getNames();
-		if (!equals(ours, theirs)) return false;		
+		final List<String> ours = new ArrayList<String>(getNames());
+		final List<String> theirs = new ArrayList<String>(((IPosition)obj).getNames());
+		Collections.sort(ours);
+		Collections.sort(theirs);
+		if (!equals(ours, theirs)) return false;
 		for (String name : ours) {
 			Object val1 = get(name);
 			Object val2 = ((IPosition)obj).get(name);
@@ -110,8 +116,17 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		final Map<String, Integer> iours   = getIndices();
 		final Map<String, Integer> itheirs = getIndices((IPosition)obj);
 		if (!iours.equals(itheirs)) return false;		
-	
-		if (!equals(getDimensionNames(), getDimensionNames((IPosition)obj))) return false;		
+
+		List<List<String>> ourDimNames = getDimensionNames().stream()
+				.map(c -> new ArrayList<String>(c))
+				.collect(Collectors.toList());
+		ourDimNames.forEach(c -> Collections.sort(c));
+		List<List<String>> theirDimNames = getDimensionNames((IPosition) obj).stream()
+				.map(c -> new ArrayList<String>(c))
+				.collect(Collectors.toList());
+		theirDimNames.forEach(c -> Collections.sort(c));
+
+		if (!equals(ourDimNames, theirDimNames)) return false;
 
 		return true;
 	}
