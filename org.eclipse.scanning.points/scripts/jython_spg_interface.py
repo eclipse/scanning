@@ -157,10 +157,9 @@ class JArrayGenerator(JavaIteratorWrapper):
     def _iterator(self):
         
         for point in self.generator.iterator():
-            name = self.name[0]
             index = point.indexes[0]
-            position = point.positions[name]
-            java_point = Scalar(name, index, position)
+            position = point.positions[self.name]
+            java_point = Scalar(self.name, index, position)
             
             yield java_point
             
