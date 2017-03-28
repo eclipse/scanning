@@ -11,13 +11,14 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.List;
 
 import org.eclipse.scanning.api.points.IPosition;
-import org.eclipse.scanning.api.points.Scalar;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.StepModel;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 
 /**
  * An iterator over multiple step ranges. Acts essentially as a sequence of
@@ -26,58 +27,80 @@ import org.eclipse.scanning.api.points.models.StepModel;
  * 
  * @author Matthew Dickie
  */
-public class MultiStepIterator implements Iterator<IPosition> {
+public class MultiStepIterator extends AbstractScanPointIterator {
 	
-	private int index = 0;
 	private final MultiStepModel model;
-	private final  Iterator<StepModel> stepModelIter;
-	private Iterator<IPosition> currentIter;
-	private boolean newStepModel = false;
-	private double lastValue = 0;
 	
 	public MultiStepIterator(MultiStepModel model) {
 		this.model = model;
-		stepModelIter = model.getStepModels().iterator();
-		currentIter = null;
-	}
+		
+		JythonObjectFactory arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
 
-	@Override
-	public boolean hasNext() {
-		if (currentIter != null && currentIter.hasNext()) {
-			return true;
+		double[] points = createPositions();
+
+		@SuppressWarnings("unchecked")
+		Iterator<IPosition> iterator = (Iterator<IPosition>) arrayGeneratorFactory.createObject(
+				model.getName(), "mm", points);
+		pyIterator = iterator;
+	}
+	
+	private double[] createPositions() {
+		int totalSize = 0;
+		boolean finalPosWasEnd = false;
+		List<double[]> positionArrays = new ArrayList<>(model.getStepModels().size());
+		double previousEnd = 0;
+		for (StepModel stepModel : model.getStepModels()) {
+			int size = getSize(stepModel);
+			double pos = stepModel.getStart();
+
+			// if the start of this model is the end of the previous one, and the end of the
+			// previous was was its final point, skip the first point
+			if (finalPosWasEnd && 
+					Math.abs(stepModel.getStart() - previousEnd) < Math.abs(stepModel.getStep() / 100)) {
+				pos = pos += stepModel.getStep();
+				size--;
+			}
+			double[] positions = new double[size];
+			
+			for (int i = 0; i < size; i++) {
+				positions[i] = pos;
+				pos += stepModel.getStep();
+			}
+			positionArrays.add(positions);
+			totalSize += size;
+			
+			// record if the final position of this model is its end position (within a tolerance of step/100)
+			// this is not always the case, e.g. if start=0, stop=10 and step=3
+			double finalPos = positions[positions.length - 1];
+			finalPosWasEnd = Math.abs(stepModel.getStop() - finalPos) < Math.abs(stepModel.getStep() / 100);
+			previousEnd = stepModel.getStop();
 		}
 		
-		if (stepModelIter.hasNext()) {
-			// move on to the next step model
-			if (currentIter != null) {
-				newStepModel = true;
-			}
-			currentIter = new StepIterator(stepModelIter.next());
-			return currentIter.hasNext();
+		double[] allPositions = new double[totalSize];
+		int pos = 0;
+		for (double[] positions : positionArrays) {
+			System.arraycopy(positions, 0, allPositions, pos, positions.length);
+			pos += positions.length;
 		}
-
-		// reached the end of all step models
-		return false;
+		
+		return allPositions;
+	}
+	
+	private static int getSize(StepModel stepModel) {
+		// copied from StepGenerator.sizeOfValidModel
+		double div = ((stepModel.getStop()-stepModel.getStart())/stepModel.getStep());
+		div += (Math.abs(stepModel.getStep()) / 100); // add tolerance of 1% of step value
+		return (int)Math.floor(div+1);
+	}
+	
+	@Override
+	public boolean hasNext() {
+		return pyIterator.hasNext();
 	}
 
 	@Override
 	public IPosition next() {
-		if (hasNext()) {
-			IPosition pos = currentIter.next();
-			double value = pos.getValue(model.getName());
-			if (newStepModel) {
-				if (value == lastValue) {
-					pos = currentIter.next();
-					value = pos.getValue(model.getName());
-				}
-				newStepModel = false;
-			}
-			
-			lastValue = value;
-			return new Scalar<>(model.getName(), index++, value);
-		}
-		
-		throw new NoSuchElementException();
+		return pyIterator.next();
 	}
 
 }
