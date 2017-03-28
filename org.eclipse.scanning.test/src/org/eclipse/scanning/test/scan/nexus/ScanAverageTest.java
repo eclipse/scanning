@@ -11,6 +11,8 @@ import java.util.List;
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.january.IMonitor;
+import org.eclipse.january.dataset.Dataset;
+import org.eclipse.january.dataset.DatasetUtils;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.ILazyDataset;
 import org.eclipse.january.dataset.PositionIterator;
@@ -142,7 +144,7 @@ public class ScanAverageTest extends NexusTest {
 			}
 			IDataset image = data.getSlice(islice);
 			double mean1 = (Double)image.squeeze().mean();
-			double mean2 = av.getSlice(aslice).getDouble(0);
+			double mean2 = DatasetUtils.convertToDataset(av.getSlice(aslice)).getDouble();
           
 			assertEquals(mean1, mean2, 0.00001);
 		}

@@ -11,6 +11,8 @@ import java.util.List;
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.january.IMonitor;
+import org.eclipse.january.dataset.Dataset;
+import org.eclipse.january.dataset.DatasetUtils;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.ILazyDataset;
 import org.eclipse.january.dataset.PositionIterator;
@@ -147,7 +149,7 @@ public class ScanJythonTest extends NexusTest {
 			}
 			IDataset image = data.getSlice(islice);
 			double max1 = (Double)image.max(false, false);
-			double max2 = av.getSlice(aslice).getDouble(0);
+			double max2 = DatasetUtils.convertToDataset(av.getSlice(aslice)).getDouble();
           
 			assertEquals(max1, max2, 0.00001);
 		}
