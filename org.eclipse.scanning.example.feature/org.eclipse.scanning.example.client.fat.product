@@ -55,7 +55,6 @@
       <feature id="org.dawb.visualization.feature"/>
       <feature id="uk.ac.diamond.scisoft.ui.feature"/>
       <feature id="org.dawnsci.base.product.feature"/>
-      <feature id="org.dawnsci.conversion.feature" version="1.0.0.v20170303-1656"/>
       <feature id="org.eclipse.scanning.third.feature" version="1.0.0.qualifier"/>
    </features>
 
