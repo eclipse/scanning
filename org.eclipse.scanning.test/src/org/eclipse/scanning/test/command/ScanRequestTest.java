@@ -13,9 +13,9 @@ package org.eclipse.scanning.test.command;
 
 import org.junit.Test;
 
-public class MScanServletTest extends AbstractMScanTest {
+public class ScanRequestTest extends AbstractScanCommandsTest {
 
-	public MScanServletTest() {
+	public ScanRequestTest() {
 		super(false);
 	}
 
@@ -54,5 +54,4 @@ public class MScanServletTest extends AbstractMScanTest {
 		pi.exec("sr = scan_request(grid(axes=('xNex', 'yNex'), start=(0, 0), stop=(10, 10), count=(2, 2), snake=True), det=detector('mandelbrot', 1.2, timeout=2))");
 		runAndCheck("sr", false, 10);
 	}
-
 }
