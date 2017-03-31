@@ -17,9 +17,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.scanning.api.AbstractScannable;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.scan.ScanningException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Clients do not need to consume this service, it is used to provide connection
@@ -100,34 +103,30 @@ public interface IScannableDeviceService {
 	 * objects. DeviceInformation is JSON serializable and this method is 
 	 * 
 	 * @return
+	 * @throws ScanningException 
 	 * @throws Exception
 	 */
-	default Collection<DeviceInformation<?>> getDeviceInformation() throws Exception {
+	default Collection<DeviceInformation<?>> getDeviceInformation() throws ScanningException {
 
 		final Collection<String> names = getScannableNames();
 		final Collection<DeviceInformation<?>> ret = new ArrayList<>(names.size());
 		for (String name : names) {
-	
-			IScannable<?> device = getScannable(name);
-			if (device==null) throw new ScanningException("There is no created device called '"+name+"'");
-	
-			DeviceInformation<?> info = new DeviceInformation<Object>(name);
-			Util.merge(info, device);
-			ret.add(info);
+			try {
+				final IScannable<?> device = getScannable(name);
+				if (device == null) {
+					throw new ScanningException("There is no created device called '" + name + "'");
+				}
+				ret.add(((AbstractScannable<?>) device).getDeviceInformation());
+			} catch (Exception e) {
+			}
 		}
 		return ret;
 	}
-
-
-}
-
-final class Util {
-	static void merge(DeviceInformation<?> info, IScannable<?> device) throws Exception {
-		info.setLevel(device.getLevel());
-		info.setUnit(device.getUnit());
-		info.setUpper(device.getMaximum());	
-		info.setLower(device.getMinimum());
-		info.setPermittedValues(device.getPermittedValues());
-		info.setActivated(device.isActivated());
+	
+	public default void handleDeviceError(String name, Exception e) {
+		System.err.println("Failure getting device information for " + name);
+		e.printStackTrace();
 	}
+
+
 }
