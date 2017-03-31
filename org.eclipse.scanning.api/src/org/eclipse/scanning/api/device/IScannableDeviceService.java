@@ -51,8 +51,6 @@ import org.slf4j.LoggerFactory;
  */
 public interface IScannableDeviceService {
 	
-	static final Logger logger = LoggerFactory.getLogger(IScannableDeviceService.class);
-
 	/**
 	 * Used to register a device. This is required so that spring may create
 	 * detectors and call the register method by telling the detector to register
@@ -120,10 +118,14 @@ public interface IScannableDeviceService {
 				}
 				ret.add(((AbstractScannable<?>) device).getDeviceInformation());
 			} catch (Exception e) {
-				logger.warn("Failure getting device information for " + name, e);
 			}
 		}
 		return ret;
+	}
+	
+	public default void handleDeviceError(String name, Exception e) {
+		System.err.println("Failure getting device information for " + name);
+		e.printStackTrace();
 	}
 
 
