@@ -22,9 +22,11 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.models.LissajousModel;
+import org.eclipse.scanning.api.points.models.OneDEqualSpacingModel;
+import org.eclipse.scanning.api.points.models.OneDStepModel;
 import org.eclipse.scanning.api.points.models.StaticModel;
 import org.eclipse.scanning.example.malcolm.DummyMalcolmModel;
-import org.eclipse.scanning.server.application.PseudoSpringParser;
+import org.eclipse.scanning.points.validation.ValidatorService;
 import org.junit.Test;
 
 public class ModelTest extends AbstractValidationTest {
@@ -34,13 +36,14 @@ public class ModelTest extends AbstractValidationTest {
 		COMPLETE_MODELS = new ArrayList<>();
 		COMPLETE_MODELS.add(LissajousModel.class);
 		COMPLETE_MODELS.add(StaticModel.class);
-		
+		COMPLETE_MODELS.add(OneDEqualSpacingModel.class);
+		COMPLETE_MODELS.add(OneDStepModel.class);
 	}
 	
 	@Test
 	public void emptyScanModels() throws Exception {
 		
-		IPointGeneratorService pservice = validator.getPointGeneratorService();
+		IPointGeneratorService pservice = ValidatorService.getPointGeneratorService();
 		for (String id : pservice.getRegisteredGenerators()) {
 			Object empty = pservice.createGenerator(id).getModel();
 			try {
@@ -57,7 +60,7 @@ public class ModelTest extends AbstractValidationTest {
 	@Test
 	public void detectorModelsFromSpring() throws Exception {
 		
-		IRunnableDeviceService rservice = validator.getRunnableDeviceService();
+		IRunnableDeviceService rservice = ValidatorService.getRunnableDeviceService();
 		Collection<DeviceInformation<?>> infos =  rservice.getDeviceInformation();
 		
 		assertNotEquals("There must be some info! There must!", 0, infos.size());
