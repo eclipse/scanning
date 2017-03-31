@@ -13,14 +13,12 @@ package org.eclipse.scanning.api.event.scan;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import org.eclipse.scanning.api.IModelProvider;
 import org.eclipse.scanning.api.MonitorRole;
 import org.eclipse.scanning.api.device.models.DeviceRole;
 import org.eclipse.scanning.api.device.models.ScanMode;
-import org.eclipse.scanning.api.malcolm.attributes.MalcolmAttribute;
 
 /**
  * 

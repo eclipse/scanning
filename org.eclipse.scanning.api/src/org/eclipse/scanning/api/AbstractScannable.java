@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.core.IPublisher;
+import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.event.IPositionListenable;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
@@ -159,6 +160,19 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	@Override
 	public <A> A getScanAttribute(String attributeName) throws Exception {
 		return (A)attributes.get(attributeName);
+	}
+	
+	public DeviceInformation<T> getDeviceInformation() {
+		DeviceInformation<T> deviceInfo = new DeviceInformation<>();
+		deviceInfo.setName(getName());
+		deviceInfo.setLevel(getLevel());
+		deviceInfo.setUnit(getUnit());
+		deviceInfo.setUpper(getMaximum());
+		deviceInfo.setLower(getMinimum());
+		deviceInfo.setPermittedValues(deviceInfo.getPermittedValues());
+		deviceInfo.setActivated(isActivated());
+		
+		return deviceInfo;
 	}
 	
 	public int getLevel() {

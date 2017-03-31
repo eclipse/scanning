@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.scanning.api.AbstractScannable;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.scan.ScanningException;
@@ -104,9 +105,10 @@ public interface IScannableDeviceService {
 	 * objects. DeviceInformation is JSON serializable and this method is 
 	 * 
 	 * @return
+	 * @throws ScanningException 
 	 * @throws Exception
 	 */
-	default Collection<DeviceInformation<?>> getDeviceInformation() throws Exception {
+	default Collection<DeviceInformation<?>> getDeviceInformation() throws ScanningException {
 
 		final Collection<String> names = getScannableNames();
 		final Collection<DeviceInformation<?>> ret = new ArrayList<>(names.size());
@@ -116,9 +118,7 @@ public interface IScannableDeviceService {
 				if (device == null) {
 					throw new ScanningException("There is no created device called '" + name + "'");
 				}
-				final DeviceInformation<?> info = new DeviceInformation<Object>(name);
-				Util.merge(info, device);
-				ret.add(info);
+				ret.add(((AbstractScannable<?>) device).getDeviceInformation());
 			} catch (Exception e) {
 				logger.warn("Failure getting device information for " + name, e);
 			}
@@ -127,15 +127,4 @@ public interface IScannableDeviceService {
 	}
 
 
-}
-
-final class Util {
-	static void merge(DeviceInformation<?> info, IScannable<?> device) throws Exception {
-		info.setLevel(device.getLevel());
-		info.setUnit(device.getUnit());
-		info.setUpper(device.getMaximum());	
-		info.setLower(device.getMinimum());
-		info.setPermittedValues(device.getPermittedValues());
-		info.setActivated(device.isActivated());
-	}
 }
