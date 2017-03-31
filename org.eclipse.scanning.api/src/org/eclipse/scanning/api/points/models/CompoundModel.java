@@ -56,8 +56,12 @@ import org.eclipse.scanning.api.points.IMutator;
  *     ]
  *     mutators : [
  *        {
- *           FixedDurationMutator: {
- *            duration: 23.1
+ *           RandomOffsetMutator: {
+ *            seed: 10
+ *            axes: ["x"]
+ *            max_offset: {
+ *              "x":0.1
+ *            }
  *           }
  *        }
  *     ]
@@ -74,6 +78,7 @@ public class CompoundModel<R> implements Cloneable {
 	private List<Object>               models;
 	private Collection<ScanRegion<R>>  regions;
 	private List<IMutator>	           mutators;
+	private double                     duration = -1;
 	
 	public CompoundModel() {
 		// Must have no-arg constructor
@@ -88,6 +93,7 @@ public class CompoundModel<R> implements Cloneable {
 		ret.models = models;
 		ret.regions = regions;
 		ret.mutators = mutators;
+		ret.duration = duration;
 		return ret;
 	}
 	/**
@@ -198,6 +204,14 @@ public class CompoundModel<R> implements Cloneable {
 	public void setMutators(List<IMutator> mutators) {
 		this.mutators = mutators;
 	}
+
+	public double getDuration() {
+		return duration;
+	}
+
+	public void setDuration(double duration) {
+		this.duration = duration;
+	}
 	
 	@Override
 	public int hashCode() {
@@ -206,6 +220,8 @@ public class CompoundModel<R> implements Cloneable {
 		result = prime * result + ((models == null) ? 0 : models.hashCode());
 		result = prime * result + ((regions == null) ? 0 : regions.hashCode());
 		result = prime * result + ((mutators == null) ? 0 : mutators.hashCode());
+		long durationBits = Double.doubleToLongBits(duration);
+		result = prime * result + (int)(durationBits ^ (durationBits >>> 32));
 		return result;
 	}
 	@Override
@@ -216,7 +232,8 @@ public class CompoundModel<R> implements Cloneable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		CompoundModel other = (CompoundModel) obj;
+		CompoundModel<?> other = (CompoundModel<?>) obj;
+		if (duration != other.duration) return false;
 		if (models == null) {
 			if (other.models != null)
 				return false;
