@@ -16,10 +16,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.event.EventException;
-import org.eclipse.scanning.api.event.core.IConsumer;
 import org.eclipse.scanning.api.event.dry.FastRunCreator;
 import org.eclipse.scanning.api.event.scan.ScanBean;
-import org.eclipse.scanning.api.event.status.StatusBean;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -27,9 +25,9 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MScanServletWithProcessingTest extends AbstractMScanTest {
+public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 
-	public MScanServletWithProcessingTest() {
+	public ScanRequestWithProcessingTest() {
 		super(true);
 	}
 
