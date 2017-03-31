@@ -72,9 +72,14 @@ public class ModelReflection {
 		}
 	}
 
-	public static Object stringify(Object value) {
-		if (value instanceof String) return "'"+value+"'";
-		return value;
+	public static String stringify(Object value) {
+		if (value instanceof String)  return "'"+value+"'";
+		if (value instanceof Boolean) { // Python booleans start with an upper case
+			String svalue = value.toString();
+			svalue = svalue.substring(0, 1).toUpperCase()+svalue.substring(1);
+			return svalue;
+		}
+		return value.toString();
 	}
 
 }

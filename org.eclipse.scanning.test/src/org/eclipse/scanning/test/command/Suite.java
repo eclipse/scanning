@@ -18,8 +18,9 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
 	ScanRequestCreationTest.class,
 	SubmissionTest.class,
-	//MScanServletTest.class,   // Not reliable on travis
-	MScanServletWithProcessingTest.class,
-	PyExpresserTest.class
+	//ScanRequestTest.class,   // Not reliable on travis but important to run!
+	ScanRequestWithProcessingTest.class,
+	PyExpresserTest.class,
+	MScanTest.class
 })
 public class Suite { }
