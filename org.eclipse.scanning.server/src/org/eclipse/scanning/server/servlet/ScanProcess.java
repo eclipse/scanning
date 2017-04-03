@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.IScannable;
@@ -27,6 +28,7 @@ import org.eclipse.scanning.api.device.IDeviceController;
 import org.eclipse.scanning.api.device.IPausableDevice;
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
+import org.eclipse.scanning.api.device.models.IMalcolmModel;
 import org.eclipse.scanning.api.device.models.MalcolmModel;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IConsumerProcess;
@@ -356,6 +358,13 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 
 	private IPointGenerator<?> getGenerator(ScanRequest<?> req) throws GeneratorException {
 		IPointGeneratorService service = Services.getGeneratorService();
+		if (req.getDetectors() != null) {
+			// if theres a malcolm device, set the duration of the compound model to its exposure time
+			req.getDetectors().values().stream()
+				.filter(IMalcolmModel.class::isInstance).map(IMalcolmModel.class::cast)
+				.findFirst().ifPresent(model -> req.getCompoundModel().setDuration(model.getExposureTime()));
+		}
+		
 		return service.createCompoundGenerator(req.getCompoundModel());
 	}
 	
