@@ -22,7 +22,6 @@ import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.annotation.scan.AnnotationManager;
 import org.eclipse.scanning.api.annotation.scan.PostConfigure;
 import org.eclipse.scanning.api.annotation.scan.PreConfigure;
-import org.eclipse.scanning.api.device.AbstractRunnableDevice;
 import org.eclipse.scanning.api.device.IDeviceController;
 import org.eclipse.scanning.api.device.IPausableDevice;
 import org.eclipse.scanning.api.device.IRunnableDevice;
@@ -181,7 +180,7 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 	        // Intentionally do not catch EventException, that passes straight up.
 			
 		} catch (Exception ne) {
-			logger.trace("Cannot execute run "+getBean().getName()+" "+getBean().getUniqueId(), ne);
+			logger.error("Cannot execute run "+getBean().getName()+" "+getBean().getUniqueId(), ne);
 			bean.setPreviousStatus(Status.RUNNING);
 			bean.setStatus(Status.FAILED);
 			bean.setMessage(ne.getMessage());
