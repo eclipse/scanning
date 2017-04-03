@@ -155,11 +155,15 @@ public class MockScannableConnector implements IScannableDeviceService, IDisconn
 			register(mon);
 	    }
 		for (int i = 0; i < 10; i++) {
-			MockNeXusScannable metadataScannable = new MockNeXusScannable("perScanMonitor"+i, 0d, 3);
-			metadataScannable.setMonitorRole(MonitorRole.PER_SCAN);
-			metadataScannable.setInitialPosition(i * 10.0);
-			register(metadataScannable);
+			MockNeXusScannable perScanMonitor = new MockNeXusScannable("perScanMonitor"+i, 0d, 3);
+			perScanMonitor.setMonitorRole(MonitorRole.PER_SCAN);
+			perScanMonitor.setInitialPosition(i * 10.0);
+			register(perScanMonitor);
 		}
+		MockStringNexusScannable stringPerScanMonitor = new MockStringNexusScannable("stringPerScanMonitor", 
+				"three", "one", "two", "three", "four", "five");
+		stringPerScanMonitor.setMonitorRole(MonitorRole.PER_SCAN);
+		register(stringPerScanMonitor);
 	}
 
 	public void register(INameable mockScannable) {
