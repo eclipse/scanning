@@ -87,10 +87,13 @@ class ScanRequestValidator implements IValidator<ScanRequest<?>> {
 							try {
 								field.setAccessible(true);
 								String value = (String)field.get(model);
-								if (!dmodels.containsKey(value)) {
+								if (!dmodels.containsKey(value) && 
+										ValidatorService.getRunnableDeviceService().getRunnableDevice(value) == null) {
 									String label = des.label()!=null && des.label().length()>0 ? des.label() : field.getName();
 									throw new ModelValidationException("The value of '"+label+"' references a device ("+value+") not in the scan!", model, field.getName());
 								}
+							} catch (ScanningException e) {
+								throw new ModelValidationException(e);
 							} finally {
 								field.setAccessible(accessible);
 							}
