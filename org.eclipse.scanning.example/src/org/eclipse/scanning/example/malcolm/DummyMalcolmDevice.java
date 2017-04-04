@@ -810,12 +810,14 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	public void pause() throws ScanningException {
 		setDeviceState(DeviceState.PAUSED);
 		paused = true;
+		setDeviceState(DeviceState.PAUSED);
 	}
 	
 	@Override
 	public void resume() throws ScanningException {
 		setDeviceState(DeviceState.RUNNING);
 		paused = false;
+		setDeviceState(DeviceState.RUNNING);
 	}
 	
 	@Override
