@@ -29,12 +29,15 @@ import org.eclipse.scanning.api.scan.rank.IScanRankService;
 import org.eclipse.scanning.api.scan.rank.IScanSlice;
 
 /**
- * Class provides aq default implementation which will write any
+ * This has been replaced by class ScannableNexusWrapper<N extends NXobject>.
+ *
+ * Class provides a default implementation which will write any
  * scannable to NeXus
  * 
  * @author Matthew Gerring
  *
  */
+@Deprecated
 class DelegateNexusWrapper extends AbstractScannable<Object> implements INexusDevice<NXpositioner> {
 	
 	public static final String FIELD_NAME_SET_VALUE = NXpositioner.NX_VALUE + "_set";
