@@ -45,6 +45,7 @@ import org.eclipse.dawnsci.nexus.NexusScanInfo;
 import org.eclipse.dawnsci.nexus.NexusScanInfo.ScanRole;
 import org.eclipse.dawnsci.nexus.builder.DelegatingNexusObjectProvider;
 import org.eclipse.dawnsci.nexus.builder.NexusObjectProvider;
+import org.eclipse.january.DatasetException;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.ILazyWriteableDataset;
@@ -65,6 +66,12 @@ import org.slf4j.LoggerFactory;
  * The scan points writer creates and writes to the unique keys and points
  * datasets in a nexus file. The unique keys dataset can be used to track how far the scan has
  * progressed.
+ * 
+ * Note that this monitor is not added to the list of monitors in the ScanModel, but instead
+ * its methods are invoked by the {@link NexusScanFileManager}. This is because it is part of the
+ * scan framework itself, and specifically because it must write to the unique keys dataset only
+ * after all devices have written to their datasets.
+ * 
  * @author Matthew Dickie
  */
 public class SolsticeScanMonitor extends AbstractScannable<Object> implements INexusDevice<NXcollection> {
@@ -217,7 +224,6 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 	 * @throws ScanningException
 	 */
 	public void scanFinished() throws ScanningException {
-		// 
 		// Note: we don't use scanFinally as that is called after the nexus file is closed.
 		final Dataset scanFinishedDataset = DatasetFactory.createFromObject(IntegerDataset.class, 1, null);
 		try {
@@ -246,7 +252,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 	}
 
 	@Override
-	public void setPosition(Object value, IPosition position) throws Exception {
+	public void setPosition(Object value, IPosition position) {
 		writePosition(position);
 	}
 
@@ -297,13 +303,17 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 	 * @param position
 	 * @throws Exception
 	 */
-	private void writePosition(IPosition position) throws Exception {
+	private void writePosition(IPosition position) {
 		if (!malcolmScan) {
 			IScanSlice rslice = IScanRankService.getScanRankService().createScanSlice(position);
 			SliceND sliceND = new SliceND(uniqueKeys.getShape(), uniqueKeys.getMaxShape(), rslice.getStart(), rslice.getStop(), rslice.getStep());
 			final int uniqueKey = position.getStepIndex() + 1;
 			final Dataset newActualPosition = DatasetFactory.createFromObject(uniqueKey);
-			uniqueKeys.setSlice(null, newActualPosition, sliceND);
+			try {
+				uniqueKeys.setSlice(null, newActualPosition, sliceND);
+			} catch (DatasetException e) {
+				logger.error("Could not write unique key");
+			}
 		}
 	}
 

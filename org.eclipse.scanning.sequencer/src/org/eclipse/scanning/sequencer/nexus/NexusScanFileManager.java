@@ -52,7 +52,9 @@ import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.points.AbstractPosition;
 import org.eclipse.scanning.api.points.IDeviceDependentIterable;
 import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.scan.PositionEvent;
 import org.eclipse.scanning.api.scan.ScanningException;
+import org.eclipse.scanning.api.scan.event.IPositionListener;
 import org.eclipse.scanning.api.scan.models.ScanDataModel;
 import org.eclipse.scanning.api.scan.models.ScanDeviceModel;
 import org.eclipse.scanning.api.scan.models.ScanDeviceModel.ScanFieldModel;
@@ -66,7 +68,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Builds and manages the NeXus file for a scan given a {@link ScanModel}.
  */
-public class NexusScanFileManager implements INexusScanFileManager {
+public class NexusScanFileManager implements INexusScanFileManager, IPositionListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(NexusScanFileManager.class);
 
@@ -128,7 +130,8 @@ public class NexusScanFileManager implements INexusScanFileManager {
 
 		this.scanInfo = createScanInfo(model, scannableNames);
 		
-		// create the scan points writer and add it to the scan as a monitor
+		// create the solstice scan monitor which writes unique keys. This is not added as
+		// a monitor to the scan as it part of the scan framework and must always write last
 		solsticeScanMonitor = createSolsticeScanMonitor(model);
 
 		nexusDevices = extractNexusDevices(model);
@@ -137,7 +140,7 @@ public class NexusScanFileManager implements INexusScanFileManager {
 		nexusObjectProviders = extractNexusProviders();
 		solsticeScanMonitor.setNexusObjectProviders(nexusObjectProviders);
 	}
-	
+
 	/**
 	 * 
 	 * @return the paths of all the external files to which we will be writing.
@@ -193,6 +196,8 @@ public class NexusScanFileManager implements INexusScanFileManager {
 			nexusScanFile.close();
 		} catch (NexusException e) {
 			throw new ScanningException("Could not close nexus file", e);
+		} finally {
+			scanDevice.removePositionListener(this);
 		}
 	}
 	
@@ -202,6 +207,17 @@ public class NexusScanFileManager implements INexusScanFileManager {
 	
 	public NexusScanInfo getNexusScanInfo() {
 		return scanInfo;
+	}
+	
+	@Override
+	public void positionPerformed(PositionEvent evt) throws ScanningException {
+		solsticeScanMonitor.setPosition(null, evt.getPosition());
+	}
+
+	protected SolsticeScanMonitor createSolsticeScanMonitor(ScanModel model) {
+		SolsticeScanMonitor solsticeScanMonitor = new SolsticeScanMonitor(model);
+		scanDevice.addPositionListener(this);
+		return solsticeScanMonitor;
 	}
 
 	protected Map<ScanRole, Collection<INexusDevice<?>>> extractNexusDevices(ScanModel model) throws ScanningException {
@@ -373,20 +389,6 @@ public class NexusScanFileManager implements INexusScanFileManager {
 		return devices.stream().map(d -> d.getName()).collect(Collectors.toSet());
 	}
 	
-	protected SolsticeScanMonitor createSolsticeScanMonitor(ScanModel scanModel) {
-		SolsticeScanMonitor solsticeScanMonitor = new SolsticeScanMonitor(model);
-		
-		// add the solstice scan monitor to the list of monitors in the scan
-		List<IScannable<?>> monitors = scanModel.getMonitors();
-		if (monitors == null || monitors.isEmpty()) {
-			scanModel.setMonitors(solsticeScanMonitor);
-		} else {
-			monitors.add(solsticeScanMonitor);
-		}
-		
-		return solsticeScanMonitor;
-	}
-	
 	/**
 	 * Creates and populates the {@link NXentry} for the NeXus file.
 	 * @param fileBuilder a {@link NexusFileBuilder}
@@ -398,10 +400,11 @@ public class NexusScanFileManager implements INexusScanFileManager {
 		
 		addScanMetadata(entryBuilder, model.getScanMetadata());
 		
-		// add all the devices to the entry. Metadata scannables are added first.
+		// add all the devices to the entry. Per-scan monitors are added first.
 		for (ScanRole deviceType : EnumSet.allOf(ScanRole.class)) {
 			addDevicesToEntry(entryBuilder, deviceType);
 		}
+		entryBuilder.add(solsticeScanMonitor.getNexusProvider(scanInfo));
 		
 		// create the NXdata groups
 		createNexusDataGroups(entryBuilder);
