@@ -190,7 +190,6 @@ public class RasterTest {
 
 	// Note this is a bit of a integration test not a strict unit test
 	@Test
-	@Ignore("Reinstate when ScanEstimator fixed to get shape from generator")
 	public void testFillingACircle() throws Exception {
 		double xCentre = 0;
 		double yCentre = 0;

@@ -9,9 +9,8 @@
  * Contributors:
  *    Matthew Gerring - initial API and implementation and/or initial documentation
  *******************************************************************************/
-package org.eclipse.scanning.points;
 
-import java.util.Iterator;
+package org.eclipse.scanning.points;
 
 import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyObject;
@@ -52,28 +51,28 @@ public class ScanPointGeneratorFactory {
 	// These are the constructors for each Jython SPG interface. To add a new one just replace, 
 	// for example, "JArrayGenerator" with your new class and give the constructor a new name
 	// like "<YourClass>Factory"
-    public static JythonObjectFactory<Iterator> JLineGenerator1DFactory() {
-        return new JythonObjectFactory<>(Iterator.class, "jython_spg_interface", "JLineGenerator1D");
+    public static JythonObjectFactory<ScanPointIterator> JLineGenerator1DFactory() {
+        return new JythonObjectFactory<>(ScanPointIterator.class, "jython_spg_interface", "JLineGenerator1D");
     }
 
-	public static JythonObjectFactory<Iterator> JLineGenerator2DFactory() {
-        return new JythonObjectFactory<>(Iterator.class, "jython_spg_interface", "JLineGenerator2D");
+	public static JythonObjectFactory<ScanPointIterator> JLineGenerator2DFactory() {
+        return new JythonObjectFactory<>(ScanPointIterator.class, "jython_spg_interface", "JLineGenerator2D");
     }
 	
-    public static JythonObjectFactory<Iterator> JArrayGeneratorFactory() {
-        return new JythonObjectFactory<>(Iterator.class, "jython_spg_interface", "JArrayGenerator");
+    public static JythonObjectFactory<ScanPointIterator> JArrayGeneratorFactory() {
+        return new JythonObjectFactory<>(ScanPointIterator.class, "jython_spg_interface", "JArrayGenerator");
     }
 	
-    public static JythonObjectFactory<Iterator> JSpiralGeneratorFactory() {
-        return new JythonObjectFactory<>(Iterator.class, "jython_spg_interface", "JSpiralGenerator");
+	public static JythonObjectFactory<ScanPointIterator> JSpiralGeneratorFactory() {
+        return new JythonObjectFactory<>(ScanPointIterator.class, "jython_spg_interface", "JSpiralGenerator");
     }
 	
-    public static JythonObjectFactory<Iterator> JLissajousGeneratorFactory() {
-        return new JythonObjectFactory<>(Iterator.class, "jython_spg_interface", "JLissajousGenerator");
+    public static JythonObjectFactory<ScanPointIterator> JLissajousGeneratorFactory() {
+        return new JythonObjectFactory<>(ScanPointIterator.class, "jython_spg_interface", "JLissajousGenerator");
     }
 	
-    public static JythonObjectFactory<SerializableIterator> JCompoundGeneratorFactory() {
-        return new JythonObjectFactory<>(SerializableIterator.class, "jython_spg_interface", "JCompoundGenerator");
+    public static JythonObjectFactory<ScanPointIterator> JCompoundGeneratorFactory() {
+        return new JythonObjectFactory<>(ScanPointIterator.class, "jython_spg_interface", "JCompoundGenerator");
     }
 	
     public static JythonObjectFactory<PyObject> JRandomOffsetMutatorFactory() {

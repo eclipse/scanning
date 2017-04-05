@@ -28,7 +28,6 @@ import org.python.core.PyObject;
 
 class GridIterator extends AbstractScanPointIterator {
 
-	private final AbstractGenerator<? extends IBoundingBoxModel> gen;
 	private final int columns;
 	private final int rows;
 	private final String xName;
@@ -42,7 +41,6 @@ class GridIterator extends AbstractScanPointIterator {
 
 	public GridIterator(GridGenerator gen) {
 		GridModel model = gen.getModel();
-		this.gen = gen;
 		
 		this.columns = model.getFastAxisPoints();
 		this.rows = model.getSlowAxisPoints();
@@ -53,18 +51,14 @@ class GridIterator extends AbstractScanPointIterator {
 		this.minX = model.getBoundingBox().getFastAxisStart() + xStep / 2;
 		this.minY = model.getBoundingBox().getSlowAxisStart() + yStep / 2;
 		
-		JythonObjectFactory lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
+		JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
         
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> outerLine = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
+		ScanPointIterator outerLine = lineGeneratorFactory.createObject(
 				yName, "mm", minY, minY + (rows - 1) * yStep, rows);
         
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> innerLine = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
+		ScanPointIterator innerLine = lineGeneratorFactory.createObject(
 				xName, "mm", minX, minX + (columns - 1) * xStep, columns, model.isSnake());
 		
-		JythonObjectFactory compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
-        
         Iterator<?>[] generators = {outerLine, innerLine};
 
 		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
@@ -72,7 +66,6 @@ class GridIterator extends AbstractScanPointIterator {
 	}
 
 	public GridIterator(RandomOffsetGridGenerator gen) {
-		this.gen = gen;
 		RandomOffsetGridModel model = (RandomOffsetGridModel) gen.getModel();
 		
 		this.columns = model.getFastAxisPoints();
@@ -84,17 +77,15 @@ class GridIterator extends AbstractScanPointIterator {
 		this.minX = model.getBoundingBox().getFastAxisStart() + xStep / 2;
 		this.minY = model.getBoundingBox().getSlowAxisStart() + yStep / 2;
 		
-        JythonObjectFactory lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
+        JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
         
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> outerLine = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
+		ScanPointIterator outerLine = lineGeneratorFactory.createObject(
 				yName, "mm", minY, minY + (rows - 1) * yStep, rows);
         
-		@SuppressWarnings("unchecked")
 		Iterator<IPosition> innerLine = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
 				xName, "mm", minX, minX + (columns - 1) * xStep, columns, model.isSnake());
 		
-        JythonObjectFactory randomOffsetMutatorFactory = ScanPointGeneratorFactory.JRandomOffsetMutatorFactory();
+        JythonObjectFactory<PyObject> randomOffsetMutatorFactory = ScanPointGeneratorFactory.JRandomOffsetMutatorFactory();
         
         int seed = model.getSeed();
         PyList axes = new PyList(Arrays.asList(new String[] {yName, xName}));
@@ -106,8 +97,6 @@ class GridIterator extends AbstractScanPointIterator {
         
 		PyObject randomOffset = (PyObject) randomOffsetMutatorFactory.createObject(seed, axes, maxOffset);
         
-        JythonObjectFactory compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
-        
         Iterator<?>[] generators = {outerLine, innerLine};
         PyObject[] mutators = {randomOffset};
         
@@ -116,7 +105,6 @@ class GridIterator extends AbstractScanPointIterator {
 	}
 
 	public GridIterator(RasterGenerator gen) {
-		this.gen = gen;
 		RasterModel model = gen.getModel();
 		this.xStep = model.getFastAxisStep();
 		this.yStep = model.getSlowAxisStep();
@@ -127,18 +115,13 @@ class GridIterator extends AbstractScanPointIterator {
 		this.columns = (int) Math.floor(model.getBoundingBox().getFastAxisLength() / xStep + 1);
 		this.rows = (int) Math.floor(model.getBoundingBox().getSlowAxisLength() / yStep + 1);
 		
-		JythonObjectFactory lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
+		JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
         
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> outerLine = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
+		ScanPointIterator outerLine = lineGeneratorFactory.createObject(
 				yName, "mm", minY, minY + (rows - 1) * yStep, rows);
-        
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> innerLine = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
+		ScanPointIterator innerLine = lineGeneratorFactory.createObject(
 				xName, "mm", minX, minX + (columns - 1) * xStep, columns, model.isSnake());
 		
-		JythonObjectFactory compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
-        
         Iterator<?>[] generators = {outerLine, innerLine};
 
 		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),

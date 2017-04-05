@@ -14,7 +14,6 @@ package org.eclipse.scanning.points;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Point;
 import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.jython.JythonObjectFactory;
@@ -46,7 +45,7 @@ class SpiralIterator extends AbstractScanPointIterator {
 		yCentre = model.getBoundingBox().getSlowAxisStart() + radiusY;
 		maxRadius = Math.sqrt(radiusX * radiusX + radiusY * radiusY);
         
-        JythonObjectFactory spiralGeneratorFactory = ScanPointGeneratorFactory.JSpiralGeneratorFactory();
+        JythonObjectFactory<ScanPointIterator> spiralGeneratorFactory = ScanPointGeneratorFactory.JSpiralGeneratorFactory();
 
         PyList names =  new PyList(Arrays.asList(new String[] {xName, yName}));
         PyList units = new PyList(Arrays.asList(new String[] {"mm", "mm"}));
@@ -55,8 +54,7 @@ class SpiralIterator extends AbstractScanPointIterator {
         double scale = model.getScale();
         boolean alternate = false;
         
-        @SuppressWarnings("unchecked")
-		Iterator<IPosition> spiral = (Iterator<IPosition>) spiralGeneratorFactory.createObject(
+		ScanPointIterator spiral = spiralGeneratorFactory.createObject(
 				names, units, centre, radius, scale, alternate);
 		pyIterator = createSpgCompoundGenerator(new Iterator<?>[] {spiral}, gen.getRegions().toArray(),
 				new String[] {xName, yName}, new PyObject[] {});

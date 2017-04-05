@@ -14,7 +14,6 @@ package org.eclipse.scanning.points;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Point;
 import org.eclipse.scanning.api.points.models.LissajousModel;
 import org.eclipse.scanning.jython.JythonObjectFactory;
@@ -25,20 +24,18 @@ import org.python.core.PyObject;
 class LissajousIterator extends AbstractScanPointIterator {
 
 	private LissajousModel model;
-	private LissajousGenerator gen;
 	
 	private Point currentPoint;
 
 	public LissajousIterator(LissajousGenerator gen) {
 		this.model     = gen.getModel();
-		this.gen       = gen;
 
 		String xName = model.getFastAxisName();
 		String yName = model.getSlowAxisName();
 		double width = model.getBoundingBox().getFastAxisLength();
 		double height = model.getBoundingBox().getSlowAxisLength();
 		
-        JythonObjectFactory<?> lissajousGeneratorFactory = ScanPointGeneratorFactory.JLissajousGeneratorFactory();
+        JythonObjectFactory<ScanPointIterator> lissajousGeneratorFactory = ScanPointGeneratorFactory.JLissajousGeneratorFactory();
 
         PyDictionary box = new PyDictionary();
         box.put("width", width);
@@ -51,8 +48,7 @@ class LissajousIterator extends AbstractScanPointIterator {
         int numLobes = (int) (model.getA() / model.getB());
         int numPoints = model.getPoints();
         
-        @SuppressWarnings("unchecked")
-		Iterator<IPosition> lissajous = (Iterator<IPosition>) lissajousGeneratorFactory.createObject(
+        ScanPointIterator lissajous = lissajousGeneratorFactory.createObject(
 				names, units, box, numLobes, numPoints);
 		pyIterator = createSpgCompoundGenerator(new Iterator[] {lissajous}, gen.getRegions().toArray(),
 				new String[] {xName, yName}, new PyObject[] {});

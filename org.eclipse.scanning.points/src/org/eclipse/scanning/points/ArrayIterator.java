@@ -11,8 +11,6 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.jython.JythonObjectFactory;
@@ -25,12 +23,11 @@ class ArrayIterator extends AbstractScanPointIterator {
 	public ArrayIterator(ArrayGenerator gen) {
 		this.model= gen.getModel();
 		
-        JythonObjectFactory arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
+        JythonObjectFactory<?> arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
 
         double[] points = model.getPositions();        
         
-        @SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>) arrayGeneratorFactory.createObject(
+		ScanPointIterator iterator = (ScanPointIterator) arrayGeneratorFactory.createObject(
 				model.getName(), "mm", points);
         pyIterator = iterator;
 	}

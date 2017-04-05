@@ -38,8 +38,7 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 
 		double[] points = createPositions();
 
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>) arrayGeneratorFactory.createObject(
+		ScanPointIterator iterator = (ScanPointIterator) arrayGeneratorFactory.createObject(
 				model.getName(), "mm", points);
 		pyIterator = iterator;
 	}

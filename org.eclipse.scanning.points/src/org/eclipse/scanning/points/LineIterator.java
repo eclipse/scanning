@@ -41,8 +41,7 @@ class LineIterator extends AbstractScanPointIterator {
         double stop = model.getStop();
         int numPoints = (int) ((stop - start) / model.getStep() + 1);
         
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>)  lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
+		ScanPointIterator iterator = (ScanPointIterator) lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
 		pyIterator = iterator;
 	}
 	
@@ -62,8 +61,7 @@ class LineIterator extends AbstractScanPointIterator {
 		double[] start = {line.getxStart() + xStep/2, line.getyStart() + yStep/2};
 		double[] stop = {line.getxStart() + xStep * (numPoints - 0.5), line.getyStart() + yStep * (numPoints - 0.5)};
         
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
+		ScanPointIterator iterator = (ScanPointIterator) lineGeneratorFactory.createObject(
 				names, units, start, stop, numPoints);
 		pyIterator = iterator;
 	}
@@ -83,8 +81,7 @@ class LineIterator extends AbstractScanPointIterator {
 		double[] start = {line.getxStart(), line.getyStart()};
         double[] stop = {line.getxStart() + xStep * numPoints, line.getyStart() + yStep * numPoints};
         
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
+		ScanPointIterator iterator = (ScanPointIterator) lineGeneratorFactory.createObject(
 				names, units, start, stop, numPoints);
 		pyIterator = iterator;
 	}
