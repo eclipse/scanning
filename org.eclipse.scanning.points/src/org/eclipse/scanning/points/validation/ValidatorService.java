@@ -73,8 +73,10 @@ public class ValidatorService implements IValidatorService {
 			try {
 				dservice = eservice.createRemoteService(new URI(CommandConstants.getScanningBrokerUri()), IRunnableDeviceService.class);
 			} catch (EventException | URISyntaxException e) {
-				ServiceReference<IRunnableDeviceService> ref = context.getBundleContext().getServiceReference(IRunnableDeviceService.class);
-				dservice = context.getBundleContext().getService(ref);
+				if (context!=null) {
+					ServiceReference<IRunnableDeviceService> ref = context.getBundleContext().getServiceReference(IRunnableDeviceService.class);
+					dservice = context.getBundleContext().getService(ref);
+				}
 			}
 		}
 		return dservice;
