@@ -24,6 +24,7 @@ Service-Component: OSGI-INF/*.xml
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Import-Package: Jama;version="1.0.3",
+ org.apache.commons.beanutils,
  org.osgi.service.component;version="1.2.2",
  org.python.core,
  org.python.util,
