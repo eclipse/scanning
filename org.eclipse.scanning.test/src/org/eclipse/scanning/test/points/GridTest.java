@@ -370,11 +370,11 @@ public class GridTest extends GeneratorTest {
 
 		assertEquals(pointList.size(), 3156);
 //		GeneratorUtil.testGeneratorPoints(gen); // Rounding error in here causing test to fail
-		assertEquals(new Point(69, 1.0425, 0, 13.575), pointList.get(0));
-		assertEquals(new Point(70, 1.0575, 0, 13.575), pointList.get(1));
-		assertEquals(new Point(17, 0.2625, 7, 14.625), pointList.get(1000));
-		assertEquals(new Point(27, 0.4125, 12, 15.375), pointList.get(2000));
-		assertEquals(new Point(75, 1.1325, 19, 16.425), pointList.get(3100));
+		assertEquals(new Point(0, 1.0425, 0, 13.575), pointList.get(0));
+		assertEquals(new Point(1, 1.0575, 1, 13.575), pointList.get(1));
+		assertEquals(new Point(1000, 0.2625, 1000, 14.625), pointList.get(1000));
+		assertEquals(new Point(2000, 0.4125, 2000, 15.375), pointList.get(2000));
+		assertEquals(new Point(3100, 1.1325, 3100, 16.425), pointList.get(3100));
 	}
 
 	@Test
