@@ -21,8 +21,12 @@ import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.dawnsci.analysis.api.persistence.IMarshallerService;
@@ -33,7 +37,11 @@ import org.eclipse.dawnsci.analysis.dataset.roi.RectangularROI;
 import org.eclipse.dawnsci.json.MarshallerService;
 import org.eclipse.scanning.api.INamedNode;
 import org.eclipse.scanning.api.ISpringParser;
+import org.eclipse.scanning.api.annotation.ui.DeviceType;
+import org.eclipse.scanning.api.event.scan.DeviceRequest;
 import org.eclipse.scanning.api.event.scan.DeviceState;
+import org.eclipse.scanning.api.event.scan.DeviceValueMultiPosition;
+import org.eclipse.scanning.api.event.scan.NexusSlitsPosition;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.event.status.Status;
@@ -58,6 +66,7 @@ import org.eclipse.scanning.server.application.PseudoSpringParser;
 import org.eclipse.scanning.test.ScanningTestClassRegistry;
 import org.eclipse.scanning.test.scan.mock.MockDetectorModel;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class SerializationTest {
@@ -466,4 +475,98 @@ public class SerializationTest {
 		assertTrue(bean.getScanRequest()==null);
 	}
 
+	@Test
+	public void testSerializeDeviceRequestWithNumber() throws Exception {
+		Number value = 1.234;
+		
+		final DeviceRequest sent = new DeviceRequest("devicerequesttest", DeviceType.SCANNABLE, null, value);
+		
+        String json = service.marshal(sent);
+        
+        DeviceRequest ret = service.unmarshal(json, DeviceRequest.class);
+        
+        if (!ret.equals(sent)) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+        if (!ret.getDeviceValue().equals(sent.getDeviceValue())) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+	}
+
+	@Test @Ignore
+	public void testSerializeDeviceRequestWithDoubleList() throws Exception {
+		List<Double> value = Arrays.asList(1.234, 2.345);
+		
+		final DeviceRequest sent = new DeviceRequest("devicerequesttest", DeviceType.SCANNABLE, null, value);
+		
+        String json = service.marshal(sent); // TODO: Work out why this fails
+        
+        DeviceRequest ret = service.unmarshal(json, DeviceRequest.class);
+        
+        if (!ret.equals(sent)) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+        if (!ret.getDeviceValue().equals(sent.getDeviceValue())) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+	}
+
+	@Test @Ignore
+	public void testSerializeDeviceRequestWithArrayList() throws Exception {
+		ArrayList value = new ArrayList();
+		value.add(1.234);
+		value.add(2.345);
+		
+		final DeviceRequest sent = new DeviceRequest("devicerequesttest", DeviceType.SCANNABLE, null, value);
+		
+        String json = service.marshal(sent); // TODO: Work out why this fails
+        
+        DeviceRequest ret = service.unmarshal(json, DeviceRequest.class);
+        
+        if (!ret.equals(sent)) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+        if (!ret.getDeviceValue().equals(sent.getDeviceValue())) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+	}
+
+	@Test @Ignore
+	public void testSerializeDeviceRequestWithHashMap() throws Exception {
+		Map<String, Double> value = new HashMap<String, Double>() {
+			private static final long serialVersionUID = 1L;
+		{
+			put("x_gap", 1.234);
+			put("y_gap", 5.678);
+		}};
+		
+		final DeviceRequest sent = new DeviceRequest("devicerequesttest", DeviceType.SCANNABLE, null, value);
+		
+        String json = service.marshal(sent); // TODO: Work out why this fails
+        
+        DeviceRequest ret = service.unmarshal(json, DeviceRequest.class);
+        
+        if (!ret.equals(sent)) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+        if (!ret.getDeviceValue().equals(sent.getDeviceValue())) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+	}
+
+	@Test
+	public void testSerializeDeviceRequestWithNexusSlitsPosition() throws Exception {
+		NexusSlitsPosition value = new NexusSlitsPosition();
+		value.setX_gap(1.234);
+		value.setY_gap(5.678);
+		
+		final DeviceRequest sent = new DeviceRequest("devicerequesttest", DeviceType.SCANNABLE, null, value);
+		
+        String json = service.marshal(sent);
+        
+        DeviceRequest ret = service.unmarshal(json, DeviceRequest.class);
+        
+        if (!ret.equals(sent)) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+        if (!ret.getDeviceValue().equals(sent.getDeviceValue())) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+	}
+
+	@Test
+	public void testSerializeDeviceRequestWithDeviceValueMultiPosition() throws Exception {
+		DeviceValueMultiPosition value = new DeviceValueMultiPosition();
+		value.setX_gap(1.234);
+		value.setY_gap(5.678);
+
+		final DeviceRequest sent = new DeviceRequest("devicerequesttest", DeviceType.SCANNABLE, null, value);
+		
+        String json = service.marshal(sent);
+        
+        DeviceRequest ret = service.unmarshal(json, DeviceRequest.class);
+        
+        if (!ret.equals(sent)) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+        if (!ret.getDeviceValue().equals(sent.getDeviceValue())) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
+	}
 }
