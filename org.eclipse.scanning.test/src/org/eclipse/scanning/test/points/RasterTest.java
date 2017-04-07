@@ -27,6 +27,7 @@ import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class RasterTest {
@@ -189,6 +190,7 @@ public class RasterTest {
 
 	// Note this is a bit of a integration test not a strict unit test
 	@Test
+	@Ignore("Reinstate when ScanEstimator fixed to get shape from generator")
 	public void testFillingACircle() throws Exception {
 		double xCentre = 0;
 		double yCentre = 0;
