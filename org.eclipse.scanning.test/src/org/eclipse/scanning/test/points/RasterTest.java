@@ -210,13 +210,13 @@ public class RasterTest {
 		assertEquals(5, pointList.size());
 
 		// Check the points are correct and the order is maintained
-        assertEquals(new Point(1, 0.0, 0, -1.0), pointList.get(0));
-        assertEquals(new Point(0, -1.0, 1, 0.0), pointList.get(1));
-        assertEquals(new Point(1, 0.0, 1, 0.0), pointList.get(2));
-        assertEquals(new Point(2, 1.0, 1, 0.0), pointList.get(3));
-        assertEquals(new Point(1, 0.0, 2, 1.0), pointList.get(4));
+        assertEquals(new Point(0, 0.0, 0, -1.0), pointList.get(0));
+        assertEquals(new Point(1, -1.0, 1, 0.0), pointList.get(1));
+        assertEquals(new Point(2, 0.0, 2, 0.0), pointList.get(2));
+        assertEquals(new Point(3, 1.0, 3, 0.0), pointList.get(3));
+        assertEquals(new Point(4, 0.0, 4, 1.0), pointList.get(4));
 		
-        GeneratorUtil.testGeneratorPoints(gen, 3, 2);
+        GeneratorUtil.testGeneratorPoints(gen, 5);
 	}
 
 	
