@@ -141,7 +141,7 @@ public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel>
 	}
 	
 	@PostConfigure
-	public void postConfigure(ScanInformation scanInformation) {
+	public void postConfigure(ScanInformation scanInformation) throws Exception {
 		int[] shape = scanInformation.getShape();
 		this.scanRank = shape.length;
 		this.lineSize = shape[scanRank - 1];

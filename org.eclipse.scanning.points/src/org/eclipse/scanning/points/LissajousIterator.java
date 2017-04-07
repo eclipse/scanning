@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.eclipse.scanning.api.points.Point;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.LissajousModel;
 import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyDictionary;

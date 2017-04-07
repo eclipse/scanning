@@ -14,11 +14,9 @@ package org.eclipse.scanning.points;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.eclipse.scanning.api.points.AbstractGenerator;
-import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Point;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.GridModel;
-import org.eclipse.scanning.api.points.models.IBoundingBoxModel;
 import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.jython.JythonObjectFactory;
@@ -54,7 +52,7 @@ class GridIterator extends AbstractScanPointIterator {
 		JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
         
 		ScanPointIterator outerLine = lineGeneratorFactory.createObject(
-				yName, "mm", minY, minY + (rows - 1) * yStep, rows);
+				yName, "mm", minY, minY + (rows - 1) * yStep, rows, model.isSnake());
         
 		ScanPointIterator innerLine = lineGeneratorFactory.createObject(
 				xName, "mm", minX, minX + (columns - 1) * xStep, columns, model.isSnake());
@@ -82,7 +80,7 @@ class GridIterator extends AbstractScanPointIterator {
 		ScanPointIterator outerLine = lineGeneratorFactory.createObject(
 				yName, "mm", minY, minY + (rows - 1) * yStep, rows);
         
-		Iterator<IPosition> innerLine = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
+		ScanPointIterator innerLine = lineGeneratorFactory.createObject(
 				xName, "mm", minX, minX + (columns - 1) * xStep, columns, model.isSnake());
 		
         JythonObjectFactory<PyObject> randomOffsetMutatorFactory = ScanPointGeneratorFactory.JRandomOffsetMutatorFactory();

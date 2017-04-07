@@ -21,7 +21,9 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.api.tree.Attribute;
+import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
 import org.eclipse.dawnsci.nexus.NXdata;
 import org.eclipse.dawnsci.nexus.NXentry;
 import org.eclipse.dawnsci.nexus.NXroot;
@@ -31,6 +33,7 @@ import org.eclipse.scanning.api.device.IWritableDetector;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.models.ScanModel;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -93,22 +96,32 @@ public class MandelbrotExampleTest extends NexusTest {
 	}
 
 	@Test
-	public void test2DNexusScan() throws Exception {
-		testScan(false, 3, 2);
+	public void test2DGridScan() throws Exception {
+		testGridScan(false, 3, 2);
 	}
 	
 	@Test
-	public void test2DSnakeNexusScan() throws Exception {
-		testScan(true, 3, 2);
+	public void test2DSnakeGridScan() throws Exception {
+		testGridScan(true, 3, 2);
 	}
 	
 	@Test
-	public void test2DSnakeWithOddNumberOfLinesNexusScan() throws Exception {
-		testScan(true, 7, 5);
+	public void test2DSnakeWithOddNumberOfLinesGridScan() throws Exception {
+		testGridScan(true, 7, 5);
 	}
 	
 	@Test
-	public void test3DNexusSpiralScan() throws Exception {
+	public void test2DGridScanWithCircularRegion() throws Exception {
+		testGridScanWithCircularRegion(false, 3, 5);
+	}
+	
+	@Test
+	public void test2DSnakeGridScanWithCircularRegion() throws Exception {
+		testGridScanWithCircularRegion(true, 3, 5);
+	}
+	
+	@Test
+	public void test3DSpiralScan() throws Exception {
 		IRunnableDevice<ScanModel> scanner = createSpiralScan(detector, output); // Outer scan of another scannable, for instance temp.
 		assertScanNotFinished(getNexusRoot(scanner).getEntry());
 		scanner.run(null);
@@ -132,7 +145,7 @@ public class MandelbrotExampleTest extends NexusTest {
 	}
 	
 	@Test
-	public void test2DNexusNoImage() throws Exception {
+	public void test2DGridScanNoImage() throws Exception {
 		detector.getModel().setSaveImage(false);
 		try {
 			
@@ -167,41 +180,61 @@ public class MandelbrotExampleTest extends NexusTest {
 	}
 	
 	@Test
-	public void test3DNexusScan() throws Exception {
-		testScan(false, 3, 2, 5);
+	public void test3DGridScan() throws Exception {
+		testGridScan(false, 3, 2, 5);
 	}
 	
 	@Test
-	public void test3DSnakeNexusScan() throws Exception {
-		testScan(true, 3, 2, 5);
+	public void test3DSnakeGridScanEvenNumRows() throws Exception {
+		testGridScan(true, 3, 2, 5);
+	}
+	
+	@Test
+	public void test3DSnakeGridScanOddNumRows() throws Exception {
+		testGridScan(true, 3, 3, 5);
+	}
+	
+	@Test
+	public void test3DGridScanWithCircularRegion() throws Exception {
+		testGridScanWithCircularRegion(false, 3, 3, 5);
+	}
+	
+	@Test
+	public void test3DSnakeGridScanWithCircularRegion() throws Exception {
+		testGridScanWithCircularRegion(true, 3, 3, 5);
+	}
+	
+	@Test
+	public void test4DSnakeGridScanWithCircularRegion() throws Exception {
+		testGridScanWithCircularRegion(true, 2, 3, 3, 5);
 	}
 	
 	// TODO Why does this not pass?
 	//@Test
-	public void test3DNexusScanLarge() throws Exception {
+	public void test3DGridScanLarge() throws Exception {
 		long before = System.currentTimeMillis();
-		testScan(false,300,2, 5);
+		testGridScan(false,300,2, 5);
 		long after = System.currentTimeMillis();
 		long diff  = after-before;
 		assertTrue(diff<20000);
 	}
 
 	@Test
-	public void test4DNexusScan() throws Exception {
-		testScan(false,3,3,2, 2);
+	public void test4DGridScan() throws Exception {
+		testGridScan(false,3,3,2, 2);
 	}
 	
 	@Test
-	public void test5DNexusScan() throws Exception {
-		testScan(false,1,1,1,2, 2);
+	public void test5DGridScan() throws Exception {
+		testGridScan(false,1,1,1,2, 2);
 	}
 	
 	@Test
-	public void test8DNexusScan() throws Exception {
-		testScan(false,1,1,1,1,1,1,2, 2);
+	public void test8DGridScan() throws Exception {
+		testGridScan(false,1,1,1,1,1,1,2, 2);
 	}
 
-	private void testScan(boolean snake, int... shape) throws Exception {
+	private void testGridScan(boolean snake, int... shape) throws Exception {
 		
 		IRunnableDevice<ScanModel> scanner = createGridScan(detector, output, snake, shape); // Outer scan of another scannable, for instance temp.
 		assertScanNotFinished(getNexusRoot(scanner).getEntry());
@@ -210,4 +243,20 @@ public class MandelbrotExampleTest extends NexusTest {
 		// Check we reached ready (it will normally throw an exception on error)
 		checkNexusFile(scanner, snake, shape); // Step model is +1 on the size
 	}
+	
+	private void testGridScanWithCircularRegion(boolean snake, int... shape) throws Exception {
+		IROI region = new CircularROI(2, 1, 1);
+		
+		IRunnableDevice<ScanModel> scanner = createGridScan(detector, output, region, snake, shape);
+		assertScanNotFinished(getNexusRoot(scanner).getEntry());
+		scanner.run(null);
+		
+		int[] datasetShape = new int[shape.length - 1];
+		System.arraycopy(shape, 0, datasetShape, 0, shape.length - 2);
+		datasetShape[datasetShape.length - 1] = 11; // size of inner grid scan in circular region
+				// note: this assumes the last two shape dimensions are 3 and 5
+		
+		checkNexusFile(scanner, snake, true, datasetShape);
+	}
+	
 }

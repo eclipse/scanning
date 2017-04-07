@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import org.eclipse.scanning.api.points.Point;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyList;
@@ -23,7 +24,6 @@ import org.python.core.PyObject;
 class SpiralIterator extends AbstractScanPointIterator {
 
 	// Constant parameters
-	private final SpiralGenerator gen;
 	private final String xName;
 	private final String yName;
 	private final double xCentre;
@@ -35,7 +35,6 @@ class SpiralIterator extends AbstractScanPointIterator {
 	public SpiralIterator(SpiralGenerator gen) {
 		
 		SpiralModel model = gen.getModel();
-		this.gen = gen;
 		this.xName = model.getFastAxisName();
 		this.yName = model.getSlowAxisName();
 

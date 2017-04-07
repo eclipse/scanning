@@ -12,7 +12,6 @@
 package org.eclipse.scanning.points;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.scanning.api.ModelValidationException;
@@ -21,6 +20,7 @@ import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IDeviceDependentIterable;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Scalar;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
 
 class RepeatedPointGenerator extends AbstractGenerator<RepeatedPointModel> implements IDeviceDependentIterable {
@@ -39,7 +39,7 @@ class RepeatedPointGenerator extends AbstractGenerator<RepeatedPointModel> imple
 	}
 
 	@Override
-	public Iterator<IPosition> iteratorFromValidModel() {
+	public ScanPointIterator iteratorFromValidModel() {
 		return new RepeatedPointIterator(this);
 	}
 
@@ -66,5 +66,10 @@ class RepeatedPointGenerator extends AbstractGenerator<RepeatedPointModel> imple
 	@Override
 	public IPosition getFirstPoint() {
 		return new Scalar<>(model.getName(), 0, model.getValue());
+	}
+
+	@Override
+	public int[] getShape() throws GeneratorException {
+		return new int[] { model.getCount() };
 	}
 }

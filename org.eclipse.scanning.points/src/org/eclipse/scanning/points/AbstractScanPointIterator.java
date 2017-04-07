@@ -30,6 +30,7 @@ import org.eclipse.dawnsci.analysis.dataset.roi.SectorROI;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.jython.JythonObjectFactory;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;

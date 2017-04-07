@@ -11,11 +11,9 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
-import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.LissajousModel;
 
 public class LissajousGenerator extends AbstractGenerator<LissajousModel> {
@@ -27,7 +25,7 @@ public class LissajousGenerator extends AbstractGenerator<LissajousModel> {
 	}
 
 	@Override
-	public Iterator<IPosition> iteratorFromValidModel() {
+	public ScanPointIterator iteratorFromValidModel() {
 		return new LissajousIterator(this);
 	}
 

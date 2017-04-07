@@ -27,7 +27,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,6 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.api.tree.DataNode;
 import org.eclipse.dawnsci.analysis.api.tree.TreeFile;
 import org.eclipse.dawnsci.hdf5.nexus.NexusFileFactoryHDF5;
@@ -207,8 +207,18 @@ public class NexusTest extends TmpTest {
 		nf.close();
 		return (NXroot) nexusTree.getGroupNode();
 	}
-
-	protected void checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake, int... sizes) throws Exception {
+	
+	protected void checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake, int[] sizes) throws Exception {
+		checkNexusFile(scanner, snake, false, sizes);
+	}
+	
+	/**
+	 * A folded grid is where a non-rectangular region is applied, meaning that the two grid
+     * dimensions are flattened into one. In this case the sizes array passed in should be
+     * the expected dataset size.
+	 */
+	protected void checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake,
+			boolean foldedGrid, int[] sizes) throws Exception {
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 		assertEquals(DeviceState.READY, scanner.getDeviceState());
 
@@ -217,7 +227,7 @@ public class NexusTest extends TmpTest {
 		NXinstrument instrument = entry.getInstrument();
 		
 		// check that the scan points have been written correctly
-		assertSolsticeScanGroup(entry, snake, sizes);
+		assertSolsticeScanGroup(entry, snake, foldedGrid, sizes);
 		
 		LinkedHashMap<String, List<String>> signalFieldAxes = new LinkedHashMap<>();
 		// axis for additional dimensions of a datafield, e.g. image
@@ -274,19 +284,23 @@ public class NexusTest extends TmpTest {
 
 			// Check axes
 			final IPosition pos = scanModel.getPositionIterable().iterator().next();
-			final Collection<String> scannableNames = pos.getNames();
+			final List<String> scannableNames = pos.getNames();
 
 			// Append _value_demand to each name in list, then add detector axis fields to result
 			List<String> expectedAxesNames = Stream.concat(
-					scannableNames.stream().map(x -> x + "_value_set"),
+					scannableNames.stream().
+					filter(scannableName -> !(foldedGrid && scannableName.equals(scannableNames.get(scannableNames.size() - 2)))). // filter out inner grid scannable for folded grids 
+					map(x -> x + "_value_set"),
 					signalFieldAxes.get(sourceFieldName).stream()).collect(Collectors.toList());
 			assertAxes(nxData, expectedAxesNames.toArray(new String[expectedAxesNames.size()]));
 
 			int[] defaultDimensionMappings = IntStream.range(0, sizes.length).toArray();
 			int i = -1;
 			for (String  scannableName : scannableNames) {
+				if (!foldedGrid || i != scannableNames.size() - 2) {
+					i++; // don't increment if this is the last scannable of a folded grid scan
+				}
 				
-			    i++;
 				NXpositioner positioner = instrument.getPositioner(scannableName);
 				assertNotNull(positioner);
 
@@ -326,8 +340,19 @@ public class NexusTest extends TmpTest {
 		return dservice.createRunnableDevice(smodel, null);
 	}
 	
-	protected ScanModel createGridScanModel(final IRunnableDevice<?> detector, File file, boolean snake, int... size) throws Exception {
+	protected IRunnableDevice<ScanModel> createGridScan(final IRunnableDevice<?> detector, File file, IROI region, boolean snake, int... size) throws Exception {
 		
+		ScanModel smodel = createGridScanModel(detector, file, region, snake, size);
+		
+		// Create a scan and run it without publishing events
+		return dservice.createRunnableDevice(smodel, null);
+	}
+	
+	protected ScanModel createGridScanModel(final IRunnableDevice<?> detector, File file, boolean snake, int... size) throws Exception {
+		return createGridScanModel(detector, file, null, snake, size);
+	}
+	
+	protected ScanModel createGridScanModel(final IRunnableDevice<?> detector, File file, IROI region, boolean snake, int... size) throws Exception {
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
 		gmodel.setFastAxisName("xNex");
@@ -337,7 +362,8 @@ public class NexusTest extends TmpTest {
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
 		gmodel.setSnake(snake);
 		
-		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
+		IPointGenerator<?> gen = gservice.createGenerator(gmodel,
+				region == null ? Collections.emptyList() : Arrays.asList(region));
 		
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length - 1];
 		// We add the outer scans, if any
@@ -397,6 +423,5 @@ public class NexusTest extends TmpTest {
 
 		return smodel;
 	}
-
 
 }

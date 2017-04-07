@@ -187,7 +187,7 @@ public class ScanOperationPipelineTest extends NexusTest {
 		NXentry entry = rootNode.getEntry();
 		
 		// check that the scan points have been written correctly
-		assertSolsticeScanGroup(entry, false, sizes);
+		assertSolsticeScanGroup(entry, false, false, sizes);
 		
 		LinkedHashMap<String, Integer> detectorDataFields = new LinkedHashMap<>();
 		detectorDataFields.put(NXdetector.NX_DATA, 2); // num additional dimensions

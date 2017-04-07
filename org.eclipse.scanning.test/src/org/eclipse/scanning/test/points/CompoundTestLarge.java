@@ -11,10 +11,11 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.points;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,17 +39,23 @@ public class CompoundTestLarge {
 	@Test
 	public void test2Pow24() throws Exception {
 		
-		List<IPointGenerator> gens = new ArrayList<IPointGenerator>(20);
+		List<IPointGenerator<?>> gens = new ArrayList<>(20);
 		for (int i = 0; i < 24; i++) {
 			IPointGenerator<StepModel> two = service.createGenerator(new StepModel("Temperature"+i, 290,291,1));
 			assertEquals(2, two.size());
+			assertEquals(1, two.getRank());
+			assertArrayEquals(new int[] { 2 }, two.getShape());
 			gens.add(two);
 		}
 
 		long start = System.currentTimeMillis();
 		IPointGenerator<?> scan = service.createCompoundGenerator(gens.toArray(new IPointGenerator[gens.size()]));
 		int size = scan.size();
-		assertTrue(Math.pow(2, 24)==size);
+		int expectedSize = (int) Math.pow(2, 24);
+		assertEquals(expectedSize, size);
+		assertEquals(24, scan.getRank());
+		final int[] expectedShape = Collections.nCopies(24, 2).stream().mapToInt(Integer::intValue).toArray();
+		assertArrayEquals(expectedShape, scan.getShape());
 		
 		long stage1 = System.currentTimeMillis();
 		System.out.println("Size of "+size+" returned in "+(stage1-start)+" ms");

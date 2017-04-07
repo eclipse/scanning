@@ -269,14 +269,8 @@ public class ScanProcessTest {
 		// Assert
 		assertTrue("The time to do a scan of roughly 500ms of sleep was "+(after-before), (10000 > (after-before)));
 		
-		// Important: the number of sleeps must be five  (it's currently ten - see below)
-		// It will be greater if the scanning iterated when
-		// figuring things out and slept incorrectly.
-		// TODO: DAQ-487 currently the points in the scan are interated over twice,
-		// once at the beginning of the scan by the scan estimator to get the shape,
-		// then again while performing the scan. Instead we should get the shape from the generators
-		// before the scan. When this is done the line below can be reverted to expect a single iteration again.
-		assertEquals(numPoints * 2, RepeatedPointIterator._getSleepCount());
+		// Important: the number of sleeps must be five
+		assertEquals(numPoints, RepeatedPointIterator._getSleepCount());
 	}
 
 	

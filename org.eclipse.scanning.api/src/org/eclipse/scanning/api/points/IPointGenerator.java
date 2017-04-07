@@ -65,8 +65,23 @@ public interface IPointGenerator<T> extends Iterable<IPosition>, IValidator<T>, 
 	int size() throws GeneratorException;
 	
 	/**
+	 * The shape of the points iterator.
+	 * @return
+	 * @throws GeneratorException
+	 */
+	int[] getShape() throws GeneratorException;
+	
+	/**
+	 * The rank of the points iterator.
+	 * @return
+	 * @throws GeneratorException
+	 */
+	int getRank() throws GeneratorException;
+	
+	/**
 	 * Iterator over the points, fast because does not evaluate
 	 * all points straight away, does it on the fly.
+	 * 
 	 * 
 	 * @return
 	 */

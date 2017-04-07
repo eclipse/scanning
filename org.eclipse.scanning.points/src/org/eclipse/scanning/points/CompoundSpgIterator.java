@@ -29,6 +29,7 @@ import org.eclipse.scanning.api.points.IMutator;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyDictionary;
@@ -66,13 +67,13 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 			}
 		}
 		
-		JythonObjectFactory<?> compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
+		JythonObjectFactory<ScanPointIterator> compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
 		
         Object[] excluders = getExcluders(gen.getModel().getRegions());
         Object[] mutators = getMutators(gen.getModel().getMutators());
         double duration = gen.getModel().getDuration();
         
-        ScanPointIterator iterator = (ScanPointIterator) compoundGeneratorFactory.createObject(
+        ScanPointIterator iterator = compoundGeneratorFactory.createObject(
 				iterators, excluders, mutators, duration);
         
         index = -1;

@@ -11,11 +11,11 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
-import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.GeneratorException;
+import org.eclipse.scanning.api.points.ScanPointIterator;
+import org.eclipse.scanning.api.points.models.BoundingLine;
 import org.eclipse.scanning.api.points.models.OneDStepModel;
 
 class OneDStepGenerator extends AbstractGenerator<OneDStepModel> {
@@ -32,7 +32,18 @@ class OneDStepGenerator extends AbstractGenerator<OneDStepModel> {
 	}
 
 	@Override
-	protected Iterator<IPosition> iteratorFromValidModel() {
+	protected ScanPointIterator iteratorFromValidModel() {
 		return new LineIterator(this);
 	}
+
+	@Override
+	public int[] getShape() throws GeneratorException {
+		BoundingLine line = getModel().getBoundingLine();
+		if (line != null) {
+			return new int[] { (int) Math.floor(line.getLength() / getModel().getStep()) + 1 };
+		}
+		
+		return super.getShape();
+	}
+
 }

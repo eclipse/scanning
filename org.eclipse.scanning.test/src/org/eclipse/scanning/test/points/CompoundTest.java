@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.points;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -19,6 +20,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.dawnsci.analysis.api.roi.IROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
@@ -75,13 +78,19 @@ public class CompoundTest {
 
 		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290,295,1));
 		assertEquals(6, temp.size());
+		assertEquals(1, temp.getRank());
+		assertArrayEquals(new int[] { 6 }, temp.getShape());
 
 		IPointGenerator<StepModel> pos = service.createGenerator(new StepModel("Position", 1,4, 0.6));
 		assertEquals(6, pos.size());
+		assertEquals(1, pos.getRank());
+		assertArrayEquals(new int[] { 6 }, temp.getShape());
 
 		IPointGenerator<?> scan = service.createCompoundGenerator(temp, pos);
 		assertTrue(scan.iterator().next()!=null);
 		assertEquals(36, scan.size());
+		assertEquals(2, scan.getRank());
+		assertArrayEquals(new int[] { 6, 6 }, scan.getShape());
 		
 		Iterator<IPosition> it = scan.iterator();
 		int size = scan.size();
@@ -98,12 +107,18 @@ public class CompoundTest {
 		
 		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290,295,1));
 		assertEquals(6, temp.size());
+		assertEquals(1, temp.getRank());
+		assertArrayEquals(new int[] { 6 }, temp.getShape());
 
 		IPointGenerator<StepModel> pos = service.createGenerator(new StepModel("Position", 1,4, 0.6));
 		assertEquals(6, pos.size());
+		assertEquals(1, pos.getRank());
+		assertArrayEquals(new int[] { 6 }, temp.getShape());
 
 		IPointGenerator<?> scan = service.createCompoundGenerator(temp, pos);
 		assertEquals(36, scan.size());
+		assertEquals(2, scan.getRank());
+		assertArrayEquals(new int[] { 6, 6 }, scan.getShape());
 
 		final List<IPosition> points = scan.createPoints();
 		
@@ -193,16 +208,23 @@ public class CompoundTest {
 		
 		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290,295,1));
 		assertEquals(6, temp.size());
+		assertEquals(1, temp.getRank());
+		assertArrayEquals(new int[] { 6 }, temp.getShape());
 
 		IPointGenerator<StepModel> y = service.createGenerator(new StepModel("Y", 11, 14, 0.6));
 		assertEquals(6, y.size());
+		assertEquals(1, y.getRank());
+		assertArrayEquals(new int[] { 6 }, y.getShape());
 
 		IPointGenerator<StepModel> x = service.createGenerator(new StepModel("X", 1, 4, 0.6));
 		assertEquals(6, x.size());
+		assertEquals(1, x.getRank());
+		assertArrayEquals(new int[] { 6 }, x.getShape());
 	
-
 		IPointGenerator<?> scan = service.createCompoundGenerator(temp, y, x);
 		assertEquals(216, scan.size());
+		assertEquals(3, scan.getRank());
+		assertArrayEquals(new int[] { 6, 6, 6 }, scan.getShape());
 
 		final List<IPosition> points = scan.createPoints();
 		
@@ -247,22 +269,29 @@ public class CompoundTest {
 		
 		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290,300,1));
 		assertEquals(11, temp.size());
+		assertEquals(1, temp.getRank());
+		assertArrayEquals(new int[] { 11 }, temp.getShape());
 		
-		BoundingBox box = new BoundingBox();		
-		box.setFastAxisStart(0);		
-		box.setSlowAxisStart(0);		
-		box.setFastAxisLength(3);		
-		box.setSlowAxisLength(3);		
+		BoundingBox box = new BoundingBox();
+		box.setFastAxisStart(0);
+		box.setSlowAxisStart(0);
+		box.setFastAxisLength(3);
+		box.setSlowAxisLength(3);
 		
-		GridModel model = new GridModel("x", "y");		
-		model.setSlowAxisPoints(20);		
-		model.setFastAxisPoints(20);		
-		model.setBoundingBox(box);		
+		GridModel model = new GridModel("x", "y");
+		model.setSlowAxisPoints(20);
+		model.setFastAxisPoints(20);
+		model.setBoundingBox(box);
 		
 		IPointGenerator<GridModel> grid = service.createGenerator(model);
+		assertEquals(400, grid.size());
+		assertEquals(2, grid.getRank());
+		assertArrayEquals(new int[] { 20, 20 }, grid.getShape());
 		
 		IPointGenerator<?> scan = service.createCompoundGenerator(temp, grid);
 		assertEquals(4400, scan.size());
+		assertEquals(3, scan.getRank());
+		assertArrayEquals(new int[] { 11, 20, 20 }, scan.getShape());
 
 		List<IPosition> points = scan.createPoints();
 
@@ -282,38 +311,94 @@ public class CompoundTest {
 			assertEquals(new Double(300.0), points.get(i).get("Temperature"));
 		}
         GeneratorUtil.testGeneratorPoints(scan);
-
 	}
+	
+	@Test
+	public void testSimpleCompoundGridWithCircularRegion() throws Exception {
+		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290,300,1));
+		final int expectedOuterSize = 11;
+		assertEquals(expectedOuterSize, temp.size());
+		assertEquals(1, temp.getRank());
+		assertArrayEquals(new int[] { expectedOuterSize }, temp.getShape());
+		
+		BoundingBox box = new BoundingBox();
+		box.setFastAxisStart(0);
+		box.setSlowAxisStart(0);
+		box.setFastAxisLength(3);
+		box.setSlowAxisLength(3);
+		
+		GridModel model = new GridModel("x", "y");
+		model.setSlowAxisPoints(20);
+		model.setFastAxisPoints(20);
+		model.setBoundingBox(box);
+		
+		IROI region = new CircularROI(2, 1, 1);
+		IPointGenerator<GridModel> grid = service.createGenerator(model, region);
+		
+		final int expectedInnerSize = 316;
+		assertEquals(expectedInnerSize, grid.size());
+		assertEquals(1, grid.getRank());
+		assertArrayEquals(new int[] { expectedInnerSize }, grid.getShape()); 
+		
+		IPointGenerator<?> scan = service.createCompoundGenerator(temp, grid);
+		final int expectedScanSize = expectedOuterSize * expectedInnerSize;
+		assertEquals(expectedScanSize, scan.size());
+		assertEquals(2, scan.getRank());
+		assertArrayEquals(new int[] { expectedOuterSize, expectedInnerSize }, scan.getShape());
+
+		List<IPosition> points = scan.createPoints();
+
+		// The first 400 should be T=290
+		for (int i = 0; i < expectedInnerSize; i++) {
+			assertEquals("i = " + i, new Double(290.0), points.get(i).get("Temperature"));
+		}
+		for (int i = expectedInnerSize, max = expectedInnerSize * 2; i < max; i++) {
+			assertEquals(new Double(291.0), points.get(i).get("Temperature"));
+		}
+		for (int i = expectedScanSize - 1, min = expectedScanSize - expectedInnerSize; i >= min; i--) {
+			assertEquals(new Double(300.0), points.get(i).get("Temperature"));
+		}
+        GeneratorUtil.testGeneratorPoints(scan);
+	}
+	
 
 	@Test
 	public void testGridCompoundGrid() throws Exception {
 		
-		BoundingBox box = new BoundingBox();		
-		box.setFastAxisStart(0);		
-		box.setSlowAxisStart(0);		
-		box.setFastAxisLength(3);		
-		box.setSlowAxisLength(3);		
+		BoundingBox box = new BoundingBox();
+		box.setFastAxisStart(0);
+		box.setSlowAxisStart(0);
+		box.setFastAxisLength(3);
+		box.setSlowAxisLength(3);
 		
-		GridModel model1 = new GridModel();		
-		model1.setSlowAxisPoints(5);		
-		model1.setFastAxisPoints(5);		
-		model1.setBoundingBox(box);	
+		GridModel model1 = new GridModel();
+		model1.setSlowAxisPoints(5);
+		model1.setFastAxisPoints(5);
+		model1.setBoundingBox(box);
 		model1.setFastAxisName("x");
-		model1.setSlowAxisName("y");	
+		model1.setSlowAxisName("y");
 		
 		IPointGenerator<GridModel> grid1 = service.createGenerator(model1);	
+		assertEquals(25, grid1.size());
+		assertEquals(2, grid1.getRank());
+		assertArrayEquals(new int[] { 5, 5 }, grid1.getShape());
 		
-		GridModel model2 = new GridModel();		
-		model2.setSlowAxisPoints(5);		
-		model2.setFastAxisPoints(5);		
-		model2.setBoundingBox(box);	
+		GridModel model2 = new GridModel();
+		model2.setSlowAxisPoints(5);
+		model2.setFastAxisPoints(5);
+		model2.setBoundingBox(box);
 		model2.setFastAxisName("x2");
-		model2.setSlowAxisName("y2");	
+		model2.setSlowAxisName("y2");
 		
 		IPointGenerator<GridModel> grid2 = service.createGenerator(model2);
+		assertEquals(25, grid2.size());
+		assertEquals(2, grid2.getRank());
+		assertArrayEquals(new int[] { 5, 5 }, grid2.getShape());
 		
 		IPointGenerator<?> scan = service.createCompoundGenerator(grid1, grid2);
 		assertEquals(625, scan.size());
+		assertEquals(4, scan.getRank());
+		assertArrayEquals(new int[] { 5, 5, 5, 5 }, scan.getShape());
 		
         GeneratorUtil.testGeneratorPoints(scan);
 	}
