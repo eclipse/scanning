@@ -97,24 +97,12 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
     
 	@Override
 	public boolean hasNext() {
-		// TODO: Commented out until Python ROIs are ready
-		IPosition point;
-//		double x;
-//		double y;
-		
-		while (pyIterator.hasNext()) {
-			point = pyIterator.next();
-//			x = point.getX();
-//			y = point.getY();
-//			
-//			if (gen.containsPoint(x, y)) {
-			currentPoint = point;
+		if (pyIterator.hasNext()) {
+			currentPoint = pyIterator.next();
 			index++;
-			if (currentPoint!=null) currentPoint.setStepIndex(index);
+			currentPoint.setStepIndex(index);
 			return true;
-//			}
 		}
-		
 		return false;
 	}
 
@@ -191,55 +179,19 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 	 */
 	public static Object[] getExcluders(Collection<?> regions) {
 		LinkedList<Object> pyRegions = new LinkedList<Object>();
-		JythonObjectFactory excluderFactory = ScanPointGeneratorFactory.JExcluderFactory();
-		JythonObjectFactory circularROIFactory = ScanPointGeneratorFactory.JCircularROIFactory();
-		JythonObjectFactory ellipticalROIFactory = ScanPointGeneratorFactory.JEllipticalROIFactory();
-		JythonObjectFactory pointROIFactory = ScanPointGeneratorFactory.JPointROIFactory();
-		JythonObjectFactory polygonalROIFactory = ScanPointGeneratorFactory.JPolygonalROIFactory();
-		JythonObjectFactory rectangularROIFactory = ScanPointGeneratorFactory.JRectangularROIFactory();
-		JythonObjectFactory sectorROIFactory = ScanPointGeneratorFactory.JSectorROIFactory();
-		
+		JythonObjectFactory<?> excluderFactory = ScanPointGeneratorFactory.JExcluderFactory();
 		if (regions != null) {
 			for (Object region : regions) {
-				
 				if (region instanceof ScanRegion) {
-					ScanRegion<?> sr = (ScanRegion<?>)region;
-					Object roi = sr.getRoi();
-					Object pyRoi = null;
-					
-					if (roi instanceof CircularROI) {
-						CircularROI cRoi = (CircularROI) roi;
-						pyRoi = circularROIFactory.createObject(cRoi.getCentre(), cRoi.getRadius());
-					} else if (roi instanceof EllipticalROI) {
-						EllipticalROI eRoi = (EllipticalROI) roi;
-						pyRoi = ellipticalROIFactory.createObject(eRoi.getPoint(), eRoi.getSemiAxes(), eRoi.getAngle());
-					} else if (roi instanceof LinearROI) {
-						// LinearROIs are not supported so do not add
-					} else if (roi instanceof PointROI) {
-						PointROI pRoi = (PointROI) roi;
-						pyRoi = pointROIFactory.createObject(pRoi.getPoint());
-					} else if (roi instanceof PolygonalROI) {
-						PolygonalROI pRoi = (PolygonalROI) roi;
-						double[] xPoints = new double[pRoi.getNumberOfPoints()];
-						double[] yPoints = new double[pRoi.getNumberOfPoints()];
-						for (int i = 0; i < pRoi.getNumberOfPoints(); i++) {
-							PointROI pointRoi = pRoi.getPoint(i);
-							xPoints[i] = pointRoi.getPointX();
-							yPoints[i] = pointRoi.getPointY();
+					ScanRegion<?> sr = (ScanRegion<?>) region;
+					try {
+						Object pyRoi = makePyRoi(region);
+						if (pyRoi != null) {
+							Object pyExcluder = excluderFactory.createObject(pyRoi, sr.getScannables());
+							pyRegions.add(pyExcluder);
 						}
-						pyRoi = polygonalROIFactory.createObject(xPoints, yPoints);
-					} else if (roi instanceof RectangularROI) {
-						RectangularROI rRoi = (RectangularROI) roi;
-						pyRoi = rectangularROIFactory.createObject(rRoi.getPoint(), rRoi.getLength(0), rRoi.getLength(1), rRoi.getAngle());
-					} else if (roi instanceof SectorROI) {
-						SectorROI sRoi = (SectorROI) roi;
-						pyRoi = sectorROIFactory.createObject(sRoi.getPoint(), sRoi.getRadii(), sRoi.getAngles());
-					} else {
-						logger.error("Unsupported ROI tyoe: " + roi.getClass());
-					}
-					if (pyRoi != null) {
-						Object pyExcluder = excluderFactory.createObject(pyRoi, sr.getScannables());
-						pyRegions.add(pyExcluder);
+					} catch (Exception e) {
+						logger.error("Could not convert ROI to PyRoi", e);
 					}
 				} else {
 					logger.error("Region wasn't of type ScanRegion");

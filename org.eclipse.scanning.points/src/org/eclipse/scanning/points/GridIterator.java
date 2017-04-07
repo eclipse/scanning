@@ -39,7 +39,6 @@ class GridIterator extends AbstractScanPointIterator {
 	private final double yStep;
 	
 	private Point currentPoint;
-	private PyList pyIterators = new PyList();
 
 	public GridIterator(GridGenerator gen) {
 		GridModel model = gen.getModel();
@@ -66,17 +65,10 @@ class GridIterator extends AbstractScanPointIterator {
 		
 		JythonObjectFactory compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
         
-        Object[] generators = {outerLine, innerLine};
-        Object[] excluders = {};
-        Object[] mutators = {};
-        
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>)  compoundGeneratorFactory.createObject(
-				generators, excluders, mutators);
-        pyIterator = iterator;
-        
-        pyIterators.add(outerLine);
-        pyIterators.add(innerLine);
+        Iterator<?>[] generators = {outerLine, innerLine};
+
+		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
+				new String[] {xName, yName}, new PyObject[] {});
 	}
 
 	public GridIterator(RandomOffsetGridGenerator gen) {
@@ -116,17 +108,11 @@ class GridIterator extends AbstractScanPointIterator {
         
         JythonObjectFactory compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
         
-        Object[] generators = {outerLine, innerLine};
-        Object[] excluders = {};
-        Object[] mutators = {randomOffset};
+        Iterator<?>[] generators = {outerLine, innerLine};
+        PyObject[] mutators = {randomOffset};
         
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>)  compoundGeneratorFactory.createObject(
-				generators, excluders, mutators);
-        pyIterator = iterator;
-        
-        pyIterators.add(outerLine);
-        pyIterators.add(innerLine);
+		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
+				new String[] {xName, yName}, mutators);
 	}
 
 	public GridIterator(RasterGenerator gen) {
@@ -153,35 +139,21 @@ class GridIterator extends AbstractScanPointIterator {
 		
 		JythonObjectFactory compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
         
-        Object[] generators = {outerLine, innerLine};
-        Object[] excluders = {};
-        Object[] mutators = {};
-        
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>)  compoundGeneratorFactory.createObject(
-				generators, excluders, mutators);
-        pyIterator = iterator;
-        
-        pyIterators.add(outerLine);
-        pyIterators.add(innerLine);
+        Iterator<?>[] generators = {outerLine, innerLine};
+
+		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
+				new String[] {xName, yName}, new PyObject[] {});
 	}
 
 	@Override
 	public boolean hasNext() {
-		Point point;
-		
-		while (pyIterator.hasNext()) {
-			point = (Point) pyIterator.next();
-			
-			if (gen.containsPoint(point)) {
-				currentPoint = point;
-				return true;
-			}
+		if (pyIterator.hasNext()) {
+			currentPoint = (Point) pyIterator.next();
+			return true;
 		}
-		
 		return false;
 	}
-	
+
 	@Override
 	public Point next() {
 		// TODO: This will return null if called without calling hasNext() and when the

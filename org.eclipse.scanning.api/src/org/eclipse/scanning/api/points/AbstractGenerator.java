@@ -32,7 +32,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	protected volatile T model; // Because of the validateModel() method
 	
 	protected List<IPointContainer> containers;
-	protected Collection<Object> regions;
+	protected Collection<Object> regions = new ArrayList<Object>();
 	private String id;
 	private String label;
 	private String description;
@@ -171,13 +171,12 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 
 	@Override
 	public Collection<Object> getRegions() {
-		if (regions!=null) return regions;
-		return null;
+		return regions;
 	}
 
 	@Override
 	public void setRegions(Collection<Object> regions) throws GeneratorException {
-		this.regions = regions;
+		this.regions = regions == null ? new ArrayList<Object>() : regions;
 	}
 
 	public String getId() {
