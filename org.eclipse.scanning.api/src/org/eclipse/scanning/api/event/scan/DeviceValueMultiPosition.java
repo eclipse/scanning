@@ -18,49 +18,34 @@
 
 package org.eclipse.scanning.api.event.scan;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.eclipse.scanning.api.scan.ScannableValueTextProvider;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * This is a special Position class to allow both x and y gap values to be returned from a
- * NexusSlitsWrapper scannable. It is a temporary creation until we understand why can't
- * use a List or a Map for a DeviceValue in a DeviceRequest. 
- *
+ * This is a special Position class to allow multiple values to be returned from a scannable. It is a temporary
+ * creation until we understand why can't use a standard List or Map for a DeviceValue in a DeviceRequest. 
  */
-public class DeviceValueMultiPosition {
+public class DeviceValueMultiPosition implements ScannableValueTextProvider {
 	@JsonProperty("values")
-	private List<Double> values = new ArrayList<Double>() {{
-		add(0.0);
-		add(0.0);
-	}};
+	private Map<String, Double> values = new LinkedHashMap<>();
 
-	public double getX_gap() {
-		return values.get(0);
+	public Double get(String parameter) {
+		return values.get(parameter);
 	}
 
-	public void setX_gap(double x_gap) {
-		values.set(0, x_gap);
-	}
-
-	public double getY_gap() {
-		return values.get(1);
-	}
-
-	public void setY_gap(double y_gap) {
-		values.set(1, y_gap);
+	public void put(String parameter, Double value) {
+		values.put(parameter, value);
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		long temp;
-		temp = Double.doubleToLongBits(getX_gap());
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(getY_gap());
-		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((values == null) ? 0 : values.hashCode());
 		return result;
 	}
 
@@ -73,10 +58,18 @@ public class DeviceValueMultiPosition {
 		if (getClass() != obj.getClass())
 			return false;
 		DeviceValueMultiPosition other = (DeviceValueMultiPosition) obj;
-		if (Double.doubleToLongBits(getX_gap()) != Double.doubleToLongBits(other.getX_gap()))
-			return false;
-		if (Double.doubleToLongBits(getY_gap()) != Double.doubleToLongBits(other.getY_gap()))
+		if (values == null) {
+			if (other.values != null)
+				return false;
+		} else if (!values.equals(other.values))
 			return false;
 		return true;
+	}
+
+	// implements ScannableValueTextProvider
+
+	@Override
+	public String getText() {
+		return values.toString();
 	}
 }
