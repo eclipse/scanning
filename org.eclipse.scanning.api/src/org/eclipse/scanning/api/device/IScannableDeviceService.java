@@ -107,17 +107,24 @@ public interface IScannableDeviceService {
 		final Collection<String> names = getScannableNames();
 		final Collection<DeviceInformation<?>> ret = new ArrayList<>(names.size());
 		for (String name : names) {
-	
-			IScannable<?> device = getScannable(name);
-			if (device==null) throw new ScanningException("There is no created device called '"+name+"'");
-	
-			DeviceInformation<?> info = new DeviceInformation<Object>(name);
-			Util.merge(info, device);
-			ret.add(info);
+			try {
+				IScannable<?> device = getScannable(name);
+				if (device==null) throw new ScanningException("There is no created device called '"+name+"'");
+		
+				DeviceInformation<?> info = new DeviceInformation<Object>(name);
+				Util.merge(info, device);
+				ret.add(info);
+			} catch (Exception e) {
+				handleDeviceError(name, e);
+			}
 		}
 		return ret;
 	}
 
+	default void handleDeviceError(String name, Exception e) {
+		System.err.println("Failure getting device information for " + name);
+		e.printStackTrace();
+	}
 
 }
 
@@ -130,4 +137,5 @@ final class Util {
 		info.setPermittedValues(device.getPermittedValues());
 		info.setActivated(device.isActivated());
 	}
+	
 }
