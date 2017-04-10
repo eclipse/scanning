@@ -21,8 +21,6 @@ import org.eclipse.scanning.api.AbstractScannable;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.scan.ScanningException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Clients do not need to consume this service, it is used to provide connection
@@ -118,12 +116,13 @@ public interface IScannableDeviceService {
 				}
 				ret.add(((AbstractScannable<?>) device).getDeviceInformation());
 			} catch (Exception e) {
+				handleDeviceError(name, e);
 			}
 		}
 		return ret;
 	}
 	
-	public default void handleDeviceError(String name, Exception e) {
+	default void handleDeviceError(String name, Exception e) {
 		System.err.println("Failure getting device information for " + name);
 		e.printStackTrace();
 	}
