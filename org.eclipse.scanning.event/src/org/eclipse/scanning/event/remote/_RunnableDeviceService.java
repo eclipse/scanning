@@ -48,7 +48,7 @@ public class _RunnableDeviceService extends AbstractRemoteService implements IRu
 	public void init() throws EventException {
 		requester = eservice.createRequestor(uri, IEventService.DEVICE_REQUEST_TOPIC, IEventService.DEVICE_RESPONSE_TOPIC);
 		long timeout = Long.getLong("org.eclipse.scanning.event.remote.runnableDeviceServiceTimeout", 500); 
-	    logger.info("Setting "+getClass().getSimpleName()+" to " + timeout + " ms");
+	    logger.info("Setting "+getClass().getSimpleName()+" to timeout " + timeout + " ms");
 		requester.setResponseConfiguration(new ResponseConfiguration(ResponseType.ONE, timeout, TimeUnit.MILLISECONDS));
 		runnables = new HashMap<>();
 	}
