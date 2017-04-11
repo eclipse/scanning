@@ -18,6 +18,7 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.scanning.api.IScannable;
+import org.eclipse.scanning.api.scan.ScannableValueTextProvider;
 import org.eclipse.scanning.device.ui.Activator;
 import org.eclipse.scanning.device.ui.DevicePreferenceConstants;
 import org.slf4j.Logger;
@@ -90,6 +91,8 @@ public class ScannableValueLabelProvider extends ColumnLabelProvider implements 
 				return Arrays.toString((Object[]) value);
 			} else if (value instanceof double[]) {
 				return Arrays.toString((double[]) value);
+			} else if (value instanceof ScannableValueTextProvider) {
+				return ((ScannableValueTextProvider) value).getText();
 			}
 
 			return value.toString();
