@@ -1,17 +1,20 @@
 package org.eclipse.scanning.test.scan;
 
+import static org.eclipse.scanning.api.scan.LevelRole.RUN;
+import static org.eclipse.scanning.api.scan.LevelRole.WRITE;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.scanning.api.AbstractScannable;
@@ -39,6 +42,7 @@ import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.GridModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.scan.LevelInformation;
+import org.eclipse.scanning.api.scan.LevelRole;
 import org.eclipse.scanning.api.scan.ScanInformation;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IRunListener;
@@ -119,7 +123,8 @@ public class AnnotationScanTest extends NexusTest {
 	
 	private class InjectionDetector extends AbstractRunnableDevice<Object> implements InjectionDevice {
 
-		private final Map<Class<?>, Set<Object>> injectionContexts = new HashMap<>();
+		private final Map<Class<?>, Set<Object>> injectionContexts = new HashMap<>();	
+		private List<LevelRole> levelRoles;
 		
 		protected InjectionDetector() {
 			super(null);
@@ -143,6 +148,24 @@ public class AnnotationScanTest extends NexusTest {
 			return injectionContexts.get(annotationClass);
 		}
 		
+		@Override
+		@ScanStart
+		public void scanStart(IPosition position, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
+			levelRoles = new ArrayList<>();
+			annotatedMethodCalled(ScanStart.class, position, scanInfo, moderator, scanBean, scanModel);
+		}
+		
+		public List<LevelRole> getLevelRoles() {
+			return levelRoles;
+		}
+
+		@Override
+		@LevelStart
+		public void levelStart(IPosition position, LevelInformation levelInfo, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
+			levelRoles.add(levelInfo.getLevelRole());
+			annotatedMethodCalled(LevelStart.class, position, levelInfo, scanInfo, moderator, scanBean, scanModel);
+		}
+
 	}
 	
 	private class InjectionMonitor extends AbstractScannable<Object> implements InjectionDevice {
@@ -204,6 +227,9 @@ public class AnnotationScanTest extends NexusTest {
 		checkInjectedContext(WriteComplete.class, true, IPosition.class);
 		checkInjectedContext(ScanEnd.class, true, IPosition.class);
 		checkInjectedContext(ScanFinally.class, true, IPosition.class);
+		
+		assertEquals(Arrays.asList(RUN, WRITE, RUN, WRITE, RUN, WRITE, RUN, WRITE),
+				     injectionDetector.getLevelRoles());
 	}
 	
 	private <A extends Annotation> void checkInjectedContext(Class<A> annotationClass, boolean includeCommonContext, Class<?>... expectedContextClasses) {

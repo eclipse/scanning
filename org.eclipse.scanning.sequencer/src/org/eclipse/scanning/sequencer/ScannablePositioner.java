@@ -22,6 +22,7 @@ import org.eclipse.scanning.api.device.AbstractRunnableDevice;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
+import org.eclipse.scanning.api.scan.LevelRole;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositioner;
 
@@ -154,6 +155,11 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 	
 	public void setMonitors(IScannable<?>... monitors) {
 		this.monitors = Arrays.asList(monitors);
+	}
+
+	@Override
+	protected LevelRole getLevelRole() {
+		return LevelRole.MOVE;
 	}
 
 }
