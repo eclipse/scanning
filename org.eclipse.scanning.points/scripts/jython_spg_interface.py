@@ -250,48 +250,23 @@ class JCompoundGenerator(JavaIteratorWrapper):
             else:
                 extracted_generators.append(generator)
         generators = extracted_generators
-        
-        self.index_locations = {}
-        self.dimension_names = ArrayList()
-        self.axes_ordering = []
-        for index, generator in enumerate(generators):
-            
-            scan_name = ArrayList()
-            for axis in generator.axes:
-                self.index_locations[axis] = index
-                self.axes_ordering.append(axis)
-                scan_name.add(axis)
-                
-            self.dimension_names.add(scan_name)
-        for excluder in excluders:
-            # axes connected by excluders are "unrolled",
-            # unless we're considering a pair of line generators covered by
-            # a single rectangular ROI
-            matched_axes = [a for a in self.axes_ordering if a in excluder.axes]
-            if len(matched_axes) == 0:
-                continue
-            if len(matched_axes) == 2:
-                matched_g1 = [g for g in generators if matched_axes[0] in g.axes][0]
-                matched_g2 = [g for g in generators if matched_axes[1] in g.axes][0]
-                if isinstance(matched_g1, LineGenerator) \
-                        and isinstance(matched_g2, LineGenerator) \
-                        and len(excluder.rois) == 1 \
-                        and isinstance(excluder.rois[0], RectangularROI) \
-                        and excluder.rois[0].angle == 0:
-                    continue
-            inner_axis = matched_axes[0]
-            inner_idx = self.axes_ordering.index(inner_axis)
-            for a in matched_axes[1:]:
-                self.index_locations[a] = inner_idx
-        
+
+        self.generator = CompoundGenerator(generators, excluders, mutators, duration=duration)
+        self.generator.prepare()
+
+        self.dimension_names = [reduce(lambda x,y:x+y, (g.axes for g in d.generators))
+                for d in self.generator.dimensions]
+        self.axes_ordering = sum(self.dimension_names, [])
+        self.index_locations = {axis:[axis in names for names in self.dimension_names].index(True)
+                for axis in self.axes_ordering}
+
+        logging.debug("Dimension names:")
+        logging.debug(self.dimension_names)
         logging.debug("Index Locations:")
         logging.debug(self.index_locations)
         logging.debug("Axes Ordering:")
         logging.debug(self.axes_ordering)
-        
-        self.generator = CompoundGenerator(generators, excluders, mutators, duration=duration)
-        self.generator.prepare()
-        
+
         logging.debug("CompoundGenerator:")
         logging.debug(self.generator.to_dict())
     

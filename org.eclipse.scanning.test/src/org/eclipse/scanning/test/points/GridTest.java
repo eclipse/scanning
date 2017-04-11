@@ -17,6 +17,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -370,11 +372,21 @@ public class GridTest extends GeneratorTest {
 
 		assertEquals(pointList.size(), 3156);
 //		GeneratorUtil.testGeneratorPoints(gen); // Rounding error in here causing test to fail
-		assertEquals(new Point(0, 1.0425, 0, 13.575), pointList.get(0));
-		assertEquals(new Point(1, 1.0575, 1, 13.575), pointList.get(1));
-		assertEquals(new Point(1000, 0.2625, 1000, 14.625), pointList.get(1000));
-		assertEquals(new Point(2000, 0.4125, 2000, 15.375), pointList.get(2000));
-		assertEquals(new Point(3100, 1.1325, 3100, 16.425), pointList.get(3100));
+		Point[] points = {new Point(0, 1.0425, 0, 13.575),
+				new Point(1, 1.0575, 1, 13.575),
+				new Point(1000, 0.2625, 1000, 14.625),
+				new Point(2000, 0.4125, 2000, 15.375),
+				new Point(3100, 1.1325, 3100, 16.425) };
+		for (Point p : points) {
+			ArrayList<Collection<String>> names = new ArrayList<Collection<String>>();;
+			names.add(Arrays.asList(new String[] {"x", "y"}));
+			p.setDimensionNames(names);
+		}
+		assertEquals(points[0], pointList.get(0));
+		assertEquals(points[1], pointList.get(1));
+		assertEquals(points[2], pointList.get(1000));
+		assertEquals(points[3], pointList.get(2000));
+		assertEquals(points[4], pointList.get(3100));
 	}
 
 	@Test

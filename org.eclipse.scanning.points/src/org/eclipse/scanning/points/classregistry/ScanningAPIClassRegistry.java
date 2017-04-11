@@ -31,7 +31,6 @@ import org.eclipse.scanning.api.event.queues.remote.QueueRequest;
 import org.eclipse.scanning.api.event.scan.AcquireRequest;
 import org.eclipse.scanning.api.event.scan.DeviceRequest;
 import org.eclipse.scanning.api.event.scan.DeviceValueMultiPosition;
-import org.eclipse.scanning.api.event.scan.NexusSlitsPosition;
 import org.eclipse.scanning.api.event.scan.PositionerRequest;
 import org.eclipse.scanning.api.event.scan.SampleData;
 import org.eclipse.scanning.api.event.scan.ScanBean;
@@ -111,7 +110,6 @@ public class ScanningAPIClassRegistry implements IClassRegistry {
 		registerClass(tmp, SampleData.class);
 		registerClass(tmp, ScanRequest.class);
 		registerClass(tmp, ScanMetadata.class);
-		registerClass(tmp, NexusSlitsPosition.class);
 		registerClass(tmp, DeviceValueMultiPosition.class);
 		
 		// points

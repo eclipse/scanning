@@ -41,7 +41,6 @@ import org.eclipse.scanning.api.annotation.ui.DeviceType;
 import org.eclipse.scanning.api.event.scan.DeviceRequest;
 import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.event.scan.DeviceValueMultiPosition;
-import org.eclipse.scanning.api.event.scan.NexusSlitsPosition;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.event.status.Status;
@@ -521,12 +520,9 @@ public class SerializationTest {
 
 	@Test @Ignore
 	public void testSerializeDeviceRequestWithHashMap() throws Exception {
-		Map<String, Double> value = new HashMap<String, Double>() {
-			private static final long serialVersionUID = 1L;
-		{
-			put("x_gap", 1.234);
-			put("y_gap", 5.678);
-		}};
+		Map<String, Double> value = new HashMap<String, Double>();
+		value.put("x_gap", 1.234);
+		value.put("y_gap", 5.678);
 		
 		final DeviceRequest sent = new DeviceRequest("devicerequesttest", DeviceType.SCANNABLE, null, value);
 		
@@ -539,26 +535,10 @@ public class SerializationTest {
 	}
 
 	@Test
-	public void testSerializeDeviceRequestWithNexusSlitsPosition() throws Exception {
-		NexusSlitsPosition value = new NexusSlitsPosition();
-		value.setX_gap(1.234);
-		value.setY_gap(5.678);
-		
-		final DeviceRequest sent = new DeviceRequest("devicerequesttest", DeviceType.SCANNABLE, null, value);
-		
-        String json = service.marshal(sent);
-        
-        DeviceRequest ret = service.unmarshal(json, DeviceRequest.class);
-        
-        if (!ret.equals(sent)) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
-        if (!ret.getDeviceValue().equals(sent.getDeviceValue())) throw new Exception("Cannot deserialize "+DeviceRequest.class.getName());
-	}
-
-	@Test
 	public void testSerializeDeviceRequestWithDeviceValueMultiPosition() throws Exception {
 		DeviceValueMultiPosition value = new DeviceValueMultiPosition();
-		value.setX_gap(1.234);
-		value.setY_gap(5.678);
+		value.put("x_gap", 1.234);
+		value.put("y_gap", 5.678);
 
 		final DeviceRequest sent = new DeviceRequest("devicerequesttest", DeviceType.SCANNABLE, null, value);
 		
