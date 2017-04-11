@@ -17,8 +17,11 @@ public class LevelInformation {
 
 	private int level;
 	private List<?> objects;
-	public LevelInformation(int level, List<?> objects) {
+	private LevelRole levelRole;
+	
+	public LevelInformation(LevelRole role, int level, List<?> objects) {
 		super();
+		this.levelRole = role;
 		this.level = level;
 		this.objects = objects;
 	}
@@ -39,8 +42,15 @@ public class LevelInformation {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + level;
+		result = prime * result + ((levelRole == null) ? 0 : levelRole.hashCode());
 		result = prime * result + ((objects == null) ? 0 : objects.hashCode());
 		return result;
+	}
+	public LevelRole getLevelRole() {
+		return levelRole;
+	}
+	public void setLevelRole(LevelRole levelRole) {
+		this.levelRole = levelRole;
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -52,6 +62,8 @@ public class LevelInformation {
 			return false;
 		LevelInformation other = (LevelInformation) obj;
 		if (level != other.level)
+			return false;
+		if (levelRole != other.levelRole)
 			return false;
 		if (objects == null) {
 			if (other.objects != null)

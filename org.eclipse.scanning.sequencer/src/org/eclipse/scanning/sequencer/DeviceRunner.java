@@ -20,6 +20,7 @@ import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableEventDevice;
 import org.eclipse.scanning.api.device.models.IDetectorModel;
 import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.scan.LevelRole;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
@@ -125,6 +126,11 @@ class DeviceRunner extends LevelRunner<IRunnableDevice<?>> {
 			return null; // Faster if we are not adding new information.
 		}
 
+	}
+
+	@Override
+	protected LevelRole getLevelRole() {
+		return LevelRole.RUN;
 	}
 
 }
