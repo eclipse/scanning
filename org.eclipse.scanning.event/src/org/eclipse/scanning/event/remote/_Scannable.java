@@ -48,7 +48,10 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 	private final ISubscriber<ILocationListener> subscriber;
 	
 	_Scannable(DeviceRequest req, URI uri, ISubscriber<ILocationListener> positionListener, IEventService eservice) throws EventException, InterruptedException {
-		super(req, 250, uri, eservice);
+		super(req, 
+			  Long.getLong("org.eclipse.scanning.event.remote.scannableTimeout", 250),
+			  uri,
+			  eservice);
 		this.subscriber = positionListener;
 	}
 

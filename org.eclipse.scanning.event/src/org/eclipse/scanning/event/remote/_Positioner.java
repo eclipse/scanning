@@ -14,6 +14,7 @@ package org.eclipse.scanning.event.remote;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.event.EventConstants;
@@ -48,7 +49,9 @@ class _Positioner extends AbstractRemoteService implements IPositioner {
 	
 	public void init()  throws EventException {
 		requester = eservice.createRequestor(uri, EventConstants.POSITIONER_REQUEST_TOPIC, EventConstants.POSITIONER_RESPONSE_TOPIC);
-	    requester.setTimeout(RemoteServiceFactory.getTime(), RemoteServiceFactory.getTimeUnit()); // Useful for debugging testing 
+		long timeout = Long.getLong("org.eclipse.scanning.event.remote.positionerTimeout", 100); 
+	    logger.info("Setting "+getClass().getSimpleName()+" to " + timeout + " ms");
+		requester.setTimeout(timeout, TimeUnit.MILLISECONDS); // Useful for debugging testing 
 		request   = new PositionerRequest();
 	}
 

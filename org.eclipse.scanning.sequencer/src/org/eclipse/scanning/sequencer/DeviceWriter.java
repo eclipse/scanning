@@ -18,6 +18,7 @@ import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableEventDevice;
 import org.eclipse.scanning.api.device.IWritableDetector;
 import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.scan.LevelRole;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
@@ -81,6 +82,11 @@ final class DeviceWriter extends DeviceRunner {
 			}
 		}
 
+	}
+
+	@Override
+	protected LevelRole getLevelRole() {
+		return LevelRole.WRITE;
 	}
 
 }

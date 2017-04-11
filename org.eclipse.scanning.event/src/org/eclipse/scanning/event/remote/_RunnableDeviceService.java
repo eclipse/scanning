@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.device.IRunnableDevice;
@@ -46,7 +47,9 @@ public class _RunnableDeviceService extends AbstractRemoteService implements IRu
 	
 	public void init() throws EventException {
 		requester = eservice.createRequestor(uri, IEventService.DEVICE_REQUEST_TOPIC, IEventService.DEVICE_RESPONSE_TOPIC);
-		requester.setResponseConfiguration(new ResponseConfiguration(ResponseType.ONE, 500, RemoteServiceFactory.getTimeUnit()));
+		long timeout = Long.getLong("org.eclipse.scanning.event.remote.runnableDeviceServiceTimeout", 500); 
+	    logger.info("Setting "+getClass().getSimpleName()+" to " + timeout + " ms");
+		requester.setResponseConfiguration(new ResponseConfiguration(ResponseType.ONE, timeout, TimeUnit.MILLISECONDS));
 		runnables = new HashMap<>();
 	}
 	

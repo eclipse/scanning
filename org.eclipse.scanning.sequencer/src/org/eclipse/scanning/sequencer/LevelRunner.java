@@ -34,6 +34,7 @@ import org.eclipse.scanning.api.annotation.scan.LevelStart;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
 import org.eclipse.scanning.api.scan.LevelInformation;
+import org.eclipse.scanning.api.scan.LevelRole;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
 import org.eclipse.scanning.api.scan.event.PositionDelegate;
@@ -142,7 +143,7 @@ abstract class LevelRunner<L extends ILevel> {
 					tasks.add(c);
 				}
 				
-				managerMap.get(level).invoke(LevelStart.class, loc, new LevelInformation(level, lobjects));
+				managerMap.get(level).invoke(LevelStart.class, loc, new LevelInformation(getLevelRole(), level, lobjects));
 				if (!it.hasNext() && !block) { 
 					// The last one and we are non-blocking
 					for (Callable<IPosition> callable : tasks) eservice.submit(callable);
@@ -157,7 +158,7 @@ abstract class LevelRunner<L extends ILevel> {
 					}
 				    pDelegate.fireLevelPerformed(level, lobjects, getPosition(loc, pos));
 				}
-				managerMap.get(level).invoke(LevelEnd.class, loc, new LevelInformation(level, lobjects));
+				managerMap.get(level).invoke(LevelEnd.class, loc, new LevelInformation(getLevelRole(), level, lobjects));
 			}
 			
 			pDelegate.firePositionPerformed(finalLevel, loc);
@@ -176,6 +177,8 @@ abstract class LevelRunner<L extends ILevel> {
 		
 		return true;
 	}
+
+	protected abstract LevelRole getLevelRole();
 
 	protected String toString(List<L> lobjects) {
 		final  StringBuilder buf = new StringBuilder("[");
@@ -380,6 +383,10 @@ abstract class LevelRunner<L extends ILevel> {
 			protected Callable<IPosition> create(T levelObject, IPosition position) throws ScanningException {
 				return null;
 			}
+			@Override
+			protected LevelRole getLevelRole() {
+				return null;
+			}
 			
 		};
 	}
@@ -412,4 +419,5 @@ abstract class LevelRunner<L extends ILevel> {
 		this.levelCachingAllowed = levelCachingAllowed;
 	}
 
+	
 }

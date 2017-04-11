@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.annotation.ui.DeviceType;
@@ -39,7 +40,9 @@ class _ScannableDeviceService extends AbstractRemoteService implements IScannabl
 	
 	public void init() throws EventException {
 		requester = eservice.createRequestor(uri, IEventService.DEVICE_REQUEST_TOPIC, IEventService.DEVICE_RESPONSE_TOPIC);
-	    requester.setTimeout(RemoteServiceFactory.getTime(), RemoteServiceFactory.getTimeUnit()); // Useful for debugging testing 
+		long timeout = Long.getLong("org.eclipse.scanning.event.remote.scannableServiceTimeout", 100); 
+	    logger.info("Setting "+getClass().getSimpleName()+" to " + timeout + " ms");
+	    requester.setTimeout(timeout, TimeUnit.MILLISECONDS); 
 	    scannables = new HashMap<>();
 	    
 		subscriber = eservice.createSubscriber(uri, EventConstants.POSITION_TOPIC);
