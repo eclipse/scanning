@@ -16,14 +16,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.annotation.scan.AnnotationManager;
 import org.eclipse.scanning.api.annotation.scan.PostConfigure;
 import org.eclipse.scanning.api.annotation.scan.PreConfigure;
-import org.eclipse.scanning.api.device.AbstractRunnableDevice;
 import org.eclipse.scanning.api.device.IDeviceController;
 import org.eclipse.scanning.api.device.IPausableDevice;
 import org.eclipse.scanning.api.device.IRunnableDevice;
@@ -102,7 +100,7 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 	public void pause() throws EventException {
 		try {
 			controller.pause(getClass().getName(), null);
-		} catch (ScanningException e) {
+		} catch (ScanningException | InterruptedException e) {
 			throw new EventException(e);
 		}
 	}
@@ -111,7 +109,7 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 	public void resume() throws EventException  {
 		try {
 			controller.resume(getClass().getName());
-		} catch (ScanningException e) {
+		} catch (ScanningException | InterruptedException e) {
 			throw new EventException(e);
 		}
 	}
@@ -122,7 +120,7 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 		if (bean.getStatus()==Status.COMPLETE) return; // Nothing to terminate.
 		try {
 			if (controller!=null) controller.abort(getClass().getName());
-		} catch (ScanningException e) {
+		} catch (ScanningException  | InterruptedException e) {
 			throw new EventException(e);
 		}
 	}

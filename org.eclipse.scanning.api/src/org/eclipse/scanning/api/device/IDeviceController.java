@@ -53,13 +53,13 @@ public interface IDeviceController {
 	 * Make a pause
 	 * @param id
 	 */
-	void pause(String id, DeviceWatchdogModel model) throws ScanningException;
+	void pause(String id, DeviceWatchdogModel model) throws ScanningException, InterruptedException;
 	
 	/**
 	 * Make a resume
 	 * @param id
 	 */
-	void resume(String id) throws ScanningException;
+	void resume(String id) throws ScanningException, InterruptedException;
 	
 	/**
 	 * Make a seek
@@ -71,7 +71,7 @@ public interface IDeviceController {
 	 * Make an abort
 	 * @param id
 	 */
-	void abort(String id) throws ScanningException;
+	void abort(String id) throws ScanningException, InterruptedException;
 
 	/**
 	 * 

@@ -492,7 +492,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	public void reset() throws ScanningException {
 		
 		if (positioner instanceof LevelRunner) {
-			((LevelRunner)positioner).reset();
+			((LevelRunner<?>)positioner).reset();
 		}
 		runners.reset();
 		writers.reset();
@@ -533,149 +533,147 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
     	}
     	return true;
 	}
-
-	// TODO Abort can be interpreted different ways. As 'skip' for short exposure experiments
-	// it finishes the current frame, writes file and stops motors. For long exposure it might
-	// need to stop the detector exposing further.
-	
-	// TODO Abort can stop everything, including detectors motors and file writing immediately.
-	// Should the model define the behaviour of abort for a given detector? This would allow
-	// abort to be configurable for different detectors.
 	
 	@Override
-	public void abort() throws ScanningException {
-		
-		try {
-			lock.lockInterruptibly();
-		} catch (Exception ne) {
-			throw new ScanningException(ne);
-		}
+	public void abort() throws ScanningException, InterruptedException {
+		work(()-> abortInternal(), null, "abort", true, false);
+	}
+	private void abortInternal()  throws ScanningException, InterruptedException{
 		
 		setDeviceState(DeviceState.ABORTING);
-		try {
-			awaitPaused = true;
-			
-			positioner.abort();
-			writers.abort();
-			runners.abort();
-			
-			if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
-				device.abort();
-			}
-
-			setDeviceState(DeviceState.ABORTED);
-    		manager.invoke(ScanAbort.class);
-			RunnableDeviceServiceImpl.setCurrentScanningDevice(null);
-			
-		} catch (ScanningException s) {
-			throw s;
-		} catch (Exception ne) {
-			throw new ScanningException(ne);
-		} finally {
-			lock.unlock();
+		positioner.abort();
+		writers.abort();
+		runners.abort();
+		
+		if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
+			device.abort();
 		}
+
+		setDeviceState(DeviceState.ABORTED);
+		try {
+			manager.invoke(ScanAbort.class);
+		} catch (ScanningException e) {
+			throw e;
+		} catch (Exception other) {
+			throw new ScanningException(other);
+		}
+		RunnableDeviceServiceImpl.setCurrentScanningDevice(null);
 	}
 
 	@Override
-	public void pause() throws ScanningException {
+	public void pause() throws ScanningException, InterruptedException {
 		
-		try {
-			lock.lockInterruptibly();
-			if (getDeviceState() != DeviceState.RUNNING) {
-				throw new ScanningException(this, getName()+" is not running and cannot be paused! The state is "+getDeviceState());
-			}
-		} catch (ScanningException sne) {
-			lock.unlock();
-			throw sne;
-		} catch (Exception ne) {
-			throw new ScanningException(ne);
-		}
+		work(()-> pauseInternal(), DeviceState.RUNNING, "pause", true, false);
+	}
+	private void pauseInternal() throws ScanningException, InterruptedException {
 		
 		getBean().setPreviousStatus(getBean().getStatus());
 		getBean().setStatus(Status.PAUSED);
 		setDeviceState(DeviceState.SEEKING);
-		try {
-			awaitPaused = true;
-			if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
-				DeviceState currentState = device.getDeviceState();
-				if (currentState.isRunning()) {
-					if (device instanceof IPausableDevice) {
-						((IPausableDevice)device).pause();
-					}
-				} else {
-					logger.info("Device " + device.getName() + " wasn't running to pause. Was + " + currentState);
+		if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
+			DeviceState currentState = device.getDeviceState();
+			if (currentState.isRunning()) {
+				if (device instanceof IPausableDevice) {
+					((IPausableDevice<?>)device).pause();
 				}
+			} else {
+				logger.info("Device " + device.getName() + " wasn't running to pause. Was + " + currentState);
 			}
-			setDeviceState(DeviceState.PAUSED);
-			
-		} catch (ScanningException s) {
-			throw s;
-		} catch (Exception ne) {
-			throw new ScanningException(ne);
-		} finally {
-			lock.unlock();
 		}
+		setDeviceState(DeviceState.PAUSED);
 	}
 	
 	@Override
-	public void seek(int stepNumber) throws ScanningException, InterruptedException {
+	public void seek(final int stepNumber) throws ScanningException, InterruptedException {
 		// This is the values of all motors at this global (including malcolm) scan
 		// position. Therefore we do not need a subscan moderator but can run the iterator
 		// to the point
+		work(()-> seekInternal(stepNumber), DeviceState.PAUSED, "seek", true, false);
+	}
+	private void seekInternal(int stepNumber) throws ScanningException, InterruptedException {
+		
 		if (stepNumber<0) throw new ScanningException("Seek position is invalid "+stepNumber);
 		if (stepNumber>location.getTotalSize())  throw new ScanningException("Seek position is invalid "+stepNumber);
-
-		// We just changed the location from where we run the scan from and require a new location.
 		this.positionIterator = location.createPositionIterator();
 		IPosition pos = location.seek(stepNumber, positionIterator);
 		positioner.setPosition(pos);
 		if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
-			if (device instanceof IPausableDevice) ((IPausableDevice)device).seek(stepNumber);
+			if (device instanceof IPausableDevice) ((IPausableDevice<?>)device).seek(stepNumber);
 		}
 	}
 
 	@Override
-	public void resume() throws ScanningException {
-		
-		try {
-			lock.lockInterruptibly();
-			DeviceState currentDeviceState = getDeviceState();
-			if (currentDeviceState == DeviceState.RUNNING) {
-				logger.warn("An attempt was made to resume a running device: " + getName());
-				return;
-			} else if (currentDeviceState != DeviceState.PAUSED) {
-				throw new ScanningException(this, getName()+" is not paused and cannot be resumed! State was " + currentDeviceState);
+	public void resume() throws ScanningException, InterruptedException {
+		work(()-> resumeInternal(), DeviceState.PAUSED, "resume", false, true);
+	}
+	private void resumeInternal() throws ScanningException, InterruptedException {
+
+		if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
+			DeviceState currentState = device.getDeviceState();
+			if (currentState == DeviceState.PAUSED) {
+				if (device instanceof IPausableDevice) {
+					((IPausableDevice<?>)device).resume();
+				}
+			} else {
+				logger.info("Device " + device.getName() + " wasn't paused to resume. Was + " + currentState);
 			}
-		} catch (ScanningException sne) {
+		}
+		if (location.isInnerScan()) {
+			getBean().setStatus(Status.RESUMED);
+			setDeviceState(DeviceState.RUNNING);
+		}
+	}
+	
+	@FunctionalInterface
+	private interface IWork {
+		void doWork() throws ScanningException, InterruptedException;
+	}
+	
+	/**
+	 * Does some pause lock safe work. This is designed to make the 
+	 * device thread safe for running/pausing/aborting/seeking etc.
+	 * That is important because we expose the device to a web service
+	 * which could allow multiple requests to come in simultaneously.
+	 * This design is intentionally overkill for the scenario in which
+	 * scanning is used because we want over-design as scanning is reused
+	 * in unpredictable scenarios.
+	 * 
+	 * @param work
+	 * @param required
+	 * @param actionName
+	 * @param pauseFlag
+	 * @param signal
+	 * @throws ScanningException
+	 * @throws InterruptedException
+	 */
+	private void work(IWork work, DeviceState required, String actionName, boolean pauseFlag, boolean signal) throws ScanningException, InterruptedException {
+		try {
+			tryLock(required, actionName);
+			awaitPaused = pauseFlag;
+			work.doWork();
+			if (signal) paused.signalAll();
+		} finally {
 			lock.unlock();
+		}
+	}
+
+	/**
+	 * 
+	 * @param required - if null then just the lock is performed
+	 * @param actionName
+	 * @throws ScanningException
+	 */
+	private void tryLock(DeviceState required, String actionName) throws ScanningException, InterruptedException {
+		try {
+			lock.lockInterruptibly(); // We want to lock before checking state or it may change...
+			DeviceState currentDeviceState = getDeviceState();
+			if (required!=null && currentDeviceState != required) {
+				throw new ScanningException(this, getName()+" cannot complete action '"+actionName+"'! State was " + currentDeviceState);
+			}
+		} catch (ScanningException | InterruptedException sne) {
 			throw sne;
 		} catch (Exception ne) {
 			throw new ScanningException(ne);
-		}
-		
-		try {
-			awaitPaused = false;
-			if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
-				DeviceState currentState = device.getDeviceState();
-				if (currentState == DeviceState.PAUSED) {
-					if (device instanceof IPausableDevice) {
-						((IPausableDevice)device).resume();
-					}
-				} else {
-					logger.info("Device " + device.getName() + " wasn't paused to resume. Was + " + currentState);
-				}
-			}
-			paused.signalAll();
-			// Notify of running is in checkPaused() but if it's in an inner scan, this wont be called so set states here
-			if (location.isInnerScan()) {
-				getBean().setStatus(Status.RESUMED);
-        		setDeviceState(DeviceState.RUNNING);
-			}
-			
-		} catch (ScanningException s) {
-			throw s;
-		} finally {
-			lock.unlock();
 		}
 	}
 

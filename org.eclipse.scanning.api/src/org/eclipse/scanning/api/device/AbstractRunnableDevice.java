@@ -410,7 +410,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 
 
 	@Override
-	public void abort() throws ScanningException {
+	public void abort() throws ScanningException, InterruptedException {
 
 	}
 
@@ -420,7 +420,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	}
 
 	@Override
-	public void pause() throws ScanningException {
+	public void pause() throws ScanningException, InterruptedException {
 
 	}
 	
@@ -431,7 +431,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 
 
 	@Override
-	public void resume() throws ScanningException {
+	public void resume() throws ScanningException, InterruptedException {
 
 	}
 
