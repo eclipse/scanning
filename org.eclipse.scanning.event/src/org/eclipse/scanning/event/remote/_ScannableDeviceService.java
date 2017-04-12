@@ -41,7 +41,7 @@ class _ScannableDeviceService extends AbstractRemoteService implements IScannabl
 	public void init() throws EventException {
 		requester = eservice.createRequestor(uri, IEventService.DEVICE_REQUEST_TOPIC, IEventService.DEVICE_RESPONSE_TOPIC);
 		long timeout = Long.getLong("org.eclipse.scanning.event.remote.scannableServiceTimeout", 100); 
-	    logger.info("Setting  timeout " + timeout + " ms");
+	    logger.info("Setting timeout " + timeout + " ms");
 	    requester.setTimeout(timeout, TimeUnit.MILLISECONDS); 
 	    scannables = new HashMap<>();
 	    

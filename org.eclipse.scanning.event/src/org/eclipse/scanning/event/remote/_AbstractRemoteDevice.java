@@ -39,7 +39,7 @@ abstract class _AbstractRemoteDevice<M> extends AbstractRemoteService {
 	@SuppressWarnings("unchecked")
 	_AbstractRemoteDevice(DeviceRequest req, URI uri, IEventService eservice) throws EventException, InterruptedException {
 		this(uri, eservice);
-	    logger.info("Setting  timeout " + RemoteServiceFactory.getTime() + " "+RemoteServiceFactory.getTimeUnit());
+	    logger.info("Setting timeout " + RemoteServiceFactory.getTime() + " "+RemoteServiceFactory.getTimeUnit());
 	    requester.setTimeout(RemoteServiceFactory.getTime(), RemoteServiceFactory.getTimeUnit()); // Useful for debugging testing 
 	    connect(req);
 	}

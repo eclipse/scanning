@@ -67,7 +67,7 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 				IQueueService.QUEUE_RESPONSE_TOPIC);
 		
 		long timeout = Long.getLong("org.eclipse.scanning.event.remote.queueControllerServiceTimeout", 5000); 
-	    logger.info("Setting  timeout " + timeout + " ms");
+	    logger.info("Setting timeout " + timeout + " ms");
 		ResponseConfiguration conf = new ResponseConfiguration( ResponseType.ONE, 
 																timeout, 
 																TimeUnit.MILLISECONDS);
