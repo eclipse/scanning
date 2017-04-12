@@ -68,7 +68,7 @@ class DeviceController implements IDeviceController {
 	 * Only pauses the delegate if is running, otherwise returns
 	 * silently.
 	 */
-	public void pause(String id, DeviceWatchdogModel model) throws ScanningException {
+	public void pause(String id, DeviceWatchdogModel model) throws ScanningException, InterruptedException {
 		
 		states.put(id, DeviceState.PAUSED);
 		models.put(id, model); // May be null
@@ -82,12 +82,13 @@ class DeviceController implements IDeviceController {
 		// If any of the others think it should be paused, we do not resume
 		Map<String, DeviceState> copy = new HashMap<>(states);
 		copy.put(id, DeviceState.RUNNING);
+		if (device.getDeviceState()!=DeviceState.PAUSED) return; // Cannot seek it.
 		if (!canResume(copy)) return;
 
 		device.seek(stepNumber);
 	}
 
-	public void resume(String id) throws ScanningException {
+	public void resume(String id) throws ScanningException, InterruptedException {
 		
 		states.put(id, DeviceState.RUNNING);
 		if (device.getDeviceState()!=DeviceState.PAUSED) return; // Cannot resume it.
@@ -119,7 +120,7 @@ class DeviceController implements IDeviceController {
 		return !states.values().stream().filter(state -> state==DeviceState.PAUSED).findAny().isPresent();
 	}
 
-	public void abort(String id) throws ScanningException {
+	public void abort(String id) throws ScanningException, InterruptedException {
 		logger.debug("Controller aborting on "+getName()+" because of id "+id);
 		device.abort();
 	}

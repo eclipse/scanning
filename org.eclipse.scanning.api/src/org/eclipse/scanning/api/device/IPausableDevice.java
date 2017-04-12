@@ -21,7 +21,7 @@ public interface IPausableDevice<T> extends IRunnableDevice<T> {
 	 * When paused the same thread must call resume() or abort() which has paused or an
 	 * IllegalMonitorState Exception will be thrown.
 	 */
-	void pause() throws ScanningException;
+	void pause() throws ScanningException, InterruptedException;
 	
 	/**
 	 * Seek to/from a point number (absolute) in the scan.
@@ -36,7 +36,7 @@ public interface IPausableDevice<T> extends IRunnableDevice<T> {
 	 * 
 	 * IllegalMonitorState Exception will be thrown.
 	 */
-	void resume() throws ScanningException;
+	void resume() throws ScanningException, InterruptedException;
 	
 
 }

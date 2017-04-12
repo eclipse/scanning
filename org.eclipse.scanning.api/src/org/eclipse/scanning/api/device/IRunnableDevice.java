@@ -158,7 +158,7 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 	 * 
 	 * @throws ScanningException
 	 */
-	public void abort() throws ScanningException;
+	public void abort() throws ScanningException, InterruptedException;
 	
 	/**
 	 * Call to disable the device, stopping all activity.
