@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Matthew Gerring
  *
- * @param <T> The service
  */
 abstract class AbstractRemoteService implements IDisconnectable, Closeable {
 
