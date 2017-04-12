@@ -11,13 +11,11 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.GeneratorException;
-import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.ArrayModel;
 
 public class ArrayGenerator extends AbstractGenerator<ArrayModel> {
@@ -44,8 +42,13 @@ public class ArrayGenerator extends AbstractGenerator<ArrayModel> {
 	}
 	
 	@Override
-	protected Iterator<IPosition> iteratorFromValidModel() {
+	protected ScanPointIterator iteratorFromValidModel() {
 		return new ArrayIterator(this);
+	}
+
+	@Override
+	public int[] getShape() throws GeneratorException {
+		return new int[] { size() };
 	}
 
 }

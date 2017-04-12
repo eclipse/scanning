@@ -29,6 +29,7 @@ import org.eclipse.scanning.api.points.IMutator;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyDictionary;
@@ -51,7 +52,6 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 	private IPosition             pos;
 	private Iterator<? extends IPosition>[] iterators;
 	
-	public SerializableIterator<IPosition> pyIterator;
 	private IPosition currentPoint;
 	private int index = -1;
 
@@ -67,14 +67,13 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 			}
 		}
 		
-		JythonObjectFactory compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
+		JythonObjectFactory<ScanPointIterator> compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
 		
         Object[] excluders = getExcluders(gen.getModel().getRegions());
         Object[] mutators = getMutators(gen.getModel().getMutators());
         double duration = gen.getModel().getDuration();
         
-        @SuppressWarnings("unchecked")
-		SerializableIterator<IPosition> iterator = (SerializableIterator<IPosition>)  compoundGeneratorFactory.createObject(
+        ScanPointIterator iterator = compoundGeneratorFactory.createObject(
 				iterators, excluders, mutators, duration);
         
         index = -1;
@@ -90,9 +89,10 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 		return pos;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
     public PyDictionary toDict() {
-		return pyIterator.toDict();
+		return ((PySerializable) pyIterator).toDict();
     }
     
 	@Override
@@ -153,10 +153,6 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
         throw new UnsupportedOperationException("remove");
     }
 
-	public int size() {
-		return pyIterator.size();
-	}
-	
 	/**
 	 * Creates an array of python objects representing the mutators
 	 * @param mutators

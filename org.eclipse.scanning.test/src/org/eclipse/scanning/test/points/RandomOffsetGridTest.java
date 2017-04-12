@@ -12,16 +12,14 @@
 
 package org.eclipse.scanning.test.points;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
-import java.util.List;
 
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
-import org.eclipse.scanning.api.points.Point;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.GridModel;
 import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
@@ -63,6 +61,10 @@ public class RandomOffsetGridTest {
 
 		IPointGenerator<RandomOffsetGridModel> r = service.createGenerator(rm);
 		IPointGenerator<GridModel> g = service.createGenerator(gm);
+		final int expectedSize = 25;
+		assertEquals(expectedSize, g.size());
+		assertEquals(2, g.getRank());
+		assertArrayEquals(new int[] { 5, 5 }, g.getShape());
 
 		for (Iterator<IPosition> it1 = r.iterator(), it2 = g.iterator(); it1.hasNext() && it2.hasNext();) {
 			IPosition t1 = it1.next();

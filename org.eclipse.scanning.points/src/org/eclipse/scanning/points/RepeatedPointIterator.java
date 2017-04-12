@@ -11,13 +11,12 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Scalar;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
 
-public class RepeatedPointIterator implements Iterator<IPosition> {
+public class RepeatedPointIterator implements ScanPointIterator {
 
 	private RepeatedPointModel   model;
 	private int count = 0;
@@ -65,5 +64,20 @@ public class RepeatedPointIterator implements Iterator<IPosition> {
 	public void remove() {
         throw new UnsupportedOperationException("remove");
     }
+
+	@Override
+	public int size() {
+		return count;
+	}
+
+	@Override
+	public int[] getShape() {
+		return new int[] { count };
+	}
+
+	@Override
+	public int getRank() {
+		return 1;
+	}
 
 }

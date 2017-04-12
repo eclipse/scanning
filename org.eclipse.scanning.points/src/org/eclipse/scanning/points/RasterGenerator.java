@@ -11,11 +11,9 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
-import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.RasterModel;
 
 class RasterGenerator extends AbstractGenerator<RasterModel> {
@@ -42,7 +40,7 @@ class RasterGenerator extends AbstractGenerator<RasterModel> {
 			throw new ModelValidationException("Model slow axis step is directed so as to produce no points!", model, "slowAxisStep");
 	}
 
-	public Iterator<IPosition> iteratorFromValidModel() {
+	public ScanPointIterator iteratorFromValidModel() {
 		return new GridIterator(this);
 	}
 

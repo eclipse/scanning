@@ -11,10 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.ModelValidationException;
-import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 
 public class RandomOffsetGridGenerator extends GridGenerator {
@@ -34,7 +32,7 @@ public class RandomOffsetGridGenerator extends GridGenerator {
 	}
 
 	@Override
-	public Iterator<IPosition> iteratorFromValidModel() {
+	public ScanPointIterator iteratorFromValidModel() {
 		return new GridIterator(this);
 	}
 

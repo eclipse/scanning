@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.points;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -40,9 +41,14 @@ public class SpiralTest extends GeneratorTest {
 
 		// Get the point list
 		IPointGenerator<SpiralModel> generator = service.createGenerator(model);
-	    List<IPosition> pointList = generator.createPoints();
 
-		assertEquals(20, pointList.size());
+		final int expectedSize = 20;
+		assertEquals(expectedSize, generator.size());
+		assertEquals(1, generator.getRank());
+		assertArrayEquals(new int[] { expectedSize }, generator.getShape());
+				
+		List<IPosition> pointList = generator.createPoints();
+		assertEquals(expectedSize, pointList.size());
 
 		// Test a few points
 		// TODO check x and y index values - currently these are not tested by AbstractPosition.equals()

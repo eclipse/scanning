@@ -11,19 +11,23 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.points.AbstractGenerator;
-import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.GeneratorException;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 
 public class TestGenerator extends AbstractGenerator<TestGeneratorModel> {
 
 	@Override
-	protected Iterator<IPosition> iteratorFromValidModel() {
-		throw new IllegalArgumentException("Not designed to be run, just to test extension point for when people want to load by extension!");
+	protected ScanPointIterator iteratorFromValidModel() {
+		throw new UnsupportedOperationException("Not designed to be run, just to test extension point for when people want to load by extension!");
 	}
 
 	@Override
 	protected void validateModel() { }
+
+	@Override
+	public int[] getShape() throws GeneratorException {
+		throw new UnsupportedOperationException("Not designed to be run, just to test extension point for when people want to load by extension!");
+	}
 
 }

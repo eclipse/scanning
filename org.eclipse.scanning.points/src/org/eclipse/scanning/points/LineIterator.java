@@ -12,11 +12,11 @@
 package org.eclipse.scanning.points;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
 import org.eclipse.scanning.api.points.Scalar;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.BoundingLine;
 import org.eclipse.scanning.api.points.models.CollatedStepModel;
 import org.eclipse.scanning.api.points.models.OneDEqualSpacingModel;
@@ -34,15 +34,14 @@ class LineIterator extends AbstractScanPointIterator {
 		this.model = gen.getModel();
 		value = model.getStart() - model.getStep();
 
-        JythonObjectFactory lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
+        JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
         
         String name = model.getName();
         double start = model.getStart();
         double stop = model.getStop();
         int numPoints = (int) ((stop - start) / model.getStep() + 1);
         
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>)  lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
+		ScanPointIterator iterator = lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
 		pyIterator = iterator;
 	}
 	
@@ -50,7 +49,7 @@ class LineIterator extends AbstractScanPointIterator {
 		OneDEqualSpacingModel model= gen.getModel();
 		BoundingLine line = model.getBoundingLine();
 
-        JythonObjectFactory lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator2DFactory();
+		JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator2DFactory();
 		
 		int numPoints = model.getPoints();
 		double step = line.getLength() / numPoints;
@@ -61,9 +60,8 @@ class LineIterator extends AbstractScanPointIterator {
 		PyList units = new PyList(Arrays.asList(new String[] {"mm", "mm"}));
 		double[] start = {line.getxStart() + xStep/2, line.getyStart() + yStep/2};
 		double[] stop = {line.getxStart() + xStep * (numPoints - 0.5), line.getyStart() + yStep * (numPoints - 0.5)};
-        
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
+
+		ScanPointIterator iterator = lineGeneratorFactory.createObject(
 				names, units, start, stop, numPoints);
 		pyIterator = iterator;
 	}
@@ -72,7 +70,7 @@ class LineIterator extends AbstractScanPointIterator {
 		OneDStepModel model= gen.getModel();
 		BoundingLine line = model.getBoundingLine();
 
-        JythonObjectFactory lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator2DFactory();
+        JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator2DFactory();
         
 		int numPoints = (int) Math.floor(line.getLength() / model.getStep()) + 1;
         double xStep = model.getStep() * Math.cos(line.getAngle());
@@ -83,8 +81,7 @@ class LineIterator extends AbstractScanPointIterator {
 		double[] start = {line.getxStart(), line.getyStart()};
         double[] stop = {line.getxStart() + xStep * numPoints, line.getyStart() + yStep * numPoints};
         
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>)  lineGeneratorFactory.createObject(
+		ScanPointIterator iterator = lineGeneratorFactory.createObject(
 				names, units, start, stop, numPoints);
 		pyIterator = iterator;
 	}

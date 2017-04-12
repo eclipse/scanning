@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.points;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Iterator;
@@ -52,10 +53,15 @@ public class RasterTest {
 
 		// Get the point list
 		IPointGenerator<RasterModel> gen = service.createGenerator(model, boundingRectangle);
-		List<IPosition> pointList = gen.createPoints();
-
+		
+		final int expectedSize = 16;
+		assertEquals(expectedSize, gen.size());
+		assertEquals(2, gen.getRank());
+		assertArrayEquals(new int[] { 4, 4 }, gen.getShape());
+				
 		// Check correct number of points
-		assertEquals(16, pointList.size());
+		List<IPosition> pointList = gen.createPoints();
+		assertEquals(expectedSize, pointList.size());
 
 		// Check some random points are correct
 		assertEquals(0.0, pointList.get(0).getValue("X"), 1e-8);
@@ -86,6 +92,8 @@ public class RasterTest {
 		model.setFastAxisStep(1);
 		model.setSlowAxisStep(1);
 		model.setBoundingBox(box);
+		
+		
 
 		IPointGenerator<RasterModel> gen = service.createGenerator(model);
 		List<IPosition> pointList = gen.createPoints();
@@ -190,7 +198,6 @@ public class RasterTest {
 
 	// Note this is a bit of a integration test not a strict unit test
 	@Test
-	@Ignore("Reinstate when ScanEstimator fixed to get shape from generator")
 	public void testFillingACircle() throws Exception {
 		double xCentre = 0;
 		double yCentre = 0;
@@ -206,17 +213,21 @@ public class RasterTest {
 
 		// Get the point list
 		IPointGenerator<RasterModel> gen = service.createGenerator(model, roi);
+		final int expectedSize = 5;
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
+		
+		// Check the length of the points list
 		List<IPosition> pointList = gen.createPoints();
-
-		// Check the length of the lists are equal
-		assertEquals(5, pointList.size());
+		assertEquals(expectedSize, pointList.size());
 
 		// Check the points are correct and the order is maintained
-        assertEquals(new Point(0, 0.0, 0, -1.0), pointList.get(0));
-        assertEquals(new Point(1, -1.0, 1, 0.0), pointList.get(1));
-        assertEquals(new Point(2, 0.0, 2, 0.0), pointList.get(2));
-        assertEquals(new Point(3, 1.0, 3, 0.0), pointList.get(3));
-        assertEquals(new Point(4, 0.0, 4, 1.0), pointList.get(4));
+        assertEquals(new Point(0, 0.0, 0, -1.0, false), pointList.get(0));
+        assertEquals(new Point(1, -1.0, 1, 0.0, false), pointList.get(1));
+        assertEquals(new Point(2, 0.0, 2, 0.0, false), pointList.get(2));
+        assertEquals(new Point(3, 1.0, 3, 0.0, false), pointList.get(3));
+        assertEquals(new Point(4, 0.0, 4, 1.0, false), pointList.get(4));
 		
         GeneratorUtil.testGeneratorPoints(gen, 5);
 	}
@@ -225,17 +236,22 @@ public class RasterTest {
 	@Test
 	public void testNestedNeXus() throws Exception {
 		
-		int[] size = {8,5};
+		int[] sizes = {8,5};
 		
 		// Create scan points for a grid and make a generator
 		RasterModel rmodel = new RasterModel("x", "y");
 		rmodel.setFastAxisName("xNex");
-		rmodel.setFastAxisStep(3d/size[1]);
+		rmodel.setFastAxisStep(3d/sizes[1]);
 		rmodel.setSlowAxisName("yNex");
-		rmodel.setSlowAxisStep(3d/size[0]);
+		rmodel.setSlowAxisStep(3d/sizes[0]);
 		rmodel.setBoundingBox(new BoundingBox(0,0,3,3));
 		
+		final int[] expectedShape = new int[] { sizes[0] + 1, sizes[1] + 1 };
 		IPointGenerator<?> gen = service.createGenerator(rmodel);
+		final int expectedSize = expectedShape[0] * expectedShape[1];
+		assertEquals(expectedSize, gen.size());
+		assertEquals(sizes.length, gen.getRank());
+		assertArrayEquals(expectedShape, gen.getShape());
     
 		IPosition first = gen.iterator().next();
 		assertEquals(0d, first.get("xNex"));
@@ -247,7 +263,6 @@ public class RasterTest {
 		
 		assertEquals(3d, last.get("xNex"));
 		assertEquals(3d, last.get("yNex"));
-		
 	}
 
 	@Test
@@ -263,9 +278,13 @@ public class RasterTest {
 
 		// Get the point list
 		IPointGenerator<RasterModel> gen = service.createGenerator(model, roi);
+		final int expectedSize = 12;
+		assertEquals(expectedSize , gen.size());
+		assertEquals(2, gen.getRank());
+		assertArrayEquals(new int[] { 4, 3 }, gen.getShape());
+
 		List<IPosition> pointList = gen.createPoints();
-        
-		assertEquals(12, pointList.size());
+		assertEquals(expectedSize, pointList.size());
 
 		// Check some points
 		assertEquals(new Point(0, -10.0, 0, 5.0), pointList.get(0));
@@ -288,9 +307,13 @@ public class RasterTest {
 
 		// Get the point list
 		IPointGenerator<RasterModel> gen = service.createGenerator(model, roi);
+		final int expectedSize = 9;
+		assertEquals(expectedSize, gen.size());
+		assertEquals(2, gen.getRank());
+		assertArrayEquals(new int[] { 3, 3 }, gen.getShape());
+		
 		List<IPosition> pointList = gen.createPoints();
-
-		assertEquals(9, pointList.size());
+		assertEquals(expectedSize, pointList.size());
 
 		// Check some points
 		assertEquals(new Point(0, 1.0, 0, 1.0), pointList.get(0));
