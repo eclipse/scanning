@@ -42,6 +42,7 @@ import org.eclipse.scanning.api.event.alive.HeartbeatBean;
 import org.eclipse.scanning.api.event.alive.HeartbeatEvent;
 import org.eclipse.scanning.api.event.alive.IHeartbeatListener;
 import org.eclipse.scanning.api.event.bean.BeanEvent;
+import org.eclipse.scanning.api.event.bean.IBeanClassListener;
 import org.eclipse.scanning.api.event.bean.IBeanListener;
 import org.eclipse.scanning.api.event.core.ISubscriber;
 import org.eclipse.scanning.api.event.scan.DeviceState;
@@ -89,7 +90,7 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 		registerListener(scanID, listener, slisteners);
 		if (scanConsumer == null) {
 			try {
-				Class<?> beanClass = listener instanceof IBeanListener ? ((IBeanListener)listener).getBeanClass() : null;
+				Class<?> beanClass = listener instanceof IBeanClassListener ? ((IBeanClassListener)listener).getBeanClass() : null;
 				scanConsumer = createConsumer(getTopicName(), beanClass);
 			} catch (JMSException e) {
 				throw new EventException("Cannot subscribe to topic "+getTopicName()+" with URI "+uri, e);
