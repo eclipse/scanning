@@ -18,15 +18,18 @@ import java.net.URI;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.core.IDisconnectable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
  * @author Matthew Gerring
  *
- * @param <T> The service
  */
 abstract class AbstractRemoteService implements IDisconnectable, Closeable {
 
+	protected final static Logger logger = LoggerFactory.getLogger(AbstractRemoteService.class);
+	
 	protected IEventService eservice;
 	protected URI uri;
 	private boolean isDisconnected;
