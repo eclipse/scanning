@@ -247,11 +247,13 @@ class JCompoundGenerator(JavaIteratorWrapper):
         
         excluders = [excluder.py_excluder for excluder in excluders]
         mutators = [mutator.py_mutator for mutator in mutators]
-        
         extracted_generators = []
+
         for generator in generators:
             if generator.__class__.__name__ == "CompoundGenerator":
                 extracted_generators.extend(generator.generators)
+                mutators.extend(generator.mutators)
+                excluders.extend(generator.excluders)
             else:
                 extracted_generators.append(generator)
         generators = extracted_generators
