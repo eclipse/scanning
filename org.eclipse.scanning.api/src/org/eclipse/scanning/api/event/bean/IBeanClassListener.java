@@ -9,17 +9,24 @@
  * Contributors:
  *    Matthew Gerring - initial API and implementation and/or initial documentation
  *******************************************************************************/
-package org.eclipse.scanning.api.event.alive;
+package org.eclipse.scanning.api.event.bean;
 
-import org.eclipse.scanning.api.event.bean.IBeanClassListener;
+import java.util.EventListener;
 
-public interface IHeartbeatListener extends IBeanClassListener<HeartbeatBean> {
+public interface IBeanClassListener<T> extends EventListener {
 
-	default void heartbeatPerformed(HeartbeatEvent evt) {
-		// default implementation does nothing, subclasses should override as necessary
-	}
 	
-	default Class<HeartbeatBean> getBeanClass() {
-		return HeartbeatBean.class;
+	/**
+	 * Optionally the bean class may be defined which provides
+	 * a hint as to how to deserialize the string.
+	 * 
+	 * NOTE: In GDA9 and later most objects pass through a serialization
+	 * layer which also adds the bundle and class information. Therefore
+	 * it is not needed to provide an implementation of the bean class.
+	 * 
+	 * @return
+	 */
+	default Class<T> getBeanClass() {
+		return null;
 	}
 }
