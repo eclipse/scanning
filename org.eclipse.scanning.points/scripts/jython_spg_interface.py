@@ -237,21 +237,28 @@ class JCompoundGenerator(JavaIteratorWrapper):
 
     def __init__(self, iterators, excluders, mutators, duration=-1):
         super(JCompoundGenerator, self).__init__()
-        
         try:  # If JavaIteratorWrapper
             generators = [g for t in iterators for g in t.generator.generators]
         except AttributeError:  # Else call get*() of Java iterator
             generators = [iterator.getPyIterator().generator for iterator in iterators]
         logging.debug("Generators passed to JCompoundGenerator:")
         logging.debug([generator.to_dict() for generator in generators])
-        
+
         excluders = [excluder.py_excluder for excluder in excluders]
         mutators = [mutator.py_mutator for mutator in mutators]
-        
+        mutator_dicts = [m.to_dict() for m in mutators]
+        excluder_dicts = [e.to_dict() for e in excluders]
         extracted_generators = []
+
         for generator in generators:
             if generator.__class__.__name__ == "CompoundGenerator":
                 extracted_generators.extend(generator.generators)
+                extracted_mutators = [m for m in generator.mutators if m.to_dict() not in mutator_dicts]
+                mutators.extend(extracted_mutators)
+                mutator_dicts.extend([m.to_dict() for m in extracted_mutators])
+                extracted_excluders = [e for e in generator.excluders if e.to_dict() not in excluder_dicts]
+                excluders.extend(extracted_excluders)
+                excluder_dicts.extend([e.to_dict() for e in extracted_excluders])
             else:
                 extracted_generators.append(generator)
         generators = extracted_generators
