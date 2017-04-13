@@ -246,6 +246,7 @@ class JCompoundGenerator(JavaIteratorWrapper):
 
         excluders = [excluder.py_excluder for excluder in excluders]
         mutators = [mutator.py_mutator for mutator in mutators]
+        # used to detect duplicated excluders/mutators
         mutator_dicts = [m.to_dict() for m in mutators]
         excluder_dicts = [e.to_dict() for e in excluders]
         extracted_generators = []
@@ -253,6 +254,9 @@ class JCompoundGenerator(JavaIteratorWrapper):
         for generator in generators:
             if generator.__class__.__name__ == "CompoundGenerator":
                 extracted_generators.extend(generator.generators)
+                # extract mutators/excluders we haven't already seen
+                # it's possible a mutator/excluder was attached to both us and
+                # a compound generator we were given
                 extracted_mutators = [m for m in generator.mutators if m.to_dict() not in mutator_dicts]
                 mutators.extend(extracted_mutators)
                 mutator_dicts.extend([m.to_dict() for m in extracted_mutators])
