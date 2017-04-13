@@ -351,7 +351,7 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 
 	private void configureDetectors(Map<String, Object> dmodels, ScanModel model, IPointGenerator<?> generator) throws Exception {
 		
-		logger.debug("Configuring detectors {}", dmodels.keySet());
+		logger.debug("Configuring detectors {}", dmodels!=null?dmodels.keySet():null);
 		for (IRunnableDevice<?> device : model.getDetectors()) {
 			
 			AnnotationManager manager = new AnnotationManager(Activator.createResolver());
@@ -365,7 +365,7 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 			odevice.configure(dmodel);
 			manager.invoke(PostConfigure.class, dmodel, generator);
 		}
-		logger.debug("Configured detectors {}", dmodels.keySet());
+		logger.debug("Configured detectors {}", dmodels!=null?dmodels.keySet():null);
 	}
 
 	private Collection<String> getScannableNames(Iterable<IPosition> gen) {
