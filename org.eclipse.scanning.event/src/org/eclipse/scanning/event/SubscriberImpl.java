@@ -118,11 +118,7 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 		    			schedule(new DiseminateEvent(bean));
 		    			
 	    			} catch (Exception ne) {
-	    				if (ne.getClass().getName().contains("com.fasterxml.jackson")) {
-	        				logger.error("JSON Serialization Error!", ne);
-		   				} else {
-		    				logger.error("Internal error! - Unable to process an event!", ne);
-		   				}
+	    				logger.error("Error processing message {} on topic {} with beanClass {}", message, topicName, beanClass, ne);
 	    				ne.printStackTrace(); // Unit tests without log4j config show this one.
 	     			}
     			} catch (JMSException ne) {

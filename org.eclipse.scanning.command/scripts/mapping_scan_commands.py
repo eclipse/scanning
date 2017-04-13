@@ -589,8 +589,9 @@ def _instantiate(Bean, params):
     # For each param, call one of the setters.
     for p in params.keys():
         try:
-            [setter] = filter(lambda s: p == s[3].lower()+s[4:], setters)
-            getattr(bean, setter)(params[p])
+            if params[p]:
+                [setter] = filter(lambda s: p == s[3].lower()+s[4:], setters)
+                getattr(bean, setter)(params[p])
         except ValueError:
             raise ValueError(
                 "No setter for param '"+p+"' in "+Bean.__name__+".")
