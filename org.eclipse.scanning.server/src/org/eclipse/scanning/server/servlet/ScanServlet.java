@@ -76,13 +76,13 @@ public class ScanServlet extends AbstractConsumerServlet<ScanBean> {
 		
 		if (!logger.isDebugEnabled()) return;
 		
-		logger.debug(message+" : "+scanBean);
+		logger.debug("{} : {}", message, scanBean);
 		try {
-			logger.debug("from request : "+Services.getEventService().getEventConnectorService().marshal(scanBean.getScanRequest()));
+			logger.debug("from request : {}", Services.getEventService().getEventConnectorService().marshal(scanBean.getScanRequest()));
 		} catch (Exception e) {
 			logger.error("Error printing marshalled debugging scan request!", e);
 		}
-		logger.debug("at response URI "+response.getUri());
+		logger.debug("at response URI {}", response.getUri());
 		
 	}
 
