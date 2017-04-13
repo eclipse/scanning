@@ -242,7 +242,7 @@ public class MalcolmScanTest extends NexusTest {
 		
 		// check that the scan points have been written correctly
 		List<String> expectedExternalFiles = getExpectedExternalFiles(dummyMalcolmModel);
-		assertSolsticeScanGroup(entry, true, expectedExternalFiles, snake, sizes);
+		assertSolsticeScanGroup(entry, true, snake, false, expectedExternalFiles, sizes);
 		
 		// map from detector name -> primary data fields
 		Map<String, List<String>> primaryDataFieldNamesPerDetector = getExpectedPrimaryDataFieldsPerDetector();

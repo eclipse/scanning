@@ -12,10 +12,10 @@
 package org.eclipse.scanning.points;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.jython.JythonObjectFactory;
@@ -34,12 +34,11 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 	public MultiStepIterator(MultiStepModel model) {
 		this.model = model;
 		
-		JythonObjectFactory arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
+		JythonObjectFactory<ScanPointIterator> arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
 
 		double[] points = createPositions();
 
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> iterator = (Iterator<IPosition>) arrayGeneratorFactory.createObject(
+		ScanPointIterator iterator = arrayGeneratorFactory.createObject(
 				model.getName(), "mm", points);
 		pyIterator = iterator;
 	}

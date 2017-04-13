@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.points;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -60,10 +61,14 @@ public class MultiStepTest {
 		
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
-		List<IPosition> pointList = gen.createPoints();
 		
-		assertEquals(pointList.size(), gen.size());
-		assertEquals(6, pointList.size());
+		final int expectedSize = 6;
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
+		
+		List<IPosition> pointList = gen.createPoints();
+		assertEquals(expectedSize, pointList.size());
 		for (int i = 0; i < pointList.size(); i++) {
 			assertEquals(new Scalar<>("x", i, 10.0 + (2 * i)), pointList.get(i));
 		}
@@ -89,10 +94,13 @@ public class MultiStepTest {
 		
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
-		List<IPosition> pointList = gen.createPoints();
-		assertEquals(pointList.size(), gen.size());
+		final int expectedSize = 6;
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
 		
-		assertEquals(6, pointList.size());
+		List<IPosition> pointList = gen.createPoints();
+		assertEquals(expectedSize, pointList.size());
 		for (int i = 0; i < pointList.size(); i++) {
 			assertEquals(new Scalar<>("x", i, 20.0 - (2 * i)), pointList.get(i));
 		}
@@ -120,10 +128,13 @@ public class MultiStepTest {
 		
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
+		final int expectedSize = 21; // 6 + 6 + 9
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
 		
 		List<IPosition> pointList = gen.createPoints();
-		assertEquals(pointList.size(), gen.size());
-		assertEquals(21, pointList.size()); // 6 + 6 + 9
+		assertEquals(expectedSize, pointList.size()); 
 		
 		for (int i = 0; i < pointList.size(); i++) {
 			double expected;
@@ -146,9 +157,13 @@ public class MultiStepTest {
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 
+		final int expectedSize = 21; // 6 + 6 + 9
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
+		
 		List<IPosition> pointList = gen.createPoints();
-		assertEquals(pointList.size(), gen.size());
-		assertEquals(21, pointList.size()); // 9 + 6 + 6
+		assertEquals(expectedSize, pointList.size()); 
 		
 		for (int i = 0; i < pointList.size(); i++) {
 			double expected;
@@ -169,11 +184,14 @@ public class MultiStepTest {
 		
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
+
+		final int expectedSize = 22; // 6 + 17 - 1, as 20 should only appear once
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
 		
 		List<IPosition> pointList = gen.createPoints();
-		assertEquals(pointList.size(), gen.size());
-		assertEquals(22, pointList.size()); // 6 + 17 - 1, as 20 should only appear once
-		
+		assertEquals(expectedSize, pointList.size());
 		for (int i = 0; i < pointList.size(); i++) {
 			double expected;
 			if (i < 6) expected = 10 + 2 * i;
@@ -193,10 +211,13 @@ public class MultiStepTest {
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 		
-		List<IPosition> pointList = gen.createPoints();
-		assertEquals(pointList.size(), gen.size());
-		assertEquals(22, pointList.size()); // 17 + 6 - 1, as 20 should only appear once
+		final int expectedSize = 22; // 6 + 17 - 1, as 20 should only appear once
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
 		
+		List<IPosition> pointList = gen.createPoints();
+		assertEquals(expectedSize, pointList.size());
 		for (int i = 0; i < pointList.size(); i++) {
 			double expected;
 			if (i < 17) expected = 100 - 5 * i;

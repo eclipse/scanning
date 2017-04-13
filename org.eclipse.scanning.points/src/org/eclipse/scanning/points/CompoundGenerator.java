@@ -24,6 +24,7 @@ import org.eclipse.scanning.api.points.AbstractPosition;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.python.core.PyDictionary;
 
@@ -143,7 +144,7 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 	protected Iterator<IPosition> iteratorFromValidModel() {
 		try {
 			if (isScanPointGeneratorFactory()) {
-			    return new CompoundSpgIterator(this);
+				return new CompoundSpgIterator(this);
 			} else {
 				return new CompoundIterator(this);
 			}

@@ -11,11 +11,9 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
-import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.OneDEqualSpacingModel;
 
 public class OneDEqualSpacingGenerator extends AbstractGenerator<OneDEqualSpacingModel> {
@@ -33,7 +31,11 @@ public class OneDEqualSpacingGenerator extends AbstractGenerator<OneDEqualSpacin
 	}
 
 	@Override
-	public Iterator<IPosition> iteratorFromValidModel() {
+	public ScanPointIterator iteratorFromValidModel() {
 		return new LineIterator(this);
+	}
+	
+	public int[] getShape() {
+		return new int[] { getModel().getPoints() };
 	}
 }

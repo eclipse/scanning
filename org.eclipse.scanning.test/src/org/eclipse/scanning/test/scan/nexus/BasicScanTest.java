@@ -141,7 +141,7 @@ public class BasicScanTest extends NexusTest {
 		NXinstrument instrument = entry.getInstrument();
 		
 		// check the scan points have been written correctly
-		assertSolsticeScanGroup(entry, false, sizes);
+		assertSolsticeScanGroup(entry, false, false, sizes);
 		
 		DataNode dataNode = null;
 		IDataset dataset = null;

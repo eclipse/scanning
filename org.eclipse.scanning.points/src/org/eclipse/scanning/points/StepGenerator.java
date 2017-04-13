@@ -11,12 +11,10 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.GeneratorException;
-import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.StepModel;
 
 class StepGenerator extends AbstractGenerator<StepModel> {
@@ -44,8 +42,13 @@ class StepGenerator extends AbstractGenerator<StepModel> {
 	}
 	
 	@Override
-	public Iterator<IPosition> iteratorFromValidModel() {
+	public ScanPointIterator iteratorFromValidModel() {
 		return new LineIterator(this);
+	}
+
+	@Override
+	public int[] getShape() throws GeneratorException {
+		return new int[] { sizeOfValidModel() };
 	}
 
 }

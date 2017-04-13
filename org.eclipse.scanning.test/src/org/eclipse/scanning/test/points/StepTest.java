@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.points;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Iterator;
@@ -47,51 +48,71 @@ public class StepTest {
 		StepModel model = new StepModel("Temperature", 290,300,1);	
 		IPointGenerator<StepModel> gen = service.createGenerator(model);
 		assertEquals(11, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 11 }, gen.getShape());
 		GeneratorUtil.testGeneratorPoints(gen);
 		
 		model = new StepModel("Temperature", 0,10,1);	
 		gen.setModel(model);
 		assertEquals(11, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 11 }, gen.getShape());
 		GeneratorUtil.testGeneratorPoints(gen);
 
 		model = new StepModel("Temperature", 1,11,1);	
 		gen.setModel(model);
 		assertEquals(11, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 11 }, gen.getShape());
 		GeneratorUtil.testGeneratorPoints(gen);
 	
 		model = new StepModel("Temperature", 0,3, 0.9);	
 		gen.setModel(model);
 		assertEquals(4, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 4 }, gen.getShape());
 		GeneratorUtil.testGeneratorPoints(gen);
 
 		model = new StepModel("Temperature", 1,4, 0.9);	
 		gen.setModel(model);
 		assertEquals(4, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 4 }, gen.getShape());
 		GeneratorUtil.testGeneratorPoints(gen);
 
 		model = new StepModel("Temperature", 0, 3, 0.8);	
 		gen.setModel(model);
 		assertEquals(4, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 4 }, gen.getShape());
 		GeneratorUtil.testGeneratorPoints(gen);
 
 		model = new StepModel("Temperature", 1,4, 0.8);	
 		gen.setModel(model);
 		assertEquals(4, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 4 }, gen.getShape());
 		GeneratorUtil.testGeneratorPoints(gen);
 		
 		model = new StepModel("Temperature", 0,3, 0.6);	
 		gen.setModel(model);
 		assertEquals(6, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 6 }, gen.getShape());
 		GeneratorUtil.testGeneratorPoints(gen);
 
 		model = new StepModel("Temperature", 1,4, 0.6);	
 		gen.setModel(model);
 		assertEquals(6, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 6 }, gen.getShape());
 		GeneratorUtil.testGeneratorPoints(gen);
 
 		model = new StepModel("Temperature", 1,4, 0.5);	
 		gen.setModel(model);
 		assertEquals(7, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 7 }, gen.getShape());
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
 	
@@ -100,6 +121,9 @@ public class StepTest {
 		StepModel model = new StepModel("Temperature", 4, 1, -0.5);
 		IPointGenerator<?> gen = service.createGenerator(model); 
 		assertEquals(7, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 7 }, gen.getShape());
+		
 		GeneratorUtil.testGeneratorPoints(gen);
 		List<IPosition> points = gen.createPoints();
 		assertEquals(7, points.size());
@@ -138,17 +162,19 @@ public class StepTest {
 		StepModel model = new StepModel("Temperature", 0.0, 2.0, 0.667);	
 		IPointGenerator<StepModel> gen = service.createGenerator(model);
 		assertEquals(4, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 4 }, gen.getShape());
 		
 		// outside the 1% of step size tolerance
 		model = new StepModel("Temperature", 0.0, 2.0, 0.67);
 		gen.setModel(model);
 		assertEquals(3, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 3 }, gen.getShape());
 	}
 	
 	@Test
 	public void testSequence() throws Exception {
-
-
 		StepModel model = new StepModel("Temperature", 290,300,1);	
 		IPointGenerator<StepModel> gen = service.createGenerator(model);
 		checkSequence(gen, 290.0, 291.0, 292.0, 293.0, 294.0, 295.0, 296.0, 297.0, 298.0, 299.0, 300.0);

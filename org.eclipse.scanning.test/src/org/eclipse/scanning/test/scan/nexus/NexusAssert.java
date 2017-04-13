@@ -101,16 +101,16 @@ public class NexusAssert {
 		assertNotNull(nxData.getDataNode(expectedSignalFieldName));
 	}
 	
-	public static void assertSolsticeScanGroup(NXentry entry, boolean snake, int... sizes) {
-		assertSolsticeScanGroup(entry, false, snake, sizes);
+	public static void assertSolsticeScanGroup(NXentry entry, boolean snake, boolean foldedGrid, int... sizes) {
+		assertSolsticeScanGroup(entry, false, snake, foldedGrid, sizes);
 	}
 	
-	public static void assertSolsticeScanGroup(NXentry entry, boolean malcolmScan, boolean snake, int... sizes) {
-		assertSolsticeScanGroup(entry, malcolmScan, null, snake, sizes);
+	public static void assertSolsticeScanGroup(NXentry entry, boolean malcolmScan, boolean snake, boolean foldedGrid, int... sizes) {
+		assertSolsticeScanGroup(entry, malcolmScan, snake, foldedGrid, null, sizes);
 	}
 	
 	public static void assertSolsticeScanGroup(NXentry entry, boolean malcolmScan,
-			List<String> expectedExternalFiles, boolean snake, int... sizes) {
+			boolean snake, boolean foldedGrid, List<String> expectedExternalFiles, int... sizes) {
 		assertScanFinished(entry);
 		
 		NXcollection solsticeScanCollection = entry.getCollection(GROUP_NAME_SOLSTICE_SCAN);
@@ -122,7 +122,7 @@ public class NexusAssert {
 		NXcollection keysCollection = (NXcollection) solsticeScanCollection.getGroupNode(GROUP_NAME_KEYS);
 		assertNotNull(keysCollection);
 		if (!malcolmScan) {
-			assertUniqueKeys(keysCollection, snake, sizes);
+			assertUniqueKeys(keysCollection, snake, foldedGrid, sizes);
 		}
 		if (expectedExternalFiles != null && !expectedExternalFiles.isEmpty()) {
 			assertUniqueKeysExternalFileLinks(keysCollection, expectedExternalFiles, malcolmScan, sizes);
@@ -184,7 +184,7 @@ public class NexusAssert {
 		formatter.parse(estimatedTime); // throws exception if not a valid time
 	}
 
-	private static void assertUniqueKeys(NXcollection keysCollection, boolean snake, int... sizes) {
+	private static void assertUniqueKeys(NXcollection keysCollection, boolean snake, boolean foldedGrid, int... sizes) {
 		// check the unique keys field - contains the step number for each scan
 		// point
 		DataNode dataNode = keysCollection.getDataNode(FIELD_NAME_UNIQUE_KEYS);
@@ -199,31 +199,63 @@ public class NexusAssert {
 		assertEquals(sizes.length, dataset.getRank());
 		final int[] shape = dataset.getShape();
 		assertArrayEquals(sizes, shape);
-		PositionIterator iter = new PositionIterator(shape);
 
+		// iterate through the points
 		int expectedPos = 1;
-
-		if (snake) {
-			final int lineSize = shape[shape.length - 1];
-			boolean isBackwardLine = false;
-			while (iter.hasNext()) { // hasNext also increments the position iterator (ugh!)
-				assertEquals(expectedPos, dataset.getInt(iter.getPos()));
-				if (!isBackwardLine && expectedPos % lineSize == 0) { // end of forward line of snake scan
-					isBackwardLine = true;
-					expectedPos = expectedPos + lineSize;
-				} else if (isBackwardLine && expectedPos % lineSize == 1) { // end of backward line of snake scan
-					isBackwardLine = false;
-					expectedPos = expectedPos + lineSize;
-				} else if (isBackwardLine) {
-					expectedPos--;
-				} else {
-					expectedPos++;
-				}
-			}
-		} else {
+		PositionIterator iter = new PositionIterator(shape);
+		if (!snake || sizes.length == 1) {
+			// not a snake scan, the order of points will be the same as the position iterator gives them
 			while (iter.hasNext()) { // hasNext also increments the position iterator (ugh!)
 				assertEquals(expectedPos, dataset.getInt(iter.getPos()));
 				expectedPos++;
+			}
+		} else {
+			// iterate through the points comparing them with their expected values
+			// the PositionIterator iterates through all points top to bottom, left to right
+			// whereas the snake scan alternates first horizontally, and then and the end of
+			// each inner scan vertically
+			final int lineSize = shape[shape.length - 1];
+			final int numRows = shape[shape.length - 2];
+			final boolean oddNumRows = numRows % 2 == 1;
+			final int innerScanSize = lineSize * numRows; // not used for folded grid scans
+			boolean isBackwardLine = false;
+			boolean isBottomToTopInnerScan = false;
+			int expectedLineEnd = lineSize;
+			int expectedInnerScanEnd = innerScanSize - (oddNumRows ? 0 : lineSize - 1);
+			while (iter.hasNext()) { // hasNext also increments the position iterator (ugh!)
+				assertEquals(expectedPos, dataset.getInt(iter.getPos()));
+				
+				if (!foldedGrid && !isBottomToTopInnerScan && expectedPos == expectedInnerScanEnd) {
+					// end of top to bottom inner scan, next is bottom to top
+					isBottomToTopInnerScan = true;
+					isBackwardLine = true; // top line of bottom to top scan is always backward
+					expectedPos += innerScanSize + (oddNumRows ? 0 : lineSize - 1);
+					expectedLineEnd = expectedPos - lineSize + 1; 
+					expectedInnerScanEnd = (expectedPos - innerScanSize) + (oddNumRows ? 1 : lineSize);
+				} else if (!foldedGrid && isBottomToTopInnerScan && expectedPos == expectedInnerScanEnd) {
+					// end of bottom to top inner scan, next is top to bottom
+					isBottomToTopInnerScan = false;
+					isBackwardLine = false; // top line of top to bottom scan is always forward
+					expectedPos += innerScanSize - (oddNumRows ? 0 : lineSize - 1);
+					expectedLineEnd = expectedPos + lineSize - 1;
+					expectedInnerScanEnd = expectedPos + innerScanSize - (oddNumRows ? 1 : lineSize);
+				} else if (!isBackwardLine && expectedPos == expectedLineEnd) {
+					// end of forward line
+					isBackwardLine = true; // next line is backward
+					expectedPos += (isBottomToTopInnerScan ? -lineSize : lineSize);
+					expectedLineEnd += 1;
+				} else if (isBackwardLine && expectedPos == expectedLineEnd) {
+					// end of backward line
+					isBackwardLine = false; // next line is forward
+					expectedPos += (isBottomToTopInnerScan ? -lineSize : lineSize);
+					expectedLineEnd += (isBottomToTopInnerScan ? -1 : (lineSize * 2) - 1);
+				} else if (isBackwardLine) {
+					// a point on a backward line
+					expectedPos--;
+				} else {
+					// a point on a forward line
+					expectedPos++;
+				}
 			}
 		}
 	}

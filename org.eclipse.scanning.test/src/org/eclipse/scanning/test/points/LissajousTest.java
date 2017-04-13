@@ -20,6 +20,7 @@ import org.eclipse.scanning.api.points.Point;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.LissajousModel;
 import org.eclipse.scanning.points.LissajousGenerator;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -58,4 +59,20 @@ public class LissajousTest {
 		assertEquals(new Point(100, -9.939837880744866, 100, 6.925069008238842, false), pointList.get(100));
 		assertEquals(new Point(300, -7.5128903496577735, 300, 6.775627736273646, false), pointList.get(300));
 	}
+	
+	@Test
+	public void testLissajousWithBoundingRectangle() throws Exception {
+		Assert.fail(); // Not yet implemented
+	}
+	
+	@Test
+	public void testLissajousWithCircularRegion() throws Exception {
+		Assert.fail(); // Not yet implemented
+	}
+	
+	@Test
+	public void testLissajousWithPolygonRegion() throws Exception {
+		Assert.fail(); // Not yet implemented
+	}
+	
 }

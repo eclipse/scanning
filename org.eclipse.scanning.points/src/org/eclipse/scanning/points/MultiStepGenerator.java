@@ -12,11 +12,10 @@
 package org.eclipse.scanning.points;
 
 import java.text.MessageFormat;
-import java.util.Iterator;
 
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
-import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 
@@ -34,6 +33,11 @@ class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
 	
 	public boolean isScanPointGeneratorFactory() {
 		return false;
+	}
+
+	@Override
+	protected ScanPointIterator iteratorFromValidModel() {
+		return new MultiStepIterator(model);
 	}
 
 	protected void validateModel() {
@@ -80,11 +84,6 @@ class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
 			// check the start of the next step is in the same direction as the
 			lastStop = stepModel.getStop();
 		}
-	}
-	
-	@Override
-	protected Iterator<IPosition> iteratorFromValidModel() {
-		return new MultiStepIterator(model);
 	}
 
 }

@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.points;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -43,16 +44,19 @@ public class ArrayTest {
 	public void testArray() throws Exception {
 
 		// Get the point list
+		assertEquals(5, generator.size());
+		assertEquals(1, generator.getRank());
+		assertArrayEquals(new int[] { 5 }, generator.getShape());
 		List<IPosition> pointList = generator.createPoints();
 
 		assertEquals(5, pointList.size());
 
 		// Test a few points
-		assertEquals(new Scalar("x", 0, 1.0), pointList.get(0));
-		assertEquals(new Scalar("x", 1, 2.0), pointList.get(1));
-		assertEquals(new Scalar("x", 2, 3.0), pointList.get(2));
-		assertEquals(new Scalar("x", 3, 4.0), pointList.get(3));
-		assertEquals(new Scalar("x", 4, 5.0), pointList.get(4));
+		assertEquals(new Scalar<>("x", 0, 1.0), pointList.get(0));
+		assertEquals(new Scalar<>("x", 1, 2.0), pointList.get(1));
+		assertEquals(new Scalar<>("x", 2, 3.0), pointList.get(2));
+		assertEquals(new Scalar<>("x", 3, 4.0), pointList.get(3));
+		assertEquals(new Scalar<>("x", 4, 5.0), pointList.get(4));
 	}
 
 }

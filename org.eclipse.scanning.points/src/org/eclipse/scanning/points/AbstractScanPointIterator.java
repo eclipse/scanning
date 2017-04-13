@@ -30,40 +30,39 @@ import org.eclipse.dawnsci.analysis.dataset.roi.SectorROI;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.jython.JythonObjectFactory;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractScanPointIterator implements SerializableIterator<IPosition>{
+public abstract class AbstractScanPointIterator implements ScanPointIterator, PySerializable {
 
 	private static Logger logger = LoggerFactory.getLogger(AbstractScanPointIterator.class);
 
 	private static Map<Class<?>, Function<IROI, PyObject>> roiDispatchMap = new HashMap<Class<?>, Function<IROI, PyObject>>();;
 
-	protected Iterator<IPosition> pyIterator;
+	protected ScanPointIterator pyIterator;
 
 	public Iterator<IPosition> getPyIterator() {
 		return pyIterator;
 	}
 
-	public void setPyIterator(Iterator<IPosition> pyIterator) {
+	public void setPyIterator(ScanPointIterator pyIterator) {
 		this.pyIterator = pyIterator;
 	}
 
-	protected Iterator<IPosition> createSpgCompoundGenerator(Iterator<?>[] iterators, Object[] regions,
+	protected ScanPointIterator createSpgCompoundGenerator(Iterator<?>[] iterators, Object[] regions,
 			String[] regionAxes, PyObject[] mutators) {
 		JythonObjectFactory<PyObject> excluderFactory = ScanPointGeneratorFactory.JExcluderFactory();
-		@SuppressWarnings("rawtypes")
-		JythonObjectFactory<SerializableIterator> cpgFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
+		JythonObjectFactory<ScanPointIterator> cpgFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
 		List<PyObject> pyRegions = Arrays.asList(regions).stream().map(r -> makePyRoi(r)).collect(Collectors.toList());
 		pyRegions = pyRegions.stream()
 				.filter(r -> r != null)
 				.map(r -> excluderFactory.createObject(r, new PyList(Arrays.asList(regionAxes))))
 				.collect(Collectors.toList());
-		@SuppressWarnings("unchecked")
-		Iterator<IPosition> cpgIterator = cpgFactory.createObject(iterators, pyRegions.toArray(), mutators);
+		ScanPointIterator cpgIterator = cpgFactory.createObject(iterators, pyRegions.toArray(), mutators);
 		return cpgIterator;
 	}
 
@@ -117,6 +116,19 @@ public abstract class AbstractScanPointIterator implements SerializableIterator<
 	}
 	
 	public int size() {
-		return 0;
+		return pyIterator.size();
 	}
+
+	@Override
+	public int[] getShape() {
+		return pyIterator.getShape();
+	}
+
+	@Override
+	public int getRank() {
+		return pyIterator.getRank();
+	}
+	
+	
+	
 }

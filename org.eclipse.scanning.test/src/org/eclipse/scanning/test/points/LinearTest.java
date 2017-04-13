@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.points;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -47,15 +48,19 @@ public class LinearTest {
 		line.setLength(Math.hypot(3.0, 3.0));
 
         OneDEqualSpacingModel model = new OneDEqualSpacingModel();
-        model.setPoints(10);
+        final int numPoints = 10;
+        model.setPoints(numPoints);
         model.setBoundingLine(line);
 		
 		// Get the point list
 		IPointGenerator<OneDEqualSpacingModel> gen = service.createGenerator(model);
+		assertEquals(numPoints, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { numPoints }, gen.getShape());
+		
 		List<IPosition> pointList = gen.createPoints();
 		
-		assertEquals(pointList.size(), gen.size());
-		assertEquals(pointList.size(), 10);
+		assertEquals(numPoints, pointList.size());
         GeneratorUtil.testGeneratorPoints(gen);
 	}
 	
@@ -68,15 +73,19 @@ public class LinearTest {
         line.setLength(Math.hypot(3.0, 3.0));
 
         OneDEqualSpacingModel model = new OneDEqualSpacingModel();
-        model.setPoints(10);
+        final int numPoints = 10;
+        model.setPoints(numPoints);
         model.setBoundingLine(line);
  		
 		// Get the point list
 		IPointGenerator<OneDEqualSpacingModel> gen = service.createGenerator(model);
+		assertEquals(numPoints, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { numPoints }, gen.getShape());
+		
 		List<IPosition> pointList = gen.createPoints();
 		
-		assertEquals(pointList.size(), gen.size());
-		assertEquals(pointList.size(), 10);
+		assertEquals(numPoints, pointList.size());
         GeneratorUtil.testGeneratorPoints(gen);
         
         for (int i = 0; i < pointList.size(); i++) {
@@ -95,7 +104,8 @@ public class LinearTest {
 	public void testOneDEqualSpacingNoROI() throws GeneratorException {
 		
 		OneDEqualSpacingModel model = new OneDEqualSpacingModel();
-		model.setPoints(10);
+		final int numPoints = 10;
+		model.setPoints(numPoints);
 		BoundingLine bl = new BoundingLine();
 		bl.setxStart(0);
 		bl.setyStart(0);
@@ -105,7 +115,13 @@ public class LinearTest {
 
 		// Get the point list
 		IPointGenerator<OneDEqualSpacingModel> gen = service.createGenerator(model);
-		gen.createPoints();
+		int expectedSize = 10;
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
+		
+		List<IPosition> pointList = gen.createPoints();
+		assertEquals(expectedSize, pointList.size());
 	}
 
 	@Test(expected = ModelValidationException.class)
@@ -141,10 +157,13 @@ public class LinearTest {
 		
 		// Get the point list
 		IPointGenerator<OneDStepModel> gen = service.createGenerator(model);
-		List<IPosition> pointList = gen.createPoints();
+		final int expectedSize = 15;
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
 		
-		assertEquals(pointList.size(), gen.size());
-		assertEquals(15, pointList.size());
+		List<IPosition> pointList = gen.createPoints();
+		assertEquals(expectedSize, pointList.size());
         GeneratorUtil.testGeneratorPoints(gen);
 	}
 
@@ -162,7 +181,12 @@ public class LinearTest {
 
 		// Get the point list
 		IPointGenerator<OneDStepModel> gen = service.createGenerator(model);
-		gen.createPoints();
+		final int expectedSize = 11;
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
+		
+		assertEquals(expectedSize, gen.createPoints().size());
 	}
 
 	@Test(expected = ModelValidationException.class)
@@ -179,6 +203,7 @@ public class LinearTest {
 		
 		// Get the point list
 		IPointGenerator<OneDStepModel> gen = service.createGenerator(model);
+		
 		List<IPosition> pointList = gen.createPoints();
         GeneratorUtil.testGeneratorPoints(gen);
 	}

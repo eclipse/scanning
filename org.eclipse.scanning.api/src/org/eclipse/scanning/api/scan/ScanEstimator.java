@@ -12,7 +12,6 @@
 package org.eclipse.scanning.api.scan;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,10 +30,6 @@ import org.eclipse.scanning.api.points.IPosition;
  * Most scans are static and therefore they can have their shape and size
  * discovered. Those scans which truely are iterators and on the fly decide
  * the next position, can only have their shapes and sizes estimated.
- * 
- * Shape is more expensive to estimate that size. For 10 million points size
- * is ~100ms depending on iterator type. Shape will take longer as more floating 
- * point operations are required.
  * 
  * This class is an estimator and not a data holder. Please use ScanInformation
  * to hold data to be sent around.
@@ -175,48 +170,20 @@ public class ScanEstimator {
 	/**
 	 * The estimated scan shape. Clue is in the name, ScanEstimator
 	 * @return
+	 * @throws GeneratorException 
 	 */
-	public int[] getShape() {
-		
-		if (shape!=null) return shape;
-	
-		Iterator<IPosition> iterator = generator.iterator();
-		IPosition last  = null;
-		int pointNum = 0;
-		long lastTime = System.currentTimeMillis();
-		while(iterator.hasNext()) {
-			last = iterator.next(); // Could be large...
-			pointNum++;
-			if (pointNum % 10000 == 0) {
-				long newTime = System.currentTimeMillis();
-				System.err.println("Point number " + pointNum++ + ", took " + (newTime - lastTime) + "ms");
+	public int[] getShape() throws GeneratorException {
+		if (shape == null) {
+			if (generator instanceof IPointGenerator<?>) {
+				shape =((IPointGenerator<?>) generator).getShape();
+			} else {
+				// can only get shape from IPointGenerator
+				// TODO: refactor ScanModel to have IPointGenerator instead of position iterable?
+				throw new IllegalArgumentException("Cannot get scan shape");
 			}
 		}
-		
-		final int scanRank = getRank();
-		// special case for scans of rank 0 - i.e. acquire scans
-		if (scanRank == 0) return new int[0]; 
-			
-		// the shape is created from the indices for each dimension for the final scan point
-		this.shape = new int[scanRank];
-		for (int i = 0; i < shape.length; i++) {
-			shape[i] = last.getIndex(i)+1;
-		}
-		
-		// however, for the case snake scans the index for the last dimension is 0, so to make
-		// sure we have the correct index for that dimension we through the points again until
-		// the index of that dimension stops increasing - this is assumed to be the maximum
-		iterator = generator.iterator();
-		int lastInnerIndex = -1;
-		while (iterator.hasNext()) {
-			int innerIndex = iterator.next().getIndex(scanRank - 1);
-			if (innerIndex <= lastInnerIndex) {
-				break;
-			}
-			lastInnerIndex = innerIndex;
-		}
-		shape[scanRank - 1] = lastInnerIndex + 1;
 		
 		return shape;
 	}
+	
 }

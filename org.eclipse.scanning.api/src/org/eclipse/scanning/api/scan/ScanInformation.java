@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.eclipse.scanning.api.device.models.ScanMode;
+import org.eclipse.scanning.api.points.GeneratorException;
 
 /**
  * 
@@ -122,10 +123,14 @@ public class ScanInformation {
 		this.scannableNames = scannableNames;
 	}
 
-	public int[] getShape() {
+	public int[] getShape() throws ScanningException {
 		if (shape!=null) return shape;
 		// We calculate shape on the fly because it can be expensive to estimate.
-		shape = estimator!=null ? estimator.getShape() : null;
+		try {
+			shape = estimator!=null ? estimator.getShape() : null;
+		} catch (GeneratorException e) {
+			throw new ScanningException(e);
+		}
 		return shape;
 	}
 	

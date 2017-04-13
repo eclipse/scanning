@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.points;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.util.List;
@@ -39,6 +40,8 @@ public class StaticTest {
 		StaticModel model = new StaticModel();
 		IPointGenerator<StaticModel> gen = service.createGenerator(model);
 		assertEquals(1, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { 1 }, gen.getShape());
 		
 		List<IPosition> positionList = gen.createPoints();
 		assertEquals(1, positionList.size());
@@ -54,6 +57,8 @@ public class StaticTest {
 		model.setSize(size);
 		IPointGenerator<StaticModel> gen = service.createGenerator(model);
 		assertEquals(size, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { size }, gen.getShape());
 		
 		final StaticPosition expected = new StaticPosition();
 		List<IPosition> positionList = gen.createPoints();

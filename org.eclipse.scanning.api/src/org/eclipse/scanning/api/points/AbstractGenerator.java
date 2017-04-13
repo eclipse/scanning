@@ -39,6 +39,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	private String iconPath;
 	private boolean visible=true;
 	private boolean enabled=true;
+	private int[] shape = null;
 	
 	protected AbstractGenerator() {
 		super();
@@ -57,6 +58,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	@Override
 	public void setModel(T model) {
 		this.model = model;
+		this.shape = null; // clear cached shape
 	}
 	
 	@Override
@@ -65,6 +67,11 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 		return iteratorFromValidModel();
 	};
 
+	/**
+	 * Creates and returns an iterator for this model. If possible subclasses should aim to
+	 * return an instance of {@link ScanPointIterator}.
+	 * @return
+	 */
 	protected abstract Iterator<IPosition> iteratorFromValidModel();
 
 
@@ -116,6 +123,83 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	public final int size() throws GeneratorException {
 		validateModel();
 		return sizeOfValidModel();
+	}
+	
+	public int getRank() throws GeneratorException {
+		return getShape().length;
+	}
+	
+	public int[] getShape() throws GeneratorException {
+		if (shape == null) {
+			shape = calculateShape();
+		}
+		
+		return shape;
+	}
+	
+	/**
+	 * Calculates the shape of the scan. This method is called when
+	 * {@link #iteratorFromValidModel()} does not return a {@link ScanPointIterator}.
+	 * Subclasses should override if a more efficient way of calculating the
+	 * scan shape can be provided.
+	 *  
+	 * @param iterator
+	 * @return
+	 * @throws GeneratorException
+	 */
+	protected int[] calculateShape() throws GeneratorException {
+		Iterator<IPosition> iterator = iteratorFromValidModel();
+		if (iterator instanceof ScanPointIterator) {
+			return ((ScanPointIterator) iterator).getShape();
+		}
+		
+		if (iterator.hasNext()) {
+			return new int[0];
+		}
+		
+		IPosition first = iterator.next();
+		final int scanRank = first.getScanRank();
+		if (scanRank == 0) {
+			return new int[0];
+		}
+		
+		int pointNum = 1;
+
+		IPosition last = first;
+		int lastInnerIndex = last.getIndex(scanRank - 1);
+		int maxInnerIndex = -1;
+		long lastTime = System.currentTimeMillis();
+		while (iterator.hasNext()) {
+			last = iterator.next(); // Could be large...
+			pointNum++;
+			if (maxInnerIndex == -1) {
+				// check for the max index of the inner most dimension - we assume that when it
+				// first decreases the previous value was the max. This special treatment
+				int innerIndex = last.getIndex(scanRank - 1);
+				if (innerIndex <= lastInnerIndex) {
+					maxInnerIndex = lastInnerIndex;
+				}
+			}
+			
+			if (pointNum % 10000 == 0) {
+				long newTime = System.currentTimeMillis();
+				System.err.println("Point number " + pointNum++ + ", took " + (newTime - lastTime) + "ms");
+			}
+		}
+		
+		// special case for scans of rank 0 - i.e. acquire scans
+		if (scanRank == 0) return new int[0];
+		
+		// the shape is created from the indices for each dimension for the final scan point
+		int[] shape = new int[scanRank];
+		for (int i = 0; i < shape.length - 1; i++) {
+			shape[i] = last.getIndex(i) + 1;
+		}
+		// except for the last index, which is the maximum last index found
+		// this is due to the special case of snake scans
+		shape[shape.length - 1 ] = maxInnerIndex;
+		
+		return shape;
 	}
 
 	/**

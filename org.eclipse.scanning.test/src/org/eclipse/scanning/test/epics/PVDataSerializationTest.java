@@ -75,7 +75,7 @@ public class PVDataSerializationTest {
 	}
 	
 	@Test
-	public void TestCircularROI() throws Exception {
+	public void testCircularROI() throws Exception {
 
 		// Create test generator
 		List<IROI> regions = new LinkedList<>();
@@ -153,7 +153,7 @@ public class PVDataSerializationTest {
 	}
 	
 	@Test
-	public void TestEllipticalROI() throws Exception {
+	public void testEllipticalROI() throws Exception {
 
 		// Create test generator
 		List<IROI> regions = new LinkedList<>();
@@ -238,7 +238,7 @@ public class PVDataSerializationTest {
 	}
 	
 	@Test
-	public void TestLinearROI() throws Exception {
+	public void testLinearROI() throws Exception {
 
 		// Create test generator
 		List<IROI> regions = new LinkedList<>();
@@ -284,7 +284,7 @@ public class PVDataSerializationTest {
 	@Ignore // TODO: Allow Java Generator construction without calling CompoundGenerator.prepare,
 	        // to allow "empty" scans to be described
 	@Test
-	public void TestPointROI() throws Exception {
+	public void testPointROI() throws Exception {
 
 		// Create test generator
 		List<IROI> regions = new LinkedList<>();
@@ -380,7 +380,7 @@ public class PVDataSerializationTest {
 	}
 
 	@Test
-	public void TestPolygonalROI() throws Exception {
+	public void testPolygonalROI() throws Exception {
 
 		// Create test generator
 		List<IROI> regions = new LinkedList<>();
@@ -463,7 +463,7 @@ public class PVDataSerializationTest {
 	}
 	
 	@Test
-	public void TestRectangularROI() throws Exception {
+	public void testRectangularROI() throws Exception {
 
 		// Create test generator
 		List<IROI> regions = new LinkedList<>();
@@ -550,7 +550,7 @@ public class PVDataSerializationTest {
 	}
 	
 	@Test
-	public void TestSectorROI() throws Exception {
+	public void testSectorROI() throws Exception {
 
 		// Create test generator
 		List<IROI> regions = new LinkedList<>();
@@ -639,7 +639,7 @@ public class PVDataSerializationTest {
 	}
 
 	@Test
-	public void TestRandomOffsetMutator() throws Exception {
+	public void testRandomOffsetMutator() throws Exception {
 
 		// Create test generator
 		List<IROI> regions = new LinkedList<>();
@@ -719,7 +719,7 @@ public class PVDataSerializationTest {
 	}
 	
 	@Test
-	public void TestLineGenerator() throws Exception {
+	public void testLineGenerator() throws Exception {
 
 		// Create test generator			
 		IPointGeneratorService pgService = new PointGeneratorService();
@@ -789,7 +789,7 @@ public class PVDataSerializationTest {
 	}
 	
 	@Test
-	public void TestLissajousGenerator() throws Exception {
+	public void testLissajousGenerator() throws Exception {
 
 		// Create test generator
 		IPointGeneratorService pgService = new PointGeneratorService();
@@ -870,7 +870,7 @@ public class PVDataSerializationTest {
 	}
 	
 	@Test
-	public void TestSpiralModel() throws Exception {
+	public void testSpiralModel() throws Exception {
 		
 		// Create test generator
 		IPointGeneratorService pgService = new PointGeneratorService();
@@ -938,7 +938,7 @@ public class PVDataSerializationTest {
 	}
 	
 	@Test
-	public void TestSingualurLineGenerator() throws Exception {
+	public void testSingualurLineGenerator() throws Exception {
 
 		// Create test generator
 		List<IROI> regions = new LinkedList<>();
@@ -1010,7 +1010,7 @@ public class PVDataSerializationTest {
 	}
 
 	@Test
-	public void TestFullCompoundGenerator() throws Exception {
+	public void testFullCompoundGenerator() throws Exception {
 
 		// This test will not behave as expected if either rectangular region has angle == 0
 		// This is due to the LineGenerators being "trimmed" in this case by CompoundGenerator
@@ -1170,7 +1170,7 @@ public class PVDataSerializationTest {
 		PVInt numVal1 = expectedGeneratorsPVStructure1.getSubField(PVInt.class, "size");
 		numVal1.put(5);
 		PVBoolean adVal1 = expectedGeneratorsPVStructure1.getSubField(PVBoolean.class, "alternate");
-		adVal1.put(false);
+		adVal1.put(true);
 		
 		PVStructure expectedGeneratorsPVStructure2 = pvDataCreate.createPVStructure(expectedLineGeneratorsStructure);
 		PVStringArray nameVal = expectedGeneratorsPVStructure2.getSubField(PVStringArray.class, "axes");
