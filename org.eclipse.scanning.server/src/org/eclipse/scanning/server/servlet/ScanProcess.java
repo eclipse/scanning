@@ -360,7 +360,10 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 			
 			@SuppressWarnings("unchecked")
 			IRunnableDevice<Object> odevice = (IRunnableDevice<Object>)device;
+			
+			if (!dmodels.containsKey(odevice.getName())) continue; // Nothing to configure
 			Object dmodel = dmodels.get(odevice.getName());
+			
 			manager.invoke(PreConfigure.class, dmodel, generator);
 			odevice.configure(dmodel);
 			manager.invoke(PostConfigure.class, dmodel, generator);
