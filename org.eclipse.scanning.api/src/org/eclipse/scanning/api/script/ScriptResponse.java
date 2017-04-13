@@ -23,6 +23,11 @@ package org.eclipse.scanning.api.script;
  */
 public class ScriptResponse<T> {
 
+	@Override
+	public String toString() {
+		return "ScriptResponse [returnCode=" + returnCode + ", returnObject=" + returnObject + ", message=" + message
+				+ "]";
+	}
 	private int    returnCode=0;
 	private T      returnObject;
 	private String message;

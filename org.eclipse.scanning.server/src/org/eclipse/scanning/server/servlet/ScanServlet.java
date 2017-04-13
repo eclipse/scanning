@@ -17,6 +17,8 @@ import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.scan.process.IPreprocessor;
 import org.eclipse.scanning.api.scan.process.ProcessingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A servlet to do any scan type based on the information provided
@@ -45,6 +47,8 @@ import org.eclipse.scanning.api.scan.process.ProcessingException;
  */
 public class ScanServlet extends AbstractConsumerServlet<ScanBean> {
 	
+	private static final Logger logger = LoggerFactory.getLogger(ScanServlet.class);
+	
 	public ScanServlet() {
 		setPauseOnStart(true);
 	}
@@ -58,8 +62,28 @@ public class ScanServlet extends AbstractConsumerServlet<ScanBean> {
 	public ScanProcess createProcess(ScanBean scanBean, IPublisher<ScanBean> response) throws EventException {
 		
 		if (scanBean.getScanRequest()==null) throw new EventException("The scan must include a request to run something!");
+
+		// Debugging makes code messy but switching this on can prove useful.
+		// Test used because output message does work.
+		debug("Accepting bean", scanBean, response);		
 		preprocess(scanBean);
+		debug("After processing bean (normally no change)", scanBean, response);		
+		
 		return new ScanProcess(scanBean, response, isBlocking());
+	}
+
+	private void debug(String message, ScanBean scanBean, IPublisher<ScanBean> response) {
+		
+		if (!logger.isDebugEnabled()) return;
+		
+		logger.debug(message+" : "+scanBean);
+		try {
+			logger.debug("from request : "+Services.getEventService().getEventConnectorService().marshal(scanBean.getScanRequest()));
+		} catch (Exception e) {
+			logger.error("Error printing marshalled debugging scan request!", e);
+		}
+		logger.debug("at response URI "+response.getUri());
+		
 	}
 
 	private void preprocess(ScanBean scanBean) throws ProcessingException {
