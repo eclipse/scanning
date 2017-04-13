@@ -282,7 +282,17 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 			bean.setStatus(org.eclipse.scanning.api.event.status.Status.SUBMITTED);
 
 			ISubmitter<ScanBean> submitter = ServiceHolder.getEventService().createSubmitter(new URI(CommandConstants.getScanningBrokerUri()), EventConstants.SUBMISSION_QUEUE);
+			if (logger.isDebugEnabled()) { // Test used because output message does work.
+				logger.debug("Submitting Bean to queue: {}", ServiceHolder.getMarshallerService().marshal(bean));
+				logger.debug("Submitter isDisconnected = {}", submitter.isDisconnected());
+			}
 			submitter.submit(bean);
+			
+			if (logger.isDebugEnabled()) { // Test used because output message does work.
+				logger.debug("Submitted Bean to queue: {}", submitter.getSubmitQueueName());
+				logger.debug("Using URI: {}", submitter.getUri());
+				logger.debug("Submitter isDisconnected = {}", submitter.isDisconnected());
+			}
 			
 			// Show the Queue
 			showQueue();
@@ -752,8 +762,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 			Clipboard clipboard = new Clipboard(Display.getDefault());
 			clipboard.setContents(new Object[] { cmd }, new Transfer[] { TextTransfer.getInstance() });
 			clipboard.dispose();
-			logger.debug("Copied command to clipboard:");
-			logger.debug(cmd);
+			logger.debug("Copied command to clipboard: {}", cmd);
 			
 		} catch (Exception ne) {
 			ErrorDialog.openError(getViewSite().getShell(), 

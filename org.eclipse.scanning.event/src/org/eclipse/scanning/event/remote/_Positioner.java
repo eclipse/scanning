@@ -50,7 +50,7 @@ class _Positioner extends AbstractRemoteService implements IPositioner {
 	public void init()  throws EventException {
 		requester = eservice.createRequestor(uri, EventConstants.POSITIONER_REQUEST_TOPIC, EventConstants.POSITIONER_RESPONSE_TOPIC);
 		long timeout = Long.getLong("org.eclipse.scanning.event.remote.positionerTimeout", 100); 
-	    logger.info("Setting timeout " + timeout + " ms");
+	    logger.debug("Setting timeout {} {}" , timeout , " ms");
 		requester.setTimeout(timeout, TimeUnit.MILLISECONDS); // Useful for debugging testing 
 		request   = new PositionerRequest();
 	}
