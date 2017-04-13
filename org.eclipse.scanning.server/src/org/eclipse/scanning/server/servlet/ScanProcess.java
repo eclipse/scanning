@@ -128,7 +128,7 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 	@Override
 	public void execute() throws EventException {
 		try {
-			logger.debug("{} : {}", "Starting to run", bean);
+			logger.debug("Starting to run : {}", bean);
 			setFilePath(bean);
 			IPointGenerator<?> gen = getGenerator(bean.getScanRequest());
 			initializeMalcolmDevice(bean, gen);
@@ -141,11 +141,11 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 			}
 			
 			if (!Boolean.getBoolean("org.eclipse.scanning.server.servlet.scanProcess.disableValidate")) {
-				logger.debug("{} : {}", "Validating run ", bean);
+				logger.debug("Validating run : {}", bean);
 				final ScanRequest<?> sr = bean.getScanRequest();
 				if (sr.getDetectors()!=null && sr.getDetectors().isEmpty()) sr.setDetectors(null);
 			    Services.getValidatorService().validate(sr);
-				logger.debug("{} : {}", "Validation passed ", bean);
+				logger.debug("Validating passed : {}", bean);
 			} else {
 				logger.warn("The run {} has validation switched off.", bean);
 			}
