@@ -68,7 +68,7 @@ import org.slf4j.LoggerFactory;
  * @author Michael Wharmby
  *
  */
-public class QueueService implements IQueueService {
+public class QueueService extends QueueControllerService implements IQueueService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(QueueService.class);
 	
@@ -141,6 +141,9 @@ public class QueueService implements IQueueService {
 		
 		//Mark initialised
 		init = true;
+		
+		//With QueueService parts initialised, we can initialise the QueueController parts
+		super.init();
 	}
 	
 	@Override
@@ -217,8 +220,7 @@ public class QueueService implements IQueueService {
 
 			//Kill/stop the job queuebroker
 			if (force) {
-				IQueueControllerService controller = ServicesHolder.getQueueControllerService();
-				controller.killQueue(jobQueueID, true, false, false);
+				killQueue(jobQueueID, true, false, false);
 			} else {
 				jobQueue.stop();
 			}
@@ -384,8 +386,7 @@ public class QueueService implements IQueueService {
 				queueControlLock.readLock().unlock();
 				queueControlLock.writeLock().lockInterruptibly();
 				if (force) {
-					IQueueControllerService controller = ServicesHolder.getQueueControllerService();
-					controller.killQueue(queueID, true, false, false);
+					killQueue(queueID, true, false, false);
 				}
 				//Whatever happens we need to mark the queue stopped
 				//TODO Does this need to wait for the kill call to be completed?
@@ -414,6 +415,19 @@ public class QueueService implements IQueueService {
 		
 	}
 	
+	@Override
+	public IQueue<? extends Queueable> getQueue(String queueID) throws EventException {
+		if (queueID.equals(jobQueueID)) {
+			return (IQueue<? extends Queueable>) getJobQueue();
+		} else {
+			if (isActiveQueueRegistered(queueID)) {
+				return (IQueue<? extends Queueable>) getActiveQueue(queueID);
+			} else {
+				throw new EventException("QueueID does not match any registered queue");
+			}
+		}
+	}
+
 	@Override
 	public IQueue<QueueBean> getJobQueue() {
 		return jobQueue;
