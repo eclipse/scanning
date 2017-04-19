@@ -112,6 +112,8 @@ public class BeanStatusFinder<T extends Queueable> {
 				statusSetSearch.get(1, TimeUnit.MILLISECONDS);
 				submitQueueSearch.get(1, TimeUnit.MILLISECONDS);
 				throw new EventException("Search timed out before finding bean. Contact your GDA representative.");
+			} catch (EventException evEx) {
+				throw evEx;
 			} catch (Exception ex) {
 				throw new EventException("Bean search encountered error(s)",ex);
 			}
