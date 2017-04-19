@@ -26,10 +26,12 @@ import org.eclipse.scanning.api.event.queues.IQueue;
 import org.eclipse.scanning.api.event.queues.IQueueService;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.QueueBean;
+import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.remote.QueueRequest;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.event.queues.remote.QueueResponseCreator;
 
+@Deprecated
 public class MockQueueService implements IQueueService {
 	
 	public static final String MOCK_JOB_QUEUE_ID = "mock.job-queue";
@@ -252,4 +254,18 @@ public class MockQueueService implements IQueueService {
 		// TODO Auto-generated method stub
 		return false;
 	}
+
+	@Override
+	public IQueue<? extends Queueable> getQueue(String queueID) throws EventException {
+		if (queueID.equals(jobQueueID)) {
+			return (IQueue<? extends Queueable>) getJobQueue();
+		} else {
+			if (isActiveQueueRegistered(queueID)) {
+				return (IQueue<? extends Queueable>) getActiveQueue(queueID);
+			} else {
+				throw new EventException("QueueID does not match any registered queue");
+			}
+		}
+	}
+	
 }
