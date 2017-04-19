@@ -65,12 +65,8 @@ public class SubTaskAtomProcessTest {
 		qServ = new QueueService("fake-qserv", "file:///foo/bar");
 		qServ.init();
 		qServ.start();
-		
 		ServicesHolder.setQueueService(qServ);
-		
-		//Once this lot is up, create a queue controller.
-		controller = new QueueControllerService();
-		controller.init();
+		controller = qServ;
 		ServicesHolder.setQueueControllerService(controller);
 	}
 	

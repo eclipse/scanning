@@ -20,6 +20,7 @@ import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IConsumer;
 import org.eclipse.scanning.api.event.queues.IQueueControllerService;
 import org.eclipse.scanning.api.event.queues.IQueueService;
+import org.eclipse.scanning.api.event.queues.beans.QueueBean;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.event.queues.QueueProcessFactory;
@@ -28,7 +29,6 @@ import org.eclipse.scanning.test.BrokerTest;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtomProcess;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBeanProcess;
-import org.eclipse.scanning.test.event.queues.util.EventInfrastructureFactoryService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -81,8 +81,8 @@ public class QueueServicePluginTest extends BrokerTest {
 			e.printStackTrace();
 		}
 		
-		IConsumer<Queueable> jobConsumer = queueService.getQueue(jobQueueID).getConsumer();
-		List<Queueable> statusSet = jobConsumer.getStatusSet();
+		IConsumer<QueueBean> jobConsumer = queueService.getJobQueue().getConsumer();
+		List<QueueBean> statusSet = jobConsumer.getStatusSet();
 		
 		for (Queueable bean : statusSet) {
 			if (bean.getUniqueId().equals(dummyBean.getUniqueId())) {

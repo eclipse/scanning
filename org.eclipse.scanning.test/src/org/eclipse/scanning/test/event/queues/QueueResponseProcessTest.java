@@ -77,8 +77,7 @@ public class QueueResponseProcessTest {
 		qServ.setUri("file:///foo/bar");
 		qServ.init();
 		ServicesHolder.setQueueService(qServ);
-		qControl = new QueueControllerService();
-		qControl.init();
+		qControl = (IQueueControllerService) qServ;
 		ServicesHolder.setQueueControllerService(qControl);
 		
 		//Create the QueueResponseProcess creator
