@@ -17,6 +17,7 @@ import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IConsumer;
 import org.eclipse.scanning.api.event.core.IRequester;
 import org.eclipse.scanning.api.event.core.ISubscriber;
+import org.eclipse.scanning.api.event.queues.beans.QueueBean;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.status.Status;
 
@@ -237,6 +238,13 @@ public interface IQueueControllerService {
 	 * @return String job-queue ID for the managed {@link IQueueService}.
 	 */
 	public String getJobQueueID() throws EventException;
+	
+	/**
+	 * Get the job-queue managed by this service.
+	 * 
+	 * @return {@link IQueue} job-queue of this service.
+	 */
+	public IQueue<QueueBean> getJobQueue() throws EventException;
 	
 	/**
 	 * Return an {@link IQueue} object containing the configuration options 
