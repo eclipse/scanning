@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" immediate="true" name="Queue Service OSGi configuration">
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="init" deactivate="disposeService" immediate="true" name="Queue Service OSGi configuration">
    <implementation class="org.eclipse.scanning.event.queues.QueueService"/>
    <service>
       <provide interface="org.eclipse.scanning.api.event.queues.IQueueService"/>
+      <provide interface="org.eclipse.scanning.api.event.queues.IQueueControllerService"/>
    </service>
 </scr:component>
