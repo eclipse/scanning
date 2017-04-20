@@ -60,9 +60,15 @@ public class DefaultScanResultsHandler implements IResultHandler<ScanBean> {
 	
 	public boolean confirmOpen(ScanBean bean) {
 		final Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-		return MessageDialog.openQuestion(shell, "'"+bean.getName()+"' incomplete.", 
-					"The run of '"+bean.getName()+"' has not completed.\n" +
-					"Would you like to try to open the results anyway?");
+//		return MessageDialog.openQuestion(shell, "'"+bean.getName()+"' incomplete.", 
+//					"The run of '"+bean.getName()+"' has not completed.\n" +
+//					"Would you like to try to open the results anyway?");
+		
+		// TODO: we currently do not open scan results for scans that have not finished as they cannot
+		// In future, we may wish to add a feature to support this in future. Talk to Jacob Filik
+		MessageDialog.openError(shell, "'"+bean.getName()+"' incomplete.", 
+		"Cannot open scan results.\nThe run of '"+bean.getName()+"' has not completed.");
+		return false;
 	}
 	
 	private String getEditorId(String filePath) {
