@@ -75,6 +75,7 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -117,6 +118,12 @@ import org.slf4j.LoggerFactory;
  */
 public class StatusQueueView extends EventConnectionView {
 	
+	private static final String RERUN_HANDLER_EXTENSION_POINT_ID = "org.eclipse.scanning.api.rerunHandler";
+
+	private static final String MODIFY_HANDLER_EXTENSION_POINT_ID = "org.eclipse.scanning.api.modifyHandler";
+
+	private static final String RESULTS_HANDLER_EXTENSION_POINT_ID = "org.eclipse.scanning.api.resultsHandler";
+
 	public static final String ID = "org.eclipse.scanning.event.ui.queueView";
 	
 	private static final Logger logger = LoggerFactory.getLogger(StatusQueueView.class);
@@ -139,6 +146,8 @@ public class StatusQueueView extends EventConnectionView {
 
 	private ISubscriber<EventListener> pauseSubscriber;
 	
+	private List<IResultHandler> resultsHandlers = null;
+
 	public StatusQueueView() {
 		this.service = ServiceHolder.getEventService();
 	}
@@ -595,6 +604,31 @@ public class StatusQueueView extends EventConnectionView {
 		reconnect();		
 
 	}
+	
+	private List<IResultHandler> getResultsHandlers() {
+		if (resultsHandlers == null) {
+			final IConfigurationElement[] configElements = Platform.getExtensionRegistry()
+					.getConfigurationElementsFor(RESULTS_HANDLER_EXTENSION_POINT_ID);
+			final List<IResultHandler> handlers = new ArrayList<>(configElements.length + 1);
+			for (IConfigurationElement configElement : configElements) {
+				try {
+					final IResultHandler handler = (IResultHandler) configElement.createExecutableExtension("class");
+					handler.init(service, createConsumerConfiguration());
+					handlers.add(handler);
+				} catch (Exception e) {
+					ErrorDialog.openError(getSite().getShell(), "Internal Error",
+							"Could not create results handler for class " + configElement.getAttribute("class") +
+							".\n\nPlease contact your support representative.",
+							new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
+				}
+			}
+
+			handlers.add(new DefaultResultsHandler());
+			resultsHandlers = handlers;
+		}
+		
+		return resultsHandlers;
+	}
 
 	/**
 	 * You can override this method to provide custom opening of
@@ -606,73 +640,16 @@ public class StatusQueueView extends EventConnectionView {
 		
 		if (bean == null) return;
 		
-		if (!bean.getStatus().isFinal()) {
-			boolean ok = MessageDialog.openQuestion(getSite().getShell(), "'"+bean.getName()+"' incomplete.", 
-					       "The run of '"+bean.getName()+"' has not completed.\n"+
-			               "Would you like to try to open the results anyway?");
-			if (!ok) return;
-		}
-		try {
-			final IConfigurationElement[] c = Platform.getExtensionRegistry().getConfigurationElementsFor("org.eclipse.scanning.api.resultsHandler");
-			if (c!=null) {
-				for (IConfigurationElement i : c) {
-					final IResultHandler handler = (IResultHandler)i.createExecutableExtension("class");
-					handler.init(service, createConsumerConfiguration());
-					if (handler.isHandled(bean)) {
-						boolean ok = handler.open(bean);
-						if (ok) return;
-					}
-				}
-			}
-		} catch (Exception ne) {
-			ErrorDialog.openError(getSite().getShell(), "Internal Error", "Cannot open "+bean.getRunDirectory()+" normally, will show directory instead.\n\nPlease contact your support representative.", 
-					new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage()));
-		}
-
-		if (bean.getRunDirectory()!=null) {
-			openDirectory(bean);
-		} else if (bean instanceof ScanBean) {
-			ScanBean sbean = (ScanBean)bean;
-			if (sbean.getFilePath()!=null) {
-				String filePath = sbean.getFilePath();
+		for (IResultHandler handler : getResultsHandlers()) {
+			if (handler.isHandled(bean)) {
 				try {
-					// Set the perspective to Data Browsing Perspective
-					// TODO FIXME When there is a general data viewing perspective from DAWN, use that.
-					PlatformUI.getWorkbench().showPerspective("org.edna.workbench.application.perspective.DataPerspective",       
-					                                          PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-					openExternalEditor(filePath);
-					
+					boolean ok = handler.open(bean);
+					if (ok) return;
 				} catch (Exception e) {
-					ErrorDialog.openError(getSite().getShell(), "Internal Error", "Cannot open "+filePath+".\n\nPlease contact your support representative.", 
+					ErrorDialog.openError(getSite().getShell(), "Internal Error", handler.getErrorMessage(null), 
 							new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 				}
 			}
-		}
-	}
-
-	private void openDirectory(StatusBean bean) {
-		try {
-			final IWorkbenchPage page = Util.getPage();
-			
-			final File fdir = new File(Util.getSanitizedPath(bean.getRunDirectory()));
-			if (!fdir.exists()){
-				MessageDialog.openConfirm(getSite().getShell(), "Directory Not There", "The directory '"+bean.getRunDirectory()+"' has been moved or deleted.\n\nPlease contact your support representative.");
-			    return;
-			}
-			
-			if (Util.isWindowsOS()) { // Open inside DAWN
-				final String         dir  = fdir.getAbsolutePath();		
-				IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(dir+"/fred.html");
-				final IEditorInput edInput = Util.getExternalFileStoreEditorInput(dir);
-				page.openEditor(edInput, desc.getId());
-				
-			} else { // Linux cannot be relied on to open the browser on a directory.
-				Util.browse(fdir);
-			}
-			
-		} catch (Exception e1) {
-			ErrorDialog.openError(getSite().getShell(), "Internal Error", "Cannot open "+bean.getRunDirectory()+".\n\nPlease contact your support representative.", 
-					new Status(IStatus.ERROR, Activator.PLUGIN_ID, e1.getMessage()));
 		}
 	}
 
@@ -708,7 +685,7 @@ public class StatusQueueView extends EventConnectionView {
 		}
 		
 		try {
-			final IConfigurationElement[] c = Platform.getExtensionRegistry().getConfigurationElementsFor("org.eclipse.scanning.api.modifyHandler");
+			final IConfigurationElement[] c = Platform.getExtensionRegistry().getConfigurationElementsFor(MODIFY_HANDLER_EXTENSION_POINT_ID);
 			if (c!=null) {
 				for (IConfigurationElement i : c) {
 					final IModifyHandler handler = (IModifyHandler)i.createExecutableExtension("class");
@@ -737,7 +714,7 @@ public class StatusQueueView extends EventConnectionView {
 		if (bean==null) return;
 
 		try {
-			final IConfigurationElement[] c = Platform.getExtensionRegistry().getConfigurationElementsFor("org.eclipse.scanning.api.rerunHandler");
+			final IConfigurationElement[] c = Platform.getExtensionRegistry().getConfigurationElementsFor(RERUN_HANDLER_EXTENSION_POINT_ID);
 			if (c!=null) {
 				for (IConfigurationElement i : c) {
 					final IRerunHandler handler = (IRerunHandler)i.createExecutableExtension("class");
@@ -792,7 +769,7 @@ public class StatusQueueView extends EventConnectionView {
 
 		} catch (Exception e) {
 			ErrorDialog.openError(getViewSite().getShell(), "Cannot rerun "+bean.getName(), "Cannot rerun "+bean.getName()+"\n\nPlease contact your support representative.",
-					new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+					new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 		}
 		
 	}
@@ -1011,8 +988,7 @@ public class StatusQueueView extends EventConnectionView {
 			public String getText(Object element) {
 				try {
 					final StatusBean bean = (StatusBean)element;
-					if (bean instanceof ScanBean) return ((ScanBean)bean).getFilePath();
-		            return bean.getRunDirectory();
+					return getLocation(bean);
 				} catch (Exception e) {
 					return e.getMessage();
 				}
@@ -1048,43 +1024,40 @@ public class StatusQueueView extends EventConnectionView {
 			}
 		});
 
-	    MouseMoveListener cursorListener = new MouseMoveListener() {		
+		MouseMoveListener cursorListener = new MouseMoveListener() {		
 			@Override
 			public void mouseMove(MouseEvent e) {
 				Point pt = new Point(e.x, e.y);
 				TableItem item = viewer.getTable().getItem(pt);
-				if (item == null) {
-					viewer.getTable().setCursor(null);
-					return;
-				}
-				Rectangle rect = item.getBounds(5);
-				if (rect.contains(pt)) {
-					viewer.getTable().setCursor(Display.getDefault().getSystemCursor(SWT.CURSOR_HAND));
-				} else {
-					viewer.getTable().setCursor(null);
+				
+				Cursor cursor = null;
+				if (item != null && item.getBounds(5).contains(pt)) {
+					StatusBean statusBean = (StatusBean) item.getData();
+					if (statusBean != null && getLocation(statusBean) != null) {
+						cursor = Display.getDefault().getSystemCursor(SWT.CURSOR_HAND);
+					}
 				}
 				
+				viewer.getTable().setCursor(cursor);
 			}
 		};
-        viewer.getTable().addMouseMoveListener(cursorListener);
- 
-        MouseAdapter mouseClick = new MouseAdapter() {
+		viewer.getTable().addMouseMoveListener(cursorListener);
+		
+		MouseAdapter mouseClick = new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-			    Point pt = new Point(e.x, e.y);
+				Point pt = new Point(e.x, e.y);
 				TableItem item = viewer.getTable().getItem(pt);
 				if (item == null) return;
 				Rectangle rect = item.getBounds(5);
 				if (rect.contains(pt)) {
-					
 					final StatusBean bean = (StatusBean)item.getData();
 					openResults(bean);
 				}
 			}
-        };
-        
-        viewer.getTable().addMouseListener(mouseClick);
-
+		};
+		
+		viewer.getTable().addMouseListener(mouseClick);
 	}
 
 	@Override
@@ -1135,6 +1108,11 @@ public class StatusQueueView extends EventConnectionView {
 		if (desc == null) desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(filePath+".txt");
 		return page.openEditor(editorInput, desc.getId());
 	}
+	private String getLocation(final StatusBean statusBean) {
+		if (statusBean instanceof ScanBean) return ((ScanBean)statusBean).getFilePath();
+		return statusBean.getRunDirectory();
+	}
+
 	private static IEditorInput getExternalFileStoreEditorInput(String filename) {
 		final IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(new File(filename));
 		return new FileStoreEditorInput(externalFile);
