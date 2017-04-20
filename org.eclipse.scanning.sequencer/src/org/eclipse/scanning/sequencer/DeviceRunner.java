@@ -74,9 +74,9 @@ class DeviceRunner extends LevelRunner<IRunnableDevice<?>> {
 		long timeout = -1;
 		if (model instanceof ITimeoutable) {
 			timeout = ((ITimeoutable)model).getTimeout();
-			if (timeout<0 && model instanceof IDetectorModel) {
+			if (timeout <= 0 && model instanceof IDetectorModel) {
 				IDetectorModel dmodel = (IDetectorModel)model;
-				timeout = Math.round(dmodel.getExposureTime());
+				timeout = Math.round(dmodel.getExposureTime() + 1);
 			}
 		} else if (model instanceof IDetectorModel) {
 			IDetectorModel dmodel = (IDetectorModel)model;
