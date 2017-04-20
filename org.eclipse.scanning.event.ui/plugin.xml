@@ -48,5 +48,9 @@
             name="Command Server Configuration">
       </page>
    </extension>
+   
+   <extension point="org.eclipse.scanning.api.resultsHandler">
+      <resultsHandler class="org.eclipse.scanning.event.ui.view.DefaultScanResultsHandler"/>
+   </extension>
 
 </plugin>
