@@ -22,39 +22,35 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IEventService;
+import org.eclipse.scanning.api.event.alive.ConsumerCommandBean;
+import org.eclipse.scanning.api.event.alive.KillBean;
 import org.eclipse.scanning.api.event.core.IDisconnectable;
-import org.eclipse.scanning.api.event.queues.IQueue;
 import org.eclipse.scanning.api.event.queues.IQueueControllerService;
-import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
-import org.eclipse.scanning.api.event.queues.beans.QueueBean;
+import org.eclipse.scanning.api.event.queues.IQueueService;
+import org.eclipse.scanning.api.event.queues.beans.Queueable;
+import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.event.EventServiceImpl;
-import org.eclipse.scanning.event.QueueReader;
-import org.eclipse.scanning.event.queues.Queue;
-import org.eclipse.scanning.event.queues.QueueControllerService;
+import org.eclipse.scanning.event.queues.QueueService;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.event.remote.RemoteServiceFactory;
 import org.eclipse.scanning.server.servlet.Services;
 import org.eclipse.scanning.test.BrokerTest;
+import org.eclipse.scanning.test.event.queues.RealQueueTestUtils;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtom;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
-import org.eclipse.scanning.test.event.queues.mocks.MockQueueService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 public class RemoteQueueControllerServiceTest extends BrokerTest {
 
 	private static IQueueControllerService      qservice;
 	private        IQueueControllerService      rservice;
 	
-	private MockQueueService mockQServ;
-	private IQueue<QueueBean> mockJobQ;
-	private IQueue<QueueAtom> mockActiveQ;
-	private String jqID, aqID, jqSubmQ, aqSubmQ;
+	private IQueueService qServ;
+
+	private String jqID, aqID;
 	
 	private static IEventService                eservice;
 	
@@ -84,38 +80,22 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	@Before
 	public void createService() throws EventException {
 		
-		this.jqID = "mock-job-queue";
-		this.jqSubmQ = jqID+IQueue.SUBMISSION_QUEUE_SUFFIX;
-		this.aqID = "mock-active-queue";
-		this.aqSubmQ = aqID+IQueue.SUBMISSION_QUEUE_SUFFIX;
-		this.mockJobQ = new Queue<>(jqID, uri);
-		this.mockActiveQ = new Queue<>(aqID, uri);
-		
-		this.mockQServ = new MockQueueService(mockJobQ, mockActiveQ, uri);
-		mockQServ.setCommandTopicName("mock-cmd-topic");
-		//Clear queues to avoid class cast errors (a StatusBean is prepopulated for another test elsewhere...)
-		mockQServ.getJobQueue().clearQueues();
-		mockQServ.getActiveQueue(aqID).clearQueues();
-		ServicesHolder.setQueueService(mockQServ);
-		//Check that our job- and active-consumers do values which are different IDs
-		assertFalse("job-queue consumer ID should not be null", mockQServ.getQueue(jqID).getConsumerID() == null);
-		assertFalse("active-queue consumer ID should not be null", mockQServ.getQueue(aqID).getConsumerID() == null);
-		assertFalse("job- & active-queue IDs identical", mockQServ.getQueue(jqID).getConsumerID() == mockQServ.getQueue(aqID).getConsumerID());
-		
 		//A bit of boilerplate to start the service under test
-		qservice = new QueueControllerService();
-		qservice.init();
+		qServ =  new QueueService("test-queue-root", uri.toString());
+		qServ.init();
+		ServicesHolder.setQueueService(qServ);
+		qservice = (IQueueControllerService)qServ;
 		ServicesHolder.setQueueControllerService(qservice);
-		
+				
 		rservice = eservice.createRemoteService(uri, IQueueControllerService.class);
+		
+		//Last thing, reset the support utils.
+		RealQueueTestUtils.initialise(uri);
 		
 	}
 	
 	@After
 	public void disposeService() throws EventException {
-		mockJobQ.disconnect();
-		mockActiveQ.disconnect();
-		mockQServ.stop(false);
 		qservice.stopQueueService(false);
 		((IDisconnectable)rservice).disconnect();
 	}
@@ -131,38 +111,68 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	 * @throws EventException 
 	 */
 	@Test
-	public void testStartStopService() throws EventException {
+	public void testStartStopService() throws Exception {
+		//Create command listener
+		RealQueueTestUtils.listenerForCommandBeans(qServ.getCommandTopicName(), 1);
+		
+		//Start the service for test
 		qservice.startQueueService();
-		assertTrue("Start didn't push the start button.", mockQServ.isActive());
+		assertTrue("Start didn't push the start button.", qServ.isActive());
 		
 		qservice.stopQueueService(false);
-		assertFalse("Stop didn't push the stop button.", mockQServ.isActive());
-		assertFalse("Stop should not have been forced.", mockQServ.isForced());
+		assertFalse("Stop didn't push the stop button.", qServ.isActive());
+		assertFalse("Stop should not have been forced.", lastBeanWasKiller(true));
 		
+		//Re-start service to test force stop  
+		qservice.startQueueService();
 		qservice.stopQueueService(true);
-		assertTrue("Stop should have been forced.", mockQServ.isForced());
+		assertTrue("Stop should have been forced.", lastBeanWasKiller());
 	}
 	
 	@Test
-	public void testStartStopRemote() throws EventException {
+	public void testStartStopRemote() throws Exception {
+		//Create command listener
+		RealQueueTestUtils.listenerForCommandBeans(qServ.getCommandTopicName(), 1);
+		
+		//Start the service for test
 		rservice.startQueueService();
-		assertTrue("Start didn't push the start button.", mockQServ.isActive());
+		assertTrue("Start didn't push the start button.", qServ.isActive());
 		
 		rservice.stopQueueService(false);
-		assertFalse("Stop didn't push the stop button.", mockQServ.isActive());
-		assertFalse("Stop should not have been forced.", mockQServ.isForced());
+		assertFalse("Stop didn't push the stop button.", qServ.isActive());
+		assertFalse("Stop should not have been forced.", lastBeanWasKiller(true));
 		
+		//Re-start service to test force stop
+		rservice.startQueueService();
 		rservice.stopQueueService(true);
-		assertTrue("Stop should have been forced.", mockQServ.isForced());
+		assertTrue("Stop should have been forced.", lastBeanWasKiller());
+	}
+	
+	private boolean lastBeanWasKiller() throws InterruptedException {
+		return lastBeanWasKiller(false);
+	}
+	
+	private boolean lastBeanWasKiller(boolean noWait) throws InterruptedException {
+		ConsumerCommandBean cmdBean;
+		if (noWait) {
+		cmdBean = RealQueueTestUtils.waitToGetCmdBean(0L);
+		} else {
+			cmdBean = RealQueueTestUtils.waitToGetCmdBean(3000L);
+		}
+		if (cmdBean == null) return false;
+		if (cmdBean instanceof KillBean) return true;
+		return false;
 	}
 	
 	@Test
 	public void submitRemoveService() throws Exception {
+		setQueueNames();
 		testSubmitRemove(qservice); 
 	}
 	
 	@Test
 	public void submitRemoveRemote() throws Exception {
+		setQueueNames();
 		testSubmitRemove(rservice); 
 	}
 	/**
@@ -172,8 +182,8 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	public void testSubmitRemove(IQueueControllerService test) throws Exception {
 		
 		//Beans for submission
-		DummyBean albert = new DummyBean("Albert", 10),bernard = new DummyBean("Bernard", 20);
-		DummyAtom carlos = new DummyAtom("Carlos", 30), duncan = new DummyAtom("Duncan", 40);
+		DummyBean albert = new DummyBean("Albert", 10),bernard = new DummyBean("Bernard", 20), fred = new DummyBean("Fred", 60), geoff = new DummyBean("Geoff", 70);
+		DummyAtom carlos = new DummyAtom("Carlos", 30), duncan = new DummyAtom("Duncan", 40), enrique = new DummyAtom("Enrique", 50);
 		DummyAtom xavier = new DummyAtom("Xavier", 100);
 		
 		/*
@@ -184,24 +194,21 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		 */
 		//job-queue
 		test.submit(albert, jqID);
-		QueueReader<DummyBean> beanReader = new QueueReader<>(eservice.getEventConnectorService());
-		List<DummyBean> beans = beanReader.getBeans(uri, jqSubmQ, DummyBean.class);		
-		assertEquals("No beans in job-queue after 1 submission", 1, beans.size());
+		List<? extends Queueable> beans = getNextStatusSetUpdate(jqID, 3000L);
+		assertEquals("Exactly one bean should be submitted", 1, beans.size());
 		assertEquals("Bean has wrong name", "Albert", beans.get(0).getName());
 		
 		test.submit(bernard, jqID);
-		beans = beanReader.getBeans(uri, jqSubmQ, DummyBean.class);	
-		assertEquals("Bean has wrong name", "Bernard", beans.get(1).getName());
+		beans = getNextStatusSetUpdate(jqID, 3000L);
+		assertEquals("Exactly two beans should be submitted", 2, beans.size());
+		assertEquals("Bean has wrong name", "Bernard", beans.get(0).getName());
 		
 		//active-queue
 		test.submit(carlos, aqID);
-		QueueReader<DummyAtom> atomReader = new QueueReader<>(eservice.getEventConnectorService());
-		List<DummyAtom> atoms = atomReader.getBeans(uri, aqSubmQ, DummyAtom.class);		
-		assertEquals("No beans in active-queue after 1 submission", 1, atoms.size());
-		assertEquals("Bean has wrong name", "Carlos", atoms.get(0).getName());
+		beans = getNextStatusSetUpdate(aqID, 3000L);		
+		assertEquals("Exactly one bean should be submitted", 1, beans.size());
+		assertEquals("Bean has wrong name", "Carlos", beans.get(0).getName());
 
-		test.submit(duncan, aqID);//Needed for remove test...
-		
 		/*
 		 * Remove:
 		 * - now only one bean left and it job-queue (1st)
@@ -209,20 +216,38 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		 * - throw an exception if the removed bean is no-longer removeable 
 		 *   (or not in the queue in the first place)
 		 */
-		//job-queue
-		test.remove(bernard, jqID);
-		beans = beanReader.getBeans(uri, jqSubmQ, DummyBean.class);		
-		assertEquals("Should only be one bean left in active-queue", 1, beans.size());
-		assertEquals("Wrong bean found in queue", "Albert", beans.get(0).getName());
-		
+		//We need to pause the active-queue before continuing...
+		qservice.pauseQueue(aqID);
 		//active-queue
-		test.remove(carlos, aqID);
-		atoms = atomReader.getBeans(uri, aqSubmQ, DummyAtom.class);		
-		assertEquals("Should only be one bean left in active-queue", 1, atoms.size());
-		assertEquals("Wrong bean found in queue", "Duncan", atoms.get(0).getName());
+		Thread.sleep(100); //PauseBean takes time to have an effect
+		test.submit(duncan, aqID);//Needed for remove test...
+		test.submit(enrique, aqID);
+		RealQueueTestUtils.waitForSubmitQueueLength(qServ.getQueue(aqID).getConsumer(), 3000L, 2);
+		
+		beans = getSubmitQueue(aqID);
+		assertEquals("Should be two beans in the active-queue submit queue", 2, beans.size());
+		test.remove(enrique, aqID);
+		beans = getSubmitQueue(aqID);
+		assertEquals("Should only be one bean left in active-queue", 1, beans.size());
+		assertEquals("Wrong bean found in queue", "Duncan", beans.get(0).getName());
+		
+		//We need to pause the job-queue before continuing...
+		qservice.pauseQueue(jqID);
+		//job-queue
+		test.submit(fred, jqID);
+		test.submit(geoff, jqID);
+		RealQueueTestUtils.waitForSubmitQueueLength(qServ.getJobQueue().getConsumer(), 3000L, 2);
+		
+		beans = getSubmitQueue(jqID);
+		assertEquals("Should be two beans in the job-queue submit queue", 2, beans.size());
+		test.remove(fred, jqID);
+		beans = getSubmitQueue(jqID);
+		assertEquals("Should only be one bean left in active-queue", 1, beans.size());
+		assertEquals("Wrong bean found in queue", "Geoff", beans.get(0).getName());
+		
 		try {
-			test.remove(carlos, aqID);
-			fail("Expected EventException: Carlos has already been removed");
+			test.remove(enrique, aqID);
+			fail("Expected EventException: Enrique has already been removed");
 		} catch (EventException evEx) {
 			//Expected
 		}
@@ -249,6 +274,22 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 			//Expected
 		}
 
+	}
+	
+	private void setQueueNames() throws EventException {
+		qServ.start();
+		jqID = qServ.getJobQueueID();
+		aqID = qServ.registerNewActiveQueue();
+		qServ.startActiveQueue(aqID);
+	}
+	
+	private List<? extends Queueable> getNextStatusSetUpdate(String queueID, Long timeout) throws EventException, InterruptedException {
+		RealQueueTestUtils.waitForBean(qServ.getQueue(queueID).getStatusTopicName(), timeout, 1);
+		return qServ.getQueue(queueID).getConsumer().getStatusSet();
+	}
+	
+	private List<? extends Queueable> getSubmitQueue(String queueID) throws EventException {
+		return qServ.getQueue(queueID).getConsumer().getSubmissionQueue();
 	}
 
 }

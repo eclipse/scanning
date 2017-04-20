@@ -195,7 +195,8 @@ public class QueueService extends QueueControllerService implements IQueueServic
 
 	@Override
 	public void stop(boolean force) throws EventException {
-		if (!(isActive() || jobQueue.getStatus().isActive())) {
+		if (!isActive()) return;//On two lines since stopped service with null jobQueue causes NPE
+		if (!jobQueue.getStatus().isActive()) {
 			logger.warn("Job-queue is not active.");
 			return;
 		}

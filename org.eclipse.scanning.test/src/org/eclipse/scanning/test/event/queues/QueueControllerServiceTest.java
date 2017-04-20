@@ -42,7 +42,6 @@ public class QueueControllerServiceTest {
 	private String qRoot;
 	private String uri;
 	
-//	private MockQueueService mockQServ;
 	private MockPublisher<ConsumerCommandBean> mockCmdPub;
 	private MockPublisher<Queueable> mockPub;
 	private MockSubmitter<Queueable> mockSub;
@@ -75,7 +74,7 @@ public class QueueControllerServiceTest {
 		//Get our queue names
 		jqID = testController.getJobQueueID();
 		jqSubmQ = testController.getJobQueue().getSubmissionQueueName();
-		aqID = registerActiveQueue();
+		aqID = ((IQueueService)testController).registerNewActiveQueue();
 		aqSubmQ = testController.getQueue(aqID).getSubmissionQueueName();
 	}
 	
@@ -434,11 +433,6 @@ public class QueueControllerServiceTest {
 		} else {
 			fail("Last command bean was not a KillBean.");
 		}
-	}
-	
-	private String registerActiveQueue() throws EventException {
-		return ((IQueueService)testController).registerNewActiveQueue();
-		
 	}
 
 }
