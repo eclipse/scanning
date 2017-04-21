@@ -211,7 +211,8 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		
 		//active-queue
 		test.submit(carlos, aqID);
-		beans = getSubmitQueue(aqID);	
+		beans = getSubmitQueue(aqID);
+		RealQueueTestUtils.waitForSubmitQueueLength(qServ.getQueue(aqID).getConsumer(), 5000L, 1);
 		assertEquals("Exactly one bean should be submitted", 1, beans.size());
 		assertEquals("Bean has wrong name", "Carlos", beans.get(0).getName());
 
