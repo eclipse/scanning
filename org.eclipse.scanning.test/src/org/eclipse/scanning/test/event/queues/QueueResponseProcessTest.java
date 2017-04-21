@@ -27,7 +27,6 @@ import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.remote.QueueRequest;
 import org.eclipse.scanning.api.event.queues.remote.QueueRequestType;
 import org.eclipse.scanning.api.event.status.Status;
-import org.eclipse.scanning.event.queues.QueueControllerService;
 import org.eclipse.scanning.event.queues.QueueService;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.event.queues.remote.QueueResponseCreator;

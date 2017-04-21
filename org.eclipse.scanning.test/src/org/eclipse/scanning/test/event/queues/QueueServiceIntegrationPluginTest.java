@@ -140,7 +140,7 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 		final CountDownLatch statusLatch = new CountDownLatch(1);
 		
 		//Get the queue we're interested in
-		IQueue<Queueable> queue = queueService.getQueue(queueID);
+		IQueue<Queueable> queue = null;//queueService.getQueue(queueID); FIXME!!!
 		
 		//Create a subscriber configured to listen for our bean
 		IEventService evServ = ServicesHolder.getEventService();
