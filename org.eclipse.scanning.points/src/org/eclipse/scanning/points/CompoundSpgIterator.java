@@ -15,13 +15,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
-import org.eclipse.dawnsci.analysis.dataset.roi.EllipticalROI;
-import org.eclipse.dawnsci.analysis.dataset.roi.LinearROI;
-import org.eclipse.dawnsci.analysis.dataset.roi.PointROI;
-import org.eclipse.dawnsci.analysis.dataset.roi.PolygonalROI;
-import org.eclipse.dawnsci.analysis.dataset.roi.RectangularROI;
-import org.eclipse.dawnsci.analysis.dataset.roi.SectorROI;
 import org.eclipse.scanning.api.points.AbstractPosition;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IDeviceDependentIterable;
