@@ -155,7 +155,8 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	private boolean lastBeanWasKiller(boolean noWait) throws InterruptedException {
 		ConsumerCommandBean cmdBean;
 		if (noWait) {
-		cmdBean = RealQueueTestUtils.waitToGetCmdBean(0L);
+			System.out.println("Not waiting so expect timeout...");
+			cmdBean = RealQueueTestUtils.waitToGetCmdBean(0L);
 		} else {
 			cmdBean = RealQueueTestUtils.waitToGetCmdBean(3000L);
 		}
@@ -180,6 +181,11 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	 * @throws Exception 
 	 */
 	public void testSubmitRemove(IQueueControllerService test) throws Exception {
+		//For all submit/remove testing we don't want to process anything
+		qservice.pauseQueue(jqID);
+		qservice.pauseQueue(aqID);
+		RealQueueTestUtils.listenerForCommandBeans(qServ.getCommandTopicName(), 2);
+		Thread.sleep(100); //PauseBean takes time to have an effect
 		
 		//Beans for submission
 		DummyBean albert = new DummyBean("Albert", 10),bernard = new DummyBean("Bernard", 20), fred = new DummyBean("Fred", 60), geoff = new DummyBean("Geoff", 70);
@@ -194,18 +200,18 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		 */
 		//job-queue
 		test.submit(albert, jqID);
-		List<? extends Queueable> beans = getNextStatusSetUpdate(jqID, 3000L);
+		List<? extends Queueable> beans = getSubmitQueue(jqID);
 		assertEquals("Exactly one bean should be submitted", 1, beans.size());
 		assertEquals("Bean has wrong name", "Albert", beans.get(0).getName());
 		
 		test.submit(bernard, jqID);
-		beans = getNextStatusSetUpdate(jqID, 3000L);
+		beans = getSubmitQueue(jqID);
 		assertEquals("Exactly two beans should be submitted", 2, beans.size());
-		assertEquals("Bean has wrong name", "Bernard", beans.get(0).getName());
+		assertEquals("Bean has wrong name", "Bernard", beans.get(1).getName());
 		
 		//active-queue
 		test.submit(carlos, aqID);
-		beans = getNextStatusSetUpdate(aqID, 3000L);		
+		beans = getSubmitQueue(aqID);	
 		assertEquals("Exactly one bean should be submitted", 1, beans.size());
 		assertEquals("Bean has wrong name", "Carlos", beans.get(0).getName());
 
@@ -216,34 +222,30 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		 * - throw an exception if the removed bean is no-longer removeable 
 		 *   (or not in the queue in the first place)
 		 */
-		//We need to pause the active-queue before continuing...
-		qservice.pauseQueue(aqID);
 		//active-queue
 		Thread.sleep(100); //PauseBean takes time to have an effect
 		test.submit(duncan, aqID);//Needed for remove test...
 		test.submit(enrique, aqID);
-		RealQueueTestUtils.waitForSubmitQueueLength(qServ.getQueue(aqID).getConsumer(), 3000L, 2);
+		RealQueueTestUtils.waitForSubmitQueueLength(qServ.getQueue(aqID).getConsumer(), 5000L, 2);
 		
 		beans = getSubmitQueue(aqID);
-		assertEquals("Should be two beans in the active-queue submit queue", 2, beans.size());
+		assertEquals("Should be two beans in the active-queue submit queue", 3, beans.size());
 		test.remove(enrique, aqID);
 		beans = getSubmitQueue(aqID);
-		assertEquals("Should only be one bean left in active-queue", 1, beans.size());
-		assertEquals("Wrong bean found in queue", "Duncan", beans.get(0).getName());
+		assertEquals("Should only be one bean left in active-queue", 2, beans.size());
+		assertEquals("Wrong bean found in queue", "Duncan", beans.get(1).getName());
 		
-		//We need to pause the job-queue before continuing...
-		qservice.pauseQueue(jqID);
 		//job-queue
 		test.submit(fred, jqID);
 		test.submit(geoff, jqID);
 		RealQueueTestUtils.waitForSubmitQueueLength(qServ.getJobQueue().getConsumer(), 3000L, 2);
 		
 		beans = getSubmitQueue(jqID);
-		assertEquals("Should be two beans in the job-queue submit queue", 2, beans.size());
+		assertEquals("Should be two beans in the job-queue submit queue", 4, beans.size());
 		test.remove(fred, jqID);
 		beans = getSubmitQueue(jqID);
-		assertEquals("Should only be one bean left in active-queue", 1, beans.size());
-		assertEquals("Wrong bean found in queue", "Geoff", beans.get(0).getName());
+		assertEquals("Should only be one bean left in active-queue", 3, beans.size());
+		assertEquals("Wrong bean found in queue", "Geoff", beans.get(2).getName());
 		
 		try {
 			test.remove(enrique, aqID);
@@ -281,11 +283,6 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		jqID = qServ.getJobQueueID();
 		aqID = qServ.registerNewActiveQueue();
 		qServ.startActiveQueue(aqID);
-	}
-	
-	private List<? extends Queueable> getNextStatusSetUpdate(String queueID, Long timeout) throws EventException, InterruptedException {
-		RealQueueTestUtils.waitForBean(qServ.getQueue(queueID).getStatusTopicName(), timeout, 1);
-		return qServ.getQueue(queueID).getConsumer().getStatusSet();
 	}
 	
 	private List<? extends Queueable> getSubmitQueue(String queueID) throws EventException {

@@ -46,11 +46,11 @@ public class RealQueueTestUtils {
 	 * @throws EventException
 	 * @throws InterruptedException
 	 */
-	public static void waitForBean(String topicName, Long timeout, Integer nBeans) throws EventException, InterruptedException {
+	public static void waitForBean(String topicName, Long timeout, Integer nBeans, StatusBean bean) throws EventException, InterruptedException {
 		if (timeout == null) timeout = 3000L; //Defaults
 		if (nBeans == null) nBeans = 1;
 		
-		CountDownLatch beanLatch = waitForBean(topicName, statusBeans, nBeans);
+		CountDownLatch beanLatch = waitForBean(topicName, statusBeans, nBeans, bean);
 		
 		boolean released = beanLatch.await(timeout, TimeUnit.MILLISECONDS);
 		if (!released) {
@@ -71,10 +71,10 @@ public class RealQueueTestUtils {
 	public static void listenerForCommandBeans(String commandTopicName, Integer nBeans) throws EventException {
 		if (nBeans == null) nBeans = 1; //Default
 		
-		cmdLatch = waitForBean(commandTopicName, cmdBeans, nBeans);
+		cmdLatch = waitForBean(commandTopicName, cmdBeans, nBeans, null);
 	}
 	
-	private static <T extends IdBean> CountDownLatch waitForBean(String topicName, List<T> heardBeans, Integer nBeans) throws EventException {
+	private static <T extends IdBean> CountDownLatch waitForBean(String topicName, List<T> heardBeans, Integer nBeans, IdBean bean) throws EventException {
 		final CountDownLatch beanLatch = new CountDownLatch(nBeans);
 		ISubscriber<IBeanListener<T>> queueListener = evServ.createSubscriber(uri, topicName);
 		queueListener.addListener(new IBeanListener<T>() {
@@ -82,7 +82,12 @@ public class RealQueueTestUtils {
 			@Override
 			public void beanChangePerformed(BeanEvent<T> evt) {
 				heardBeans.add(evt.getBean());
-				beanLatch.countDown();
+				//When listening for a particular bean, only release on hearing it
+				if (bean != null && evt.getBean().getUniqueId().equals(bean.getUniqueId())) {
+					beanLatch.countDown();
+				} else{
+					beanLatch.countDown();
+				}
 			}
 		});
 		return beanLatch;
