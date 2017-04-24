@@ -27,6 +27,8 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	private UUID consumerId;
 	
 	private boolean clearSubmitQueue = false, clearStatQueue = false;
+
+	private static boolean noFill = false;
 	private boolean started = false, stopped = false, disconnected = false, pauseOnStart=false;
 	
 	private String statusQueueName = "statQ", submitQueueName = "submQ";
@@ -37,8 +39,11 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	@SuppressWarnings("unchecked")
 	public MockConsumer() {
 		consumerId = UUID.randomUUID();
-		statusSet.add((U) new StatusBean());
-		submitQueue.add((U) new StatusBean());
+		
+		if (!noFill) {
+			statusSet.add((U) new StatusBean());
+			submitQueue.add((U) new StatusBean());
+		}
 	}
 	@Override
 	public String getStatusSetName() {
@@ -272,6 +277,14 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	@Override
 	public void awaitStart() {
 		throw new IllegalArgumentException("The method awaitStart() is not implemented for "+getClass().getSimpleName());
+	}
+	
+	/**
+	 * Do not prepopulate queues with StatusBeans!
+	 * @param noFill
+	 */
+	public static void setNoFill(boolean noFill) {
+		MockConsumer.noFill = noFill;
 	}
 	
 

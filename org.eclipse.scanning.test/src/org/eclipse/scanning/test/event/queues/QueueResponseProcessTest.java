@@ -27,7 +27,6 @@ import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.remote.QueueRequest;
 import org.eclipse.scanning.api.event.queues.remote.QueueRequestType;
 import org.eclipse.scanning.api.event.status.Status;
-import org.eclipse.scanning.event.queues.QueueControllerService;
 import org.eclipse.scanning.event.queues.QueueService;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.event.queues.remote.QueueResponseCreator;
@@ -77,8 +76,7 @@ public class QueueResponseProcessTest {
 		qServ.setUri("file:///foo/bar");
 		qServ.init();
 		ServicesHolder.setQueueService(qServ);
-		qControl = new QueueControllerService();
-		qControl.init();
+		qControl = (IQueueControllerService) qServ;
 		ServicesHolder.setQueueControllerService(qControl);
 		
 		//Create the QueueResponseProcess creator

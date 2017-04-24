@@ -18,6 +18,7 @@ import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.queues.IQueueProcess;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
+import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.event.queues.processes.MoveAtomProcess;
 import org.eclipse.scanning.event.queues.processes.ScanAtomProcess;
 import org.eclipse.scanning.event.queues.processes.SubTaskAtomProcess;
@@ -142,11 +143,20 @@ public class QueueProcessFactory {
 	public static <T extends Queueable> IQueueProcess getProcessor(T bean, IPublisher<T> publisher, Boolean blocking) throws EventException {
 		Class<? extends IQueueProcess> clazz = PROCESSES.get(bean.getClass().getName());
 		
-		if (clazz == null) throw new EventException("No processor registered for bean type '"+bean.getClass().getName()+"'");
+		if (clazz == null) {
+			bean.setStatus(Status.FAILED);
+			bean.setMessage("No processor registered for bean type.");
+			publisher.broadcast(bean);
+			logger.error("No processor registered for bean type '"+bean.getClass().getName()+"'");
+			throw new EventException("No processor registered for bean type '"+bean.getClass().getName()+"'");
+		}
 		try {
 			return clazz.getConstructor(Queueable.class, IPublisher.class, Boolean.class)
 					.newInstance(bean, publisher, blocking);
 		} catch (Exception ex) {
+			bean.setStatus(Status.FAILED);
+			bean.setMessage("Could not create a suitable processor.");
+			publisher.broadcast(bean);
 			logger.error("Could not create new instance of class '"+clazz.getName()+"'.");
 			throw new EventException("Could not create new instance of processor class", ex);
 		}

@@ -19,7 +19,6 @@ import org.eclipse.scanning.api.event.alive.KillBean;
 import org.eclipse.scanning.api.event.alive.PauseBean;
 import org.eclipse.scanning.api.event.core.IConsumer;
 import org.eclipse.scanning.api.event.core.ISubscriber;
-import org.eclipse.scanning.api.event.queues.IQueue;
 import org.eclipse.scanning.api.event.queues.IQueueControllerEventConnector;
 import org.eclipse.scanning.api.event.queues.IQueueControllerService;
 import org.eclipse.scanning.api.event.queues.IQueueService;
@@ -31,11 +30,10 @@ import org.eclipse.scanning.event.queues.remote.BeanStatusFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QueueControllerService implements IQueueControllerService {
+public abstract class QueueControllerService implements IQueueService, IQueueControllerService {
 	
 	private static final Logger logger = LoggerFactory.getLogger(QueueControllerService.class);
 	
-	private IQueueService queueService;
 	private IQueueControllerEventConnector eventConnector;
 	
 	private boolean init = false;
@@ -53,17 +51,10 @@ public class QueueControllerService implements IQueueControllerService {
 	
 	@Override
 	public void init() throws EventException {
-		//Set up servicee
-		queueService = ServicesHolder.getQueueService();
-
-		if (!queueService.isInitialized()) {
-			queueService.init();
-		}
-
 		//Configure the QueueController-EventService connector
 		eventConnector = new QueueControllerEventConnector();
 		eventConnector.setEventService(ServicesHolder.getEventService());
-		eventConnector.setUri(queueService.getURI());
+		eventConnector.setUri(getURI());
 		
 		init = true;
 	}
@@ -71,25 +62,26 @@ public class QueueControllerService implements IQueueControllerService {
 	@Override
 	public void startQueueService() throws EventException {
 		if (!init) init();
-		queueService.start();
+		start();
 	}
+	
 
 	@Override
 	public void stopQueueService(boolean force) throws EventException {
-		queueService.stop(force);
+		stop(force);
 	}
 
 	@Override
 	public <T extends Queueable> void submit(T bean, String queueID) throws EventException {
 		checkBeanType(bean, queueID);
-		String submitQueue = queueService.getQueue(queueID).getSubmissionQueueName();
+		String submitQueue = getQueue(queueID).getSubmissionQueueName();
 		eventConnector.submit(bean, submitQueue);
 	}
 
 	@Override
 	public <T extends Queueable> void remove(T bean, String queueID) throws EventException {
 		checkBeanType(bean, queueID);
-		String submitQueueName = queueService.getQueue(queueID).getSubmissionQueueName();
+		String submitQueueName = getQueue(queueID).getSubmissionQueueName();
 		boolean success = eventConnector.remove(bean, submitQueueName);
 		
 		if (!success) {
@@ -101,7 +93,7 @@ public class QueueControllerService implements IQueueControllerService {
 	@Override
 	public <T extends Queueable> void reorder(T bean, int move, String queueID) throws EventException {
 		checkBeanType(bean, queueID);
-		String submitQueueName = queueService.getQueue(queueID).getSubmissionQueueName();
+		String submitQueueName = getQueue(queueID).getSubmissionQueueName();
 		boolean success = eventConnector.reorder(bean, move, submitQueueName);		
 		
 		if (!success) {
@@ -132,7 +124,7 @@ public class QueueControllerService implements IQueueControllerService {
 		}
 		
 		//The bean is pausable. Get the status topic name and publish the bean
-		String statusTopicName = queueService.getQueue(queueID).getStatusTopicName();
+		String statusTopicName = getQueue(queueID).getStatusTopicName();
 		bean.setStatus(Status.REQUEST_PAUSE);
 		eventConnector.publishBean(bean, statusTopicName);
 	}
@@ -158,7 +150,7 @@ public class QueueControllerService implements IQueueControllerService {
 		}
 
 		//The bean is resumable. Get the status topic name and publish the bean
-		String statusTopicName = queueService.getQueue(queueID).getStatusTopicName();
+		String statusTopicName = getQueue(queueID).getStatusTopicName();
 		bean.setStatus(Status.REQUEST_RESUME);
 		eventConnector.publishBean(bean, statusTopicName);
 	}
@@ -185,7 +177,7 @@ public class QueueControllerService implements IQueueControllerService {
 		}
 
 		//The bean is terminatable. Get the status topic name and publish the bean
-		String statusTopicName = queueService.getQueue(queueID).getStatusTopicName();
+		String statusTopicName = getQueue(queueID).getStatusTopicName();
 		bean.setStatus(Status.REQUEST_TERMINATE);
 		eventConnector.publishBean(bean, statusTopicName);
 	}
@@ -193,7 +185,7 @@ public class QueueControllerService implements IQueueControllerService {
 	@Override
 	public void pauseQueue(String queueID) throws EventException {
 		//We need to get the consumerID of the queue...
-		UUID consumerId = queueService.getQueue(queueID).getConsumerID();
+		UUID consumerId = getQueue(queueID).getConsumerID();
 		
 		//Create pausenator configured for the target queueID & publish it.
 		PauseBean pausenator = new PauseBean();
@@ -205,7 +197,7 @@ public class QueueControllerService implements IQueueControllerService {
 	@Override
 	public void resumeQueue(String queueID) throws EventException {
 		//We need to get the consumerID of the queue...
-		UUID consumerId = queueService.getQueue(queueID).getConsumerID();
+		UUID consumerId = getQueue(queueID).getConsumerID();
 		
 		//Create pausenator configured for the target queueID & publish it.
 		PauseBean pausenator = new PauseBean();
@@ -218,7 +210,7 @@ public class QueueControllerService implements IQueueControllerService {
 	public void killQueue(String queueID, boolean disconnect, boolean restart, boolean exitProcess)
 			throws EventException {
 		//We need to get the consumerID of the remote queue...
-		UUID consumerId = queueService.getQueue(queueID).getConsumerID();
+		UUID consumerId = getQueue(queueID).getConsumerID();
 
 		//Configure the killenator as requested and broadcast it
 		KillBean killenator = new KillBean();
@@ -231,33 +223,8 @@ public class QueueControllerService implements IQueueControllerService {
 
 	@Override
 	public <T extends EventListener> ISubscriber<T> createQueueSubscriber(String queueID) throws EventException {
-		String statusTopicName = queueService.getQueue(queueID).getStatusTopicName();
+		String statusTopicName = getQueue(queueID).getStatusTopicName();
 		return eventConnector.createQueueSubscriber(statusTopicName);
-	}
-
-	@Override
-	public String getCommandSetName() {
-		return queueService.getCommandSetName();
-	}
-
-	@Override
-	public String getCommandTopicName() {
-		return queueService.getCommandTopicName();
-	}
-
-	@Override
-	public String getHeartbeatTopicName() {
-		return queueService.getHeartbeatTopicName();
-	}
-
-	@Override
-	public String getJobQueueID() {
-		return queueService.getJobQueueID();
-	}	
-	
-	@Override
-	public IQueue<? extends Queueable> getQueue(String queueID) throws EventException {
-		return queueService.getQueue(queueID);
 	}
 
 	@Override

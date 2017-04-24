@@ -26,12 +26,10 @@ import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.alive.ConsumerCommandBean;
 import org.eclipse.scanning.api.event.alive.KillBean;
 import org.eclipse.scanning.api.event.queues.IQueue;
-import org.eclipse.scanning.api.event.queues.IQueueControllerService;
 import org.eclipse.scanning.api.event.queues.IQueueService;
 import org.eclipse.scanning.api.event.queues.QueueStatus;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.QueueBean;
-import org.eclipse.scanning.event.queues.QueueControllerService;
 import org.eclipse.scanning.event.queues.QueueService;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
@@ -49,7 +47,6 @@ public class QueueServiceTest {
 	private MockEventService mockEvServ = new MockEventService();
 	
 	private IQueueService testQServ;
-	private IQueueControllerService controllerServ;
 	
 	private String qRoot;
 	private String uri;
@@ -61,20 +58,21 @@ public class QueueServiceTest {
 		mockEvServ.setMockConsumer(mockCons);
 		mockEvServ.setMockCmdPublisher(mockCmdPub);
 		ServicesHolder.setEventService(mockEvServ);
-		
-		controllerServ = new QueueControllerService();
-		ServicesHolder.setQueueControllerService(controllerServ);
+
 		
 		qRoot = "test-queue-root";
 		uri = "file:///foo/bar";
+		
+		//Initialise the QueueService
+		testQServ = new QueueService(qRoot, uri);
+		ServicesHolder.setQueueService(testQServ);
+		testQServ.init();
 	}
 	
 	@After
 	public void tearDown() throws Exception {
 		testQServ.disposeService();
-		
 		ServicesHolder.unsetQueueService(testQServ);
-		ServicesHolder.unsetQueueControllerService(controllerServ);
 	}
 	
 	/**
@@ -83,10 +81,6 @@ public class QueueServiceTest {
 	 */
 	@Test
 	public void testServiceInit() throws EventException {
-		testQServ = new QueueService(qRoot, uri);
-		testQServ.init();
-		ServicesHolder.setQueueService(testQServ);//For QueueControllerService
-		controllerServ.init();
 		/*
 		 * init should:
 		 * - check uriString set equal to uri
@@ -119,8 +113,6 @@ public class QueueServiceTest {
 	 */
 	@Test
 	public void testServiceDisposal() throws EventException {
-		testQServ = new QueueService(qRoot, uri);
-		testQServ.init();
 		testQServ.start();
 		testQServ.stop(false);
 		testQServ.disposeService();
@@ -149,10 +141,6 @@ public class QueueServiceTest {
 	 */
 	@Test
 	public void testServiceStart() throws EventException {
-		testQServ = new QueueService(qRoot, uri);
-		testQServ.init();
-		ServicesHolder.setQueueService(testQServ);//For QueueControllerService
-		controllerServ.init();
 		testQServ.start();
 		/*
 		 * Start should:
@@ -170,10 +158,6 @@ public class QueueServiceTest {
 	 */
 	@Test
 	public void testServiceStop() throws EventException {
-		testQServ = new QueueService(qRoot, uri);
-		testQServ.init();
-		ServicesHolder.setQueueService(testQServ);//For QueueControllerService
-		controllerServ.init();
 		testQServ.start();
 		testQServ.registerNewActiveQueue();
 		testQServ.stop(false);
@@ -220,10 +204,6 @@ public class QueueServiceTest {
 	 */
 	@Test
 	public void testQueueStartStop() throws EventException {
-		testQServ = new QueueService(qRoot, uri);
-		testQServ.init();
-		ServicesHolder.setQueueService(testQServ);//For QueueControllerService
-		controllerServ.init();
 		testQServ.start();
 		/*
 		 * Should:
@@ -260,10 +240,6 @@ public class QueueServiceTest {
 	 */
 	@Test
 	public void testRegistration() throws EventException {
-		testQServ = new QueueService(qRoot, uri);
-		testQServ.init();
-		ServicesHolder.setQueueService(testQServ);//For QueueControllerService
-		controllerServ.init();
 		testQServ.start();
 		/*
 		 * Should:
@@ -334,8 +310,6 @@ public class QueueServiceTest {
 	 */
 	@Test
 	public void testConfigChange() throws EventException, URISyntaxException {
-		testQServ = new QueueService(qRoot, uri);
-		testQServ.init();
 		testQServ.start();
 		
 		/*

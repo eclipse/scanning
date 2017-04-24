@@ -297,6 +297,12 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 		reply = sendQuery(query);
 		return reply.getJobQueueID();
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public IQueue<QueueBean> getJobQueue() throws EventException {
+		return (IQueue<QueueBean>) getQueue(getJobQueueID());
+	}
 
 	@Override
 	public IQueue<? extends Queueable> getQueue(String queueID) throws EventException {

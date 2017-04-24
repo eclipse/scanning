@@ -154,7 +154,7 @@ public interface IQueueService {
 	public Set<String> getAllActiveQueueIDs();
 	
 	/**
-	 * Default method to return any queue based on a supplied queueID.
+	 * Method to return any queue based on a supplied queueID.
 	 * Note: the IQueue is case to type T which extends {@link Queueable}; both
 	 * {@link QueueBean} & {@link QueueAtom} (expected types) extend Queueable.
 	 * 
@@ -162,19 +162,7 @@ public interface IQueueService {
 	 * @return IQueue representing the requested queue.
 	 * @throws EventException - if queueID is unknown
 	 */
-	//OK, since Queueable is a supertype of QueueBean & QueueAtom
-	@SuppressWarnings("unchecked")
-	public default <T extends Queueable> IQueue<T> getQueue(String queueID) throws EventException {//FIXME
-		if (queueID.equals(getJobQueueID())) {
-			return (IQueue<T>) getJobQueue();
-		} else {
-			if (isActiveQueueRegistered(queueID)) {
-				return (IQueue<T>) getActiveQueue(queueID);
-			} else {
-				throw new EventException("QueueID does not match any registered queue");
-			}
-		}
-	}
+	public IQueue<? extends Queueable> getQueue(String queueID) throws EventException;
 	
 	/**
 	 * Get the job-queue managed by this service.

@@ -20,28 +20,28 @@ import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.alive.ConsumerCommandBean;
 import org.eclipse.scanning.api.event.alive.KillBean;
 import org.eclipse.scanning.api.event.alive.PauseBean;
-import org.eclipse.scanning.api.event.queues.IQueue;
 import org.eclipse.scanning.api.event.queues.IQueueControllerService;
+import org.eclipse.scanning.api.event.queues.IQueueService;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.QueueBean;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.status.Status;
-import org.eclipse.scanning.event.queues.Queue;
-import org.eclipse.scanning.event.queues.QueueControllerService;
+import org.eclipse.scanning.event.queues.QueueService;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtom;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
 import org.eclipse.scanning.test.event.queues.mocks.MockConsumer;
 import org.eclipse.scanning.test.event.queues.mocks.MockEventService;
 import org.eclipse.scanning.test.event.queues.mocks.MockPublisher;
-import org.eclipse.scanning.test.event.queues.mocks.MockQueueService;
 import org.eclipse.scanning.test.event.queues.mocks.MockSubmitter;
 import org.junit.Before;
 import org.junit.Test;
 
 public class QueueControllerServiceTest {
 	
-	private MockQueueService mockQServ;
+	private String qRoot;
+	private String uri;
+	
 	private MockPublisher<ConsumerCommandBean> mockCmdPub;
 	private MockPublisher<Queueable> mockPub;
 	private MockSubmitter<Queueable> mockSub;
@@ -54,6 +54,7 @@ public class QueueControllerServiceTest {
 	public void setUp() throws EventException {
 		//Configure the MockEventService
 		mockEvServ = new MockEventService();
+		mockEvServ.setConsumerNoFill(true);
 		mockPub = new MockPublisher<>(null, null);
 		mockEvServ.setMockPublisher(mockPub);
 		mockCmdPub = new MockPublisher<>(null, null);
@@ -62,45 +63,19 @@ public class QueueControllerServiceTest {
 		mockEvServ.setMockSubmitter(mockSub);
 		ServicesHolder.setEventService(mockEvServ);
 		
-		//Configure the MockQueueService
-		jqID = "mock-job-queue";
-		jqSubmQ = jqID+IQueue.SUBMISSION_QUEUE_SUFFIX;
-		aqID = "mock-active-queue";
-		aqSubmQ = aqID+IQueue.SUBMISSION_QUEUE_SUFFIX;
-		IQueue<QueueBean> mockJobQ = new Queue<>(jqID, null);
-		IQueue<QueueAtom> mockActiveQ = new Queue<>(aqID, null);
-		mockQServ = new MockQueueService(mockJobQ, mockActiveQ);
-		mockQServ.setCommandTopicName("mock-cmd-topic");
-		//Clear queues to avoid class cast errors (a StatusBean is prepopulated for another test elsewhere...)
-		mockQServ.getJobQueue().clearQueues();
-		mockQServ.getActiveQueue(aqID).clearQueues();
-		ServicesHolder.setQueueService(mockQServ);
-		//Check that our job- and active-consumers do values which are different IDs
-		assertFalse("job-queue consumer ID should not be null", mockQServ.getQueue(jqID).getConsumerID() == null);
-		assertFalse("active-queue consumer ID should not be null", mockQServ.getQueue(aqID).getConsumerID() == null);
-		assertFalse("job- & active-queue IDs identical", mockQServ.getQueue(jqID).getConsumerID() == mockQServ.getQueue(aqID).getConsumerID());
-		
 		//A bit of boilerplate to start the service under test
-		testController = new QueueControllerService();
+		qRoot = "test-queue-root";
+		uri = "file:///foo/bar";
+		testController = new QueueService(qRoot, uri);
+		ServicesHolder.setQueueService((IQueueService) testController);
 		testController.init();
-	}
-		
-	/**
-	 * Test whether starting & stopping pushes the right buttons in the 
-	 * QueueService
-	 * @throws EventException 
-	 */
-	@Test
-	public void testStartStop() throws EventException {
 		testController.startQueueService();
-		assertTrue("Start didn't push the start button.", mockQServ.isActive());
 		
-		testController.stopQueueService(false);
-		assertFalse("Stop didn't push the stop button.", mockQServ.isActive());
-		assertFalse("Stop should not have been forced.", mockQServ.isForced());
-		
-		testController.stopQueueService(true);
-		assertTrue("Stop should have been forced.", mockQServ.isForced());
+		//Get our queue names
+		jqID = testController.getJobQueueID();
+		jqSubmQ = testController.getJobQueue().getSubmissionQueueName();
+		aqID = ((IQueueService)testController).registerNewActiveQueue();
+		aqSubmQ = testController.getQueue(aqID).getSubmissionQueueName();
 	}
 	
 	/**
@@ -109,8 +84,6 @@ public class QueueControllerServiceTest {
 	 */
 	@Test
 	public void testSubmitRemove() throws Exception {
-		String submQ;
-		
 		//Beans for submission
 		DummyBean albert = new DummyBean("Albert", 10),bernard = new DummyBean("Bernard", 20);
 		DummyAtom carlos = new DummyAtom("Carlos", 30), duncan = new DummyAtom("Duncan", 40);
@@ -131,7 +104,6 @@ public class QueueControllerServiceTest {
 		assertEquals("Bean has wrong name", "Bernard", mockSub.getLastSubmitted(jqSubmQ).getName());
 		
 		//active-queue
-		submQ = mockQServ.getActiveQueue(aqID).getSubmissionQueueName();
 		testController.submit(carlos, aqID);
 		assertEquals("No beans in active-queue after 1 submission", 1, mockSub.getQueueSize(aqSubmQ));
 		assertEquals("Bean has wrong name", "Carlos", mockSub.getLastSubmitted(aqSubmQ).getName());
@@ -182,7 +154,6 @@ public class QueueControllerServiceTest {
 		} catch (EventException evEx) {
 			//Expected
 		}
-
 	}
 	
 	/**
@@ -190,7 +161,7 @@ public class QueueControllerServiceTest {
 	 * @throws EventException
 	 */
 	@Test
-	public void testReorder() throws EventException {				
+	public void testReorder() throws EventException {
 		//Beans for submission
 		DummyBean albert = new DummyBean("Albert", 10);
 		DummyAtom carlos = new DummyAtom("Carlos", 30);
@@ -198,7 +169,7 @@ public class QueueControllerServiceTest {
 		
 		//Add two beans to the queues
 		testController.submit(albert, jqID);
-		testController.submit(carlos, aqID);		
+		testController.submit(carlos, aqID);
 		/*
 		 * Submit beans & reorder
 		 * - check number of moves correct for given bean
@@ -373,9 +344,10 @@ public class QueueControllerServiceTest {
 	
 	private void setUpTwoBeanStatusSet(QueueBean albert, QueueAtom carlos) throws EventException {		
 		//Set up beans in right queues
-		MockConsumer<QueueBean> jCons = (MockConsumer<QueueBean>) mockQServ.getJobQueue().getConsumer();
+		MockConsumer<QueueBean> jCons = (MockConsumer<QueueBean>) testController.getJobQueue().getConsumer();
 		jCons.addToStatusSet(albert);
-		MockConsumer<QueueAtom> aCons = (MockConsumer<QueueAtom>) mockQServ.getActiveQueue(aqID).getConsumer();
+		@SuppressWarnings("unchecked")
+		MockConsumer<QueueAtom> aCons = (MockConsumer<QueueAtom>) testController.getQueue(aqID).getConsumer();
 		aCons.addToStatusSet(carlos);
 	}
 	
@@ -415,7 +387,7 @@ public class QueueControllerServiceTest {
 	private void analysePauser(String queueID, boolean pause) throws EventException {
 		if (mockCmdPub.getLastCmdBean() instanceof PauseBean) {
 			PauseBean pauser = (PauseBean)mockCmdPub.getLastCmdBean();
-			assertEquals("Kill bean has wrong consumer ID", mockQServ.getQueue(queueID).getConsumerID(), pauser.getConsumerId());
+			assertEquals("Kill bean has wrong consumer ID", testController.getQueue(queueID).getConsumerID(), pauser.getConsumerId());
 			assertEquals("Wrong boolean for pause field", pause, pauser.isPause());
 		} else {
 			fail("Last command bean was not a PauseBean.");
@@ -455,7 +427,7 @@ public class QueueControllerServiceTest {
 	private void analyseKiller(String queueID, boolean disconnect, boolean exitProc) throws EventException {
 		if (mockCmdPub.getLastCmdBean() instanceof KillBean) {
 			KillBean killer = (KillBean)mockCmdPub.getLastCmdBean();
-			assertEquals("Kill bean has wrong consumer ID", mockQServ.getQueue(queueID).getConsumerID(), killer.getConsumerId());
+			assertEquals("Kill bean has wrong consumer ID", testController.getQueue(queueID).getConsumerID(), killer.getConsumerId());
 			assertEquals("Disconnect should be true (was false)", disconnect, killer.isDisconnect());
 			assertEquals("ExitProcess should be false (was true)", exitProc, killer.isExitProcess());
 		} else {

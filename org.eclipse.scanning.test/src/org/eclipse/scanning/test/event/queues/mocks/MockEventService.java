@@ -42,6 +42,8 @@ public class MockEventService implements IEventService {
 	private MockSubmitter<? extends StatusBean> mockSubmitter;
 	private MockSubscriber<? extends EventListener> mockSubscriber;
 	private MockRequester<? extends IdBean> mockRequester; 
+	
+	private boolean noConsumerFill = false;
 
 	@Override
 	public <T> IQueueReader<T> createQueueReader(URI uri, String queueName) {
@@ -90,6 +92,7 @@ public class MockEventService implements IEventService {
 	@Override
 	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri, String submissionQName, String statusQName,
 			String statusTName, String heartbeatTName, String commandTName) throws EventException {
+		MockConsumer.setNoFill(noConsumerFill);
 		
 		//If the test have set a consumer on this event service, return that, otherwise create a new instance
 		MockConsumer<? extends StatusBean> mockConsumer;
@@ -187,5 +190,12 @@ public class MockEventService implements IEventService {
 		MockConsumer<? extends StatusBean> mc = mockConsumers.get("defaultCons");
 		mockConsumers = new HashMap<>();
 		mockConsumers.put("defaultCons", mc);
+	}
+	
+	/**
+	 * Do not prepopulate consumer with StatusBeans!
+	 */
+	public void setConsumerNoFill(boolean noFill) {
+		noConsumerFill = noFill;
 	}
 }
