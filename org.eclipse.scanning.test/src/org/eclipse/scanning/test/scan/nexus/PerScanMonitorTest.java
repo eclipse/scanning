@@ -37,6 +37,7 @@ import org.eclipse.dawnsci.nexus.NXentry;
 import org.eclipse.dawnsci.nexus.NXinstrument;
 import org.eclipse.dawnsci.nexus.NXpositioner;
 import org.eclipse.dawnsci.nexus.NXroot;
+import org.eclipse.dawnsci.nexus.NXslit;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetUtils;
 import org.eclipse.january.dataset.IDataset;
@@ -122,10 +123,9 @@ public class PerScanMonitorTest extends NexusTest {
 				"perScanMonitor3", "perScanMonitor4", "perScanMonitor5", "perScanMonitor6");
 	}
 	
-	@Ignore("dcs was supposed to be an NXslit, not an NXpositioner, so this test will need to be fixed later...")
 	@Test
 	public void testScanWithConfiguredScannable() throws Exception {
-		test(perPointMonitor, dcs);
+		test(perPointMonitor, dcs, "dcs");
 	}
 
 	private void test(IScannable<?> monitor, IScannable<?> perScanMonitor,
@@ -231,24 +231,46 @@ public class PerScanMonitorTest extends NexusTest {
 		
 		for (String perScanMonitorName : perScanMonitorNames) {
 			NXpositioner positioner = instrument.getPositioner(perScanMonitorName);
-			assertNotNull(positioner);
-			assertEquals(perScanMonitorName, positioner.getNameScalar());
-			
-			if (perScanMonitorName.startsWith("string")) {
-				String expectedValue = (String) stringPerScanMonitor.getPosition();
-				
+			if (positioner != null) {
+				assertEquals(perScanMonitorName, positioner.getNameScalar());
+
+				if (perScanMonitorName.startsWith("string")) {
+					String expectedValue = (String) stringPerScanMonitor.getPosition();
+					
+				} else {
+					int num = Integer.parseInt(perScanMonitorName.substring("perScanMonitor".length()));
+					double expectedValue = num * 10.0;
+					
+					dataNode = positioner.getDataNode("value_set"); // TODO should not be here for per scan monitor
+					assertNotNull(dataNode);
+					dataset = DatasetUtils.sliceAndConvertLazyDataset(dataNode.getDataset());
+					assertEquals(1, dataset.getSize());
+					assertEquals(Dataset.FLOAT64, dataset.getDType());
+					assertEquals(expectedValue, dataset.getElementDoubleAbs(0), 1e-15);
+					
+					dataNode = positioner.getDataNode(NXpositioner.NX_VALUE);
+					assertNotNull(dataNode);
+					dataset = DatasetUtils.sliceAndConvertLazyDataset(dataNode.getDataset());
+					assertEquals(1, dataset.getSize());
+					assertEquals(Dataset.FLOAT64, dataset.getDType());
+					assertEquals(expectedValue, dataset.getElementDoubleAbs(0), 1e-15);
+				}
 			} else {
-				int num = Integer.parseInt(perScanMonitorName.substring("perScanMonitor".length()));
-				double expectedValue = num * 10.0;
+				NXslit slit = instrument.getChild(perScanMonitorName, NXslit.class);
+
+				assertNotNull(slit);
+				assertEquals(perScanMonitorName, slit.getString("name")); // There is no NXslit.getNameScaler() or NXslit.NX_NAME
 				
-				dataNode = positioner.getDataNode("value_set"); // TODO should not be here for per scan monitor
+				double expectedValue = 10.0;
+
+				dataNode = slit.getDataNode(NXslit.NX_X_GAP);
 				assertNotNull(dataNode);
 				dataset = DatasetUtils.sliceAndConvertLazyDataset(dataNode.getDataset());
 				assertEquals(1, dataset.getSize());
 				assertEquals(Dataset.FLOAT64, dataset.getDType());
 				assertEquals(expectedValue, dataset.getElementDoubleAbs(0), 1e-15);
 				
-				dataNode = positioner.getDataNode(NXpositioner.NX_VALUE);
+				dataNode = slit.getDataNode(NXslit.NX_Y_GAP);
 				assertNotNull(dataNode);
 				dataset = DatasetUtils.sliceAndConvertLazyDataset(dataNode.getDataset());
 				assertEquals(1, dataset.getSize());
