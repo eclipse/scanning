@@ -26,6 +26,12 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 	@FieldDescriptor(file=FileType.EXISTING_FILE, hint="The full path of the processing file")
 	private String processingFilePath;
 	
+	@FieldDescriptor(visible=false)
+	private String xmx = "1024m";
+	
+	@FieldDescriptor(visible=false)
+	private int timeOut = 60000;
+	
 	public ClusterProcessingModel() {
 		
 	}
@@ -58,13 +64,25 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 	public void setProcessingFilePath(String processingFileName) {
 		this.processingFilePath = processingFileName;
 	}
+	
+	public String getXmx() {
+		return xmx;
+	}
+	public void setXmx(String xmx) {
+		this.xmx = xmx;
+	}
+	public int getTimeOut() {
+		return timeOut;
+	}
+	public void setTimeOut(int timeOut) {
+		this.timeOut = timeOut;
+	}
 
 	@Override
 	public String toString() {
 		return "ClusterProcessingModel [name=" + name + ", detectorName=" + detectorName + ", processingFilePath="
 				+ processingFilePath + "]";
 	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -72,9 +90,10 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 		result = prime * result + ((detectorName == null) ? 0 : detectorName.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((processingFilePath == null) ? 0 : processingFilePath.hashCode());
+		result = prime * result + timeOut;
+		result = prime * result + ((xmx == null) ? 0 : xmx.hashCode());
 		return result;
 	}
-
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -99,7 +118,16 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 				return false;
 		} else if (!processingFilePath.equals(other.processingFilePath))
 			return false;
+		if (timeOut != other.timeOut)
+			return false;
+		if (xmx == null) {
+			if (other.xmx != null)
+				return false;
+		} else if (!xmx.equals(other.xmx))
+			return false;
 		return true;
 	}
+
+	
 	
 }
