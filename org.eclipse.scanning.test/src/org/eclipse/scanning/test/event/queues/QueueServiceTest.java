@@ -99,12 +99,7 @@ public class QueueServiceTest {
 		//Create an unconfigured QueueService
 		testQServ.disposeService();
 		testQServ = new QueueService();
-		try {
-			testQServ.init();
-			fail("Should not be able to init without a qRoot or uri set.");
-		} catch (IllegalStateException evEx) {
-			//Expected
-		}
+		testQServ.init(); // Nothing to init!
 	}
 	
 	/**
