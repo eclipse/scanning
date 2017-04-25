@@ -154,12 +154,12 @@ public class ExpressionWatchdog extends AbstractWatchdog implements IPositionLis
 		    
 		    checkPosition(firstPosition);
 		    
+		    logger.debug("Expression Watchdog started on "+controller.getName());
 		} catch (ScanningException ne) {
 			throw ne; // If there is something badly wrong a proper scanning exception will be prepared and thrown
 		} catch (Exception ne) {
 			logger.error("Cannot start watchdog!", ne);
 		}
-		logger.debug("Expression Watchdog started on "+controller.getName());
 	} 
 	
 	@PointEnd

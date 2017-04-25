@@ -255,10 +255,10 @@ public class TopupWatchdog extends AbstractWatchdog implements IPositionListener
 			long t = getValueMs(((Number)topup.getPosition()).doubleValue(), countdownUnit);
 			processPosition(t); // Pauses the starting scan if topup already running.
 			
+			logger.debug("Watchdog started on "+controller.getName());
 		} catch (Exception ne) {
 			logger.error("Cannot start watchdog!", ne);
 		}
-		logger.debug("Watchdog started on "+controller.getName());
 	} 
 	
 	@PointEnd
@@ -273,10 +273,10 @@ public class TopupWatchdog extends AbstractWatchdog implements IPositionListener
 		    IScannable<?> topup = getScannable(model.getCountdownName());
 		    ((IPositionListenable)topup).removePositionListener(this);
 		    
+		    logger.debug("Watchdog stopped on "+controller.getName());
 		} catch (ScanningException ne) {
 			logger.error("Cannot stop watchdog!", ne);
 		}
-		logger.debug("Watchdog stopped on "+controller.getName());
 	}
 	
 	public String getCountdownUnit() {
