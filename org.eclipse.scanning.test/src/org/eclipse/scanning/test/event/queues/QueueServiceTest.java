@@ -79,7 +79,7 @@ public class QueueServiceTest {
 	 * Test initialisation & starting of the service
 	 * @throws EventException 
 	 */
-	@Test
+	@Test(expected=Exception.class)
 	public void testServiceInit() throws EventException {
 		/*
 		 * init should:
