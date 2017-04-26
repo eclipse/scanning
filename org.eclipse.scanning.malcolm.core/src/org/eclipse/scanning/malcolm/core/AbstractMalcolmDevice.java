@@ -234,8 +234,10 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	
 	private MalcolmMessage asynch(final Callable<MalcolmMessage> callable, long timeout) throws InterruptedException, ExecutionException, TimeoutException {
 		ExecutorService service = Executors.newSingleThreadExecutor();
-		MalcolmMessage message = service.submit(callable).get(timeout, TimeUnit.MILLISECONDS);
-		service.shutdownNow();
-		return message;
+		try {
+		    return service.submit(callable).get(timeout, TimeUnit.MILLISECONDS);
+		} finally {
+			service.shutdownNow();
+		}
 	}
 }
