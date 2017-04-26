@@ -40,6 +40,7 @@ class DummyMalcolmRecord extends PVRecord {
     private boolean     underControl = false;
     
     private Map<String, PVStructure> receivedRPCCalls = new HashMap<String, PVStructure>();
+    private final static String id          = "malcolm:core/";
 
 	public Map<String, PVStructure> getReceivedRPCCalls() {
 		return receivedRPCCalls;
@@ -84,7 +85,7 @@ class DummyMalcolmRecord extends PVRecord {
             
 
             Structure mapStructure = fieldCreate.createFieldBuilder().
-        			setId("malcolm:core/Map:1.0").
+        			setId(id+"Map:1.0").
         			createStructure();
             PVStructure returnPvStructure = pvDataCreate.createPVStructure(mapStructure);
             
@@ -124,182 +125,203 @@ class DummyMalcolmRecord extends PVRecord {
     {
         FieldBuilder fb = fieldCreate.createFieldBuilder();
         
-
+        final String description = "description";
+        final String tags        = "tags";
+        final String writeable   = "writeable";
+        final String label       = "label";
+        final String dtype       = "dtype";
+        final String meta        = "meta";
+        final String value       = "value";
+        final String eid         = "epics:nt/NTScalar:1.0";
+        final String name        = "name";
+        final String names       = "names";
+        final String x           = "x";
+        final String y           = "y";
+        final String visible     = "visible";
+        final String detector    = "detector";
+        final String filename    = "filename";
+        final String dataset     = "dataset";
+        final String users       = "users";
+        final String units       = "units";
+        final String scale       = "scale";
+        final String centre      = "centre";
+        final String radius      = "radius";
+                      
         Structure metaStructure = fieldCreate.createFieldBuilder().
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
-    			setId("malcolm:core/BlockMeta:1.0").
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
+    			setId(id+"BlockMeta:1.0").
     			createStructure();
         
         Structure choiceMetaStructure = fb.
-    			add("description", ScalarType.pvString).
+    			add(description, ScalarType.pvString).
     			addArray("choices", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
-    			setId("malcolm:core/ChoiceMeta:1.0").
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
+    			setId(id+"ChoiceMeta:1.0").
                 createStructure();
         
         Structure stringMetaStructure = fieldCreate.createFieldBuilder().
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
-    			setId("malcolm:core/StringMeta:1.0").
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
+    			setId(id+"StringMeta:1.0").
     			createStructure();
         
         Structure booleanMetaStructure = fieldCreate.createFieldBuilder().
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
-    			setId("malcolm:core/BooleanMeta:1.0").
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
+    			setId(id+"BooleanMeta:1.0").
     			createStructure();
         
         Structure intNumberMetaStructure = fieldCreate.createFieldBuilder().
-    			add("dtype", ScalarType.pvString).
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
-    			setId("malcolm:core/NumberMeta:1.0").
+    			add(dtype, ScalarType.pvString).
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
+    			setId(id+"NumberMeta:1.0").
     			createStructure();
         
         Structure floatNumberMetaStructure = fieldCreate.createFieldBuilder().
-    			add("dtype", ScalarType.pvString).
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
-    			setId("malcolm:core/NumberMeta:1.0").
+    			add(dtype, ScalarType.pvString).
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
+    			setId(id+"NumberMeta:1.0").
     			createStructure();
         
         Structure stringArrayMetaStructure = fieldCreate.createFieldBuilder().
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
-    			setId("malcolm:core/StringArrayMeta:1.0").
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
+    			setId(id+"StringArrayMeta:1.0").
     			createStructure();
         
         Structure numberArrayMetaStructure = fieldCreate.createFieldBuilder().
-    			add("dtype", ScalarType.pvString).
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
-    			setId("malcolm:core/NumberArrayMeta:1.0").
+    			add(dtype, ScalarType.pvString).
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
+    			setId(id+"NumberArrayMeta:1.0").
     			createStructure();
 
         Structure mapMetaStructure = fieldCreate.createFieldBuilder().
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
     			addArray("required", ScalarType.pvString).
-    			setId("malcolm:core/MapMeta:1.0").
+    			setId(id+"MapMeta:1.0").
     			createStructure();
         
         Structure tableElementsStructure = fieldCreate.createFieldBuilder().
-    			add("detector", stringArrayMetaStructure).
-    			add("filename", stringArrayMetaStructure).
-    			add("dataset", stringArrayMetaStructure).
-    			add("users", numberArrayMetaStructure).
+    			add(detector, stringArrayMetaStructure).
+    			add(filename, stringArrayMetaStructure).
+    			add(dataset, stringArrayMetaStructure).
+    			add(users, numberArrayMetaStructure).
     			createStructure();
         
         Structure tableMetaStructure = fieldCreate.createFieldBuilder().
     			add("elements", tableElementsStructure).
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
-    			setId("malcolm:core/TableMeta:1.0").
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
+    			setId(id+"TableMeta:1.0").
     			createStructure();
         
         Structure pointGeneratorMetaStructure = fieldCreate.createFieldBuilder().
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
-    			setId("malcolm:core/PointGeneratorMeta:1.0").
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
+    			setId(id+"PointGeneratorMeta:1.0").
     			createStructure();
         
         // Attributes
         Structure choiceStructure = fieldCreate.createFieldBuilder().
-    			add("meta", choiceMetaStructure).
-    			add("value", ScalarType.pvString).
-    			setId("epics:nt/NTScalar:1.0").
+    			add(meta, choiceMetaStructure).
+    			add(value, ScalarType.pvString).
+    			setId(eid).
     			createStructure();
         
         Structure stringStructure = fieldCreate.createFieldBuilder().
-    			add("meta", stringMetaStructure).
-    			add("value", ScalarType.pvString).
-    			setId("epics:nt/NTScalar:1.0").
+    			add(meta, stringMetaStructure).
+    			add(value, ScalarType.pvString).
+    			setId(eid).
     			createStructure();
         
         Structure stringArrayStructure = fieldCreate.createFieldBuilder().
-    			add("meta", stringArrayMetaStructure).
-    			addArray("value", ScalarType.pvString).
+    			add(meta, stringArrayMetaStructure).
+    			addArray(value, ScalarType.pvString).
     			setId("epics:nt/NTScalarArray:1.0").
     			createStructure();
         
         Structure booleanStructure = fieldCreate.createFieldBuilder().
-    			add("meta", booleanMetaStructure).
-    			add("value", ScalarType.pvBoolean).
-    			setId("epics:nt/NTScalar:1.0").
+    			add(meta, booleanMetaStructure).
+    			add(value, ScalarType.pvBoolean).
+    			setId(eid).
     			createStructure();
         
         Structure intStructure = fieldCreate.createFieldBuilder().
-    			add("meta", intNumberMetaStructure).
-    			add("value", ScalarType.pvInt).
-    			setId("epics:nt/NTScalar:1.0").
+    			add(meta, intNumberMetaStructure).
+    			add(value, ScalarType.pvInt).
+    			setId(eid).
     			createStructure();
         
         Structure datasetTableValueStructure = fieldCreate.createFieldBuilder().
-    			addArray("detector", ScalarType.pvString).
-    			addArray("filename", ScalarType.pvString).
-    			addArray("dataset", ScalarType.pvString).
-    			addArray("users", ScalarType.pvInt).
+    			addArray(detector, ScalarType.pvString).
+    			addArray(filename, ScalarType.pvString).
+    			addArray(dataset, ScalarType.pvString).
+    			addArray(users, ScalarType.pvInt).
     			createStructure();
         
         Structure datasetTableStructure = fieldCreate.createFieldBuilder().
-    			add("meta", tableMetaStructure).
+    			add(meta, tableMetaStructure).
     			addArray("labels", ScalarType.pvString).
-    			add("value", datasetTableValueStructure).
+    			add(value, datasetTableValueStructure).
     			setId("epics:nt/NTTable:1.0").
     			createStructure();
         
         Structure layoutTableValueStructure = fieldCreate.createFieldBuilder().
-    			addArray("name", ScalarType.pvString).
+    			addArray(name, ScalarType.pvString).
     			addArray("mri", ScalarType.pvString).
-    			addArray("x", ScalarType.pvFloat).
-    			addArray("y", ScalarType.pvFloat).
-    			addArray("visible", ScalarType.pvBoolean).
+    			addArray(x, ScalarType.pvFloat).
+    			addArray(y, ScalarType.pvFloat).
+    			addArray(visible, ScalarType.pvBoolean).
     			createStructure();
         
         Structure layoutTableStructure = fieldCreate.createFieldBuilder().
-    			add("meta", tableMetaStructure).
+    			add(meta, tableMetaStructure).
     			addArray("labels", ScalarType.pvString).
-    			add("value", layoutTableValueStructure).
+    			add(value, layoutTableValueStructure).
     			setId("epics:nt/NTTable:1.0").
     			createStructure();
         
         Structure methodStructure = fieldCreate.createFieldBuilder().
     			add("takes", mapMetaStructure).
-    			add("description", ScalarType.pvString).
-    			addArray("tags", ScalarType.pvString).
-    			add("writeable", ScalarType.pvBoolean).
-    			add("label", ScalarType.pvString).
+    			add(description, ScalarType.pvString).
+    			addArray(tags, ScalarType.pvString).
+    			add(writeable, ScalarType.pvBoolean).
+    			add(label, ScalarType.pvString).
     			add("returns", mapMetaStructure).
-    			setId("malcolm:core/MethodMeta:1.0").
+    			setId(id+"MethodMeta:1.0").
     			createStructure();
         
         Structure floatStructure = fieldCreate.createFieldBuilder().
-    			add("meta", floatNumberMetaStructure).
-    			add("value", ScalarType.pvFloat).
-    			setId("epics:nt/NTScalar:1.0").
+    			add(meta, floatNumberMetaStructure).
+    			add(value, ScalarType.pvFloat).
+    			setId(eid).
     			createStructure();
 
         Union union = FieldFactory.getFieldCreate().createVariantUnion();
@@ -311,24 +333,24 @@ class DummyMalcolmRecord extends PVRecord {
 				createStructure();
 		
 		Structure spiralGeneratorStructure = FieldFactory.getFieldCreate().createFieldBuilder().
-    			addArray("centre", ScalarType.pvDouble).
-    			add("scale", ScalarType.pvDouble).
-    			add("units", ScalarType.pvString).
-    			addArray("names", ScalarType.pvString).
+    			addArray(centre, ScalarType.pvDouble).
+    			add(scale, ScalarType.pvDouble).
+    			add(units, ScalarType.pvString).
+    			addArray(names, ScalarType.pvString).
     			add("alternate_direction", ScalarType.pvBoolean).
-    			add("radius", ScalarType.pvDouble).
+    			add(radius, ScalarType.pvDouble).
     			setId("scanpointgenerator:generator/SpiralGenerator:1.0").
 				createStructure();
 		
 		Structure pointGeneratorStructure = FieldFactory.getFieldCreate().createFieldBuilder().
-    			add("meta", pointGeneratorMetaStructure).
-    			add("value", generatorStructure).
-    			setId("malcolm:core/PointGenerator:1.0").
+    			add(meta, pointGeneratorMetaStructure).
+    			add(value, generatorStructure).
+    			setId(id+"PointGenerator:1.0").
 				createStructure();
         
         // Device
         Structure deviceStructure = fb.
-                add("meta", metaStructure).
+                add(meta, metaStructure).
                 add("state", choiceStructure).
                 add("status", stringStructure).
                 add("busy", booleanStructure).
@@ -346,7 +368,7 @@ class DummyMalcolmRecord extends PVRecord {
                 add("datasets", datasetTableStructure).
                 add("generator", pointGeneratorStructure).
                 add("completedSteps", intStructure).
-    			setId("malcolm:core/Block:1.0").
+    			setId(id+"Block:1.0").
                 createStructure();
         
         PVStructure blockPVStructure = pvDataCreate.createPVStructure(deviceStructure);
@@ -376,7 +398,7 @@ class DummyMalcolmRecord extends PVRecord {
         blockPVStructure.getSubField(PVBoolean.class, "B.meta.writeable").put(true);
         
         // axes
-		String[] axesArray = new String[] {"x","y"};
+		String[] axesArray = new String[] {x,y};
 
 		PVStringArray axes = blockPVStructure.getSubField(PVStringArray.class, "axesToMove.value");
 		axes.put(0, axesArray.length, axesArray, 0);
@@ -388,11 +410,11 @@ class DummyMalcolmRecord extends PVRecord {
 		String[] datasetArray = new String[] {"/entry/detector/I200", "/entry/detector/Iref", "/entry/detector/det1"};
 		int[] usersArray = new int[] {3, 1, 42};
 		PVStructure tableValuePVStructure = datasetsPVStructure.getStructureField("value");
-		tableValuePVStructure.getSubField(PVStringArray.class, "detector").put(0, detectorArray.length, detectorArray, 0);
-		tableValuePVStructure.getSubField(PVStringArray.class, "filename").put(0, filenameArray.length, filenameArray, 0);
-		tableValuePVStructure.getSubField(PVStringArray.class, "dataset").put(0, datasetArray.length, datasetArray, 0);
-		tableValuePVStructure.getSubField(PVIntArray.class, "users").put(0, usersArray.length, usersArray, 0);
-		String[] headingsArray = new String[] {"detector", "filename", "dataset", "users"};
+		tableValuePVStructure.getSubField(PVStringArray.class, detector).put(0, detectorArray.length, detectorArray, 0);
+		tableValuePVStructure.getSubField(PVStringArray.class, filename).put(0, filenameArray.length, filenameArray, 0);
+		tableValuePVStructure.getSubField(PVStringArray.class, dataset).put(0, datasetArray.length, datasetArray, 0);
+		tableValuePVStructure.getSubField(PVIntArray.class, users).put(0, usersArray.length, usersArray, 0);
+		String[] headingsArray = new String[] {detector, filename, dataset, users};
 		datasetsPVStructure.getSubField(PVStringArray.class, "labels").put(0, headingsArray.length, headingsArray, 0);
 		
 		// current step
@@ -406,25 +428,25 @@ class DummyMalcolmRecord extends PVRecord {
 		float[] layoutYArray = new float[] {0.0f, 0.0f, 0.0f};
 		boolean[] layoutVisibleArray = new boolean[] {false, false, false};
 		PVStructure layoutTableValuePVStructure = layoutPVStructure.getStructureField("value");
-		layoutTableValuePVStructure.getSubField(PVStringArray.class, "name").put(0, layoutNameArray.length, layoutNameArray, 0);
+		layoutTableValuePVStructure.getSubField(PVStringArray.class, name).put(0, layoutNameArray.length, layoutNameArray, 0);
 		layoutTableValuePVStructure.getSubField(PVStringArray.class, "mri").put(0, layoutMrifilenameArray.length, layoutMrifilenameArray, 0);
-		layoutTableValuePVStructure.getSubField(PVFloatArray.class, "x").put(0, layoutXArray.length, layoutXArray, 0);
-		layoutTableValuePVStructure.getSubField(PVFloatArray.class, "y").put(0, layoutYArray.length, layoutYArray, 0);
-		layoutTableValuePVStructure.getSubField(PVBooleanArray.class, "visible").put(0, layoutVisibleArray.length, layoutVisibleArray, 0);
-		String[] layoutHeadingsArray = new String[] {"name", "mri", "x", "y", "visible"};
+		layoutTableValuePVStructure.getSubField(PVFloatArray.class, x).put(0, layoutXArray.length, layoutXArray, 0);
+		layoutTableValuePVStructure.getSubField(PVFloatArray.class, y).put(0, layoutYArray.length, layoutYArray, 0);
+		layoutTableValuePVStructure.getSubField(PVBooleanArray.class, visible).put(0, layoutVisibleArray.length, layoutVisibleArray, 0);
+		String[] layoutHeadingsArray = new String[] {name, "mri", x, y, visible};
 		layoutPVStructure.getSubField(PVStringArray.class, "labels").put(0, layoutHeadingsArray.length, layoutHeadingsArray, 0);
         
 
 		
         PVStructure spiralGeneratorPVStructure = PVDataFactory.getPVDataCreate().createPVStructure(spiralGeneratorStructure);
-		double[] centre = new double[]{3.5, 4.5};
-		spiralGeneratorPVStructure.getSubField(PVDoubleArray.class, "centre").put(0, centre.length, centre, 0);
-		spiralGeneratorPVStructure.getDoubleField("scale").put(1.5);
-		spiralGeneratorPVStructure.getStringField("units").put("mm");
-		String[] names = new String[]{"x", "y"};
-		spiralGeneratorPVStructure.getSubField(PVStringArray.class, "names").put(0, names.length, names, 0);
+		double[] acentre = new double[]{3.5, 4.5};
+		spiralGeneratorPVStructure.getSubField(PVDoubleArray.class, centre).put(0, acentre.length, acentre, 0);
+		spiralGeneratorPVStructure.getDoubleField(scale).put(1.5);
+		spiralGeneratorPVStructure.getStringField(units).put("mm");
+		String[] anames = new String[]{x, y};
+		spiralGeneratorPVStructure.getSubField(PVStringArray.class, names).put(0, anames.length, anames, 0);
 		spiralGeneratorPVStructure.getBooleanField("alternate_direction").put(true);
-		spiralGeneratorPVStructure.getDoubleField("radius").put(5.5);
+		spiralGeneratorPVStructure.getDoubleField(radius).put(5.5);
 		
 		PVUnion pvu1 = PVDataFactory.getPVDataCreate().createPVVariantUnion();
 		pvu1.set(spiralGeneratorPVStructure);
