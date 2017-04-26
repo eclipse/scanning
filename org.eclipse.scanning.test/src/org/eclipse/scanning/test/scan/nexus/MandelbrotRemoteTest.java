@@ -13,8 +13,8 @@ package org.eclipse.scanning.test.scan.nexus;
 
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertAxes;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertIndices;
-import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertSolsticeScanGroup;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertSignal;
+import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertSolsticeScanGroup;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertTarget;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -34,7 +34,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -182,7 +184,7 @@ public class MandelbrotRemoteTest extends NexusTest {
 				public void runPerformed(RunEvent evt) throws ScanningException{
 					try {
 						scanner.latch(500, TimeUnit.MILLISECONDS); // Finish off writing nexus file. The Remote dataset event lags slightly while nexus flushes.
-					} catch (InterruptedException e) {
+					} catch (TimeoutException | ExecutionException | InterruptedException e) {
 						e.printStackTrace();
 					}
 					latch.countDown();

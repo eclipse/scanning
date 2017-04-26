@@ -63,12 +63,12 @@ public class AcquireRequestHandler implements IResponseProcess<AcquireRequest> {
 
 			bean.setStatus(Status.COMPLETE);
 			bean.setMessage(null);
-		} catch (ScanningException | InterruptedException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			bean.setStatus(Status.FAILED);
 			bean.setMessage(e.getMessage());
 			logger.error("Cannot acquire data for detector " + getBean().getDetectorName(), e);
-			throw new EventException(e);
+			throw (e instanceof EventException) ? (EventException)e : new EventException(e);
 		}
 		
 		return bean;

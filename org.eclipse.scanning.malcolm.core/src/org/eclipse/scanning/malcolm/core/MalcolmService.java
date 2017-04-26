@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.malcolm.core;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,7 +26,7 @@ import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 import org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService;
 import org.eclipse.scanning.api.malcolm.message.MalcolmMessage;
 
-public class MalcolmService implements IMalcolmService {
+public class MalcolmService implements IMalcolmService, Closeable {
 
 	private IMalcolmConnectorService<MalcolmMessage> connector;	
 	private IRunnableDeviceService runnableDeviceService;
@@ -101,6 +103,15 @@ public class MalcolmService implements IMalcolmService {
 		devices.clear();
 		if (connector != null) {
 			connector.disconnect();
+		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		try {
+			dispose();
+		} catch (MalcolmDeviceException e) {
+			throw new IOException(e);
 		}
 	}
 }

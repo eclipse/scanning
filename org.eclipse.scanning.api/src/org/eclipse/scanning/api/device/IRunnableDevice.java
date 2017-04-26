@@ -14,7 +14,9 @@ package org.eclipse.scanning.api.device;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.scanning.api.IConfigurable;
 import org.eclipse.scanning.api.ILevel;
@@ -96,7 +98,7 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 	 * 
 	 * @throws ScanningException
 	 */
-	public void run(IPosition position) throws ScanningException, InterruptedException;
+	public void run(IPosition position) throws ScanningException, InterruptedException, TimeoutException, ExecutionException;
 	
 	/**
 	 * The default implementation of start simply executes run in a thread named using the getName() value.
@@ -104,14 +106,14 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 	 * @throws ScanningException
 	 * @throws InterruptedException
 	 */
-	default void start(final IPosition pos) throws ScanningException, InterruptedException {
+	default void start(final IPosition pos) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
 		
 		final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>(1));
 		final Thread thread = new Thread(new Runnable() {
 			public void run() {
 				try {
 					IRunnableDevice.this.run(pos);
-				} catch (ScanningException|InterruptedException e) {
+				} catch (Exception e) {
 					// If you add an exception type to this catch clause,
 					// you must also add an "else if" clause for it inside
 					// the "if (!exceptions.isEmpty())" conditional below.
@@ -133,7 +135,7 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 	 * @throws ScanningException
 	 * @throws InterruptedException
 	 */
-	default void createException(List<Throwable> exceptions) throws ScanningException, InterruptedException {
+	default void createException(List<Throwable> exceptions) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
 		
 		if (!exceptions.isEmpty()) {
 			Throwable ex = exceptions.get(0);
@@ -146,6 +148,11 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 			} else if (ex.getClass() == InterruptedException.class) {
 				throw (InterruptedException) ex;
 
+			} else if (ex.getClass() == TimeoutException.class) {
+				throw (TimeoutException) ex;
+
+			} else  if (ex.getClass() == ExecutionException.class) {
+				throw (ExecutionException) ex;
 			} else {
 				throw new IllegalStateException();
 			}
@@ -173,11 +180,11 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 	 * 
 	 * @throws ScanningException
 	 */
-	default void latch() throws ScanningException, InterruptedException {
+	default void latch() throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
 		throw new ScanningException("Latch is not implemnented for "+getClass().getSimpleName());
 	}
 	
-	default boolean latch(long time, TimeUnit unit) throws ScanningException, InterruptedException	{
+	default boolean latch(long time, TimeUnit unit) throws ScanningException, InterruptedException, TimeoutException, ExecutionException	{
 		throw new ScanningException("Latch is not implemnented for "+getClass().getSimpleName());
 	}
 	/**

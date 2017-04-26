@@ -224,7 +224,7 @@ public class EpicsV4ConnectorService implements IMalcolmConnectorService<Malcolm
 		return result;
 	}
 	
-	private MalcolmMessage sendGetMessage(IMalcolmDevice<?> device, MalcolmMessage message) {
+	protected MalcolmMessage sendGetMessage(IMalcolmDevice<?> device, MalcolmMessage message) throws Exception {
 
 		MalcolmMessage returnMessage = new MalcolmMessage();
 		PvaClientChannel pvaChannel = null;
