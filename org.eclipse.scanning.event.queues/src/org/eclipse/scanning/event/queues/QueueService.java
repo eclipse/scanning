@@ -107,8 +107,8 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	}
 	
 	private static final String getQueueRootFromProperty() {
-		String root = System.getProperty("org.eclipse.scanning.event.queues.queue.root");
-		if (root==null) root = System.getProperty("GDA/gda.event.queues.queue.root");
+		String root = System.getProperty("GDA/gda.event.queues.queue.root");
+		if (root==null) root = System.getProperty("org.eclipse.scanning.event.queues.queue.root", "fakeRoot");
 		return root;
 	}
 

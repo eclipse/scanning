@@ -251,7 +251,7 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 						nexusObjectProvidersForType.add(nexusProvider);
 					}
 				} catch (NexusException e) {
-					throw new ScanningException("Cannot create device: " + e);
+					throw new ScanningException("Cannot create device: " + e.getMessage(), e);
 				}
 			}
 			
