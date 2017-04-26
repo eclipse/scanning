@@ -113,7 +113,7 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 			public void run() {
 				try {
 					IRunnableDevice.this.run(pos);
-				} catch (Exception e) {
+				} catch (ScanningException | InterruptedException | TimeoutException | ExecutionException e) {
 					// If you add an exception type to this catch clause,
 					// you must also add an "else if" clause for it inside
 					// the "if (!exceptions.isEmpty())" conditional below.
