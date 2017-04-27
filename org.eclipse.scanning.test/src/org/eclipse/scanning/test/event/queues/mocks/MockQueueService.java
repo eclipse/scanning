@@ -185,31 +185,8 @@ public class MockQueueService implements IQueueService {
 	}
 
 	@Override
-	public void setQueueRoot(String queueRoot) throws EventException {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public URI getURI() {
 		return uri;
-	}
-	
-	@Override
-	public String getURIString() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setUri(URI uri) throws EventException {
-		// TODO Auto-generated method stub
-
-	}
-	
-	@Override
-	public void setUri(String uri) throws EventException {
-		// TODO Auto-generated method stub
 	}
 	
 	public void addActiveQueue(IQueue<QueueAtom> queue) {
