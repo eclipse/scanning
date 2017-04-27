@@ -75,11 +75,11 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	private static Map<String, IQueue<QueueAtom>> activeQueueRegister;
 
 	
-	private String queueRoot, heartbeatTopicName, commandSetName, commandTopicName, jobQueueID;
-	private boolean active = false, init = false, stopped = false;
+	private String heartbeatTopicName, commandSetName, commandTopicName, jobQueueID;
+	private boolean active = false, stopped = false;
 
-	private String                    uriString;
-	private URI                       uri;
+	private final String queueRoot;
+	private final URI uri;
 	private IQueue<QueueBean>         jobQueue;
 	private IResponder<QueueRequest>  queueResponder;
 
@@ -92,18 +92,39 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	
 	/**
 	 * No argument constructor for OSGi
-	 * @throws URISyntaxException 
+	 * @throws EventException if a URI cannot be constructed for the service.
 	 */
 	public QueueService() {
 		this(getQueueRootFromProperty(), CommandConstants.getScanningBrokerUri());
 	}
 	
 	/**
+	 * Used by tests directly
+	 * @throws EventException if a URI cannot be constructed for the service.
+	 */
+	public QueueService(String uri) {
+		this(getQueueRootFromProperty(), uri);
+	}
+	
+	/**
 	 * Used by tests directly.
+	 * @throws EventException if a URI cannot be constructed for the service.
 	 */
 	public QueueService(String queueRoot, String uri) {
 		this.queueRoot = queueRoot;
-		this.uriString = uri;
+		try {
+			this.uri = new URI(uri);
+		} catch (URISyntaxException uSEx) {
+			throw new IllegalArgumentException("Failed to set QueueService URI", uSEx);
+		}
+		
+		//uriString & queueRoot are already set, so we need to set their dependent fields
+		heartbeatTopicName = queueRoot+HEARTBEAT_TOPIC_SUFFIX;
+		commandSetName = queueRoot+COMMAND_SET_SUFFIX;
+		commandTopicName = queueRoot+COMMAND_TOPIC_SUFFIX;
+
+		//Create the active-queues map
+		if (activeQueueRegister==null) activeQueueRegister = new ConcurrentHashMap<>();
 	}
 	
 	private static final String getQueueRootFromProperty() {
@@ -114,35 +135,22 @@ public class QueueService extends QueueControllerService implements IQueueServic
 
 	@Override
 	public void init() throws EventException {
-		//Check configuration is present
-		if (queueRoot == null) throw new IllegalStateException("Queue root has not been specified");
-		
-		setUri(uriString);
-		if (uri == null) throw new IllegalStateException("URI has not been specified");
-		
-		//uriString & queueRoot are already set, so we need to set their dependent fields
-		heartbeatTopicName = queueRoot+HEARTBEAT_TOPIC_SUFFIX;
-		commandSetName = queueRoot+COMMAND_SET_SUFFIX;
-		commandTopicName = queueRoot+COMMAND_TOPIC_SUFFIX;
-		
 		//Now we can set up the job-queue
 		jobQueueID = queueRoot+JOB_QUEUE_SUFFIX;
 		jobQueue = new Queue<QueueBean>(jobQueueID, uri, 
 				heartbeatTopicName, commandSetName, commandTopicName);
-		
+
 		//Add responder
 		IEventService evServ = ServicesHolder.getEventService();
 		queueResponder = evServ.createResponder(uri, QUEUE_REQUEST_TOPIC, QUEUE_RESPONSE_TOPIC);
 		queueResponder.setBeanClass(QueueRequest.class);
 		queueResponder.setResponseCreator(new QueueResponseCreator());
-		
-		//Create the active-queues map
-		if (activeQueueRegister==null) activeQueueRegister = new ConcurrentHashMap<>();
-		
+
 		//Mark initialised
 		init = true;
 		
 		//With QueueService parts initialised, we can initialise the QueueController parts
+		// - this also makes calls to the IEventService!
 		super.init();
 	}
 	
@@ -164,11 +172,6 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		jobQueue = null;
 		jobQueueID = null;
 		
-		
-		//Dispose service config
-		queueRoot = null;
-		uri = null;
-		
 		//Mark the service not initialised
 		init = false;
 	}
@@ -176,7 +179,8 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	@Override
 	public void start() throws EventException {
 		if (!init) {
-			init();
+			logger.error("Could not start the QueueService - service has not been initialised.");
+			throw new EventException("QueueService not initialised. Cannot start");
 		}
 		//Check the job-queue is in a state to start
 		if (!jobQueue.getStatus().isStartable()) {
@@ -457,23 +461,6 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	}
 
 	@Override
-	public void setQueueRoot(String queueRoot) throws UnsupportedOperationException, EventException {
-		if (active) throw new UnsupportedOperationException("Cannot change queue root whilst queue service is running");
-		this.queueRoot = queueRoot;
-
-		if (init) {
-			//Update the destinations
-			heartbeatTopicName = queueRoot+HEARTBEAT_TOPIC_SUFFIX;
-			commandSetName = queueRoot+COMMAND_SET_SUFFIX;
-			commandTopicName = queueRoot+COMMAND_TOPIC_SUFFIX;
-
-			//Update job-queue
-			jobQueueID = queueRoot+JOB_QUEUE_SUFFIX;
-			jobQueue = new Queue<>(jobQueueID, uri, heartbeatTopicName, commandSetName, commandTopicName);
-		}
-	}
-
-	@Override
 	public String getHeartbeatTopicName() {
 		return heartbeatTopicName;
 	}
@@ -491,33 +478,6 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	@Override
 	public URI getURI() {
 		return uri;
-	}
-
-	@Override
-	public String getURIString() {
-		return uriString;
-	}
-
-	@Override
-	public void setUri(URI uri) throws UnsupportedOperationException, EventException {
-		if (active) throw new UnsupportedOperationException("Cannot change URI whilst queue service is running");
-		this.uri = uri;
-		uriString = uri.toString();
-
-		if (init) {
-			//Update job-queue
-			jobQueue = new Queue<>(jobQueueID, uri, 
-					heartbeatTopicName, commandSetName, commandTopicName);
-		}
-	}
-
-	@Override
-	public void setUri(String uri) throws UnsupportedOperationException, EventException {
-		try {
-			setUri(new URI(uri));
-		} catch (URISyntaxException usEx) {
-			throw new EventException(usEx);
-		}
 	}
 	
 	@Override
