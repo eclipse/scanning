@@ -16,6 +16,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.eclipse.dawnsci.nexus.IMultipleNexusDevice;
 import org.eclipse.dawnsci.nexus.NexusException;
@@ -27,6 +33,7 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.models.DeviceRole;
 import org.eclipse.scanning.api.device.models.IMalcolmModel;
 import org.eclipse.scanning.api.device.models.ScanMode;
+import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
 import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 import org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService;
@@ -55,14 +62,13 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	protected MalcolmEventDelegate eventDelegate;
 	
 	// Connection to serialization to talk to the remote object
-	protected MessageGenerator<MalcolmMessage> connectionDelegate;
-	
-	protected IMalcolmConnectorService<MalcolmMessage> connector;
+	private MessageGenerator<MalcolmMessage>         connectionDelegate;
+	private IMalcolmConnectorService<MalcolmMessage> connector;
 	
 	protected IPointGenerator<?> pointGenerator;
 	
 	public AbstractMalcolmDevice(IMalcolmConnectorService<MalcolmMessage> connector,
-			IRunnableDeviceService runnableDeviceService) throws MalcolmDeviceException {
+			                     IRunnableDeviceService runnableDeviceService) throws MalcolmDeviceException {
 		super(runnableDeviceService);
 		this.connector = connector;
    		this.connectionDelegate = connector.createDeviceConnection(this);
@@ -108,7 +114,7 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 			public void run() {
 				try {
 					AbstractMalcolmDevice.this.run(pos);
-				} catch (ScanningException|InterruptedException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 					exceptions.add(e);
 				}
@@ -169,5 +175,69 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 		String[] axesToMove = (String[]) getAttributeValue(ATTRIBUTE_NAME_AXES_TO_MOVE);
 		return new HashSet<>(Arrays.asList(axesToMove));
 	}
+	
+	protected MalcolmMessage createGetMessage(String endpoint) throws MalcolmDeviceException {
+		return connectionDelegate.createGetMessage(endpoint);
+	}
+	protected MalcolmMessage createCallMessage(String endpoint, Object params) throws MalcolmDeviceException {
+		return connectionDelegate.createCallMessage(endpoint, params);
+	}
+	protected MalcolmMessage createSubscribeMessage(String endpoint) throws MalcolmDeviceException {
+		return connectionDelegate.createSubscribeMessage(endpoint);
+	}
+	protected MalcolmMessage createUnsubscribeMessage() throws MalcolmDeviceException {
+		return connectionDelegate.createUnsubscribeMessage();
+	}
+    protected void subscribe(MalcolmMessage message, IMalcolmListener<MalcolmMessage> listener) throws MalcolmDeviceException {
+    	connector.subscribe(this, message, listener);
+    }
+    @SuppressWarnings("unchecked")
+	protected MalcolmMessage unsubscribe(MalcolmMessage message, IMalcolmListener<MalcolmMessage> listener) throws MalcolmDeviceException {
+    	return connector.unsubscribe(this, message, listener);
+    }
+    protected void subscribeToConnectionStateChange(IMalcolmListener<Boolean> listener) throws MalcolmDeviceException {
+    	connector.subscribeToConnectionStateChange(this, listener);
+    }
 
+	/**
+	 * 
+	 * @param message
+	 * @param timeout in ms
+	 * @return
+	 * @throws MalcolmDeviceException
+	 * @throws TimeoutException 
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
+	 */
+	protected MalcolmMessage send(MalcolmMessage message, long timeout) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
+	    return asynch(()->connector.send(this, message), timeout);
+	}
+	protected MalcolmMessage call(StackTraceElement[] trace, long timeout, DeviceState... states) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
+	    return asynch(()->connectionDelegate.call(trace, states), timeout);
+	}
+	
+	/**
+	 * Calls the function but wraps the exception if it is not MalcolmDeviceException
+	 * @param callable
+	 * @return
+	 * @throws MalcolmDeviceException
+	 */
+	protected MalcolmMessage wrap(Callable<MalcolmMessage> callable) throws MalcolmDeviceException {
+		try {
+			return callable.call();
+		} catch (MalcolmDeviceException m) {
+			throw m;
+		} catch (Exception other) {
+			throw new MalcolmDeviceException(this, other);
+		}
+	}
+	
+	private MalcolmMessage asynch(final Callable<MalcolmMessage> callable, long timeout) throws InterruptedException, ExecutionException, TimeoutException {
+		ExecutorService service = Executors.newSingleThreadExecutor();
+		try {
+		    return service.submit(callable).get(timeout, TimeUnit.MILLISECONDS);
+		} finally {
+			service.shutdownNow();
+		}
+	}
 }

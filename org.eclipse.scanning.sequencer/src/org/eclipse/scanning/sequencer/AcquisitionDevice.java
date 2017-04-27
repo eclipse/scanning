@@ -20,7 +20,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -215,7 +217,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	}
 	
 	@Override
-	public void start(IPosition parent) throws ScanningException, InterruptedException {
+	public void start(IPosition parent) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
 		createScanLatch();
         super.start(parent);
 	}
@@ -404,14 +406,14 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	}
 
 	@Override
-	public void latch() throws InterruptedException, ScanningException {
+	public void latch() throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
 		if (latch==null) return;
 		latch.await();
 		createException(runExceptions);
 	}
 	
 	@Override
-	public boolean latch(long time, TimeUnit unit) throws InterruptedException, ScanningException {
+	public boolean latch(long time, TimeUnit unit) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
 		if (latch==null) return true;
 		boolean ok = latch.await(time, unit);
 		createException(runExceptions);

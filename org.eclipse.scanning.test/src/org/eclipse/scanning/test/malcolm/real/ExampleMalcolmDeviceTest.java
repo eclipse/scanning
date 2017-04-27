@@ -32,11 +32,12 @@ import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.connector.epics.EpicsV4ConnectorService;
-import org.eclipse.scanning.example.malcolm.ExampleMalcolmDevice;
-import org.eclipse.scanning.example.malcolm.ExampleMalcolmModel;
+import org.eclipse.scanning.example.malcolm.EPICSv4ExampleModel;
+import org.eclipse.scanning.example.malcolm.IEPICSv4Device;
 import org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice;
 import org.eclipse.scanning.malcolm.core.MalcolmService;
 import org.eclipse.scanning.points.PointGeneratorService;
+import org.eclipse.scanning.test.epics.DeviceRunner;
 import org.epics.pvdata.factory.FieldFactory;
 import org.epics.pvdata.factory.PVDataFactory;
 import org.epics.pvdata.pv.PVDouble;
@@ -54,7 +55,7 @@ import org.junit.Test;
 public class ExampleMalcolmDeviceTest {
 
 	private IMalcolmService      service;
-	private ExampleMalcolmDevice dummyMalcolmDevice;
+	private IEPICSv4Device epicsv4Device;
 
 	/**
 	 * Starts an instance of the ExampleMalcolmDevice and then probes it with the configure() and call() methods
@@ -71,10 +72,11 @@ public class ExampleMalcolmDeviceTest {
 			this.service = new MalcolmService(new EpicsV4ConnectorService(), null);
 
 			// Start the dummy test device
-			new Thread(new DeviceRunner()).start();
+			DeviceRunner runner = new DeviceRunner();
+			epicsv4Device = runner.start();
 
 			// Get the device
-			IMalcolmDevice<ExampleMalcolmModel> modelledDevice = service.getDevice(getTestDeviceName());
+			IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice(epicsv4Device.getRecordName());
 
 			// Setup the model and other configuration items
 			List<IROI> regions = new LinkedList<>();
@@ -86,7 +88,7 @@ public class ExampleMalcolmDeviceTest {
 					new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
 			IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
 			
-			ExampleMalcolmModel pmac1 = new ExampleMalcolmModel();
+			EPICSv4ExampleModel pmac1 = new EPICSv4ExampleModel();
 			pmac1.setExposureTime(23.1);
 			pmac1.setFileDir("/TestFile/Dir");
 
@@ -230,7 +232,7 @@ public class ExampleMalcolmDeviceTest {
 			modelledDevice.seek(4);
 
 			// Check the RPC calls were received correctly by the device
-			Map<String, PVStructure> rpcCalls = dummyMalcolmDevice.getReceivedRPCCalls();
+			Map<String, PVStructure> rpcCalls = epicsv4Device.getReceivedRPCCalls();
 
 			assertEquals(4, rpcCalls.size());
 
@@ -372,31 +374,9 @@ public class ExampleMalcolmDeviceTest {
 			fail(ex.getMessage());
 		} finally {
 			// Stop the device
-			dummyMalcolmDevice.stop();
+			epicsv4Device.stop();
 			service.dispose();
 		}
-	}
-
-	public class DeviceRunner implements Runnable {
-
-		public void run() {
-			String deviceName = getTestDeviceName();
-			dummyMalcolmDevice = new ExampleMalcolmDevice(deviceName);
-			dummyMalcolmDevice.start();
-		}
-
-	}
-
-	private String getTestDeviceName() {
-		String deviceName = "DummyMalcolmDevice";
-
-		Map<String, String> env = System.getenv();
-		if (env.containsKey("COMPUTERNAME"))
-			deviceName = env.get("COMPUTERNAME");
-		else if (env.containsKey("HOSTNAME"))
-			deviceName = env.get("HOSTNAME");
-
-		return deviceName.replace('.', ':') + ":malcolmTest";
 	}
 
 }
