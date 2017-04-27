@@ -41,6 +41,12 @@ import org.eclipse.scanning.api.event.queues.beans.Queueable;
 public interface IQueueService {
 	
 	/**
+	 * Default queue-root to use, if none is provided by user/system 
+	 * properties.
+	 */
+	public static final String DEFAULT_QUEUE_ROOT = "org.eclipse.scanning.event.queues.service";
+	
+	/**
 	 * Topics which will always be used to obtain information about the 
 	 * IQueueService.
 	 */
