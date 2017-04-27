@@ -34,13 +34,15 @@ import org.epics.pvdatabase.PVRecord;
 
 class DummyMalcolmRecord extends PVRecord {
 	
-    private static final FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-    private static final PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
+	// Static Data
+    private static final FieldCreate FIELDCREATE   = FieldFactory.getFieldCreate();
+    private static final PVDataCreate PVDATACREATE = PVDataFactory.getPVDataCreate();
+    private static final String CORE_ID            = "malcolm:core/";
+    private static final String STATEVALUE         = "state.value";
 
-    private boolean     underControl = false;
-    
+    // Member data
+    private boolean                  underControl     = false;
     private Map<String, PVStructure> receivedRPCCalls = new HashMap<String, PVStructure>();
-    private final static String id          = "malcolm:core/";
 
 	public Map<String, PVStructure> getReceivedRPCCalls() {
 		return receivedRPCCalls;
@@ -84,17 +86,17 @@ class DummyMalcolmRecord extends PVRecord {
             }
             
 
-            Structure mapStructure = fieldCreate.createFieldBuilder().
-        			setId(id+"Map:1.0").
+            Structure mapStructure = FIELDCREATE.createFieldBuilder().
+        			setId(CORE_ID+"Map:1.0").
         			createStructure();
-            PVStructure returnPvStructure = pvDataCreate.createPVStructure(mapStructure);
+            PVStructure returnPvStructure = PVDATACREATE.createPVStructure(mapStructure);
             
             if ("validate".equals(methodName)) {
             	returnPvStructure = args;
             } else if ("configure".equals(methodName)) {
-            	pvRecord.getPVStructure().getSubField(PVString.class, "state.value").put("CONFIGURING");
+            	pvRecord.getPVStructure().getSubField(PVString.class, STATEVALUE).put("CONFIGURING");
             } else if ("run".equals(methodName)) {
-                pvRecord.getPVStructure().getSubField(PVString.class, "state.value").put("RUNNING");
+                pvRecord.getPVStructure().getSubField(PVString.class, STATEVALUE).put("RUNNING");
                 try {
     				Thread.sleep(2000);
     			} catch (InterruptedException e1) {
@@ -103,7 +105,7 @@ class DummyMalcolmRecord extends PVRecord {
             }
 
 
-        	pvRecord.getPVStructure().getSubField(PVString.class, "state.value").put("READY");
+        	pvRecord.getPVStructure().getSubField(PVString.class, STATEVALUE).put("READY");
             
         	pvRecord.releaseControl();
             callback.requestDone(statusOk, returnPvStructure);
@@ -123,12 +125,13 @@ class DummyMalcolmRecord extends PVRecord {
 
     public static DummyMalcolmRecord create(String recordName)
     {
-        FieldBuilder fb = fieldCreate.createFieldBuilder();
+        FieldBuilder fb = FIELDCREATE.createFieldBuilder();
         
         final String description = "description";
         final String tags        = "tags";
         final String writeable   = "writeable";
         final String label       = "label";
+        final String labels      = "labels";
         final String dtype       = "dtype";
         final String meta        = "meta";
         final String value       = "value";
@@ -147,12 +150,12 @@ class DummyMalcolmRecord extends PVRecord {
         final String centre      = "centre";
         final String radius      = "radius";
                       
-        Structure metaStructure = fieldCreate.createFieldBuilder().
+        Structure metaStructure = FIELDCREATE.createFieldBuilder().
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(id+"BlockMeta:1.0").
+    			setId(CORE_ID+"BlockMeta:1.0").
     			createStructure();
         
         Structure choiceMetaStructure = fb.
@@ -161,139 +164,139 @@ class DummyMalcolmRecord extends PVRecord {
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(id+"ChoiceMeta:1.0").
+    			setId(CORE_ID+"ChoiceMeta:1.0").
                 createStructure();
         
-        Structure stringMetaStructure = fieldCreate.createFieldBuilder().
+        Structure stringMetaStructure = FIELDCREATE.createFieldBuilder().
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(id+"StringMeta:1.0").
+    			setId(CORE_ID+"StringMeta:1.0").
     			createStructure();
         
-        Structure booleanMetaStructure = fieldCreate.createFieldBuilder().
+        Structure booleanMetaStructure = FIELDCREATE.createFieldBuilder().
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(id+"BooleanMeta:1.0").
+    			setId(CORE_ID+"BooleanMeta:1.0").
     			createStructure();
         
-        Structure intNumberMetaStructure = fieldCreate.createFieldBuilder().
+        Structure intNumberMetaStructure = FIELDCREATE.createFieldBuilder().
     			add(dtype, ScalarType.pvString).
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(id+"NumberMeta:1.0").
+    			setId(CORE_ID+"NumberMeta:1.0").
     			createStructure();
         
-        Structure floatNumberMetaStructure = fieldCreate.createFieldBuilder().
+        Structure floatNumberMetaStructure = FIELDCREATE.createFieldBuilder().
     			add(dtype, ScalarType.pvString).
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(id+"NumberMeta:1.0").
+    			setId(CORE_ID+"NumberMeta:1.0").
     			createStructure();
         
-        Structure stringArrayMetaStructure = fieldCreate.createFieldBuilder().
+        Structure stringArrayMetaStructure = FIELDCREATE.createFieldBuilder().
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(id+"StringArrayMeta:1.0").
+    			setId(CORE_ID+"StringArrayMeta:1.0").
     			createStructure();
         
-        Structure numberArrayMetaStructure = fieldCreate.createFieldBuilder().
+        Structure numberArrayMetaStructure = FIELDCREATE.createFieldBuilder().
     			add(dtype, ScalarType.pvString).
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(id+"NumberArrayMeta:1.0").
+    			setId(CORE_ID+"NumberArrayMeta:1.0").
     			createStructure();
 
-        Structure mapMetaStructure = fieldCreate.createFieldBuilder().
+        Structure mapMetaStructure = FIELDCREATE.createFieldBuilder().
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
     			addArray("required", ScalarType.pvString).
-    			setId(id+"MapMeta:1.0").
+    			setId(CORE_ID+"MapMeta:1.0").
     			createStructure();
         
-        Structure tableElementsStructure = fieldCreate.createFieldBuilder().
+        Structure tableElementsStructure = FIELDCREATE.createFieldBuilder().
     			add(detector, stringArrayMetaStructure).
     			add(filename, stringArrayMetaStructure).
     			add(dataset, stringArrayMetaStructure).
     			add(users, numberArrayMetaStructure).
     			createStructure();
         
-        Structure tableMetaStructure = fieldCreate.createFieldBuilder().
+        Structure tableMetaStructure = FIELDCREATE.createFieldBuilder().
     			add("elements", tableElementsStructure).
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(id+"TableMeta:1.0").
+    			setId(CORE_ID+"TableMeta:1.0").
     			createStructure();
         
-        Structure pointGeneratorMetaStructure = fieldCreate.createFieldBuilder().
+        Structure pointGeneratorMetaStructure = FIELDCREATE.createFieldBuilder().
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(id+"PointGeneratorMeta:1.0").
+    			setId(CORE_ID+"PointGeneratorMeta:1.0").
     			createStructure();
         
         // Attributes
-        Structure choiceStructure = fieldCreate.createFieldBuilder().
+        Structure choiceStructure = FIELDCREATE.createFieldBuilder().
     			add(meta, choiceMetaStructure).
     			add(value, ScalarType.pvString).
     			setId(eid).
     			createStructure();
         
-        Structure stringStructure = fieldCreate.createFieldBuilder().
+        Structure stringStructure = FIELDCREATE.createFieldBuilder().
     			add(meta, stringMetaStructure).
     			add(value, ScalarType.pvString).
     			setId(eid).
     			createStructure();
         
-        Structure stringArrayStructure = fieldCreate.createFieldBuilder().
+        Structure stringArrayStructure = FIELDCREATE.createFieldBuilder().
     			add(meta, stringArrayMetaStructure).
     			addArray(value, ScalarType.pvString).
     			setId("epics:nt/NTScalarArray:1.0").
     			createStructure();
         
-        Structure booleanStructure = fieldCreate.createFieldBuilder().
+        Structure booleanStructure = FIELDCREATE.createFieldBuilder().
     			add(meta, booleanMetaStructure).
     			add(value, ScalarType.pvBoolean).
     			setId(eid).
     			createStructure();
         
-        Structure intStructure = fieldCreate.createFieldBuilder().
+        Structure intStructure = FIELDCREATE.createFieldBuilder().
     			add(meta, intNumberMetaStructure).
     			add(value, ScalarType.pvInt).
     			setId(eid).
     			createStructure();
         
-        Structure datasetTableValueStructure = fieldCreate.createFieldBuilder().
+        Structure datasetTableValueStructure = FIELDCREATE.createFieldBuilder().
     			addArray(detector, ScalarType.pvString).
     			addArray(filename, ScalarType.pvString).
     			addArray(dataset, ScalarType.pvString).
     			addArray(users, ScalarType.pvInt).
     			createStructure();
         
-        Structure datasetTableStructure = fieldCreate.createFieldBuilder().
+        Structure datasetTableStructure = FIELDCREATE.createFieldBuilder().
     			add(meta, tableMetaStructure).
-    			addArray("labels", ScalarType.pvString).
+    			addArray(labels, ScalarType.pvString).
     			add(value, datasetTableValueStructure).
     			setId("epics:nt/NTTable:1.0").
     			createStructure();
         
-        Structure layoutTableValueStructure = fieldCreate.createFieldBuilder().
+        Structure layoutTableValueStructure = FIELDCREATE.createFieldBuilder().
     			addArray(name, ScalarType.pvString).
     			addArray("mri", ScalarType.pvString).
     			addArray(x, ScalarType.pvFloat).
@@ -301,24 +304,24 @@ class DummyMalcolmRecord extends PVRecord {
     			addArray(visible, ScalarType.pvBoolean).
     			createStructure();
         
-        Structure layoutTableStructure = fieldCreate.createFieldBuilder().
+        Structure layoutTableStructure = FIELDCREATE.createFieldBuilder().
     			add(meta, tableMetaStructure).
-    			addArray("labels", ScalarType.pvString).
+    			addArray(labels, ScalarType.pvString).
     			add(value, layoutTableValueStructure).
     			setId("epics:nt/NTTable:1.0").
     			createStructure();
         
-        Structure methodStructure = fieldCreate.createFieldBuilder().
+        Structure methodStructure = FIELDCREATE.createFieldBuilder().
     			add("takes", mapMetaStructure).
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
     			add("returns", mapMetaStructure).
-    			setId(id+"MethodMeta:1.0").
+    			setId(CORE_ID+"MethodMeta:1.0").
     			createStructure();
         
-        Structure floatStructure = fieldCreate.createFieldBuilder().
+        Structure floatStructure = FIELDCREATE.createFieldBuilder().
     			add(meta, floatNumberMetaStructure).
     			add(value, ScalarType.pvFloat).
     			setId(eid).
@@ -345,7 +348,7 @@ class DummyMalcolmRecord extends PVRecord {
 		Structure pointGeneratorStructure = FieldFactory.getFieldCreate().createFieldBuilder().
     			add(meta, pointGeneratorMetaStructure).
     			add(value, generatorStructure).
-    			setId(id+"PointGenerator:1.0").
+    			setId(CORE_ID+"PointGenerator:1.0").
 				createStructure();
         
         // Device
@@ -368,10 +371,10 @@ class DummyMalcolmRecord extends PVRecord {
                 add("datasets", datasetTableStructure).
                 add("generator", pointGeneratorStructure).
                 add("completedSteps", intStructure).
-    			setId(id+"Block:1.0").
+    			setId(CORE_ID+"Block:1.0").
                 createStructure();
         
-        PVStructure blockPVStructure = pvDataCreate.createPVStructure(deviceStructure);
+        PVStructure blockPVStructure = PVDATACREATE.createPVStructure(deviceStructure);
         
      // State
 		String[] choicesArray = new String[] {"Resetting","Idle","Ready","Configuring","Running","PostRun","Paused","Rewinding","Aborting","Aborted","Fault","Disabling","Disabled"};
@@ -379,7 +382,7 @@ class DummyMalcolmRecord extends PVRecord {
 		PVStringArray choices = blockPVStructure.getSubField(PVStringArray.class, "state.meta.choices");
 		choices.put(0, choicesArray.length, choicesArray, 0);
 		
-        blockPVStructure.getSubField(PVString.class, "state.value").put("IDLE");
+        blockPVStructure.getSubField(PVString.class, STATEVALUE).put("IDLE");
         
         // Status
         blockPVStructure.getSubField(PVString.class, "status.value").put("Test Status");
@@ -409,13 +412,13 @@ class DummyMalcolmRecord extends PVRecord {
 		String[] filenameArray = new String[] {"panda2.h5", "panda2.h5", "express3.h5"};
 		String[] datasetArray = new String[] {"/entry/detector/I200", "/entry/detector/Iref", "/entry/detector/det1"};
 		int[] usersArray = new int[] {3, 1, 42};
-		PVStructure tableValuePVStructure = datasetsPVStructure.getStructureField("value");
+		PVStructure tableValuePVStructure = datasetsPVStructure.getStructureField(value);
 		tableValuePVStructure.getSubField(PVStringArray.class, detector).put(0, detectorArray.length, detectorArray, 0);
 		tableValuePVStructure.getSubField(PVStringArray.class, filename).put(0, filenameArray.length, filenameArray, 0);
 		tableValuePVStructure.getSubField(PVStringArray.class, dataset).put(0, datasetArray.length, datasetArray, 0);
 		tableValuePVStructure.getSubField(PVIntArray.class, users).put(0, usersArray.length, usersArray, 0);
 		String[] headingsArray = new String[] {detector, filename, dataset, users};
-		datasetsPVStructure.getSubField(PVStringArray.class, "labels").put(0, headingsArray.length, headingsArray, 0);
+		datasetsPVStructure.getSubField(PVStringArray.class, labels).put(0, headingsArray.length, headingsArray, 0);
 		
 		// current step
         blockPVStructure.getSubField(PVInt.class, "completedSteps.value").put(1);
@@ -427,14 +430,14 @@ class DummyMalcolmRecord extends PVRecord {
 		float[] layoutXArray = new float[] {0.0f, 0.0f, 0.0f};
 		float[] layoutYArray = new float[] {0.0f, 0.0f, 0.0f};
 		boolean[] layoutVisibleArray = new boolean[] {false, false, false};
-		PVStructure layoutTableValuePVStructure = layoutPVStructure.getStructureField("value");
+		PVStructure layoutTableValuePVStructure = layoutPVStructure.getStructureField(value);
 		layoutTableValuePVStructure.getSubField(PVStringArray.class, name).put(0, layoutNameArray.length, layoutNameArray, 0);
 		layoutTableValuePVStructure.getSubField(PVStringArray.class, "mri").put(0, layoutMrifilenameArray.length, layoutMrifilenameArray, 0);
 		layoutTableValuePVStructure.getSubField(PVFloatArray.class, x).put(0, layoutXArray.length, layoutXArray, 0);
 		layoutTableValuePVStructure.getSubField(PVFloatArray.class, y).put(0, layoutYArray.length, layoutYArray, 0);
 		layoutTableValuePVStructure.getSubField(PVBooleanArray.class, visible).put(0, layoutVisibleArray.length, layoutVisibleArray, 0);
 		String[] layoutHeadingsArray = new String[] {name, "mri", x, y, visible};
-		layoutPVStructure.getSubField(PVStringArray.class, "labels").put(0, layoutHeadingsArray.length, layoutHeadingsArray, 0);
+		layoutPVStructure.getSubField(PVStringArray.class, labels).put(0, layoutHeadingsArray.length, layoutHeadingsArray, 0);
         
 
 		
