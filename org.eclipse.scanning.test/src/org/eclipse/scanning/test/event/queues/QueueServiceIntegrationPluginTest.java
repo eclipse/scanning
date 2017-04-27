@@ -43,9 +43,10 @@ import org.junit.Test;
 
 public class QueueServiceIntegrationPluginTest extends BrokerTest {
 	
+	protected static IEventService evServ;
 	protected static IQueueService queueService;
 	protected static IQueueControllerService queueControl;
-	private String qRoot = "fake-queue-root";
+	private ISubscriber<IBeanListener<Queueable>> statusSubsc;
 	
 	@Before
 	public void setup() throws Exception {
@@ -53,15 +54,10 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 		QueueProcessFactory.registerProcess(DummyAtomProcess.class);
 		QueueProcessFactory.registerProcess(DummyBeanProcess.class);
 		
-		//Configure the queue service
+		//Get services service & start the QueueService
+		evServ = ServicesHolder.getEventService();
 		queueService = ServicesHolder.getQueueService();
-		queueService.setUri(uri);
-		queueService.setQueueRoot(qRoot);
-		queueService.init();
-		
-		//Configure the queue controller service
 		queueControl = ServicesHolder.getQueueControllerService();
-		queueControl.init();
 		
 		//Above here - spring will make the calls
 		queueControl.startQueueService();
@@ -71,15 +67,21 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 	public void tearDown() throws EventException {
 		queueControl.stopQueueService(false);
 		queueService.disposeService();
+		
+		if (!statusSubsc.isDisconnected()) {
+			statusSubsc.disconnect();
+		}
 	}
 	
 	@Test
 	public void testRunningBean() throws EventException {
 		DummyBean dummyBean = new DummyBean("Bob", 50);
+		CountDownLatch waiter = createBeanFinalStatusLatch(dummyBean, queueControl.getJobQueueID());
 		
 		queueControl.submit(dummyBean, queueService.getJobQueueID());
 		try {
-			waitForBeanFinalStatus(dummyBean, queueService.getJobQueueID());//FIXME Put this on the QueueController
+			waitForEvent(waiter);
+//			waitForBeanFinalStatus(dummyBean, queueControl.getJobQueueID());
 		} catch (Exception e) {
 			// It's only a test...
 			e.printStackTrace();
@@ -103,10 +105,12 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 		subTask.addAtom(dummyAtom);
 		task.addAtom(subTask);
 		
+		CountDownLatch waiter = createBeanFinalStatusLatch(task, queueControl.getJobQueueID());
 		queueControl.submit(task, queueControl.getJobQueueID());
 		try {
 //			Thread.sleep(1000000);
-			waitForBeanFinalStatus(task, queueService.getJobQueueID());//FIXME Put this on the QueueController
+			waitForEvent(waiter);
+//			waitForBeanFinalStatus(task, queueService.getJobQueueID());//FIXME Put this on the QueueController
 		} catch (Exception e) {
 			// It's only a test...
 			e.printStackTrace();
@@ -121,30 +125,31 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 	/**
 	 * Same as below, but does not check for final state and waits for 10s
 	 */
-	private void waitForBeanStatus(Queueable bean, Status state, String queueID) throws EventException, InterruptedException {
-		waitForBeanStatus(bean, state, queueID, false, 10000);
+	private CountDownLatch createBeanStatusLatch(Queueable bean, Status state, String queueID) throws EventException {
+		return createBeanWaitLatch(bean, state, queueID, false);
 	}
 	
 	/**
 	 * Same as below, but checks for isFinal and waits 10s
+	 * @throws EventException 
 	 */
-	private void waitForBeanFinalStatus(Queueable bean, String queueID) throws EventException, InterruptedException {
-		waitForBeanStatus(bean, null, queueID, true, 10000);
+	private CountDownLatch createBeanFinalStatusLatch(Queueable bean, String queueID) throws EventException {
+		return createBeanWaitLatch(bean, null, queueID, true);
 	}
 	
 	/**
 	 * Timeout is in ms
+	 * @throws EventException 
 	 */
-	private void waitForBeanStatus(Queueable bean, Status state, String queueID, boolean isFinal, long timeout) 
-			throws EventException, InterruptedException {
+	private CountDownLatch createBeanWaitLatch(Queueable bean, Status state, String queueID, boolean isFinal) 
+			throws EventException {
 		final CountDownLatch statusLatch = new CountDownLatch(1);
 		
 		//Get the queue we're interested in
-		IQueue<Queueable> queue = null;//queueService.getQueue(queueID); FIXME!!!
+		IQueue<? extends Queueable> queue = queueControl.getQueue(queueID);
 		
-		//Create a subscriber configured to listen for our bean
-		IEventService evServ = ServicesHolder.getEventService();
-		ISubscriber<IBeanListener<Queueable>> statusSubsc = evServ.createSubscriber(uri, queue.getStatusTopicName());
+		//Create our subscriber and add the listener
+		statusSubsc = evServ.createSubscriber(uri, queue.getStatusTopicName());
 		statusSubsc.addListener(new IBeanListener<Queueable>() {
 
 			@Override
@@ -158,9 +163,17 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 			}
 			
 		});
+		return statusLatch;
+	}
+		
+	private void waitForEvent(CountDownLatch statusLatch) throws InterruptedException {
+		waitForEvent(statusLatch, 10000);
+	}
+	
+	private void waitForEvent(CountDownLatch statusLatch, long timeout) throws InterruptedException {
 		//We may get stuck if the consumer finishes processing faster than the test works through
 		//If so, we need to test for a non-empty status set with last bean status equal to our expectation
-		
+
 		//Once finished, check whether the latch was released or timedout
 		boolean released = statusLatch.await(timeout, TimeUnit.MILLISECONDS);
 		if (released) {
@@ -168,7 +181,6 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 		} else {
 			System.out.println("#########################\n No final state reported\n#########################");
 		}
-		statusSubsc.disconnect();
 	}
 
 }

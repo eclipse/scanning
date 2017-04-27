@@ -45,6 +45,8 @@ public class QueueResponseProcessTest {
 	private MockConsumer<Queueable> mockCons = new MockConsumer<>();
 	private MockEventService mockEvServ;
 	
+	private String qRoot = IQueueService.DEFAULT_QUEUE_ROOT;
+	
 	private IQueueService qServ;
 	private IQueueControllerService qControl;
 	
@@ -71,9 +73,7 @@ public class QueueResponseProcessTest {
 		ServicesHolder.setEventService(mockEvServ);
 		
 		//This is the REAL queue service, because the Mock is too complex
-		qServ = new QueueService();
-		qServ.setQueueRoot("fake-q-root");
-		qServ.setUri("file:///foo/bar");
+		qServ = new QueueService("file:///foo/bar");
 		qServ.init();
 		ServicesHolder.setQueueService(qServ);
 		qControl = (IQueueControllerService) qServ;
@@ -92,10 +92,10 @@ public class QueueResponseProcessTest {
 	@Test
 	public void testResponseGetStringConfig() throws EventException {
 		//Expected values
-		String realCommandSetName = "fake-q-root"+IQueueService.COMMAND_SET_SUFFIX;
-		String realCommandTopicName = "fake-q-root"+IQueueService.COMMAND_TOPIC_SUFFIX;
-		String realHeartbeatTopicName = "fake-q-root"+IQueueService.HEARTBEAT_TOPIC_SUFFIX;
-		String realJobQueueID = "fake-q-root"+IQueueService.JOB_QUEUE_SUFFIX;
+		String realCommandSetName = qRoot+IQueueService.COMMAND_SET_SUFFIX;
+		String realCommandTopicName = qRoot+IQueueService.COMMAND_TOPIC_SUFFIX;
+		String realHeartbeatTopicName = qRoot+IQueueService.HEARTBEAT_TOPIC_SUFFIX;
+		String realJobQueueID = qRoot+IQueueService.JOB_QUEUE_SUFFIX;
 		
 		/*
 		 * Get command set
@@ -156,7 +156,7 @@ public class QueueResponseProcessTest {
 		//Create bean status request & post
 		qReq = new QueueRequest();
 		qReq.setRequestType(QueueRequestType.BEAN_STATUS);
-		qReq.setQueueID("fake-q-root"+IQueueService.JOB_QUEUE_SUFFIX);
+		qReq.setQueueID(qRoot+IQueueService.JOB_QUEUE_SUFFIX);
 		qReq.setBeanID(submDummy.getUniqueId());
 		
 		//Create the response & process the request
@@ -172,7 +172,7 @@ public class QueueResponseProcessTest {
 		//Create bean status request & post
 		qReq = new QueueRequest();
 		qReq.setRequestType(QueueRequestType.BEAN_STATUS);
-		qReq.setQueueID("fake-q-root"+IQueueService.JOB_QUEUE_SUFFIX);
+		qReq.setQueueID(qRoot+IQueueService.JOB_QUEUE_SUFFIX);
 		qReq.setBeanID(statDummy.getUniqueId());
 		
 		//Create the response & process the request
@@ -189,7 +189,7 @@ public class QueueResponseProcessTest {
 			DummyBean bilbo = new DummyBean();
 			qReq = new QueueRequest();
 			qReq.setRequestType(QueueRequestType.BEAN_STATUS);
-			qReq.setQueueID("fake-q-root"+IQueueService.JOB_QUEUE_SUFFIX);
+			qReq.setQueueID(qRoot+IQueueService.JOB_QUEUE_SUFFIX);
 			qReq.setBeanID(bilbo.getUniqueId());
 			
 			//Create the response & process the request
@@ -247,7 +247,7 @@ public class QueueResponseProcessTest {
 		//Create bean status request & post
 		qReq = new QueueRequest();
 		qReq.setRequestType(QueueRequestType.QUEUE);
-		qReq.setQueueID("fake-q-root"+IQueueService.JOB_QUEUE_SUFFIX);
+		qReq.setQueueID(qRoot+IQueueService.JOB_QUEUE_SUFFIX);
 
 		//Create the response & process the request
 		responseProc = qResponseCreator.createResponder(qReq, mockPub);

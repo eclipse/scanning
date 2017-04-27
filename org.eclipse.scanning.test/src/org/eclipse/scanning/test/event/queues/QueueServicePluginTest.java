@@ -38,7 +38,7 @@ public class QueueServicePluginTest extends BrokerTest {
 	private static IQueueService queueService;
 	private static IQueueControllerService queueControl;
 //	private EventInfrastructureFactoryService infrastructureServ;
-	private static String qRoot = "fake-queue-root";
+//	private static String qRoot = "fake-queue-root";
 	
 	private DummyBean dummyBean;
 	
@@ -46,18 +46,14 @@ public class QueueServicePluginTest extends BrokerTest {
 	public void setup() throws Exception {
 //		infrastructureServ = new EventInfrastructureFactoryService();
 //		infrastructureServ.start(false);
-		
-		queueService = ServicesHolder.getQueueService();
-		queueService.setQueueRoot(qRoot);
-//		queueService.setUri(infrastructureServ.getURI());
-		queueService.setUri(uri);
-		
-		queueControl = ServicesHolder.getQueueControllerService();
-		
+
 		QueueProcessFactory.registerProcess(DummyAtomProcess.class);
 		QueueProcessFactory.registerProcess(DummyBeanProcess.class);
+
+		queueService = ServicesHolder.getQueueService();
+		queueControl = ServicesHolder.getQueueControllerService();
+		queueControl.startQueueService();
 		
-		queueService.init();
 	}
 	
 	@After

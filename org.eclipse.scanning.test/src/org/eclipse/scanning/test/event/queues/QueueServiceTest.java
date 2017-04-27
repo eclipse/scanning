@@ -16,9 +16,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -29,7 +28,6 @@ import org.eclipse.scanning.api.event.queues.IQueue;
 import org.eclipse.scanning.api.event.queues.IQueueService;
 import org.eclipse.scanning.api.event.queues.QueueStatus;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
-import org.eclipse.scanning.api.event.queues.beans.QueueBean;
 import org.eclipse.scanning.event.queues.QueueService;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
@@ -38,7 +36,6 @@ import org.eclipse.scanning.test.event.queues.mocks.MockEventService;
 import org.eclipse.scanning.test.event.queues.mocks.MockPublisher;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class QueueServiceTest {
@@ -61,11 +58,11 @@ public class QueueServiceTest {
 		ServicesHolder.setEventService(mockEvServ);
 
 		
-		qRoot = "test-queue-root";
+		qRoot = IQueueService.DEFAULT_QUEUE_ROOT; //This is auto-configured, but need the variables for tests
 		uri = "file:///foo/bar";
 		
 		//Initialise the QueueService
-		testQServ = new QueueService(qRoot, uri);
+		testQServ = new QueueService(uri);
 		ServicesHolder.setQueueService(testQServ);
 		testQServ.init();
 	}
@@ -80,8 +77,7 @@ public class QueueServiceTest {
 	 * Test initialisation & starting of the service
 	 * @throws EventException 
 	 */
-	@Ignore("Giving problems, not sure why")
-	@Test(expected=Exception.class)
+	@Test
 	public void testServiceInit() throws EventException {
 		/*
 		 * init should:
@@ -91,17 +87,11 @@ public class QueueServiceTest {
 		 * - not be runnable without qroot & uri
 		 * - should initialize the active-queues map
 		 */
-		assertEquals("Configured uri & uriString of QueueService differ", uri.toString(), testQServ.getURIString());
-		assertEquals("uriString & uri of QueueService differ", testQServ.getURIString(), testQServ.getURI().toString());
+		assertEquals("Configured uri & uriString of QueueService differ", uri, testQServ.getURI().toString());
 		assertEquals("Incorrect Heartbeat topic name", qRoot+IQueueService.HEARTBEAT_TOPIC_SUFFIX, testQServ.getHeartbeatTopicName());
 		assertEquals("Incorrect Command set name", qRoot+IQueueService.COMMAND_SET_SUFFIX, testQServ.getCommandSetName());
 		assertEquals("Incorrect Command topic name", qRoot+IQueueService.COMMAND_TOPIC_SUFFIX, testQServ.getCommandTopicName());
 		assertTrue("Active-queue ID set should be an empty set", testQServ.getAllActiveQueueIDs().isEmpty());
-		
-		//Create an unconfigured QueueService
-		testQServ.disposeService();
-		testQServ = new QueueService();
-		testQServ.init(); // Nothing to init!
 	}
 	
 	/**
@@ -127,7 +117,7 @@ public class QueueServiceTest {
 		try {
 			testQServ.start();
 			fail("Should not be able to start service immediately after disposal");
-		} catch (IllegalStateException ex) {
+		} catch (EventException ex) {
 			//Expected
 		}
 	}
@@ -221,7 +211,7 @@ public class QueueServiceTest {
 		testQServ.stopActiveQueue(aqID, false);
 		assertEquals("Active-queue has wrong state", QueueStatus.STOPPED, activeQ.getStatus());
 		
-//TODO		
+//TODO
 		//Restart queue & stop is forcefully
 		testQServ.startActiveQueue(aqID);
 		testQServ.stopActiveQueue(aqID, true);
@@ -256,10 +246,15 @@ public class QueueServiceTest {
 		assertTrue("Not enough active-queues registered!", activeQIDs.size() > 4);
 		for (i = 0; i < activeQIDs.size(); i++) {
 			String[] idParts = activeQIDs.get(i).split("\\.");
-			assertEquals("ID should be in three parts", 3, idParts.length);
-			assertEquals("First part of active-queue ID should be queueRoot", qRoot, idParts[0]);
-			assertTrue("Middle part of active-queue ID should be of the form \"aq-1-111\" (was: "+idParts[1]+")", idParts[1].matches("aq-\\d-\\d\\d\\d"));
-			assertEquals("Third part of active-queue ID should be suffix", "active-queue", idParts[2]);
+			assertEquals("ID should be in eight parts", 8, idParts.length);
+			
+			String[] qRootSlice = Arrays.copyOfRange(idParts, 0, 6);
+			String returnedQRoot = String.join(".", qRootSlice);
+			assertEquals("First six parts of active-queue ID should be queueRoot", qRoot, returnedQRoot);
+			
+			assertTrue("Middle part of active-queue ID should be of the form \"aq-1-111\" (was: "+idParts[6]+")", idParts[6].matches("aq-\\d-\\d\\d\\d"));
+			
+			assertEquals("Third part of active-queue ID should be suffix", "active-queue", idParts[7]);
 			for (int j = i+1; j < activeQIDs.size(); j++) {
 				assertFalse("Two active queues with the same name", activeQIDs.get(i).equals(activeQIDs.get(j)));
 			}
@@ -299,72 +294,6 @@ public class QueueServiceTest {
 		} catch (IllegalStateException isEx) {
 			//Expected
 		}
-	}
-	
-	/**
-	 * Test changing config 
-	 * @throws URISyntaxException 
-	 */
-	@Test
-	public void testConfigChange() throws EventException, URISyntaxException {
-		testQServ.start();
-		
-		/*
-		 * Should check not possible whilst active:
-		 * - changing of URI by URI or String
-		 * - changing qRoot
-		 * 
-		 * Should check
-		 * - changing qRoot changes Command/Heartbeat destinations
-		 * - creates new job-queue
-		 */
-		try {
-			testQServ.setQueueRoot("new-test-queue-root");
-			fail("Should not be able to change queueRoot whilst active");
-		} catch (UnsupportedOperationException evEx) {
-			//Expected
-		}
-		try {
-			testQServ.setUri("file:///foo/bar/baz");
-			fail("Should not be able to change uri whilst active");
-		} catch (UnsupportedOperationException evEx) {
-			//Expected
-		}
-		try {
-			testQServ.setUri(new URI("file:///foo/bar/baz"));
-			fail("Should not be able to change uri whilst active");
-		} catch (UnsupportedOperationException evEx) {
-			//Expected
-		}
-		
-		try {
-			testQServ.stop(false);
-			
-			//Test changing qRoot
-			testQServ.setQueueRoot("new-test-queue-root");
-			assertEquals("Incorrect Heartbeat topic name", "new-test-queue-root"+IQueueService.HEARTBEAT_TOPIC_SUFFIX, testQServ.getHeartbeatTopicName());
-			assertEquals("Incorrect Command set name", "new-test-queue-root"+IQueueService.COMMAND_SET_SUFFIX, testQServ.getCommandSetName());
-			assertEquals("Incorrect Command topic name", "new-test-queue-root"+IQueueService.COMMAND_TOPIC_SUFFIX, testQServ.getCommandTopicName());
-			assertEquals("Incorrect jobQueueID", "new-test-queue-root"+IQueueService.JOB_QUEUE_SUFFIX, testQServ.getJobQueueID());
-			IQueue<QueueBean> jobQueue = testQServ.getJobQueue();
-			assertEquals("Job queue name in service & on job-queue do not match", testQServ.getJobQueueID(), jobQueue.getQueueID());
-			
-			//Test changing URI
-			testQServ.setUri("file:///foo/bar/baz");
-			assertEquals("Unexpected URI after changing by string", new URI("file:///foo/bar/baz"), testQServ.getURI());
-			jobQueue = testQServ.getJobQueue();
-			assertEquals("Incorrect URI configured in job-queue", "file:///foo/bar/baz", jobQueue.getURI().toString());
-			testQServ.setUri(new URI("file:///baz/foo/bar"));
-			assertEquals("Unexpected uriString after changing by URI", "file:///baz/foo/bar", testQServ.getURIString());
-			jobQueue = testQServ.getJobQueue();
-			assertEquals("Incorrect URI configured in job-queue", "file:///baz/foo/bar", jobQueue.getURI().toString());
-			
-		} catch (EventException evEx) {
-			//This is a error, we have to handle since we're checking for errors above 
-			evEx.printStackTrace();
-			return;
-		}
-		
 	}
 
 }
