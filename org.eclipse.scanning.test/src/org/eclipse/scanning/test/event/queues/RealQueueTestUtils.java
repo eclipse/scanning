@@ -1,5 +1,8 @@
 package org.eclipse.scanning.test.event.queues;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,6 +17,10 @@ import org.eclipse.scanning.api.event.bean.BeanEvent;
 import org.eclipse.scanning.api.event.bean.IBeanListener;
 import org.eclipse.scanning.api.event.core.IConsumer;
 import org.eclipse.scanning.api.event.core.ISubscriber;
+import org.eclipse.scanning.api.event.queues.IQueue;
+import org.eclipse.scanning.api.event.queues.IQueueControllerService;
+import org.eclipse.scanning.api.event.queues.beans.Queueable;
+import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.event.status.StatusBean;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 
@@ -22,87 +29,166 @@ public class RealQueueTestUtils {
 	private static URI uri;
 	
 	private static IEventService evServ;
+	private static IQueueControllerService queueControl;
+	private static List<ISubscriber<IBeanListener<? extends IdBean>>> subscList; 
 	
 	private static List<ConsumerCommandBean> cmdBeans;
-	private static CountDownLatch cmdLatch;
 	private static List<StatusBean> statusBeans;
 	
 	public static void initialise(URI uri) {
 		RealQueueTestUtils.uri = uri;
 		evServ = ServicesHolder.getEventService();
+		queueControl = ServicesHolder.getQueueControllerService();
 		
 		cmdBeans = new ArrayList<>();
 		statusBeans = new ArrayList<>();
+		
+		subscList = new ArrayList<>();
 	}
 	
-	/**
-	 * Listen to a topic, waiting until a given number of bean events happen 
-	 * before returning. If the timeout is exceeded before the requested 
-	 * number of events, return anyway printing a warning.
-	 * 
-	 * @param topicName
-	 * @param timeout
-	 * @param nBeans
-	 * @throws EventException
-	 * @throws InterruptedException
-	 */
-	public static void waitForBean(String topicName, Long timeout, Integer nBeans, StatusBean bean) throws EventException, InterruptedException {
-		if (timeout == null) timeout = 3000L; //Defaults
-		if (nBeans == null) nBeans = 1;
-		
-		CountDownLatch beanLatch = waitForBean(topicName, statusBeans, nBeans, bean);
-		
-		boolean released = beanLatch.await(timeout, TimeUnit.MILLISECONDS);
-		if (!released) {
-			System.out.println("\n**************\nTimed out waiting for "+topicName+"\n**************");
+	public static void reset() throws EventException {
+		cmdBeans.clear();
+		statusBeans.clear();
+		for (ISubscriber<?> subsc : subscList) {
+			subsc.disconnect();
 		}
+		subscList.clear();
+	}
+	
+	public static void dispose() throws EventException  {
+		reset();
+		RealQueueTestUtils.uri = null;
+		evServ = null;
+		queueControl = null;
 	}
 	
 	/**
-	 * Listen to a command topic, waiting until a given number of command bean 
-	 * events happen before returning. If the timeout is exceeded before the 
-	 * requested number of events, return anyway printing a warning.
-	 * 
-	 * @param commandTopicName
-	 * @param nBeans
-	 * @throws EventException
-	 * @throws  
+	 * Set up listener for a StatusBean with a final state. Return a 
+	 * CountDownLatch which releases on hearing such a bean.
 	 */
-	public static void listenerForCommandBeans(String commandTopicName, Integer nBeans) throws EventException {
-		if (nBeans == null) nBeans = 1; //Default
-		
-		cmdLatch = waitForBean(commandTopicName, cmdBeans, nBeans, null);
+	public static <T extends StatusBean> CountDownLatch createFinalStateBeanWaitLatch(Queueable bean, String queueID) 
+			throws EventException {
+		return createStatusBeanWaitLatch(queueID, null, bean, null, true);
 	}
 	
-	private static <T extends IdBean> CountDownLatch waitForBean(String topicName, List<T> heardBeans, Integer nBeans, IdBean bean) throws EventException {
-		final CountDownLatch beanLatch = new CountDownLatch(nBeans);
-		ISubscriber<IBeanListener<T>> queueListener = evServ.createSubscriber(uri, topicName);
-		queueListener.addListener(new IBeanListener<T>() {
+	/**
+	 * Set up a listener for a bean in a particular queue or on a topic with a 
+	 * state or which might be final.
+	 */
+	private static <T extends StatusBean> CountDownLatch createStatusBeanWaitLatch(String queueID, String topicName, T bean, Status state, Boolean isFinal) 
+			throws EventException {
+		final CountDownLatch statusLatch = new CountDownLatch(1);
+		
+		//Make sure the topic to listen on is set (has it been supplied?)
+				if (topicName == null) {
+					IQueue<? extends StatusBean> queue = queueControl.getQueue(queueID);
+					topicName = queue.getStatusTopicName();
+				}
+		
+		//Create our subscriber and add the listener
+		ISubscriber<IBeanListener<? extends IdBean>>statusSubsc = evServ.createSubscriber(uri, topicName);
+		statusSubsc.addListener(new IBeanListener<T>() {
 
 			@Override
 			public void beanChangePerformed(BeanEvent<T> evt) {
-				heardBeans.add(evt.getBean());
-				//When listening for a particular bean, only release on hearing it
-				if (bean != null && evt.getBean().getUniqueId().equals(bean.getUniqueId())) {
-					beanLatch.countDown();
-				} else{
-					beanLatch.countDown();
+				StatusBean evtBean = evt.getBean();
+				statusBeans.add(evtBean);
+				if (evtBean.getUniqueId().equals(bean.getUniqueId())) {
+					if ((evtBean.getStatus() == state) || (evtBean.getStatus().isFinal() && isFinal)) {
+						statusLatch.countDown();
+					}
 				}
 			}
 		});
-		return beanLatch;
+		subscList.add(statusSubsc);
+		return statusLatch;
 	}
 	
-	public static ConsumerCommandBean waitToGetCmdBean(Long timeout) throws InterruptedException {
-		if (timeout == null) timeout = 3000L; //Default
+	/**
+	 * Set up listener for a given number of ConsumerCommandBeans on a given 
+	 * topic. Return a CountDownLatch which releases on hearing such a bean.
+	 */
+	public static <T extends ConsumerCommandBean> CountDownLatch createCommandBeanWaitLatch(String topicName, int nBeans) throws EventException {
+		return createCommandBeanWaitLatch(topicName, null, null, nBeans);
+	}
+	
+	/**
+	 * Set up a listener for a given number of beans on a queue or topic.
+	 */
+	private static <T extends ConsumerCommandBean> CountDownLatch createCommandBeanWaitLatch(String topicName, String queueID, T bean, Integer nBeans) 
+			throws EventException {
+		if (nBeans == null) nBeans = 1;
+		final CountDownLatch commandLatch = new CountDownLatch(nBeans);
 		
-		boolean released = cmdLatch.await(timeout, TimeUnit.MILLISECONDS);
-		if (!released) {
-			System.out.println("\n**************\nTimed out waiting for command bean\n**************");
+		//Make sure the topic to listen on is set (has it been supplied?)
+		if (topicName == null) {
+			IQueue<? extends StatusBean> queue = queueControl.getQueue(queueID);
+			topicName = queue.getStatusTopicName();
 		}
 		
-		if (cmdBeans.size() == 0) return null;
-		return cmdBeans.get(cmdBeans.size()-1);
+		//Create our subscriber and add the listener
+		ISubscriber<IBeanListener<? extends IdBean>> cmdSubsc = evServ.createSubscriber(uri, topicName);
+		cmdSubsc.addListener(new IBeanListener<T>() {
+
+			@Override
+			public void beanChangePerformed(BeanEvent<T> evt) {
+				ConsumerCommandBean evtBean = evt.getBean();
+				cmdBeans.add(evtBean);
+				//When listening for a particular bean, only release on hearing it
+				if (bean != null && evt.getBean().getUniqueId().equals(bean.getUniqueId())) {
+					commandLatch.countDown();
+				} else{
+					commandLatch.countDown();
+				}
+			}
+		});
+		subscList.add(cmdSubsc);
+		return commandLatch;
+	}
+	
+	/**
+	 * Wait for the given CountDownLatch to countdown or to exceed its timeout 
+	 * (10000ms if no time specified).
+	 */
+	public static void waitForEvent(CountDownLatch latch) throws InterruptedException {
+		waitForEvent(latch, 10000, false);
+	}
+	public static void waitForEvent(CountDownLatch latch, long timeout) throws InterruptedException {
+		waitForEvent(latch, timeout, false);
+	}
+	public static void waitForEvent(CountDownLatch latch, long timeout, Boolean noFail) throws InterruptedException {
+		//We may get stuck if the consumer finishes processing faster than the test works through
+		//If so, we need to test for a non-empty status set with last bean status equal to our expectation
+
+		//Once finished, check whether the latch was released or timedout
+		boolean released = latch.await(timeout, TimeUnit.MILLISECONDS);
+		if (released) {
+			System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~\n Final state reached\n~~~~~~~~~~~~~~~~~~~~~~~~~");
+		} else {
+			System.out.println("#########################\n No final state reported\n#########################");
+			if (!noFail) {
+				fail("No final state reported");
+			}
+		}
+	}
+	
+	/**
+	 * In addition to waiting for an event to occur, this method then returns the last heard command bean.
+	 * @param latch
+	 * @param timeout
+	 * @return
+	 * @throws InterruptedException
+	 */
+	public static ConsumerCommandBean waitToGetCmdBean(CountDownLatch latch, Long timeout, boolean noBeanExpected) throws InterruptedException {
+		waitForEvent(latch, timeout, noBeanExpected);
+		
+		if (noBeanExpected) {
+			assertEquals("Command beans heard, but didn't expect any", 0, cmdBeans.size());
+			return null;
+		} else {
+			if (cmdBeans.size() == 0) fail("No command beans recorded.");
+			return cmdBeans.get(cmdBeans.size()-1);
+		}
 	}
 	
 	/**
