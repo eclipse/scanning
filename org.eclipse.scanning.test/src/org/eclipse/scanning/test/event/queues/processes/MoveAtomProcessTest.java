@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.event.EventException;
-import org.eclipse.scanning.api.event.queues.beans.MoveAtom;
+import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.event.status.StatusBean;
@@ -32,8 +32,8 @@ import org.junit.Test;
 
 public class MoveAtomProcessTest {
 	
-	private MoveAtom mvAt;
-	private QueueProcess<MoveAtom, Queueable> mvAtProc;
+	private PositionerAtom mvAt;
+	private QueueProcess<PositionerAtom, Queueable> mvAtProc;
 	
 	//Infrastructure
 	private ProcessTestInfrastructure pti;
@@ -46,7 +46,7 @@ public class MoveAtomProcessTest {
 		mss = new MockScanService();
 		ServicesHolder.setDeviceService(mss);
 		
-		mvAt = new MoveAtom("Move robot arm", "robot_arm", "1250", 12000);
+		mvAt = new PositionerAtom("Move robot arm", "robot_arm", "1250", 12000);
 		mvAtProc = new MoveAtomProcess<>(mvAt, pti.getPublisher(), false);
 	}
 	
@@ -111,7 +111,7 @@ public class MoveAtomProcessTest {
 	 */
 	@Test
 	public void testFailure() throws Exception {
-		MoveAtom failAtom = new MoveAtom("Error Causer", "BadgerApocalypseButton", "pushed", 1);
+		PositionerAtom failAtom = new PositionerAtom("Error Causer", "BadgerApocalypseButton", "pushed", 1);
 		mvAtProc = new MoveAtomProcess<>(failAtom, pti.getPublisher(), false);
 		
 		pti.executeProcess(mvAtProc, failAtom);

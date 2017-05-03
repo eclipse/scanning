@@ -15,7 +15,7 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IConsumer;
 import org.eclipse.scanning.api.event.core.IPublisher;
-import org.eclipse.scanning.api.event.queues.beans.MoveAtom;
+import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.status.Status;
@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * MoveAtomProcess reads the values included in a {@link MoveAtom} and 
+ * MoveAtomProcess reads the values included in a {@link PositionerAtom} and 
  * instructs the motors detailed in the atom to move to these positions.
  * 
  * It uses the server's {@link IRunnableDeviceService} to create an 
@@ -45,13 +45,13 @@ import org.slf4j.LoggerFactory;
  *            instance using this MoveAtomProcess. This will be 
  *            {@link QueueAtom}.
  */
-public class MoveAtomProcess<T extends Queueable> extends QueueProcess<MoveAtom, T> {
+public class MoveAtomProcess<T extends Queueable> extends QueueProcess<PositionerAtom, T> {
 	
 	/**
 	 * Used by {@link QueueProcessFactory} to identify the bean type this 
 	 * {@link QueueProcess} handles.
 	 */
-	public static final String BEAN_CLASS_NAME = MoveAtom.class.getName();
+	public static final String BEAN_CLASS_NAME = PositionerAtom.class.getName();
 	
 	private static Logger logger = LoggerFactory.getLogger(MoveAtomProcess.class);
 	
@@ -74,8 +74,8 @@ public class MoveAtomProcess<T extends Queueable> extends QueueProcess<MoveAtom,
 	}
 
 	@Override
-	public Class<MoveAtom> getBeanClass() {
-		return MoveAtom.class;
+	public Class<PositionerAtom> getBeanClass() {
+		return PositionerAtom.class;
 	}
 
 	@Override
