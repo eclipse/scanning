@@ -83,7 +83,7 @@ public class MoveAtomProcess<T extends Queueable> extends QueueProcess<Positione
 		executed = true;
 		broadcast(Status.RUNNING,"Creating position from configured values.");
 		
-		final IPosition target = new MapPosition(queueBean.getPositionConfig());
+		final IPosition target = new MapPosition(queueBean.getPositionerConfig());
 		broadcast(10d);
 		
 		//Get the positioner

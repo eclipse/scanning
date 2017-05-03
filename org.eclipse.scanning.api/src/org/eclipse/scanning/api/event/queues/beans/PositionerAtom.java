@@ -17,136 +17,131 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * MoveAtom is a type of {@link QueueAtom} which may be processed within an 
- * active-queue of an {@link IQueueService}. It contains all the configuration 
- * necessary to create an {@link IPositioner} which is used to set the 
- * positions of one or more motors. Motor moves may occur simultaneously, 
- * depending on the configured level of the motor.
+ * PositionerAtom is a type of {@link QueueAtom} which may be processed within 
+ * an active-queue of an {@link IQueueService}. It contains all the 
+ * configuration necessary to create an {@link IPositioner} which is used to 
+ * set the positions of one or more positioners/motors. Positioner moves may 
+ * occur  simultaneously, depending on the configured levels.
  * 
  * @author Michael Wharmby
  *
  */
-public class MoveAtom extends QueueAtom {
+public class PositionerAtom extends QueueAtom {
 	
 	/**
 	 * Version ID for serialization. Should be updated when class changed. 
 	 */
 	private static final long serialVersionUID = 20161021L;
 	
-	private Map<String, Object> positionConfig;
+	private Map<String, Object> positionerConfig;
 	
 	/**
 	 * No arg constructor for JSON
 	 */
-	public MoveAtom() {
+	public PositionerAtom() {
 		super();
 	}
 	
 	/**
-	 * Constructor with required arguments to configure one motor position.
+	 * Constructor with required arguments to configure one positioner.
 	 * 
-	 * @param mvName String automatically/user supplied name for this move. 
-	 * @param moveDev String name of motor to move.
-	 * @param tgt Object target to move motor to.
-	 * @param runTime long Duration of this move in ms.
-
+	 * @param posName String automatically/user supplied name for this atom. 
+	 * @param positionDev String name of positioner to set.
+	 * @param target Object representing the target position.
 	 */
-	public MoveAtom(String mvName, String moveDev, Object tgt, long runTime) {
+	public PositionerAtom(String posName, String positionDev, Object target) {
 		super();
-		setName(mvName);
-		this.runTime = runTime;
+		setName(posName);
 		
-		positionConfig = new LinkedHashMap<String, Object>();
-		positionConfig.put(moveDev, tgt);
+		positionerConfig = new LinkedHashMap<String, Object>();
+		positionerConfig.put(positionDev, target);
 	}
 	
 	/**
 	 * Constructor with required arguments for multiple motor positions.
 	 * 
-	 * @param mvName String automatically/user supplied name for this move.
-	 * @param config Map of form String motor name Object target position
-	 * @param runTime
+	 * @param posName String automatically/user supplied name for this atom.
+	 * @param positionerConfig Map of form String positionerDev name Object 
+	 *                         target position.
 	 */
-	public MoveAtom(String mvName, Map<String, Object> config, long runTime) {
+	public PositionerAtom(String posName, Map<String, Object> positionerConfig) {
 		super();
-		setName(mvName);
-		this.runTime = runTime;
-		positionConfig = config;
+		setName(posName);
+		this.positionerConfig = positionerConfig;
 	}
 	
 	/**
-	 * Return all the names of the motors controlled by this MoveAtom.
+	 * Return all the names of the positioners controlled by this 
+	 * PositionerAtom.
 	 * 
-	 * @return List of String names of the motors in the configuration.
+	 * @return List of String names of the positioners in the configuration.
 	 */
-	public List<String> getMotorNames() {
-		return new ArrayList<String>(positionConfig.keySet());
+	public List<String> getPositionerNames() {
+		return new ArrayList<String>(positionerConfig.keySet());
 	}
 	
 	/**
-	 * Return the tgt to which this motor will be moved to.
+	 * Return the target to which this positioner will be set.
 	 * 
-	 * @param moveDev String name of motor to move.
-	 * @return Object representing the target move position.
+	 * @param positionDev String name of positioner to set.
+	 * @return Object representing the target position.
 	 */
-	public Object get(String moveDev) {
-		return positionConfig.get(moveDev);
+	public Object getPositioner(String positionDev) {
+		return positionerConfig.get(positionDev);
 	}
 	
 	/**
-	 * Change or add a new motor to be moved by this MoveAtom.
+	 * Change or add a new positioner to be set by this PositionerAtom.
 	 * 
-	 * @param moveDev String name of motor to move.
-	 * @param tgt Object target to move motor to.
+	 * @param positionDev String name of positioner to set.
+	 * @param target Object representing the target position.
 	 */
-	public void put(String moveDev, Object tgt) {
-		positionConfig.put(moveDev, tgt);
+	public void addPositioner(String positionDev, Object target) {
+		positionerConfig.put(positionDev, target);
 	}
 	
 	/**
-	 * Remove a motor from the configuration of this MoveAtom.
+	 * Remove a positioner from the configuration of this PositionerAtom.
 	 * 
-	 * @param moveDev String name of motor to move.
+	 * @param positionDev String name of positioner to remove.
 	 */
-	public void remove(String moveDev) {
-		positionConfig.remove(moveDev);
+	public void removePositioner(String positionDev) {
+		positionerConfig.remove(positionDev);
 	}
 	
 	/**
-	 * Report the number of motors whose positions are set by this MoveAtom.
+	 * Report the number of positioners which are set by this PositionerAtom.
 	 * 
-	 * @return int number of motors in the configuration.
+	 * @return int number of positioners in the configuration.
 	 */
-	public int size() {
-		return positionConfig.size();
+	public int nPositioners() {
+		return positionerConfig.size();
 	}
 
 	/**
-	 * Return complete set of motor names and target positions.
+	 * Return complete set of positioner names and target positions.
 	 * 
 	 * @return Map<String, Object> String key name of motor and Object target.
 	 */
-	public Map<String, Object> getPositionConfig() {
-		return positionConfig;
+	public Map<String, Object> getPositionerConfig() {
+		return positionerConfig;
 	}
 
 	/**
-	 * Change the complete set of motor names and target positions.
+	 * Change the complete set of positioner names and target positions.
 	 * 
-	 * @param positionConfig Map<String, Object> String key name of motor and 
-	 *                       Object target.
+	 * @param positionerConfig Map<String, Object> String key positionDev and 
+	 *                         Object target.
 	 */
-	public void setPositionConfig(Map<String, Object> positionConfig) {
-		this.positionConfig = positionConfig;
+	public void setPositionerConfig(Map<String, Object> positionerConfig) {
+		this.positionerConfig = positionerConfig;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result
-				+ ((positionConfig == null) ? 0 : positionConfig.hashCode());
-		result = prime * result + (int) (runTime ^ (runTime >>> 32));
+		result = prime * result + ((positionerConfig == null) ? 0 : positionerConfig.hashCode());
 		return result;
 	}
 
@@ -158,15 +153,27 @@ public class MoveAtom extends QueueAtom {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MoveAtom other = (MoveAtom) obj;
-		if (positionConfig == null) {
-			if (other.positionConfig != null)
+		PositionerAtom other = (PositionerAtom) obj;
+		if (positionerConfig == null) {
+			if (other.positionerConfig != null)
 				return false;
-		} else if (!positionConfig.equals(other.positionConfig))
-			return false;
-		if (runTime != other.runTime)
+		} else if (!positionerConfig.equals(other.positionerConfig))
 			return false;
 		return true;
+	}
+	
+	@Override
+	public String toString() {
+		String positConf = "{";
+		for (Map.Entry<String, Object> poserCfg : positionerConfig.entrySet()) {
+			positConf = positConf+poserCfg.getKey()+" : "+poserCfg.getValue();
+		}
+		positConf = positConf+"}";
+		
+		return "PositionerAtom [name=" + name + "positionerConfig=" + positConf +", status=" + status +
+				", message=" + message + ", percentComplete=" + percentComplete + ", previousStatus=" +
+				previousStatus + ", runTime=" + runTime + ", userName=" + userName+ ", hostName=" + 
+				hostName + ", beamline="+ beamline + ", submissionTime=" + submissionTime + "]";
 	}
 
 }
