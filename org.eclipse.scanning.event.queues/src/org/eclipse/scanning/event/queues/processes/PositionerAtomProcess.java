@@ -29,8 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * MoveAtomProcess reads the values included in a {@link PositionerAtom} and 
- * instructs the motors detailed in the atom to move to these positions.
+ * PositionerAtomProcess reads the values included in a {@link PositionerAtom} 
+ * and instructs the positioners detailed in the atom to set these positions.
  * 
  * It uses the server's {@link IRunnableDeviceService} to create an 
  * {@link IPositioner} which it passes the target positions to.
@@ -42,10 +42,10 @@ import org.slf4j.LoggerFactory;
  * @author Michael Wharmby
  * 
  * @param <T> The {@link Queueable} specified by the {@link IConsumer} 
- *            instance using this MoveAtomProcess. This will be 
+ *            instance using this PositionerAtomProcess. This will be 
  *            {@link QueueAtom}.
  */
-public class MoveAtomProcess<T extends Queueable> extends QueueProcess<PositionerAtom, T> {
+public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<PositionerAtom, T> {
 	
 	/**
 	 * Used by {@link QueueProcessFactory} to identify the bean type this 
@@ -53,21 +53,21 @@ public class MoveAtomProcess<T extends Queueable> extends QueueProcess<Positione
 	 */
 	public static final String BEAN_CLASS_NAME = PositionerAtom.class.getName();
 	
-	private static Logger logger = LoggerFactory.getLogger(MoveAtomProcess.class);
+	private static Logger logger = LoggerFactory.getLogger(PositionerAtomProcess.class);
 	
 	//Scanning infrastructure
 	private final IRunnableDeviceService deviceService;
 	private IPositioner positioner;
 	
 	//For processor operation
-	private Thread moveThread;
+	private Thread positionThread;
 	
 	/**
-	 * Create a MoveAtomProcess to position motors on the beamline. 
+	 * Create a PositionerAtomProcess to position motors on the beamline. 
 	 * deviceService ({@link IRunnableDeviceService}) is configured using OSGi 
 	 * through {@link ServicesHolder}.
 	 */
-	public MoveAtomProcess(T bean, IPublisher<T> publisher, Boolean blocking) throws EventException {
+	public PositionerAtomProcess(T bean, IPublisher<T> publisher, Boolean blocking) throws EventException {
 		super(bean, publisher, blocking);
 		//Get the deviceService from the OSGi configured holder.
 		deviceService = ServicesHolder.getDeviceService();
@@ -97,21 +97,21 @@ public class MoveAtomProcess<T extends Queueable> extends QueueProcess<Positione
 		}
 		broadcast(20d);
 				
-		//Create a new thread to call the move in
-		moveThread = new Thread(new Runnable() {
+		//Create a new thread to call the position setting in
+		positionThread = new Thread(new Runnable() {
 			
 			/*
 			 * DO NOT SET FINAL STATUSES IN THIS THREAD - set them in the post-match analysis
 			 */
 			@Override
 			public synchronized void run() {
-				//Move device(s)
+				//Set positioner device(s)
 				try {
 					broadcast(Status.RUNNING, "Moving device(s) to requested position.");
 					positioner.setPosition(target);
 					
 					//Check whether we received an interrupt whilst setting the positioner
-					if (Thread.currentThread().isInterrupted()) throw new InterruptedException("Move interrupted.");
+					if (Thread.currentThread().isInterrupted()) throw new InterruptedException("Position setting interrupted.");
 					//Completed cleanly
 					broadcast(99.5);
 					processLatch.countDown();
@@ -125,9 +125,9 @@ public class MoveAtomProcess<T extends Queueable> extends QueueProcess<Positione
 				}
 			}
 		});
-		moveThread.setDaemon(true);
-		moveThread.setPriority(Thread.MAX_PRIORITY);
-		moveThread.start();
+		positionThread.setDaemon(true);
+		positionThread.setPriority(Thread.MAX_PRIORITY);
+		positionThread.start();
 	}
 	
 	@Override
@@ -136,13 +136,13 @@ public class MoveAtomProcess<T extends Queueable> extends QueueProcess<Positione
 			postMatchAnalysisLock.lockInterruptibly();
 
 			if (isTerminated()) {
-				broadcast("Move aborted before completion (requested).");
+				broadcast("Position change aborted before completion (requested).");
 				return;
 			}
 
 			if (queueBean.getPercentComplete() >= 99.5) {
 				//Clean finish
-				broadcast(Status.COMPLETE, 100d, "Device move(s) completed.");
+				broadcast(Status.COMPLETE, 100d, "Position change completed.");
 			} else {
 				//Scan failed
 				//TODO Set message? Or is it set elsewhere?
@@ -173,7 +173,7 @@ public class MoveAtomProcess<T extends Queueable> extends QueueProcess<Positione
 			//analysis) completes before terminate does
 			postMatchAnalysisLock.lockInterruptibly();
 
-			moveThread.interrupt();
+			positionThread.interrupt();
 			terminated = true;
 
 			//Wait for post-match analysis to finish
@@ -187,14 +187,14 @@ public class MoveAtomProcess<T extends Queueable> extends QueueProcess<Positione
 	
 	@Override
 	protected void doPause() throws EventException {
-		logger.error("Pause/resume not implemented on MoveAtom");
-		throw new EventException("Pause/resume not implemented on MoveAtom");
+		logger.error("Pause/resume not implemented on PositionerAtom");
+		throw new EventException("Pause/resume not implemented on PositionerAtom");
 	}
 
 	@Override
 	protected void doResume() throws EventException {
-		logger.error("Pause/resume not implemented on MoveAtom");
-		throw new EventException("Pause/resume not implemented on MoveAtom");
+		logger.error("Pause/resume not implemented on PositionerAtom");
+		throw new EventException("Pause/resume not implemented on PositionerAtom");
 	}
 
 }

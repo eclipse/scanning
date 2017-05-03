@@ -83,7 +83,7 @@ public class QueueProcessCreatorTest {
 	public void testProcessTypeCreation() throws Exception {
 		List<Queueable> testAtoms = new ArrayList<>();
 //		testAtoms.add(new MonitorAtom("Read bpm3", "bpm3", 10000)); FIXME
-		testAtoms.add(new PositionerAtom("Move robot arm", "robot_arm", "1250", 12000));
+		testAtoms.add(new PositionerAtom("Move robot arm", "robot_arm", "1250"));
 		testAtoms.add(makeScanAtom());
 //		testAtoms.add(new ProcessAtom(...) TODO
 		testAtoms.add(TestAtomQueueBeanMaker.makeDummySubTaskBeanA());
