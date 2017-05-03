@@ -69,13 +69,15 @@ public interface IHasAtomQueue<T extends QueueAtom> extends IHasChildQueue {
 	public int atomQueueSize();
 	
 	/**
-	 * Return the index of the {@link QueueAtom} with the given unique ID.
+	 * Return the position in the queue of a {@link QueueAtom} with the given 
+	 * unique ID.
+	 * N.B. This isn't heavily used, consider deprecating.
 	 * 
 	 * @param uid - unique ID of {@link QueueAtom}.
 	 * @throws IllegalArgumentException - if no atom with given UID in queue. 
 	 * @return index of {@link QueueAtom} with given UID.
 	 */
-	public int getIndex(String uid);
+	public int getQueuePosition(String uid);
 	
 	/**
 	 * Return and remove the {@link QueueAtom} at the head of the queue. Does 
@@ -98,6 +100,7 @@ public interface IHasAtomQueue<T extends QueueAtom> extends IHasChildQueue {
 	/**
 	 * Tests whether the given {@link QueueAtom} is already present in 
 	 * the queue.
+	 * N.B. This isn't heavily used, consider deprecating.
 	 * 
 	 * @param atom - {@link QueueAtom} whose UID is to be tested.
 	 * @return true if atom already in given list.

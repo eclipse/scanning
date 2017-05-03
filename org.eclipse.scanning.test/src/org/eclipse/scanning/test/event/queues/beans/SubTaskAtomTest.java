@@ -123,7 +123,7 @@ public class SubTaskAtomTest extends AbstractBeanTest<SubTaskAtom> { //extends A
 	@Test
 	public void testUsingNonExistentUID() {
 		try {
-			beanA.getIndex("fish");
+			beanA.getQueuePosition("fish");
 			fail("Expected IllegalArgumentException with nonsense UID");
 		} catch (IllegalArgumentException ex) {
 			//Expected
@@ -135,9 +135,9 @@ public class SubTaskAtomTest extends AbstractBeanTest<SubTaskAtom> { //extends A
 	 */
 	@Test
 	public void testGettingIndexFromUID() {
-		assertEquals("atomC expected at index 2 of beanB", 2, beanB.getIndex(atomC.getUniqueId()));
-		assertEquals("atomE expected at index 4 of beanB", 4, beanB.getIndex(atomE.getUniqueId()));
-		assertEquals("atomB expected at index 1 of beanA", 1, beanA.getIndex(atomB.getUniqueId()));
+		assertEquals("atomC expected at index 2 of beanB", 2, beanB.getQueuePosition(atomC.getUniqueId()));
+		assertEquals("atomE expected at index 4 of beanB", 4, beanB.getQueuePosition(atomE.getUniqueId()));
+		assertEquals("atomB expected at index 1 of beanA", 1, beanA.getQueuePosition(atomB.getUniqueId()));
 	}
 
 	/**
