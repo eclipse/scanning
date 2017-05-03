@@ -78,8 +78,12 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	private String heartbeatTopicName, commandSetName, commandTopicName, jobQueueID;
 	private boolean active = false, stopped = false;
 
-	private final String queueRoot;
-	private final URI uri;
+	/*
+	 * uriConstruct is only set during the constructor and used by unit tests to 
+	 * specify the URI.
+	 */
+	private final String queueRoot, uriConstruct;
+	private URI uri;
 	private IQueue<QueueBean>         jobQueue;
 	private IResponder<QueueRequest>  queueResponder;
 
@@ -110,13 +114,9 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	 * Used by tests directly.
 	 * @throws EventException if a URI cannot be constructed for the service.
 	 */
-	public QueueService(String queueRoot, String uri) {
+	public QueueService(String queueRoot, String uriConstruct) {
 		this.queueRoot = queueRoot;
-		try {
-			this.uri = new URI(uri);
-		} catch (URISyntaxException uSEx) {
-			throw new IllegalArgumentException("Failed to set QueueService URI", uSEx);
-		}
+		this.uriConstruct = uriConstruct;
 		
 		//uriString & queueRoot are already set, so we need to set their dependent fields
 		heartbeatTopicName = queueRoot+HEARTBEAT_TOPIC_SUFFIX;
@@ -135,6 +135,22 @@ public class QueueService extends QueueControllerService implements IQueueServic
 
 	@Override
 	public void init() throws EventException {
+		/*
+		 * We need the URI set by this point. Before here, we couldn't rely on 
+		 * SPRING to have set a value, so we check one hasn't been passed in 
+		 * by tests (as uriConstruct) and if not, get a URI via the SPRING 
+		 * config. 
+		 */
+		try {
+			if (uriConstruct == null) {
+				uri = new URI(CommandConstants.getScanningBrokerUri());
+			} else {
+				uri = new URI(uriConstruct);
+			}
+		} catch (URISyntaxException uSEx) {
+			throw new IllegalArgumentException("Failed to set QueueService URI", uSEx);
+		}
+		
 		//Now we can set up the job-queue
 		jobQueueID = queueRoot+JOB_QUEUE_SUFFIX;
 		jobQueue = new Queue<QueueBean>(jobQueueID, uri, 
@@ -157,7 +173,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	@Override
 	public void disposeService() throws EventException {
 		if (!init) {
-			logger.warn("Queue service has already been disposed. Cannot dispose again.");
+			logger.warn("Queue service has already been disposed or was never initialised.");
 			return;
 		}
 		
