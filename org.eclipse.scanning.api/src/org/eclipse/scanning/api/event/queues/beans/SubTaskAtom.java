@@ -169,4 +169,22 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		String atomQueueStr = "{";
+		for (QueueAtom qa : atomQueue) {
+			atomQueueStr = atomQueueStr+qa.getName()+" : "+qa.getStatus();
+			if (qa.getStatus().isRunning())
+				atomQueueStr = atomQueueStr+"("+qa.getPercentComplete()+")";
+			atomQueueStr = atomQueueStr+", ";
+		}
+		atomQueueStr = atomQueueStr.replaceAll(", $", "}"); //Replace trailing ", "
+		
+		return "SubTaskAtom [name=" + name + ", atomQueue=" + atomQueueStr + ", status=" + status
+				+ ", message=" + message + ", queueMessage=" + queueMessage + ", percentComplete=" 
+				+ percentComplete + ", previousStatus=" + previousStatus + ", runTime=" + runTime 
+				+ ", userName=" + userName+ ", hostName=" + hostName + ", beamline="+ beamline 
+				+ ", submissionTime=" + submissionTime + "]";
+	}
+
 }

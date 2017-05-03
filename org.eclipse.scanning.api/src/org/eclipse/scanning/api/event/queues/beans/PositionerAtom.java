@@ -166,14 +166,14 @@ public class PositionerAtom extends QueueAtom {
 	public String toString() {
 		String positConf = "{";
 		for (Map.Entry<String, Object> poserCfg : positionerConfig.entrySet()) {
-			positConf = positConf+poserCfg.getKey()+" : "+poserCfg.getValue();
+			positConf = positConf+poserCfg.getKey()+" : "+poserCfg.getValue()+", ";
 		}
-		positConf = positConf+"}";
+		positConf = positConf.replaceAll(", $", "}"); //Replace trailing ", "
 		
-		return "PositionerAtom [name=" + name + "positionerConfig=" + positConf +", status=" + status +
-				", message=" + message + ", percentComplete=" + percentComplete + ", previousStatus=" +
-				previousStatus + ", runTime=" + runTime + ", userName=" + userName+ ", hostName=" + 
-				hostName + ", beamline="+ beamline + ", submissionTime=" + submissionTime + "]";
+		return "PositionerAtom [name=" + name + ", positionerConfig=" + positConf +", status=" + status 
+				+", message=" + message + ", percentComplete=" + percentComplete + ", previousStatus=" 
+				+ previousStatus + ", runTime=" + runTime + ", userName=" + userName+ ", hostName=" 
+				+ hostName + ", beamline="+ beamline + ", submissionTime=" + submissionTime + "]";
 	}
 
 }
