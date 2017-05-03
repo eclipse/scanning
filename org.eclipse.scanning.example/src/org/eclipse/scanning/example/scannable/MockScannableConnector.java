@@ -68,6 +68,7 @@ public class MockScannableConnector implements IScannableDeviceService, IDisconn
 		cache.put(mockScannable.getName(), mockScannable);
 		if (mockScannable instanceof AbstractScannable) {
 			((AbstractScannable)mockScannable).setPublisher(positionPublisher);
+			((AbstractScannable)mockScannable).setScannableDeviceService(this);
 		}
 	}
 
@@ -170,6 +171,7 @@ public class MockScannableConnector implements IScannableDeviceService, IDisconn
 		cache.put(mockScannable.getName(), mockScannable);
 		if (mockScannable instanceof AbstractScannable) {
 			((AbstractScannable)mockScannable).setPublisher(positionPublisher);
+			((AbstractScannable)mockScannable).setScannableDeviceService(this);
 		}
 	}
 

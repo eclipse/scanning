@@ -33,7 +33,6 @@ import org.eclipse.scanning.api.device.IWritableDetector;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.models.ScanModel;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
