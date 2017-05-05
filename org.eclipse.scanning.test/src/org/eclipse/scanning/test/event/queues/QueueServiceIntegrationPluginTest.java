@@ -42,6 +42,20 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 	protected static IQueueService queueService;
 	protected static IQueueControllerService queueControl;
 	
+	/*
+	 * These three methods are called by OSGi to configure services during a
+	 * plugin test - see OSGI-INF/queueServiceIntegrationPluginTest.xml
+	 */
+	public static void setEventService(IEventService eServ) {
+		ServicesHolder.setEventService(eServ);
+	}
+	public static void setQueueService(IQueueService qServ) {
+		ServicesHolder.setQueueService(qServ);
+	}
+	public static void setQueueControllerService(IQueueControllerService qcServ) {
+		ServicesHolder.setQueueControllerService(qcServ);
+	}
+	
 	@Before
 	public void setup() throws Exception {
 		RealQueueTestUtils.initialise(uri);
