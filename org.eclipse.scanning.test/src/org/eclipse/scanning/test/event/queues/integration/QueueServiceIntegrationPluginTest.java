@@ -9,7 +9,7 @@
  * Contributors:
  *    Matthew Gerring - initial API and implementation and/or initial documentation
  *******************************************************************************/
-package org.eclipse.scanning.test.event.queues;
+package org.eclipse.scanning.test.event.queues.integration;
 
 import static org.junit.Assert.assertEquals;
 
@@ -27,6 +27,7 @@ import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.event.queues.QueueProcessFactory;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.test.BrokerTest;
+import org.eclipse.scanning.test.event.queues.RealQueueTestUtils;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtom;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtomProcess;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
