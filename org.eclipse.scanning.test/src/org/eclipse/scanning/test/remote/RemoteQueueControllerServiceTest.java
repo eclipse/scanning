@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.event.EventException;
@@ -39,6 +40,7 @@ import org.eclipse.scanning.test.event.queues.RealQueueTestUtils;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtom;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -98,6 +100,13 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	public void disposeService() throws EventException {
 		qservice.stopQueueService(false);
 		((IDisconnectable)rservice).disconnect();
+		
+		RealQueueTestUtils.reset();
+	}
+	
+	@AfterClass
+	public static void tearDownClass() throws EventException {
+		RealQueueTestUtils.dispose();
 	}
 
 	@Test
@@ -113,7 +122,8 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	@Test
 	public void testStartStopService() throws Exception {
 		//Create command listener
-		RealQueueTestUtils.listenerForCommandBeans(qServ.getCommandTopicName(), 1);
+		CountDownLatch waiter = RealQueueTestUtils.createCommandBeanWaitLatch(qServ.getCommandTopicName(), 1);
+		//listenerForCommandBeans(qServ.getCommandTopicName(), 1);
 		
 		//Start the service for test
 		qservice.startQueueService();
@@ -121,18 +131,18 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		
 		qservice.stopQueueService(false);
 		assertFalse("Stop didn't push the stop button.", qServ.isActive());
-		assertFalse("Stop should not have been forced.", lastBeanWasKiller(true));
+		assertFalse("Stop should not have been forced.", lastBeanWasKiller(waiter, true));
 		
 		//Re-start service to test force stop  
 		qservice.startQueueService();
 		qservice.stopQueueService(true);
-		assertTrue("Stop should have been forced.", lastBeanWasKiller());
+		assertTrue("Stop should have been forced.", lastBeanWasKiller(waiter));
 	}
 	
 	@Test
 	public void testStartStopRemote() throws Exception {
 		//Create command listener
-		RealQueueTestUtils.listenerForCommandBeans(qServ.getCommandTopicName(), 1);
+		CountDownLatch waiter = RealQueueTestUtils.createCommandBeanWaitLatch(qServ.getCommandTopicName(), 1);
 		
 		//Start the service for test
 		rservice.startQueueService();
@@ -140,25 +150,25 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		
 		rservice.stopQueueService(false);
 		assertFalse("Stop didn't push the stop button.", qServ.isActive());
-		assertFalse("Stop should not have been forced.", lastBeanWasKiller(true));
+		assertFalse("Stop should not have been forced.", lastBeanWasKiller(waiter, true));
 		
 		//Re-start service to test force stop
 		rservice.startQueueService();
 		rservice.stopQueueService(true);
-		assertTrue("Stop should have been forced.", lastBeanWasKiller());
+		assertTrue("Stop should have been forced.", lastBeanWasKiller(waiter));
 	}
 	
-	private boolean lastBeanWasKiller() throws InterruptedException {
-		return lastBeanWasKiller(false);
+	private boolean lastBeanWasKiller(CountDownLatch latch) throws InterruptedException {
+		return lastBeanWasKiller(latch, false);
 	}
 	
-	private boolean lastBeanWasKiller(boolean noWait) throws InterruptedException {
+	private boolean lastBeanWasKiller(CountDownLatch latch, boolean noWait) throws InterruptedException {
 		ConsumerCommandBean cmdBean;
 		if (noWait) {
 			System.out.println("Not waiting so expect timeout...");
-			cmdBean = RealQueueTestUtils.waitToGetCmdBean(0L);
+			cmdBean = RealQueueTestUtils.waitToGetCmdBean(latch, 1000L, true);
 		} else {
-			cmdBean = RealQueueTestUtils.waitToGetCmdBean(3000L);
+			cmdBean = RealQueueTestUtils.waitToGetCmdBean(latch, 3000L, false);
 		}
 		if (cmdBean == null) return false;
 		if (cmdBean instanceof KillBean) return true;
@@ -184,7 +194,6 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		//For all submit/remove testing we don't want to process anything
 		qservice.pauseQueue(jqID);
 		qservice.pauseQueue(aqID);
-		RealQueueTestUtils.listenerForCommandBeans(qServ.getCommandTopicName(), 2);
 		Thread.sleep(100); //PauseBean takes time to have an effect
 		
 		//Beans for submission

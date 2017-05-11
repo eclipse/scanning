@@ -41,6 +41,12 @@ import org.eclipse.scanning.api.event.queues.beans.Queueable;
 public interface IQueueService {
 	
 	/**
+	 * Default queue-root to use, if none is provided by user/system 
+	 * properties.
+	 */
+	public static final String DEFAULT_QUEUE_ROOT = "org.eclipse.scanning.event.queues.service";
+	
+	/**
 	 * Topics which will always be used to obtain information about the 
 	 * IQueueService.
 	 */
@@ -59,8 +65,10 @@ public interface IQueueService {
 	public static final String ACTIVE_QUEUE_SUFFIX = ".active-queue";
 	
 	/**
-	 * Initialise the queue service. This should ensure the service is capable
-	 * of creating new {@link IQueue} instances and initialise the job queue.
+	 * Initialise the IQueueService. This makes any calls which depend on the 
+	 * {@link IEventService} - i.e. operations which cannot be handled by OSGi.
+	 * Afterwards, the IQueueService should have all of the infrastructure to 
+	 * run a job-queue and be controlled by an {@link IQueueControllerService}.
 	 * 
 	 * @throws EventException - if it was not possible to create the job queue.
 	 * @throws IllegalStateException - if the queue-root & URI have not been 
@@ -194,15 +202,15 @@ public interface IQueueService {
 	 */
 	public String getQueueRoot();
 	
-	/**
-	 * Change the base name used by all queues managed by this IQueueService.
-	 * Should not be possible to change this while service is started. Changing
-	 * the queueRoot should also change the heartbeat and command topic names.
-	 * 
-	 * @param String queueRoot queue base name.
-	 * @throws EventException If attempting to change whilst service started.
-	 */
-	public void setQueueRoot(String queueRoot) throws UnsupportedOperationException, EventException;
+//	/** TODO
+//	 * Change the base name used by all queues managed by this IQueueService.
+//	 * Should not be possible to change this while service is started. Changing
+//	 * the queueRoot should also change the heartbeat and command topic names.
+//	 * 
+//	 * @param String queueRoot queue base name.
+//	 * @throws EventException If attempting to change whilst service started.
+//	 */
+//	public void setQueueRoot(String queueRoot) throws UnsupportedOperationException, EventException;
 	
 	/**
 	 * Return name of topic on which heartbeats of queues associated with this 
@@ -235,30 +243,30 @@ public interface IQueueService {
 	 */
 	public URI getURI();
 	
-	/**
-	 * Return the String path of the URI used to configure this service.
-	 * 
-	 * @return String URI to the queue broker. 
-	 */
-	public String getURIString();
-	
-	/**
-	 * Change the URI of the broker storing the queues.
-	 * Should not be possible to change this while service is started.
-	 * 
-	 * @param uri URI of new queue server.
-	 * @throws EventException If attempting to change whilst service started.
-	 */
-	public void setUri(URI uri) throws UnsupportedOperationException, EventException;
-	
-	/**
-	 * Change the URI of the broker storing the queues with a String.
-	 * Should not be possible to change this while service is started.
-	 * 
-	 * @param uri String URI of new queue server.
-	 * @throws EventException If attempting to change whilst service started.
-	 */
-	public void setUri(String uri) throws UnsupportedOperationException, EventException;
+//	/** TODO
+//	 * Return the String path of the URI used to configure this service.
+//	 * 
+//	 * @return String URI to the queue broker. 
+//	 */
+//	public String getURIString();
+//	
+//	/**
+//	 * Change the URI of the broker storing the queues.
+//	 * Should not be possible to change this while service is started.
+//	 * 
+//	 * @param uri URI of new queue server.
+//	 * @throws EventException If attempting to change whilst service started.
+//	 */
+//	public void setUri(URI uri) throws UnsupportedOperationException, EventException;
+//	
+//	/**
+//	 * Change the URI of the broker storing the queues with a String.
+//	 * Should not be possible to change this while service is started.
+//	 * 
+//	 * @param uri String URI of new queue server.
+//	 * @throws EventException If attempting to change whilst service started.
+//	 */
+//	public void setUri(String uri) throws UnsupportedOperationException, EventException;
 	
 	/**
 	 * Return whether the service has been initialised.

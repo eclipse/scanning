@@ -36,7 +36,7 @@ public abstract class QueueControllerService implements IQueueService, IQueueCon
 	
 	private IQueueControllerEventConnector eventConnector;
 	
-	private boolean init = false;
+	protected boolean init = false;
 	
 	static {
 		System.out.println("Created " + IQueueControllerService.class.getSimpleName());

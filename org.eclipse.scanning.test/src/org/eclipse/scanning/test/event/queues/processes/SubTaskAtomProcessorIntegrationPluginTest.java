@@ -36,7 +36,6 @@ public class SubTaskAtomProcessorIntegrationPluginTest extends BrokerTest {
 	
 	protected static IQueueService queueService;
 	protected static IQueueControllerService queueControl;
-	private String qRoot = "fake-queue-root";
 	
 	private ProcessTestInfrastructure pti;
 	private SubTaskAtomProcess<Queueable> stAtProcr;
@@ -54,8 +53,6 @@ public class SubTaskAtomProcessorIntegrationPluginTest extends BrokerTest {
 		
 		//Configure the queue service
 		queueService = ServicesHolder.getQueueService();
-		queueService.setUri(uri);
-		queueService.setQueueRoot(qRoot);
 		queueService.init();
 		
 		//Configure the queue controller service
