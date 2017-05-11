@@ -232,7 +232,7 @@ public class MalcolmScanTest extends NexusTest {
 		return expectedFileNames;
 	}
 	
-	protected void checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake, int... sizes) throws Exception {
+	protected NXentry checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake, int... sizes) throws Exception {
 		final DummyMalcolmModel dummyMalcolmModel = malcolmDevice.getModel();
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 		
@@ -355,6 +355,8 @@ public class MalcolmScanTest extends NexusTest {
 				isFirst = false;
 			}
 		}
+		
+		return entry;
 	}
 	
 	private IRunnableDevice<ScanModel> createMalcolmGridScan(final IRunnableDevice<?> malcolmDevice, File file, boolean snake, int... size) throws Exception {

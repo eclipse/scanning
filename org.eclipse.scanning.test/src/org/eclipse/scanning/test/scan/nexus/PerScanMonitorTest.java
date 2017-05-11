@@ -59,7 +59,6 @@ import org.eclipse.scanning.example.scannable.MockScannableConfiguration;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;
 import org.eclipse.scanning.server.application.PseudoSpringParser;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class PerScanMonitorTest extends NexusTest {
