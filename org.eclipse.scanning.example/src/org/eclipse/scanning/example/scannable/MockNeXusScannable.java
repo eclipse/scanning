@@ -19,7 +19,7 @@ import org.eclipse.dawnsci.nexus.NXpositioner;
 import org.eclipse.dawnsci.nexus.NexusException;
 import org.eclipse.dawnsci.nexus.NexusNodeFactory;
 import org.eclipse.dawnsci.nexus.NexusScanInfo;
-import org.eclipse.dawnsci.nexus.NexusScanInfo.ScanRole;
+import org.eclipse.dawnsci.nexus.NexusScanInfo.NexusRole;
 import org.eclipse.dawnsci.nexus.builder.NexusObjectProvider;
 import org.eclipse.dawnsci.nexus.builder.NexusObjectWrapper;
 import org.eclipse.january.dataset.Dataset;
@@ -79,10 +79,10 @@ public class MockNeXusScannable extends MockScannable implements INexusDevice<NX
 		final NXpositioner positioner = NexusNodeFactory.createNXpositioner();
 		positioner.setNameScalar(getName());
 
-		if (info.getScanRole(getName()) == ScanRole.METADATA) {
+		if (info.getScanRole(getName()).getNexusRole() == NexusRole.PER_SCAN) {
 			positioner.setField(FIELD_NAME_SET_VALUE, getPosition().doubleValue());
 			positioner.setValueScalar(getPosition().doubleValue());
-		} else {
+		} else { // NexusRole.PER_POINT
 			String floatFill = System.getProperty("GDA/gda.nexus.floatfillvalue", "nan");
 			double fill = floatFill.equalsIgnoreCase("nan") ? Double.NaN : Double.parseDouble(floatFill);
 			

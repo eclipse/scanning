@@ -21,7 +21,8 @@ Export-Package: org.eclipse.scanning.example,
  org.eclipse.scanning.example.file,
  org.eclipse.scanning.example.malcolm,
  org.eclipse.scanning.example.preprocess,
- org.eclipse.scanning.example.scannable
+ org.eclipse.scanning.example.scannable,
+ org.eclipse.scanning.example.scannable.composite
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/*.xml
 Import-Package: org.osgi.framework;version="1.8.0",
