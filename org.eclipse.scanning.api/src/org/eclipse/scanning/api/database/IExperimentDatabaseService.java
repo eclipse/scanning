@@ -14,8 +14,6 @@ package org.eclipse.scanning.api.database;
 import java.io.Closeable;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 
 /**
@@ -44,8 +42,25 @@ import java.util.concurrent.Future;
  * @see {@link http://confluence.diamond.ac.uk/display/I151/GDA-Database+Communications+Specification}
  * 
  */
-public interface IExperimentDatabaseService extends Closeable {
+public interface IExperimentDatabaseService extends Closeable, ISampleDescriptionService {
 	
+
+	/**
+	 * Open the connection. 
+	 * A connection must be opened before it may be used
+	 * A service may be open and closed multiple times
+	 * @throws SQLException
+	 */
+	public void open() throws SQLException;
+	
+	/**
+	 * Close the connection to the database
+	 * A connection must be closed after use
+	 * A service may be open and closed multiple times
+	 * @throws IOException
+	 */
+	@Override
+	public void close() throws IOException;
 
     /**
      * This action is used to insert a record. Currently only a BeamlineAction may be inserted:
@@ -143,48 +158,4 @@ public interface IExperimentDatabaseService extends Closeable {
      */
     <T> Future<Id> composite(T action, boolean blocking)  throws IllegalArgumentException, Exception;
 
-	/**
-	 * Open the connection. 
-	 * A connection must be opened before it may be used
-	 * A service may be open and closed multiple times
-	 * @throws SQLException
-	 */
-	public void open() throws SQLException;
-	
-	/**
-	 * Close the connection to the database
-	 * A connection must be closed after use
-	 * A service may be open and closed multiple times
-	 * @throws IOException
-	 */
-	@Override
-	public void close() throws IOException;
-
-	/**
-	 * This method wraps 'retrieveSamplesAssignedForProposal' without doing further work.
-	 * This method is guaranteed to work over JSON text protocol. 
-	 * 
-	 * @param proposalCode
-	 * @param proposalNumber
-	 * @return
-	 */
-	<T> List<T> getSamples(String proposalCode, long proposalNumber);
-	
-	/**
-	 * 
-	 * @param proposalCode
-	 * @param proposalNumber
-	 * @param sampleId
-	 * @return SampleInformation object or other composite representing the sample information
-	 */
-	<T> T getSampleInformation(String proposalCode, long proposalNumber, long sampleId) ;
-	
-	/**
-	 * 
-	 * @param proposalCode
-	 * @param proposalNumber
-	 * @param sampleIds
-	 * @return Map{sampleId->SampleInformation}
-	 */
-	<T> Map<Long,T> getSampleInformation(String proposalCode, long proposalNumber, long... sampleIds) ;
 }
