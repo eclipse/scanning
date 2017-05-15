@@ -22,6 +22,10 @@ import java.util.Map;
  */
 public class CompositeBean {
 
+	/**
+	 * IMPORTANT: Do not use generics here, the data
+	 * is almost always heterogeneous.
+	 */
 	private Map<Operation, Collection<Object>> data;
     
     public CompositeBean() {
@@ -56,7 +60,7 @@ public class CompositeBean {
     	return data.put(type, new ArrayList<>(Arrays.asList(beans)));
     }
 
-	public Collection<?> get(Operation type) {
+	public Collection<Object> get(Operation type) {
 		return data.getOrDefault(type, Collections.emptyList());
 	}
 	
