@@ -28,7 +28,6 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.scanning.api.stashing.IStashing;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,12 +44,17 @@ class Stashing implements IStashing {
 	 * @param fileName, e.g. org.eclipse.scanning.device.ui.device.controls.json
 	 */
 	Stashing(String fileName, IMarshallerService marshallerService) {
-		this(new File(System.getProperty("user.home")+"/.solstice/"+fileName),marshallerService);
+		this(getDataHome(fileName), marshallerService);
 	}
-	
+
 	Stashing(File file, IMarshallerService marshallerService) {
 		this.file = file;
 		this.marshallerService = marshallerService;
+	}
+	
+	private static File getDataHome(String fileName) {
+		final String path = System.getProperty("GDA/gda.var", System.getProperty("user.home"));
+		return new File(path + "/.solstice/" + fileName);
 	}
 
 	public boolean isStashed() {
@@ -84,6 +88,11 @@ class Stashing implements IStashing {
 		} finally {
 			if (b != null) {
 				b.close();
+
+				// Clients and server may be running as different users, so make sure anyone can write the file 
+				if (!file.setWritable(true, false)) {
+					logger.warn("Could not set write permissions for stash file", file.getCanonicalPath());
+				}
 			}
 		}
 	}
@@ -152,6 +161,5 @@ class Stashing implements IStashing {
 	public File getFile() {
 		return file;
 	}
-
 
 }
