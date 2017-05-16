@@ -47,5 +47,4 @@ Export-Package: org.eclipse.scanning.api,
  org.eclipse.scanning.api.ui,
  org.eclipse.scanning.api.ui.auto
 Import-Package: org.slf4j
-Require-Bundle: com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.2.0"
 
