@@ -13,6 +13,7 @@ package org.eclipse.scanning.sequencer.nexus;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -231,9 +232,10 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 		if (model.getMonitors()!=null) {
 			Collection<IScannable<?>> perPoint = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT).collect(Collectors.toList());
 			Collection<IScannable<?>> perScan  = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN).collect(Collectors.toList());
-			nexusDevices.put(ScanRole.MONITOR,   getNexusDevices(perPoint));
-			nexusDevices.put(ScanRole.METADATA,  getNexusDevices(perScan));
+			nexusDevices.put(ScanRole.MONITOR_PER_POINT,   getNexusDevices(perPoint));
+			nexusDevices.put(ScanRole.MONITOR_PER_SCAN,  getNexusDevices(perScan));
 		}
+		nexusDevices.put(ScanRole.NONE, Collections.emptyList());
 		
 		return nexusDevices;
 	}
@@ -499,7 +501,7 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 	 */
 	private void createNexusDataGroups(final NexusEntryBuilder entryBuilder) throws NexusException {
 		
-		Set<ScanRole> deviceTypes = EnumSet.of(ScanRole.DETECTOR, ScanRole.SCANNABLE, ScanRole.MONITOR);
+		Set<ScanRole> deviceTypes = EnumSet.of(ScanRole.DETECTOR, ScanRole.SCANNABLE, ScanRole.MONITOR_PER_POINT);
 		if (deviceTypes.stream().allMatch(t -> nexusObjectProviders.get(t).isEmpty())) {
 			throw new NexusException("The scan must include at least one device in order to write a NeXus file.");
 		}
@@ -519,7 +521,7 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 
 	private void createNXDataGroups(NexusEntryBuilder entryBuilder, NexusObjectProvider<?> detector) throws NexusException {
 		List<NexusObjectProvider<?>> scannables = nexusObjectProviders.get(ScanRole.SCANNABLE);
-		List<NexusObjectProvider<?>> monitors = new LinkedList<>(nexusObjectProviders.get(ScanRole.MONITOR));
+		List<NexusObjectProvider<?>> monitors = new LinkedList<>(nexusObjectProviders.get(ScanRole.MONITOR_PER_POINT));
 		monitors.remove(solsticeScanMonitor.getNexusProvider(scanInfo));
 
 		// determine the primary device - i.e. the device whose primary dataset to make the @signal field
@@ -532,7 +534,7 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 		} else if (!monitors.isEmpty()) {
 			// otherwise the first monitor is the primary device (and therefore is not a data device)
 			primaryDevice = monitors.remove(0);
-			primaryDeviceType = ScanRole.MONITOR;
+			primaryDeviceType = ScanRole.MONITOR_PER_POINT;
 		} else if (!scannables.isEmpty()) {
 			// if there are no monitors either (a rare edge case), where we use the first scannable
 			// note that this scannable is also added as data device

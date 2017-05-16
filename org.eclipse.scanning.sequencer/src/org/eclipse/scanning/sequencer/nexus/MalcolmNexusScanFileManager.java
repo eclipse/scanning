@@ -46,7 +46,7 @@ public class MalcolmNexusScanFileManager extends NexusScanFileManager {
 	static {
 		DEFAULT_SCAN_ROLES = new HashMap<>();// not an enum map as most base classes not mapped
 		DEFAULT_SCAN_ROLES.put(NexusBaseClass.NX_DETECTOR, ScanRole.DETECTOR);
-		DEFAULT_SCAN_ROLES.put(NexusBaseClass.NX_MONITOR, ScanRole.MONITOR);
+		DEFAULT_SCAN_ROLES.put(NexusBaseClass.NX_MONITOR, ScanRole.MONITOR_PER_POINT);
 		DEFAULT_SCAN_ROLES.put(NexusBaseClass.NX_POSITIONER, ScanRole.SCANNABLE);
 	}
 	

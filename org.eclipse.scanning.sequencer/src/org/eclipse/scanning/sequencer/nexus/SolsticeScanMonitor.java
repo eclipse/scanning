@@ -101,7 +101,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 	}
 
 	public void setNexusObjectProviders(Map<ScanRole, List<NexusObjectProvider<?>>> nexusObjectProviderMap) {
-		EnumSet<ScanRole> deviceTypes = EnumSet.complementOf(EnumSet.of(ScanRole.METADATA));
+		EnumSet<ScanRole> deviceTypes = EnumSet.complementOf(EnumSet.of(ScanRole.MONITOR_PER_SCAN));
 		List<NexusObjectProvider<?>> nexusObjectProviderList = nexusObjectProviderMap.entrySet().stream()
 			.filter(e -> deviceTypes.contains(e.getKey())) // filter where key is in deviceType set
 			.flatMap(e -> e.getValue().stream())  // concatenate value lists into a single stream

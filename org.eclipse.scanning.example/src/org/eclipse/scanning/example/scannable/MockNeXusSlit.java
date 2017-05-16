@@ -80,7 +80,7 @@ public class MockNeXusSlit extends MockScannable implements INexusDevice<NXslit>
 	public NexusObjectProvider<NXslit> getNexusProvider(NexusScanInfo info) throws NexusException {
 		final NXslit positioner = NexusNodeFactory.createNXslit();
 
-		if (info.getScanRole(getName()) == ScanRole.METADATA) {
+		if (info.getScanRole(getName()) == ScanRole.MONITOR_PER_SCAN) {
 			positioner.setX_gapScalar(getPosition().doubleValue());
 			positioner.setY_gapScalar(getPosition().doubleValue());
 		} else {

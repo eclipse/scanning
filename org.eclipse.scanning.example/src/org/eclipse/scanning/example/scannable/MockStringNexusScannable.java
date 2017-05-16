@@ -33,7 +33,7 @@ public class MockStringNexusScannable extends MockStringScannable implements INe
 		final NXpositioner positioner = NexusNodeFactory.createNXpositioner();
 		positioner.setNameScalar(getName());
 		
-		if (info.getScanRole(getName()) == ScanRole.METADATA) {
+		if (info.getScanRole(getName()) == ScanRole.MONITOR_PER_SCAN) {
 			try {
 				// note: assume this scannable is a monitor, so no set value dataset created 
 				positioner.setValue(DatasetFactory.createFromObject(getPosition()));
