@@ -29,7 +29,16 @@ import org.eclipse.scanning.api.scan.ScannableValueTextProvider;
  * creation until we understand why can't use a standard List or Map for a DeviceValue in a DeviceRequest. 
  */
 public class DeviceValueMultiPosition implements ScannableValueTextProvider {
+	
 	private Map<String, Double> values = new LinkedHashMap<>();
+
+	public Map<String, Double> getValues() {
+		return values;
+	}
+
+	public void setValues(Map<String, Double> values) {
+		this.values = values;
+	}
 
 	public Double get(String parameter) {
 		return values.get(parameter);
