@@ -200,9 +200,8 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 
 	private void setPosition(IPosition pos, String location) throws ScanningException, InterruptedException {
 		if (pos!=null) {
-			IPosition start = bean.getScanRequest().getStart();
-			positioner.setPosition(start);
-			logger.debug("The "+location+" position {} is reached.", start);
+			positioner.setPosition(pos);
+			logger.debug("The "+location+" position {} is reached.", pos);
 		}
 	}
 
