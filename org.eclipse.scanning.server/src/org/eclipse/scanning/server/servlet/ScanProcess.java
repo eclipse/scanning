@@ -135,10 +135,12 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 			initializeMalcolmDevice(bean, gen);
 			
 			// We set any activated monitors in the request if none have been specified.
-			if (bean.getScanRequest().getMonitorNames()==null) {
-				Collection<String> dMonNames = getMonitors();
-				bean.getScanRequest().setMonitorNames(dMonNames);
-				logger.debug("Default monitors {}", dMonNames);
+			if (Boolean.getBoolean("org.eclipse.scanning.server.useDefaultActivatedMonitors")) {
+				if (bean.getScanRequest().getMonitorNames()==null) {
+					Collection<String> dMonNames = getMonitors();
+					bean.getScanRequest().setMonitorNames(dMonNames);
+					logger.debug("Default monitors {}", dMonNames);
+				}
 			}
 			
 			if (!Boolean.getBoolean("org.eclipse.scanning.server.servlet.scanProcess.disableValidate")) {
