@@ -3,13 +3,9 @@ package org.eclipse.scanning.test.event.queues.integration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.hdf5.nexus.NexusFileFactoryHDF5;
@@ -22,10 +18,7 @@ import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.core.ISubmitter;
-import org.eclipse.scanning.api.event.core.ISubscriber;
-import org.eclipse.scanning.api.event.scan.IScanListener;
 import org.eclipse.scanning.api.event.scan.ScanBean;
-import org.eclipse.scanning.api.event.scan.ScanEvent;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.models.CompoundModel;
@@ -188,44 +181,16 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 
 		bean.setScanRequest(req);
 		
-		final List<ScanBean> startEvents = new ArrayList<>();
-		final List<ScanBean> endEvents   = new ArrayList<>(13);
-		CountDownLatch latch = RealQueueTestUtils.createScanEndEventWaitLatch(bean, servlet.getStatusTopic());
+		CountDownLatch latch = RealQueueTestUtils.createScanEndEventWaitLatch(servlet.getStatusTopic());
 		
 		final ISubmitter<ScanBean> submitter  = eservice.createSubmitter(uri,  servlet.getSubmitQueue());
 		submitter.submit(bean);
 		submitter.disconnect();
 		
 		RealQueueTestUtils.waitForEvent(latch, 60000);
-//		boolean ok = latch.await(60, TimeUnit.SECONDS);
-//		if (!ok) throw new Exception("The latch broke before the scan finished!");
 		
 		assertEquals(1, RealQueueTestUtils.getStartEvents().size());
 		assertTrue(RealQueueTestUtils.getEndEvents().size() > 0);
 	}
 	
-//	protected CountDownLatch runAndCheck(ScanBean bean, List<ScanBean> startEvents, List<ScanBean> endEvents) throws Exception {
-//
-//		// Let's listen to the scan and see if things happen when we run it
-//		final ISubscriber<IScanListener> subscriber = eservice.createSubscriber(new URI(servlet.getBroker()), servlet.getStatusTopic());
-//		
-//			final CountDownLatch latch       = new CountDownLatch(1);
-//			
-//			subscriber.addListener(new IScanListener() {
-//
-//				@Override
-//				public void scanStateChanged(ScanEvent evt) {
-//					if (evt.getBean().scanStart()) {
-//						startEvents.add(evt.getBean()); // Should be just one
-//					}
-//	                if (evt.getBean().scanEnd()) {
-//	                	endEvents.add(evt.getBean());
-//	                	latch.countDown();
-//	                }
-//				}
-//			});
-//
-//			return latch;
-//	}
-
 }

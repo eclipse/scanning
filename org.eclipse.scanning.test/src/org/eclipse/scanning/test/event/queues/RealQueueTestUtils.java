@@ -162,7 +162,7 @@ public class RealQueueTestUtils {
 		return commandLatch;
 	}
 	
-	public static CountDownLatch createScanEndEventWaitLatch(ScanBean bean, String topicName) throws EventException {
+	public static CountDownLatch createScanEndEventWaitLatch(String topicName) throws EventException {
 		final CountDownLatch scanLatch = new CountDownLatch(1);
 		
 		ISubscriber<IScanListener> beanEvtSubsc = evServ.createSubscriber(uri, topicName);
