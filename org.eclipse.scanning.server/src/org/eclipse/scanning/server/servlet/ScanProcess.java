@@ -16,9 +16,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.eclipse.scanning.api.IScannable;
+import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.annotation.scan.AnnotationManager;
 import org.eclipse.scanning.api.annotation.scan.PostConfigure;
 import org.eclipse.scanning.api.annotation.scan.PreConfigure;
@@ -134,60 +139,21 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 			IPointGenerator<?> gen = getGenerator(bean.getScanRequest());
 			initializeMalcolmDevice(bean, gen);
 			
-			// We set any activated monitors in the request if none have been specified.
-			if (bean.getScanRequest().getMonitorNames()==null) {
-				Collection<String> dMonNames = getMonitors();
-				bean.getScanRequest().setMonitorNames(dMonNames);
-				logger.debug("Default monitors {}", dMonNames);
-			}
-			
-			if (!Boolean.getBoolean("org.eclipse.scanning.server.servlet.scanProcess.disableValidate")) {
-				logger.debug("Validating run : {}", bean);
-				final ScanRequest<?> sr = bean.getScanRequest();
-				if (sr.getDetectors()!=null && sr.getDetectors().isEmpty()) sr.setDetectors(null);
-			    Services.getValidatorService().validate(sr);
-				logger.debug("Validating passed : {}", bean);
-			} else {
-				logger.warn("The run {} has validation switched off.", bean);
-			}
+			checkMonitors();
+			validateRequest(bean);
 
 			// Move to a position if they set one
-			if (bean.getScanRequest().getStart()!=null) {
-				IPosition start = bean.getScanRequest().getStart();
-				positioner.setPosition(start);
-				logger.debug("The start position {} is reached.", start);
-			}
+			setPosition(bean.getScanRequest().getStart(), "start");
 			
 			// Run a script, if any has been requested
-			ScriptResponse<?> res = runScript(bean.getScanRequest().getBefore());
-			bean.getScanRequest().setBeforeResponse(res);
+			runScript(bean.getScanRequest().getBefore(), bean.getScanRequest()::setBeforeResponse);
 			
 			this.controller = createRunnableDevice(bean, gen);
 			
 			if (blocking) {  // Normally the case
-				logger.debug("Running blocking controller {}", controller.getName());
-				controller.getDevice().run(null); // Runs until done
-			    
-				// Run a script, if any has been requested
-			    res = runScript(bean.getScanRequest().getAfter());
-				bean.getScanRequest().setAfterResponse(res);
-
-				if (bean.getScanRequest().getEnd()!=null) {
-					IPosition end = bean.getScanRequest().getEnd();
-					positioner.setPosition(end);
-					logger.debug("The end position {} is reached.", end);
-				}
-
+                executeBlocking(controller, bean);       
 			} else {
-				logger.debug("Running non-blocking device {}", controller.getDevice().getName());
-				controller.getDevice().start(null);
-				
-				long latchTime = Long.getLong("org.eclipse.scanning.server.servlet.asynchWaitTime", 500);
-				logger.debug("Latching on device {} for {}", controller.getDevice().getName(), latchTime);
-				controller.getDevice().latch(latchTime, TimeUnit.MILLISECONDS); // Wait for it to do a bit in case of errors.
-				
-				logger.warn("Cannot run end script when scan is async. (Scan has not been cancelled, after script has been ignored.)");
-				logger.warn("Cannot perform end position when scan is async. (Scan has not been cancelled, end has been ignored.)");
+				executeNonBlocking(controller, bean);
 			}
 			
 			bean.setPreviousStatus(Status.RUNNING);
@@ -207,6 +173,60 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 			if (ne instanceof EventException) throw (EventException)ne;
 			throw new EventException(ne);
 		}
+	}
+
+	private void executeNonBlocking(IDeviceController controller, ScanBean bean) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
+		
+		logger.debug("Running non-blocking device {}", controller.getDevice().getName());
+		controller.getDevice().start(null);
+		
+		long latchTime = Long.getLong("org.eclipse.scanning.server.servlet.asynchWaitTime", 500);
+		logger.debug("Latching on device {} for {}", controller.getDevice().getName(), latchTime);
+		controller.getDevice().latch(latchTime, TimeUnit.MILLISECONDS); // Wait for it to do a bit in case of errors.
+		
+		logger.warn("Cannot run end script when scan is async. (Scan has not been cancelled, after script has been ignored.)");
+		logger.warn("Cannot perform end position when scan is async. (Scan has not been cancelled, end has been ignored.)");
+	}
+
+	private void executeBlocking(IDeviceController controller, ScanBean bean) throws ScanningException, InterruptedException, TimeoutException, ExecutionException, EventException, UnsupportedLanguageException, ScriptExecutionException {
+		
+		logger.debug("Running blocking controller {}", controller.getName());
+		controller.getDevice().run(null); // Runs until done
+	    
+		// Run a script, if any has been requested
+		runScript(bean.getScanRequest().getAfter(), bean.getScanRequest()::setAfterResponse);
+        setPosition(bean.getScanRequest().getEnd(), "end");
+	}
+
+	private void setPosition(IPosition pos, String location) throws ScanningException, InterruptedException {
+		if (pos!=null) {
+			positioner.setPosition(pos);
+			logger.debug("The "+location+" position {} is reached.", pos);
+		}
+	}
+
+	private void validateRequest(ScanBean bean) throws ValidationException, InstantiationException, IllegalAccessException {
+		if (!Boolean.getBoolean("org.eclipse.scanning.server.servlet.scanProcess.disableValidate")) {
+			logger.debug("Validating run : {}", bean);
+			final ScanRequest<?> sr = bean.getScanRequest();
+			if (sr.getDetectors()!=null && sr.getDetectors().isEmpty()) sr.setDetectors(null);
+		    Services.getValidatorService().validate(sr);
+			logger.debug("Validating passed : {}", bean);
+		} else {
+			logger.warn("The run {} has validation switched off.", bean);
+		}
+	}
+
+	private void checkMonitors() throws Exception {
+		
+		// We set any activated monitors in the request if none have been specified.
+		if (Boolean.getBoolean("org.eclipse.scanning.server.useDefaultActivatedMonitors")) {
+			if (bean.getScanRequest().getMonitorNames()==null) {
+				Collection<String> dMonNames = getMonitors();
+				bean.getScanRequest().setMonitorNames(dMonNames);
+				logger.debug("Default monitors {}", dMonNames);
+			}
+		}	
 	}
 
 	private Collection<String> getMonitors() throws Exception {
@@ -297,12 +317,12 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 		logger.debug("Malcolm device(s) initialized");
 	}
 
-	private ScriptResponse<?> runScript(ScriptRequest req) throws EventException, UnsupportedLanguageException, ScriptExecutionException {
-		if (req==null) return null; // Nothing to do
+	private void runScript(ScriptRequest req, Consumer<ScriptResponse<?>> cons) throws EventException, UnsupportedLanguageException, ScriptExecutionException {
+		if (req==null) return; // Nothing to do
 		if (scriptService==null) throw new ScriptExecutionException("No script service is available, cannot run script request "+req);
 		ScriptResponse<?> res = scriptService.execute(req);		
 		logger.debug("Script ran with response {}.", res);
-		return res;
+		cons.accept(res);
 	}
 
 	private IDeviceController createRunnableDevice(ScanBean bean, IPointGenerator<?> gen) throws ScanningException, EventException {
