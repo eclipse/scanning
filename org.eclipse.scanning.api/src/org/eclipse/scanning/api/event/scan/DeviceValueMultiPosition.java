@@ -23,15 +23,22 @@ import java.util.Map;
 
 import org.eclipse.scanning.api.scan.ScannableValueTextProvider;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * This is a special Position class to allow multiple values to be returned from a scannable. It is a temporary
  * creation until we understand why can't use a standard List or Map for a DeviceValue in a DeviceRequest. 
  */
 public class DeviceValueMultiPosition implements ScannableValueTextProvider {
-	@JsonProperty("values")
+	
 	private Map<String, Double> values = new LinkedHashMap<>();
+
+	public Map<String, Double> getValues() {
+		return values;
+	}
+
+	public void setValues(Map<String, Double> values) {
+		this.values = values;
+	}
 
 	public Double get(String parameter) {
 		return values.get(parameter);
