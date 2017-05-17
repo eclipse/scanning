@@ -5,6 +5,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
@@ -17,15 +20,19 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IEventService;
-import org.eclipse.scanning.api.event.core.ISubmitter;
+import org.eclipse.scanning.api.event.queues.IQueueControllerService;
+import org.eclipse.scanning.api.event.queues.beans.MoveAtom;
+import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
+import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
+import org.eclipse.scanning.api.event.queues.beans.TaskBean;
 import org.eclipse.scanning.api.event.scan.ScanBean;
-import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
-import org.eclipse.scanning.api.points.models.CompoundModel;
+import org.eclipse.scanning.api.points.models.IScanPathModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.script.IScriptService;
 import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.event.EventServiceImpl;
+import org.eclipse.scanning.event.queues.QueueService;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.example.classregistry.ScanningExampleClassRegistry;
 import org.eclipse.scanning.example.detector.MandelbrotDetector;
@@ -64,6 +71,7 @@ import org.junit.Test;
  */
 public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 	
+	//These are the fields to run the scan servlet
 	protected static IRunnableDeviceService      dservice;
 	protected static IScannableDeviceService     connector;
 	protected static IPointGeneratorService      gservice;
@@ -75,6 +83,9 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 	protected static ValidatorService            validator;
 	
 	protected static AbstractConsumerServlet<?> servlet;
+	
+	//These fields are for the queueservice
+	protected static IQueueControllerService     qcontrolservice;
 	
 	@BeforeClass
 	public static void create() throws Exception {
@@ -134,6 +145,9 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		
 		ServicesHolder.setEventService(eservice);
 		RealQueueTestUtils.initialise(uri);
+		
+		//Set up the queue service (normally populated by OSGi)
+		qcontrolservice = new QueueService(uri.toString());
 	}
 	
 	@Before
@@ -143,10 +157,15 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 			servlet.getConsumer().cleanQueue(servlet.getSubmitQueue());
 			servlet.getConsumer().cleanQueue(servlet.getStatusSet());
 		}
+		
+		//Start QueueService
+		qcontrolservice.startQueueService();
 	}
 	
 	@After
 	public void disconnect()  throws Exception {
+		qcontrolservice.stopQueueService(true);
+		
 		if (servlet!=null) {
 			servlet.getConsumer().cleanQueue(servlet.getSubmitQueue());
 			servlet.getConsumer().cleanQueue(servlet.getStatusSet());
@@ -164,31 +183,63 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 
 		return servlet;
 	}
+	
+//	@Test
+	public void testMove() throws Exception {
+		//Some sort of latch here
+		CountDownLatch latch = null; //Make one
+		
+		//Set up PositionerAtom
+		MoveAtom mvAt = new MoveAtom("testMove", null,//configure move here
+				400);
+
+		//... and an enclosing SubTaskAtom...
+		SubTaskAtom stAt = new SubTaskAtom("testSubTask");
+		stAt.addAtom(mvAt);
+
+		//... and an enclosing TaskBean
+		TaskBean tBean = new TaskBean("testTask");
+		tBean.addAtom(stAt);
+
+		//Submit it and wait!
+		String jqID = qcontrolservice.getJobQueueID();
+		qcontrolservice.submit(tBean, jqID);
+		RealQueueTestUtils.waitForEvent(latch, 60000);
+		
+		/* These should test the move happened
+		 * assertEquals(1, RealQueueTestUtils.getStartEvents().size());
+		 * assertTrue(RealQueueTestUtils.getEndEvents().size() > 0); 
+		 */
+		
+	}
+	
 	@Test
 	public void testStepScan() throws Exception {
-		// We write some pojos together to define the scan
-		final ScanBean bean = new ScanBean();
-		bean.setName("Hello Scanning World");
+		//Create a latch to wait for activity
+		CountDownLatch latch = RealQueueTestUtils.createScanEndEventWaitLatch(servlet.getStatusTopic());
 
-		final ScanRequest<?> req = new ScanRequest<>();
-		req.setCompoundModel(new CompoundModel(new StepModel("fred", 0, 9, 1)));
-		req.setMonitorNames(Arrays.asList("monitor"));
-
+		//Set up ScanAtom...
+		final List<IScanPathModel> paths = Arrays.asList(new IScanPathModel[]{new StepModel("fred", 0, 9, 1)});
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
 		dmodel.setExposureTime(0.001);
-		req.putDetector("detector", dmodel);
-
-		bean.setScanRequest(req);
+		Map<String, Object> detectors = new HashMap<>();
+		detectors.put("detector", dmodel);
+		ScanAtom scAt = new ScanAtom("testScan", paths, detectors);
 		
-		CountDownLatch latch = RealQueueTestUtils.createScanEndEventWaitLatch(servlet.getStatusTopic());
+		//... and an enclosing SubTaskAtom...
+		SubTaskAtom stAt = new SubTaskAtom("testSubTask");
+		stAt.addAtom(scAt);
 		
-		final ISubmitter<ScanBean> submitter  = eservice.createSubmitter(uri,  servlet.getSubmitQueue());
-		submitter.submit(bean);
-		submitter.disconnect();
+		//... and an enclosing TaskBean
+		TaskBean tBean = new TaskBean("testTask");
+		tBean.addAtom(stAt);
 		
+		//Submit it and wait!
+		String jqID = qcontrolservice.getJobQueueID();
+		qcontrolservice.submit(tBean, jqID);
 		RealQueueTestUtils.waitForEvent(latch, 60000);
-		
+	
 		assertEquals(1, RealQueueTestUtils.getStartEvents().size());
 		assertTrue(RealQueueTestUtils.getEndEvents().size() > 0);
 	}
