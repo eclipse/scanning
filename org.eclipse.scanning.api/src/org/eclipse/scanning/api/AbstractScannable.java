@@ -49,6 +49,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	private String              name;
 	private boolean             activated;
 	private MonitorRole         monitorRole=MonitorRole.PER_POINT;
+	private long                timeout=-1;
 	
 	/**
 	 * Model is used for some scannables for instance those writing NeXus 
@@ -261,5 +262,13 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 		this.monitorRole = monitorRole;
 		return orig;
 	}
-	
+	@Override
+	public long getTimeout() {
+		return timeout;
+	}
+	@Override
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
+	}
+
 }

@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.scanning.api;
 
-import org.eclipse.scanning.api.annotation.UiHidden;
 
 public interface ITimeoutable {
 
@@ -30,7 +29,6 @@ public interface ITimeoutable {
 	 * 
 	 * @return
 	 */
-	@UiHidden
 	default long getTimeout() {
 		return -1;
 	}
@@ -39,7 +37,6 @@ public interface ITimeoutable {
 	 * 
 	 * @param time in seconds
 	 */
-	@UiHidden
 	default void setTimeout(long time) {
 		// Does nothing
 	}

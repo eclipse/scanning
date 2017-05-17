@@ -12,6 +12,7 @@
 package org.eclipse.scanning.command;
 
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
+import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 
@@ -29,6 +30,15 @@ public class Services {
 	private static IEventService           eventService;
 	private static IPointGeneratorService  generatorService;
 	private static IRunnableDeviceService  runnableDeviceService;
+	private static IScannableDeviceService scannableDeviceService;
+
+	public static IScannableDeviceService getScannableDeviceService() {
+		return scannableDeviceService;
+	}
+
+	public static void setScannableDeviceService(IScannableDeviceService scannableDeviceService) {
+		Services.scannableDeviceService = scannableDeviceService;
+	}
 
 	public static IEventService getEventService() {
 		return eventService;

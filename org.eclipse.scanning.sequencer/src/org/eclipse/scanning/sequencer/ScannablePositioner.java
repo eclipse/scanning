@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.eclipse.scanning.api.IScannable;
-import org.eclipse.scanning.api.device.AbstractRunnableDevice;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
@@ -60,9 +59,7 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 		
 		long time = Long.MIN_VALUE;
 		for (IScannable<?> device : objects) {
-			if (device instanceof AbstractRunnableDevice) {
-				time = Math.max(time, device.getTimeout());
-			}
+			time = Math.max(time, device.getTimeout());
 		}
 		if (time<0) time = defaultTimeout; // seconds
 		return time;

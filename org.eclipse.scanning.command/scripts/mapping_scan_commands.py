@@ -56,7 +56,7 @@ from org.eclipse.scanning.api.points.models import (
     OneDEqualSpacingModel, OneDStepModel, ArrayModel,
     BoundingBox, BoundingLine, CompoundModel, RepeatedPointModel)
 from org.eclipse.scanning.command.Services import (
-    getEventService, getRunnableDeviceService)
+    getEventService, getRunnableDeviceService, getScannableDeviceService)
 
 
 # Grepping for 'mscan' in a GDA workspace shows up nothing, so it seems that
@@ -105,6 +105,10 @@ def mscan(path=None, mon=None, det=None, now=False, block=True,
     submit(request=scan_request(path=path, mon=mon, det=det, allow_preprocess=allow_preprocess),
            now=now, block=block, broker_uri=broker_uri)
 
+def getScannable(name):
+    
+    return getScannableDeviceService().getScannable(name)
+    
 
 def submit(request, now=False, block=True,
            broker_uri=None):
@@ -213,7 +217,7 @@ def detector(name, exposure, **kwargs):
 # Scan paths
 # ----------
 
-def step(axis=None, start=None, stop=None, step=None):
+def step(axis=None, start=None, stop=None, step=None, **kwargs):
     """Define a step scan path to be passed to mscan().
 
     Note that this function may be called with or without keyword syntax. That
@@ -227,10 +231,12 @@ def step(axis=None, start=None, stop=None, step=None):
         raise ValueError(
             '`axis`, `start`, `stop` and `step` must be provided.')
 
+
     # For the first argument, users can pass either a Scannable object
     # or a string. IScanPathModels are only interested in the string (i.e.
     # the Scannable's name).
     axis = _stringify(axis)
+    _processKeywords(axis, kwargs)
 
     # No such thing as ROIs for StepModels.
     roi = None
@@ -244,7 +250,7 @@ def step(axis=None, start=None, stop=None, step=None):
 
     return model, _listify(roi)
 
-def cstep(names=None, start=None, stop=None, step=None):
+def cstep(names=None, start=None, stop=None, step=None, **kwargs):
     """Define a step scan path to be passed to mscan().
 
     Note that this function may be called with or without keyword syntax. That
@@ -265,6 +271,8 @@ def cstep(names=None, start=None, stop=None, step=None):
     # No such thing as ROIs for StepModels.
     roi = None
 
+    _processKeywords(names, kwargs)
+    
     model = _instantiate(
                 CollatedStepModel,
                 {'start': start,
@@ -275,7 +283,7 @@ def cstep(names=None, start=None, stop=None, step=None):
     return model, _listify(roi)
 
 
-def repeat(axis=None, count=None, value=None, sleep=None):
+def repeat(axis=None, count=None, value=None, sleep=None, **kwargs):
     """Define a repeat scan path to be passed to mscan().
 
     Note that this function may be called with or without keyword syntax. That
@@ -293,6 +301,7 @@ def repeat(axis=None, count=None, value=None, sleep=None):
     # or a string. IScanPathModels are only interested in the string (i.e.
     # the Scannable's name).
     axis = _stringify(axis)
+    _processKeywords(axis, kwargs)
 
     # No such thing as ROIs for StepModels.
     roi = None
@@ -307,7 +316,7 @@ def repeat(axis=None, count=None, value=None, sleep=None):
     return model, _listify(roi)
 
 def grid(axes=None, start=None, stop=None, step=None, count=None, snake=True,
-         roi=None):
+         roi=None, **kwargs):
     """Define a grid scan path to be passed to mscan().
 
     Required keyword arguments:
@@ -344,6 +353,9 @@ def grid(axes=None, start=None, stop=None, step=None, count=None, snake=True,
         (xName, yName) = map(_stringify, axes)
     except (TypeError, ValueError):
         raise ValueError('`axes` must be a pair of scannables (x, y).')
+    
+    _processKeywords(xName, kwargs)
+    _processKeywords(yName, kwargs)
 
     try:
         (xStart, yStart) = start
@@ -397,7 +409,7 @@ def grid(axes=None, start=None, stop=None, step=None, count=None, snake=True,
 
 
 # TODO: Add axes=None?
-def line(origin=None, length=None, angle=None, count=None, step=None):
+def line(origin=None, length=None, angle=None, count=None, step=None, **kwargs):
     """Define a line segment scan path to be passed to mscan().
 
     Required keyword arguments:
@@ -455,7 +467,7 @@ def line(origin=None, length=None, angle=None, count=None, step=None):
     return model, _listify(roi)
 
 
-def array(axis=None, values=None):
+def array(axis=None, values=None, **kwargs):
     """Define an array scan path to be passed to mscan().
 
     Required keyword arguments:
@@ -468,6 +480,7 @@ def array(axis=None, values=None):
         raise ValueError('`axis` and `values` must be provided to array().')
 
     axis = _stringify(axis)
+    _processKeywords(axis, kwargs)
 
     roi = None
 
@@ -480,7 +493,7 @@ def array(axis=None, values=None):
     return amodel, _listify(roi)
 
 
-def val(axis=None, value=None):
+def val(axis=None, value=None, **kwargs):
     """Define a single axis position to be passed to mscan().
 
     This single-point scan "path" can be used as the innermost scan path in a
@@ -496,8 +509,12 @@ def val(axis=None, value=None):
     except AssertionError:
         raise ValueError('`axis` and `value` must be provided to val().')
 
+    axis = _stringify(axis)
+    _processKeywords(axis, kwargs)
+
     return array(axis, [value])
 
+    
 
 def point(x, y):
     """Define a point scan path to be passed to mscan().
@@ -601,6 +618,15 @@ def _instantiate(Bean, params):
 
 # Miscellaneous functions
 # -----------------------
+
+def _processKeywords(name, args):
+    
+    if 'timeout' in args.keys():
+        scannable = getScannable(name);
+        if scannable is not None:
+             scannable.setTimeout(long(args['timeout']))
+            
+    # TODO Are other kwargs possible for models?
 
 def _listify(sheep):  # Idempotent.
     # The argument is called "sheep" because it may be either
