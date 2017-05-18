@@ -76,7 +76,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 
 	
 	private String heartbeatTopicName, commandSetName, commandTopicName, jobQueueID;
-	private boolean active = false, stopped = false;
+	private boolean active = false, stopped = false, runOnce = false;
 
 	/*
 	 * uriConstruct is only set during the constructor and used by unit tests to 
@@ -141,6 +141,8 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		 * by tests (as uriConstruct) and if not, get a URI via the SPRING 
 		 * config. 
 		 */
+		logger.debug("Initialising QueueService...");
+		runOnce = true; //Indicate that initialisation has been attempted
 		try {
 			if (uriConstruct == null) {
 				uri = new URI(CommandConstants.getScanningBrokerUri());
@@ -152,11 +154,13 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		}
 		
 		//Now we can set up the job-queue
+		logger.debug("Creating job-queue...");
 		jobQueueID = queueRoot+JOB_QUEUE_SUFFIX;
 		jobQueue = new Queue<QueueBean>(jobQueueID, uri, 
 				heartbeatTopicName, commandSetName, commandTopicName);
 
 		//Add responder
+		logger.debug("Creating queueResponder...");
 		IEventService evServ = ServicesHolder.getEventService();
 		queueResponder = evServ.createResponder(uri, QUEUE_REQUEST_TOPIC, QUEUE_RESPONSE_TOPIC);
 		queueResponder.setBeanClass(QueueRequest.class);
@@ -168,19 +172,22 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		//With QueueService parts initialised, we can initialise the QueueController parts
 		// - this also makes calls to the IEventService!
 		super.init();
+		logger.debug("QueueService initialised with queue-root: "+queueRoot);
 	}
 	
 	@Override
 	public void disposeService() throws EventException {
-		if (!init) {
+		if (!init && runOnce) {
 			logger.warn("Queue service has already been disposed or was never initialised.");
 			return;
 		}
 		
 		//Stop the job queue if service is up
+		logger.debug("Force-stopping active-queue(s)...");
 		if (active) stop(true);
 		
 		//Shutdown the responder
+		logger.debug("Disconnecting queueResponder...");
 		queueResponder.disconnect();
 
 		//Dispose the job queue
@@ -190,10 +197,12 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		
 		//Mark the service not initialised
 		init = false;
+		logger.debug("QueueService disposed");
 	}
 
 	@Override
 	public void start() throws EventException {
+		logger.debug("Starting QueueService...");
 		if (!init) {
 			logger.error("Could not start the QueueService - service has not been initialised.");
 			throw new EventException("QueueService not initialised. Cannot start");
@@ -206,15 +215,18 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			return;
 		}
 		//Start the job-queue if it can be
+		logger.debug("Starting job-queue...");
 		jobQueue.start();
 		
 		//Mark service as up & reset stopped (if needed)
 		active = true;
 		stopped = false;
+		logger.info("QueueService started. Job-queue ready to receive TaskBeans...");
 	}
 
 	@Override
 	public void stop(boolean force) throws EventException {
+		logger.debug("Stopping job-queue...");
 		if (!isActive()) return;//On two lines since stopped service with null jobQueue causes NPE
 		if (!jobQueue.getStatus().isActive()) {
 			logger.warn("Job-queue is not active.");
@@ -239,6 +251,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 				}
 			}
 
+			logger.debug("Stopping job-queue (force="+force+")...");
 			//Kill/stop the job queuebroker
 			if (force) {
 				killQueue(jobQueueID, true, false, false);
@@ -252,6 +265,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		} finally {
 			queueControlLock.writeLock().unlock();
 		}
+		logger.info("QueueService stopped");
 	}
 	
 	@Override
@@ -271,6 +285,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			}
 
 			//Create active-queue, add to register & return the active-queue ID
+			logger.debug("Creating new active-queue (ID: "+aqID+")...");
 			IQueue<QueueAtom> activeQueue = new Queue<>(aqID, uri, 
 					heartbeatTopicName, commandSetName, commandTopicName);
 			activeQueue.clearQueues();
@@ -283,7 +298,9 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			} finally {
 				queueControlLock.readLock().lockInterruptibly();
 				queueControlLock.writeLock().unlock();
+				logger.debug("Active-queue successfully registered");
 			}
+			
 		} catch (InterruptedException iEx) {
 			logger.error("Active-queue registration interrupted: "+iEx.getMessage());
 			throw new EventException(iEx);
@@ -299,8 +316,9 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	@Override
 	public void deRegisterActiveQueue(String queueID) throws EventException {
 		//Are we in a state where we can deregister?
-		if (stopped) throw new EventException("stopped");
+		if (stopped) throw new EventException("Queue service is stopped");
 		if (!active) throw new EventException("Queue service not started.");
+		logger.debug("Deregistering active-queue "+queueID);
 		try {
 			//Acquire a readlock to make sure other processes don't mess with the register
 			queueControlLock.readLock().lockInterruptibly();
@@ -324,6 +342,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			} finally {
 				queueControlLock.readLock().lockInterruptibly();
 				queueControlLock.writeLock().unlock();
+				logger.debug("Active-queue successfully deregistered");
 			}
 		} catch (InterruptedException iEx){
 			logger.error("Deregistration of active-queue "+queueID+" was interrupted.");
@@ -339,6 +358,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		queue.disconnect();
 		boolean isClear = queue.clearQueues();//... submit queue now clear.
 		if (!isClear) throw new EventException("Failed to clear queues when disposing "+queue.getQueueID());
+		logger.debug(queue+" successfully disconnected and cleared");
 	}
 	
 	@Override
@@ -375,6 +395,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			} finally {
 				queueControlLock.readLock().lockInterruptibly();
 				queueControlLock.writeLock().unlock();
+				logger.debug(queueID+" successfully started");
 			}
 		} catch (InterruptedException iEx) {
 			logger.error("Starting of active-queue "+queueID+" stopping was interrupted.");
@@ -415,6 +436,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			} finally {
 				queueControlLock.readLock().lockInterruptibly();
 				queueControlLock.writeLock().unlock();
+				logger.debug(queueID+" successfully stopped");
 			}
 		} catch (InterruptedException iEx){
 			logger.error("Stopping of active-queue "+queueID+" stopping was interrupted.");
