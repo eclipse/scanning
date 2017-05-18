@@ -66,15 +66,15 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 			postMatchAnalysisLock.lockInterruptibly();
 			if (isTerminated()) {
 				atomQueueProcessor.terminate();
-				logger.debug(bean.getName()+" was aborted request to abort");
-				queueBean.setMessage("Active-queue aborted before completion (requested)");
+				logger.debug("'"+bean.getName()+"' was requested to abort");
+				queueBean.setMessage("Active-queue was requested to abort before completion.");
 			}else if (queueBean.getPercentComplete() >= 99.49) {//99.49 to catch rounding errors
 				//Completed successfully
 				updateBean(Status.COMPLETE, 100d, "Scan completed.");
 			} else {
 				//Failed: latch released before completion
-				logger.info(bean.getName()+" failed");
-				updateBean(Status.FAILED, null, "Active-queue failed (caused by process Atom)");
+				updateBean(Status.FAILED, null, "Active-queue failed (caused by atom in queue)");
+				logger.info("'"+bean.getName()+"' failed");
 			}
 		} finally {
 			//This should be run after we've reported the queue final state
@@ -105,7 +105,7 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 			postMatchAnalysisLock.lockInterruptibly();
 
 			terminated = true;
-			logger.debug("Terminate requested; release processLatch (start post-match analysis)");
+			logger.debug("Terminate of '"+queueBean.getName()+"' requested; release processLatch (start post-match analysis)");
 			processLatch.countDown();
 			
 			//Wait for post-match analysis to finish

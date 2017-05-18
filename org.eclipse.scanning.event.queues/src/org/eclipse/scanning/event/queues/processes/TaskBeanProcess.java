@@ -69,15 +69,15 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 			postMatchAnalysisLock.lockInterruptibly();
 			if (isTerminated()) {
 				atomQueueProcessor.terminate();
-				logger.debug(bean.getName()+" was aborted request to abort");
-				queueBean.setMessage(bean.getName()+" was aborted before completion (requested)");
+				logger.debug("'"+bean.getName()+"' was requested to abort");
+				queueBean.setMessage("Job-queue was requested to abort before completion.");
 			}else if (queueBean.getPercentComplete() >= 99.49) {//99.49 to catch rounding errors
 				//Completed successfully
 				updateBean(Status.COMPLETE, 100d, "Scan completed.");
 			} else {
 				//Failed: latch released before completion
-				updateBean(Status.FAILED, null, bean.getName()+" failed");
-				logger.info(bean.getName()+" failed. Job-queue paused and will not continue without user intervention");
+				updateBean(Status.FAILED, null, "Job-queue failed (caused by atom in queue)");
+				logger.info("'"+bean.getName()+"' failed. Job-queue paused and will not continue without user intervention");
 				//As we don't know the origin of the failure, pause *this* queue
 				IQueueControllerService controller = ServicesHolder.getQueueControllerService();
 				controller.pauseQueue(ServicesHolder.getQueueService().getJobQueueID());
@@ -111,7 +111,7 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 			postMatchAnalysisLock.lockInterruptibly();
 			
 			terminated = true;
-			logger.debug("Terminate requested; release processLatch (start post-match analysis)");
+			logger.debug("Terminate of '"+queueBean.getName()+"' requested; release processLatch (start post-match analysis)");
 			processLatch.countDown();
 			
 			//Wait for post-match analysis to finish

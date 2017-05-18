@@ -285,7 +285,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			}
 
 			//Create active-queue, add to register & return the active-queue ID
-			logger.debug("Creating new active-queue (ID: "+aqID+")...");
+			logger.debug("Creating new active-queue... (ID: "+aqID+")");
 			IQueue<QueueAtom> activeQueue = new Queue<>(aqID, uri, 
 					heartbeatTopicName, commandSetName, commandTopicName);
 			activeQueue.clearQueues();
@@ -318,7 +318,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		//Are we in a state where we can deregister?
 		if (stopped) throw new EventException("Queue service is stopped");
 		if (!active) throw new EventException("Queue service not started.");
-		logger.debug("Deregistering active-queue "+queueID);
+		logger.debug("Deregistering active-queue (ID: "+queueID+")");
 		try {
 			//Acquire a readlock to make sure other processes don't mess with the register
 			queueControlLock.readLock().lockInterruptibly();
@@ -395,7 +395,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			} finally {
 				queueControlLock.readLock().lockInterruptibly();
 				queueControlLock.writeLock().unlock();
-				logger.debug(queueID+" successfully started");
+				logger.debug("Active-queue successfully started (ID: "+queueID+")");
 			}
 		} catch (InterruptedException iEx) {
 			logger.error("Starting of active-queue "+queueID+" stopping was interrupted.");
