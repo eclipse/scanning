@@ -128,16 +128,18 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 			 */
 			if (child instanceof Queueable) {
 				childWork = new Double(((Queueable)child).getRunTime());
-				totalWork = totalWork + childWork;
-				this.children.get(childID).setWorkFraction(childWork);
+				if (childWork > 0) {
+					this.children.get(childID).workFraction = childWork;
+				}
 			}
+			totalWork = totalWork + this.children.get(childID).workFraction;
 		}
 		/*
 		 * Normalise the amount of work done per child.
 		 */
 		for(String childID : this.children.keySet()) {
-			childWork = this.children.get(childID).getWorkFraction();
-			this.children.get(childID).setWorkFraction(childWork/totalWork);
+			childWork = this.children.get(childID).workFraction;
+			this.children.get(childID).workFraction = childWork/totalWork;
 		}	
 	}
 
@@ -149,12 +151,17 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		//If this bean is not from the parent ignore it.
 		if (!children.containsKey(beanID)) return;
 		
-		if (!children.get(beanID).isOperating()) { 
-			if (bean.getStatus().isRunning()) {
-				children.get(beanID).setOperating(true);
-			} else {
-				//The bean should be running if it's operating. Something's wrong.
-				logger.warn("'"+bean.getName()+"' is not set to operating, but is running (Status = "+bean.getStatus()+").");	
+		if (!children.get(beanID).operating) {
+			/*
+			 * We're not interested in SUBMITTED or QUEUED - nothing should be happening;
+			 * likewise, REQUEST_* might be a legitimate call, so we just allow them past, 
+			 * without setting our bean operating.
+			 */
+			if (bean.getStatus().isActive()) {
+				children.get(beanID).operating = true;
+			} else if (bean.getStatus().isFinal()) {
+				//Bean should only broadcast a final status if it's operating
+				logger.warn(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is not set to operating, but is broadcasting (Status="+bean.getStatus()+")");	
 			}
 		}
 		
@@ -162,17 +169,17 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		parent.setMessage("'"+bean.getName()+"': "+bean.getMessage());
 		
 		//The percent complete changed, update the parent
-		if (bean.getPercentComplete() != children.get(beanID).getPercentComplete()) {
+		if (bean.getPercentComplete() != children.get(beanID).percentComplete) {
 			//First time we need to change the parent percent, get its initial value
 			if (firstTime) {
 				initPercent = parent.getPercentComplete();
 				firstTime = false;
 			}
 			double childPercent = bean.getPercentComplete();
-			double childContribution = (queueCompletePercentage - initPercent) * children.get(beanID).getWorkFraction();
-			double parentPercent = parent.getPercentComplete() + childContribution / 100 * (childPercent - children.get(beanID).getPercentComplete());
+			double childContribution = (queueCompletePercentage - initPercent) * children.get(beanID).workFraction;
+			double parentPercent = parent.getPercentComplete() + childContribution / 100 * (childPercent - children.get(beanID).percentComplete);
 			parent.setPercentComplete(parentPercent);
-			children.get(beanID).setPercentComplete(childPercent);
+			children.get(beanID).percentComplete = childPercent;
 			broadcastUpdate = true;
 		}
 		
@@ -185,16 +192,16 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		 * -> RESUMED/RUNNING from PAUSED: REQUEST_RESUME
 		 * -> FAILED: FAILED (N.B. for TaskBean, consumer will pause on failure)
 		 */
-		if (bean.getStatus() != children.get(beanID).getStatus()) {
+		if (bean.getStatus() != children.get(beanID).status) {
 			//Update the status of the process
-			children.get(beanID).setStatus(bean.getStatus());
+			children.get(beanID).status = bean.getStatus();
 			
 			if (bean.getStatus().isRunning() || bean.getStatus().isResumed()) {
 				//RESUMED/RUNNING
 				if (parent.getStatus().isPaused()) {
 					// -parent is paused => unpause it
 					parent.setStatus(Status.REQUEST_RESUME);
-					logger.info(bean.getName()+" requested to resume");
+					logger.info(bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue requested to resume");
 					((IHasChildQueue)parent).setQueueMessage("Resume requested from '"+bean.getName()+"'");
 					childCommand = true;
 					broadcastUpdate = true;
@@ -207,28 +214,28 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 			} else if (bean.getStatus().isPaused()) {
 				//PAUSE
 				parent.setStatus(Status.REQUEST_PAUSE);
-				logger.info(bean.getName()+" requested to pause");
+				logger.info(bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue requested to pause");
 				((IHasChildQueue)parent).setQueueMessage("Pause requested from '"+bean.getName()+"'");
 				childCommand = true;
 				broadcastUpdate = true;
 			} else if (bean.getStatus().isTerminated()) {
 				//TERMINATE
 				parent.setStatus(Status.REQUEST_TERMINATE);
-				logger.info(bean.getName()+" requested to terminate");
+				logger.info(bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue requested to terminate");
 				((IHasChildQueue)parent).setQueueMessage("Termination requested from '"+bean.getName()+"'");
 				childCommand = true;
 				broadcastUpdate = true;
 			} else if (bean.getStatus().isFinal()) {
 				//FINAL states
-				children.get(beanID).setOperating(false);
+				children.get(beanID).operating = false;
 				beanCompleted = true;
 				if (bean.getStatus().equals(Status.COMPLETE)) {
-					logger.info("'"+bean.getName()+"' completed successfully");
+					logger.info(bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue completed successfully");
 					((IHasChildQueue)parent).setQueueMessage("'"+bean.getName()+"' completed successfully.");
 					broadcastUpdate = true;
 				} else {
 					//Status.FAILED or unhandled state
-					logger.info("'"+bean.getName()+"' failed (message: "+bean.getMessage()+"; queue message: "+((IHasChildQueue)bean).getQueueMessage()+")");
+					logger.info(bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue failed (message: "+bean.getMessage()+"; queue message: "+((IHasChildQueue)bean).getQueueMessage()+")");
 					((IHasChildQueue)parent).setQueueMessage("Failure caused by '"+bean.getName()+"'");
 					broadcastUpdate = true;
 					childCommand = true;
@@ -251,22 +258,23 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		 * release the latch.
 		 */
 		if (beanCompleted) {
-			boolean concluded = true, operating = false;
+			boolean allBeansFinished = true, anyBeansOperating = false;
 			for (String childID : children.keySet()) {
-				concluded = concluded && children.get(childID).isConcluded();
-				operating = operating || children.get(childID).isOperating();
+				allBeansFinished = allBeansFinished && children.get(childID).isFinished();
+				anyBeansOperating = anyBeansOperating || children.get(childID).operating;
 			}
-			if (concluded && !operating || failed) {
+			logger.debug("Status of all child beans of "+parent.getClass().getSimpleName()+" '"+parent.getName()+"': allBeansFinished="+allBeansFinished+"  anyBeansOperating="+anyBeansOperating);
+			if (allBeansFinished && !anyBeansOperating || failed) {
 				if (!failed) {
-					parent.setMessage("Running finished.");
-					logger.debug("All child processes of "+parent.getName()+" are in final state (not Status.FAILED)");
-					((IHasChildQueue)parent).setQueueMessage("All child processes complete.");
+					parent.setMessage("");
+					((IHasChildQueue)parent).setQueueMessage("All child queue beans completed successfully.");
 				}
 				try {
 					broadcaster.broadcast();
 				} catch (EventException evEx) {
 					logger.error("Broadcasting completed message failed with: "+evEx.getMessage());
 				}
+				logger.debug("Releasing parent bean process latch... ("+parent.getClass().getSimpleName()+": '"+parent.getName()+"')");
 				processLatch.countDown();
 			}
 		}
@@ -291,10 +299,10 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 	 */
 	private class ProcessStatus {
 		
-		private Status status;
-		private double percentComplete;
-		private double workFraction = 1d;
-		private boolean seenBefore = false, operating = false;
+		private Status status; //Current status of a bean
+		private double percentComplete; //Current percent complete of a bean
+		private double workFraction = 1d; //Fraction of total work in parent performed by this bean
+		private boolean operating = false; //Flag to show this bean is currently doing work (i.e. queue is running)
 		
 		/**
 		 * Create ProcessStatus from the bean describing the process in the 
@@ -309,93 +317,18 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		}
 
 		/**
-		 * Returns the percentage completeness of this process.
-		 * 
-		 * @return double representing the current percent complete.
-		 */
-		public double getPercentComplete() {
-			return percentComplete;
-		}
-		
-		/**
-		 * Update the currently stored percentage complete.
-		 * 
-		 * @param percentComplete a double representing the new completeness.
-		 */
-		public void setPercentComplete(double percentComplete) {
-			this.percentComplete = percentComplete;
-		}
-		
-		/**
-		 * Returns the fraction of runtime/processes of the parent queue that 
-		 * this process represents. 
-		 * 
-		 * @return double representing fraction of work.
-		 */
-		public double getWorkFraction() {
-			return workFraction;
-		}
-		
-		/**
-		 * Set the fraction of runtime/processes of the parent queue this 
-		 * process represents. This should be called once and before processing
-		 *  of the bean starts.
-		 * 
-		 * @param workFraction double representing fraction of work.
-		 */
-		public void setWorkFraction(double workFraction) {
-			this.workFraction = workFraction;
-		}
-		
-		/**
-		 * Report the {@link Status} of the process as reported by the bean.
-		 * 
-		 * @return {@link Status} of the process.
-		 */
-		public Status getStatus() {
-			return status;
-		}
-		
-		/**
-		 * Update the {@link Status} of the process as the process continues.
-		 * 
-		 * @param status new {@link Status} of the process.
-		 */
-		public void setStatus(Status status) {
-			this.status = status;
-		}
-		
-		/**
-		 * Has execution of this process commenced yet?
-		 * 
-		 * @return true if the process is being executed.
-		 */
-		public boolean isOperating() {
-			return operating;
-		}
-		
-		/**
-		 * Update whether this process is being executed.
-		 * 
-		 * @param operating boolean indicating whether execution is happening. 
-		 */
-		public void setOperating(boolean operating) {
-			this.operating = operating;
-		}
-		
-		/**
 		 * Test whether the process has actually been started (NONE is being 
 		 * used to indicate nothing done yet).
 		 * @return true if process state is final & is NONE
 		 */
-		public boolean isConcluded() {
+		public boolean isFinished() {
 			return status.isFinal() && status != Status.NONE;
 		}
 
 		@Override
 		public String toString() {
 			return "ProcessStatus [percentComplete=" + percentComplete + ", workFraction=" + workFraction + ", status="
-					+ status + ", active=" + operating + "]";
+					+ status + ", operating=" + operating + "]";
 		}
 	}
 
