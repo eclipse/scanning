@@ -235,7 +235,7 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 					broadcastUpdate = true;
 				} else {
 					//Status.FAILED or unhandled state
-					logger.info(bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue failed (message: "+bean.getMessage()+"; queue message: "+((IHasChildQueue)bean).getQueueMessage()+")");
+					logger.info(bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue failed (message: "+bean.getMessage()+")");
 					((IHasChildQueue)parent).setQueueMessage("Failure caused by '"+bean.getName()+"'");
 					broadcastUpdate = true;
 					childCommand = true;
@@ -266,8 +266,8 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 			logger.debug("Status of all child beans of "+parent.getClass().getSimpleName()+" '"+parent.getName()+"': allBeansFinished="+allBeansFinished+"  anyBeansOperating="+anyBeansOperating);
 			if (allBeansFinished && !anyBeansOperating || failed) {
 				if (!failed) {
-					parent.setMessage("");
-					((IHasChildQueue)parent).setQueueMessage("All child queue beans completed successfully.");
+					parent.setMessage("Atom queue completed");
+					((IHasChildQueue)parent).setQueueMessage("All child queue beans completed successfully");
 				}
 				try {
 					broadcaster.broadcast();

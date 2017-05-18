@@ -165,8 +165,8 @@ public class QueueListenerTest {
 		assertFalse("Parent Status should not be final", parent.getStatus().isFinal());
 		assertFalse("Parent Status should not be COMPLETE", parent.getStatus() == Status.COMPLETE);
 		assertEquals("Processor latch not released on completion of all children", 0, latch.getCount(), 0);
-		assertEquals("Parent has wrong message", "Running finished.", getLastBroadcast().getMessage());
-		assertEquals("Parent has wrong queue message", "All child processes complete.", ((IHasChildQueue)getLastBroadcast()).getQueueMessage());
+		assertEquals("Parent has wrong message", "Atom queue completed", getLastBroadcast().getMessage());
+		assertEquals("Parent has wrong queue message", "All child queue beans completed successfully", ((IHasChildQueue)getLastBroadcast()).getQueueMessage());
 	}
 
 	/**
@@ -200,7 +200,7 @@ public class QueueListenerTest {
 		assertEquals("Parent percentage incorrectly incremented", 99.5d, getLastBroadcast().getPercentComplete(), 0d);
 		assertFalse("Parent Status should not be final", parent.getStatus().isFinal());
 		assertFalse("Parent Status should not be COMPLETE", parent.getStatus() == Status.COMPLETE);
-		assertEquals("Parent has wrong queue message", "All child processes complete.", ((IHasChildQueue)getLastBroadcast()).getQueueMessage());
+		assertEquals("Parent has wrong queue message", "All child queue beans completed successfully", ((IHasChildQueue)getLastBroadcast()).getQueueMessage());
 		
 		//All beans now complete, so latch should have been released
 		assertEquals("Processor latch not released on completion of all children", 0, latch.getCount(), 0);

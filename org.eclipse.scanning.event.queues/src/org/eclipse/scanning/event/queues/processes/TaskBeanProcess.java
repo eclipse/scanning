@@ -70,7 +70,7 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 			if (isTerminated()) {
 				atomQueueProcessor.terminate();
 				logger.debug("'"+bean.getName()+"' was requested to abort");
-				queueBean.setMessage("Job-queue was requested to abort before completion.");
+				queueBean.setMessage("Job-queue was requested to abort before completion");
 			}else if (queueBean.getPercentComplete() >= 99.49) {//99.49 to catch rounding errors
 				//Completed successfully
 				updateBean(Status.COMPLETE, 100d, "Scan completed.");

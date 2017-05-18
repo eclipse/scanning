@@ -67,7 +67,7 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 			if (isTerminated()) {
 				atomQueueProcessor.terminate();
 				logger.debug("'"+bean.getName()+"' was requested to abort");
-				queueBean.setMessage("Active-queue was requested to abort before completion.");
+				queueBean.setMessage("Active-queue was requested to abort before completion");
 			}else if (queueBean.getPercentComplete() >= 99.49) {//99.49 to catch rounding errors
 				//Completed successfully
 				updateBean(Status.COMPLETE, 100d, "Scan completed.");
