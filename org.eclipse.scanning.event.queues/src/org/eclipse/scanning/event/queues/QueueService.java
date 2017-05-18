@@ -221,7 +221,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		//Mark service as up & reset stopped (if needed)
 		active = true;
 		stopped = false;
-		logger.info("QueueService started. Job-queue ready to receive TaskBeans...");
+		logger.info("QueueService started. Job-queue ready to receive QueueBeans...");
 	}
 
 	@Override
@@ -358,7 +358,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		queue.disconnect();
 		boolean isClear = queue.clearQueues();//... submit queue now clear.
 		if (!isClear) throw new EventException("Failed to clear queues when disposing "+queue.getQueueID());
-		logger.debug(queue+" successfully disconnected and cleared");
+		logger.debug(queue.getQueueID()+" successfully disconnected and cleared");
 	}
 	
 	@Override

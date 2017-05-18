@@ -18,7 +18,8 @@ import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.status.Status;
-import org.eclipse.scanning.event.queues.QueueProcessFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SubTaskAtomProcess uses an {@link AtomQueueProcessor} to read the 
@@ -36,7 +37,9 @@ import org.eclipse.scanning.event.queues.QueueProcessFactory;
  */
 public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTaskAtom, T> {
 	
-	/**
+	
+	private static Logger logger = LoggerFactory.getLogger(SubTaskAtomProcess.class);
+	/*
 	 * Used by {@link QueueProcessFactory} to identify the bean type this 
 	 * {@link QueueProcess} handles.
 	 */
@@ -63,12 +66,14 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 			postMatchAnalysisLock.lockInterruptibly();
 			if (isTerminated()) {
 				atomQueueProcessor.terminate();
+				logger.debug(bean.getName()+" was aborted request to abort");
 				queueBean.setMessage("Active-queue aborted before completion (requested)");
 			}else if (queueBean.getPercentComplete() >= 99.49) {//99.49 to catch rounding errors
 				//Completed successfully
 				updateBean(Status.COMPLETE, 100d, "Scan completed.");
 			} else {
 				//Failed: latch released before completion
+				logger.info(bean.getName()+" failed");
 				updateBean(Status.FAILED, null, "Active-queue failed (caused by process Atom)");
 			}
 		} finally {
@@ -100,7 +105,9 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 			postMatchAnalysisLock.lockInterruptibly();
 
 			terminated = true;
+			logger.debug("Terminate requested; release processLatch (start post-match analysis)");
 			processLatch.countDown();
+			
 			//Wait for post-match analysis to finish
 			continueIfExecutionEnded();
 		} catch (InterruptedException iEx) {
@@ -113,11 +120,13 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 	@Override
 	protected void doPause() throws Exception {
 		//TODO!
+		logger.warn("Pause not implemented on SubTaskAtomProcessor");
 	}
 	
 	@Override
 	protected void doResume() throws Exception {
 		//TODO!
+		logger.warn("Resume not implemented on SubTaskAtomProcessor");
 	}
 
 	@Override

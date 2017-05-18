@@ -75,8 +75,11 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	
 	@Override
 	public void execute() throws EventException, InterruptedException {
+		logger.debug("Processing "+bean.getClass().getSimpleName()+": '"+bean.getName()+"'");
 		run();
+		logger.debug("Waiting for processing to complete...");
 		processLatch.await();
+		logger.debug("Begin process post-match analysis (assess final status)...");
 		postMatchAnalysis();
 	}
 	
@@ -151,6 +154,7 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	protected void executionEnded() {
 		finished = true;
 		analysisDone.signal();
+		logger.debug("Post-match analysis of "+bean.getName()+" complete (Status: "+bean.getStatus()+")");
 	}
 	
 	/**
