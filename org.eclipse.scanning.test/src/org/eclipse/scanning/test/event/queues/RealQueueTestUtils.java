@@ -185,14 +185,23 @@ public class RealQueueTestUtils {
 	
 	/**
 	 * Wait for the given CountDownLatch to countdown or to exceed its timeout 
-	 * (10000ms if no time specified).
+	 * (10000ms).
 	 */
 	public static void waitForEvent(CountDownLatch latch) throws InterruptedException {
 		waitForEvent(latch, 10000, false);
 	}
+	/**
+	 * Wait for the given CountDownLatch to countdown or to exceed its timeout 
+	 * (10000ms if no time specified).
+	 */
 	public static void waitForEvent(CountDownLatch latch, long timeout) throws InterruptedException {
 		waitForEvent(latch, timeout, false);
 	}
+	/**
+	 * Wait for the given CountDownLatch to countdown or to exceed its timeout 
+	 * (10000ms if no time specified). The noFail argument stops JUnit.fail 
+	 * from being called when the latch is not released.
+	 */
 	public static void waitForEvent(CountDownLatch latch, long timeout, Boolean noFail) throws InterruptedException {
 		//We may get stuck if the consumer finishes processing faster than the test works through
 		//If so, we need to test for a non-empty status set with last bean status equal to our expectation

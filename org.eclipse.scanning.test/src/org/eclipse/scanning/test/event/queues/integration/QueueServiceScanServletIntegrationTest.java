@@ -58,6 +58,7 @@ import org.eclipse.scanning.test.scan.mock.MockWritableDetector;
 import org.eclipse.scanning.test.scan.mock.MockWritingMandelbrotDetector;
 import org.eclipse.scanning.test.scan.mock.MockWritingMandlebrotModel;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -165,7 +166,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 	}
 	
 	@After
-	public void disconnect()  throws Exception {
+	public void disconnect() throws Exception {
 		qservice.stopQueueService(true);
 		
 		if (servlet!=null) {
@@ -175,6 +176,11 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		}
 		
 		RealQueueTestUtils.reset();
+	}
+	
+	@AfterClass
+	public static void shutdown() throws Exception {
+		qservice.disposeService();
 	}
 
 	protected AbstractConsumerServlet<ScanBean> createServlet() throws EventException, URISyntaxException {
@@ -216,9 +222,6 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 	
 	@Test
 	public void testStepScan() throws Exception {
-		//Create a latch to wait for activity
-		CountDownLatch latch = RealQueueTestUtils.createScanEndEventWaitLatch(servlet.getStatusTopic());
-
 		//Set up ScanAtom...
 		final List<IScanPathModel> paths = Arrays.asList(new IScanPathModel[]{new StepModel("fred", 0, 9, 1)});
 		final MockDetectorModel dmodel = new MockDetectorModel();
@@ -236,13 +239,19 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		TaskBean tBean = new TaskBean("testTask");
 		tBean.addAtom(stAt);
 		
+		//Create latches to wait for activity
+		CountDownLatch scanLatch = RealQueueTestUtils.createScanEndEventWaitLatch(servlet.getStatusTopic());
+		CountDownLatch queueLatch = RealQueueTestUtils.createFinalStateBeanWaitLatch(tBean, qservice.getJobQueueID());
+		
 		//Submit it and wait!
 		String jqID = qservice.getJobQueueID();
 		qservice.submit(tBean, jqID);
-		RealQueueTestUtils.waitForEvent(latch, 60000);
+		RealQueueTestUtils.waitForEvent(scanLatch, 60000);
 	
 		assertEquals(1, RealQueueTestUtils.getStartEvents().size());
 		assertTrue(RealQueueTestUtils.getEndEvents().size() > 0);
+		
+		RealQueueTestUtils.waitForEvent(queueLatch);
 	}
 	
 }
