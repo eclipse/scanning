@@ -60,30 +60,58 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 	private boolean childCommand;
 	private final double queueCompletePercentage = 99.5;
 	
-	private QueueListener(IQueueBroadcaster<? extends Queueable> broadcaster, P parent, CountDownLatch procLatch, boolean fakeArg) {
+	/**
+	 * Create QueueListener with child atoms to listen for specified by the 
+	 * atomQueue of the given parent.
+	 * 
+	 * @param broadcaster {@link IQueueBroadcaster} - typically parent process.
+	 * @param parent {@link IHasAtomQueue} bean which specifies atoms to 
+	 *        listen for.
+	 * @param processLatch {@link CountDownLatch} to be released when beans 
+	 *        complete.
+	 * @throws EventException if
+	 */
+	@SuppressWarnings("unchecked")
+	public QueueListener(IQueueBroadcaster<? extends Queueable> broadcaster, P parent, CountDownLatch processLatch) throws EventException {
 		this.broadcaster = broadcaster;
 		this.parent = parent;
-		processLatch = procLatch;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public QueueListener(IQueueBroadcaster<? extends Queueable> broadcaster, P parent, CountDownLatch procLatch) throws EventException {
-		this(broadcaster, parent, procLatch, true);
+		this.processLatch = processLatch;
+		
 		if (parent instanceof IHasAtomQueue<?>) {
 			List<?> children = ((IHasAtomQueue<?>)parent).getAtomQueue();
 			initChildList((List<Q>) children);//QueueAtom extends StatusBean, so this cast is OK.
 		} else {
-			throw new EventException("Listener has no child beans to monitor. Cannot continue.");
+			logger.error("Given parent bean ('"+parent.getName()+"') doesn't have atomQueue to get child atoms from.");
+			throw new EventException("Given parent bean has no atomQueue");
 		}
+		logger.debug("Initialised from atomQueue of '"+parent.getName()+"' ("+children.size()+" atoms)");
 	}
 	
-	public QueueListener(IQueueBroadcaster<? extends Queueable> broadcaster, P parent, CountDownLatch procLatch, Q child) {
-		this(broadcaster, parent, procLatch, true);
+	/**
+	 * Create QueueListener with a single given child atom to listen for (explicitly declared).
+	 * 
+	 * @param broadcaster
+	 * @param parent
+	 * @param processLatch
+	 * @param child
+	 */
+	public QueueListener(IQueueBroadcaster<? extends Queueable> broadcaster, P parent, CountDownLatch processLatch, Q child) {
+		this.broadcaster = broadcaster;
+		this.parent = parent;
+		this.processLatch = processLatch;
+		
 		children.put(child.getUniqueId(), new ProcessStatus(child));
+		logger.debug("Initialised with "+parent.getClass().getSimpleName()+" '"+parent.getName()+"' and 1 atom ("+child.getClass().getSimpleName()+": '"+child.getName()+"') explicitly declared");
 	}
 	
-	public QueueListener(IQueueBroadcaster<? extends Queueable> broadcaster, P parent, CountDownLatch procLatch, List<Q> children) {
-		this(broadcaster, parent, procLatch, true);
+	/**
+	 * Used in tests
+	 */
+	public QueueListener(IQueueBroadcaster<? extends Queueable> broadcaster, P parent, CountDownLatch processLatch, List<Q> children) {
+		this.broadcaster = broadcaster;
+		this.parent = parent;
+		this.processLatch = processLatch;
+		
 		initChildList(children);
 	}
 	
@@ -166,6 +194,7 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 				if (parent.getStatus().isPaused()) {
 					// -parent is paused => unpause it
 					parent.setStatus(Status.REQUEST_RESUME);
+					logger.info(bean.getName()+" requested to resume");
 					((IHasChildQueue)parent).setQueueMessage("Resume requested from '"+bean.getName()+"'");
 					childCommand = true;
 					broadcastUpdate = true;
@@ -178,12 +207,14 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 			} else if (bean.getStatus().isPaused()) {
 				//PAUSE
 				parent.setStatus(Status.REQUEST_PAUSE);
+				logger.info(bean.getName()+" requested to pause");
 				((IHasChildQueue)parent).setQueueMessage("Pause requested from '"+bean.getName()+"'");
 				childCommand = true;
 				broadcastUpdate = true;
 			} else if (bean.getStatus().isTerminated()) {
 				//TERMINATE
 				parent.setStatus(Status.REQUEST_TERMINATE);
+				logger.info(bean.getName()+" requested to terminate");
 				((IHasChildQueue)parent).setQueueMessage("Termination requested from '"+bean.getName()+"'");
 				childCommand = true;
 				broadcastUpdate = true;
@@ -192,10 +223,12 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 				children.get(beanID).setOperating(false);
 				beanCompleted = true;
 				if (bean.getStatus().equals(Status.COMPLETE)) {
+					logger.info("'"+bean.getName()+"' completed successfully");
 					((IHasChildQueue)parent).setQueueMessage("'"+bean.getName()+"' completed successfully.");
 					broadcastUpdate = true;
 				} else {
 					//Status.FAILED or unhandled state
+					logger.info("'"+bean.getName()+"' failed (message: "+bean.getMessage()+"; queue message: "+((IHasChildQueue)bean).getQueueMessage()+")");
 					((IHasChildQueue)parent).setQueueMessage("Failure caused by '"+bean.getName()+"'");
 					broadcastUpdate = true;
 					childCommand = true;
@@ -226,6 +259,7 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 			if (concluded && !operating || failed) {
 				if (!failed) {
 					parent.setMessage("Running finished.");
+					logger.debug("All child processes of "+parent.getName()+" are in final state (not Status.FAILED)");
 					((IHasChildQueue)parent).setQueueMessage("All child processes complete.");
 				}
 				try {
@@ -260,7 +294,7 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		private Status status;
 		private double percentComplete;
 		private double workFraction = 1d;
-		private boolean operating = false;
+		private boolean seenBefore = false, operating = false;
 		
 		/**
 		 * Create ProcessStatus from the bean describing the process in the 
