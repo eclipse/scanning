@@ -252,8 +252,8 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 	}
 
 	@Override
-	public void setPosition(Object value, IPosition position) {
-		writePosition(position);
+	public Object setPosition(Object value, IPosition position) {
+		return writePosition(position);
 	}
 
 	/**
@@ -303,7 +303,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 	 * @param position
 	 * @throws Exception
 	 */
-	private void writePosition(IPosition position) {
+	private Object writePosition(IPosition position) {
 		if (!malcolmScan) {
 			IScanSlice rslice = IScanRankService.getScanRankService().createScanSlice(position);
 			SliceND sliceND = new SliceND(uniqueKeys.getShape(), uniqueKeys.getMaxShape(), rslice.getStart(), rslice.getStop(), rslice.getStep());
@@ -314,7 +314,9 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 			} catch (DatasetException e) {
 				logger.error("Could not write unique key");
 			}
+			return newActualPosition;
 		}
+		return null;
 	}
 
 }

@@ -11,10 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.annot;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.eclipse.scanning.api.AbstractScannable;
+import org.eclipse.scanning.api.CountableScannable;
 import org.eclipse.scanning.api.annotation.scan.LevelStart;
 import org.eclipse.scanning.api.annotation.scan.PostConfigure;
 import org.eclipse.scanning.api.annotation.scan.PreConfigure;
@@ -28,10 +25,9 @@ import org.eclipse.scanning.api.scan.ScanInformation;
  * Could use Mockito but always causes compilation issues
  *
  */
-public class CountingDevice extends AbstractScannable<Double> {
+public class CountingDevice extends CountableScannable<Double> {
 	
 	protected Double value;
-	protected Map<String, Integer> counts = new HashMap<>();
 	
 	public CountingDevice() {
 		
@@ -72,38 +68,9 @@ public class CountingDevice extends AbstractScannable<Double> {
 		return value;
 	}
 	@Override
-	public void setPosition(Double value, IPosition position) throws Exception {
+	public Double setPosition(Double value, IPosition position) throws Exception {
 		this.value = value;
-	}
-	
-	protected void count(StackTraceElement[] ste) {
-		String methodName = getMethodName(ste);
-		Integer count = counts.get(methodName);
-		if (count==null) count = 0;
-		count = count+1;
-		counts.put(methodName, count);
-	}
-	
-	public int getCount(String method) {
-		if (!counts.containsKey(method)) return 0;
-		return counts.get(method);
-	}
-	
-	protected static final String getMethodName ( StackTraceElement ste[] ) {  
-		   
-	    String methodName = "";  
-	    boolean flag = false;  
-	   
-	    for ( StackTraceElement s : ste ) {  
-	   
-	        if ( flag ) {  
-	   
-	            methodName = s.getMethodName();  
-	            break;  
-	        }  
-	        flag = s.getMethodName().equals( "getStackTrace" );  
-	    }  
-	    return methodName;  
+		return value;
 	}
 
 }

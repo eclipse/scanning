@@ -105,7 +105,7 @@ public class MockNeXusScannable extends MockScannable implements INexusDevice<NX
 		return nexusDelegate;
 	}	
 
-	public void setPosition(Number value, IPosition position) throws Exception {
+	public Number setPosition(Number value, IPosition position) throws Exception {
 		
 		if (value!=null) {
 			int index = position!=null ? position.getIndex(getName()) : -1;
@@ -117,13 +117,14 @@ public class MockNeXusScannable extends MockScannable implements INexusDevice<NX
 		}
 
 		if (position!=null) {
-			write(value, getPosition(), position);
+			return write(value, getPosition(), position);
 		}
+		return this.position;
 	}
 
-	private void write(Number demand, Number actual, IPosition loc) throws Exception {
+	private Number write(Number demand, Number actual, IPosition loc) throws Exception {
 		
-		if (lzValue==null) return;
+		if (lzValue==null) return actual;
 		if (actual!=null) {
 			// write actual position
 			final Dataset newActualPositionData = DatasetFactory.createFromObject(actual);
@@ -132,7 +133,7 @@ public class MockNeXusScannable extends MockScannable implements INexusDevice<NX
 			if (isWritingOn()) lzValue.setSlice(null, newActualPositionData, sliceND);
 		}
 
-		if (lzSet==null) return;
+		if (lzSet==null) return actual;
 		if (demand!=null) {
 			int index = loc.getIndex(getName());
 			if (index<0) {
@@ -145,6 +146,7 @@ public class MockNeXusScannable extends MockScannable implements INexusDevice<NX
 			final Dataset newDemandPositionData = DatasetFactory.createFromObject(demand);
 			if (isWritingOn()) lzSet.setSlice(null, newDemandPositionData, startPos, stopPos, null);
 		}
+		return actual;
 	}
 	
 	/**

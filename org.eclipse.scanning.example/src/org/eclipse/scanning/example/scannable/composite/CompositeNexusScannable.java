@@ -39,7 +39,7 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 	}
 
 	@Override
-	public void setPosition(T value, IPosition position) throws Exception {
+	public T setPosition(T value, IPosition position) throws Exception {
 		throw new UnsupportedOperationException("A CompositeNexusScannable should only be used as a per-scan monitor");
 	}
 	

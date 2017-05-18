@@ -24,7 +24,7 @@ import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.LazyWriteableDataset;
 import org.eclipse.january.dataset.SliceND;
-import org.eclipse.scanning.api.AbstractScannable;
+import org.eclipse.scanning.api.CountableScannable;
 import org.eclipse.scanning.api.IConfigurable;
 import org.eclipse.scanning.api.ITerminatable;
 import org.eclipse.scanning.api.annotation.scan.ScanFinally;
@@ -34,7 +34,7 @@ import org.eclipse.scanning.api.points.Scalar;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.example.Services;
 
-public class MockScannable extends AbstractScannable<Number> implements IConfigurable<MockScannableModel>, ITerminatable {
+public class MockScannable extends CountableScannable<Number> implements IConfigurable<MockScannableModel>, ITerminatable {
 
 	protected Number  position = 0d;
 	private boolean requireSleep=true;
@@ -135,20 +135,20 @@ public class MockScannable extends AbstractScannable<Number> implements IConfigu
 	public Number getPosition() {
 		return position;
 	}
-	public void setPosition(Number position) throws Exception {
-		setPosition(position, null);
+	public Number setPosition(Number position) throws Exception {
+		return setPosition(position, null);
 	}
 	
 	public void setInitialPosition(Number position) {
 		this.position = position;
 	}
 	
-	public void setPosition(Number value, IPosition loc) throws Exception {
+	public Number setPosition(Number value, IPosition loc) throws Exception {
 		
 		int index = loc!=null ? loc.getIndex(getName()) : -1;
 		double val = value!=null ? value.doubleValue() : Double.NaN;
 		boolean ok = delegate.firePositionWillPerform(new Scalar(getName(), index, val));
-		if (!ok) return;
+		if (!ok) return this.position;
 		
 		if (value!=null && position!=null) {
 			long waitTime = Math.abs(Math.round((val-this.position.doubleValue()))*100);
@@ -184,7 +184,7 @@ public class MockScannable extends AbstractScannable<Number> implements IConfigu
 		}
 		
 		delegate.firePositionPerformed(-1, new Scalar(getName(), index, val));
-		
+		return this.position;
 	}
 	
 	private TerminationPreference terminate;

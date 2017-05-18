@@ -78,12 +78,13 @@ public class MockTopupScannable extends MockScannable implements IDisconnectable
 		return !isRunning;
 	}
 
-	public void setPosition(Number position) throws Exception {
-		setPosition(position, null);
+	public Number setPosition(Number position) throws Exception {
+		return setPosition(position, null);
 	}
-	public void setPosition(Number position, IPosition loc) throws Exception {
+	public Number setPosition(Number position, IPosition loc) throws Exception {
 		this.position = position;
 	    delegate.firePositionChanged(getLevel(), new Scalar(getName(), -1, position));
+	    return this.position;
 	}
 	
 	/**

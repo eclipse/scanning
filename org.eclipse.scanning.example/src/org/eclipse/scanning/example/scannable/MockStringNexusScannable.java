@@ -51,10 +51,11 @@ public class MockStringNexusScannable extends MockStringScannable implements INe
 		return new NexusObjectWrapper<>(getName(), positioner, NXpositioner.NX_VALUE);
 	}
 	
-	public void setPosition(String value, IPosition position) throws Exception {
+	public String setPosition(String value, IPosition position) throws Exception {
 		if (position != null) {
 			write(value, getPosition(), position);
 		}
+		return value;
 	}
 	
 	private void write(String demand, String actual, IPosition pos) throws Exception {

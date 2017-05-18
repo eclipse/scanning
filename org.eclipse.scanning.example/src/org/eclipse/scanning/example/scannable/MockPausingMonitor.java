@@ -27,7 +27,7 @@ public class MockPausingMonitor extends MockScannable {
 		super(string,d,i);
 	}
 
-	public void setPosition(Number position, IPosition loc) throws Exception {
+	public Number setPosition(Number position, IPosition loc) throws Exception {
 		
 		final int step = loc.getStepIndex();
 		if (step%10==0) { // We wait
@@ -35,7 +35,7 @@ public class MockPausingMonitor extends MockScannable {
 			Thread.sleep(10);
 			System.out.println("Bean current is now stable again... ");
 		}
-		super.setPosition(position, loc);
+		return super.setPosition(position, loc);
 	}
 
 }

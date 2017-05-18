@@ -183,8 +183,8 @@ public class AnnotationScanTest extends NexusTest {
 		}
 
 		@Override
-		public void setPosition(Object value, IPosition position) throws Exception {
-			// do nothing
+		public Object setPosition(Object value, IPosition position) throws Exception {
+			return null; // No position set
 		}
 
 		@Override

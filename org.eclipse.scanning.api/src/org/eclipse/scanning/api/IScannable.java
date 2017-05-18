@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.scanning.api;
 
-import org.eclipse.scanning.api.device.IActivatable;
 import org.eclipse.scanning.api.points.IPosition;
 
 /**
@@ -34,7 +33,10 @@ import org.eclipse.scanning.api.points.IPosition;
  * @param <T> the type of value returned by {@link #getPosition()}
  *
  */
-public interface IScannable<T> extends ILevel, INameable, ITimeoutable, IBoundable<T>, IMonitoredDevice {
+public interface IScannable<T> extends 
+						           /* A list of mostly defaulted and vanilla interfaces optionally used for scannables */
+						           ILevel, INameable, ITimeoutable, 
+						           IBoundable<T>, ITolerable<T>, IMonitoredDevice {
 	
 	/**
 	 * Returns the current position of the Scannable. Called by ConcurentScan at the end of the point. 
@@ -52,9 +54,10 @@ public interface IScannable<T> extends ILevel, INameable, ITimeoutable, IBoundab
 	 * 
 	 * @param value
 	 * @throws Exception
+	 * @return the new position attained by the device, if known. (Saves additional call to getPosition()) If not know the demand value is returned. NOTE if null is returned the system will call getPosition() again.
 	 */
-	default void setPosition(T value) throws Exception {
-		setPosition(value, null);
+	default T setPosition(T value) throws Exception {
+		return setPosition(value, null);
 	}
 
 	
@@ -64,9 +67,10 @@ public interface IScannable<T> extends ILevel, INameable, ITimeoutable, IBoundab
 	 * 
 	 * @param value that this scalar should take.
 	 * @param position if within in a scan or null if not within a scan.
+	 * @return the new position attained by the device, if known. (Saves additional call to getPosition()) If not know the demand value is returned. NOTE if null is returned the system will call getPosition() again.
 	 * @throws Exception
 	 */
-	public void setPosition(T value, IPosition position) throws Exception;
+	public T setPosition(T value, IPosition position) throws Exception;
 
 	/**
 	 * The unit is the unit in which the setPosition and getPosition values are in.

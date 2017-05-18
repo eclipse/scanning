@@ -33,9 +33,10 @@ public class MockStringScannable extends AbstractScannable<String> implements IN
 	}
 
 	@Override
-	public void setPosition(String value, IPosition position) throws Exception {
+	public String setPosition(String value, IPosition position) throws Exception {
 		this.value = value;
 		delegate.firePositionChanged(getLevel(), new Scalar<String>(getName(), -1, value));
+		return value;
 	}
 
 	@Override
