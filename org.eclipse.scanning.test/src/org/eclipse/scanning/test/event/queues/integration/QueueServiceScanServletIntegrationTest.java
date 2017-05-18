@@ -20,7 +20,6 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IEventService;
-import org.eclipse.scanning.api.event.queues.IQueueControllerService;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
@@ -85,7 +84,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 	protected static AbstractConsumerServlet<?> servlet;
 	
 	//These fields are for the queueservice
-	protected static IQueueControllerService     qcontrolservice;
+	protected static QueueService     qservice;
 	
 	@BeforeClass
 	public static void create() throws Exception {
@@ -143,11 +142,14 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		validator.setRunnableDeviceService(dservice);
 		Services.setValidatorService(validator);
 		
+		//Set up the queue service (normally populated by OSGi)
+		qservice = new QueueService(uri.toString());
+		
 		ServicesHolder.setEventService(eservice);
+		ServicesHolder.setQueueService(qservice);
+		ServicesHolder.setQueueControllerService(qservice);
 		RealQueueTestUtils.initialise(uri);
 		
-		//Set up the queue service (normally populated by OSGi)
-		qcontrolservice = new QueueService(uri.toString());
 	}
 	
 	@Before
@@ -159,12 +161,12 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		}
 		
 		//Start QueueService
-		qcontrolservice.startQueueService();
+		qservice.startQueueService();
 	}
 	
 	@After
 	public void disconnect()  throws Exception {
-		qcontrolservice.stopQueueService(true);
+		qservice.stopQueueService(true);
 		
 		if (servlet!=null) {
 			servlet.getConsumer().cleanQueue(servlet.getSubmitQueue());
@@ -201,8 +203,8 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		tBean.addAtom(stAt);
 
 		//Submit it and wait!
-		String jqID = qcontrolservice.getJobQueueID();
-		qcontrolservice.submit(tBean, jqID);
+		String jqID = qservice.getJobQueueID();
+		qservice.submit(tBean, jqID);
 		RealQueueTestUtils.waitForEvent(latch, 60000);
 		
 		/* These should test the move happened
@@ -235,8 +237,8 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		tBean.addAtom(stAt);
 		
 		//Submit it and wait!
-		String jqID = qcontrolservice.getJobQueueID();
-		qcontrolservice.submit(tBean, jqID);
+		String jqID = qservice.getJobQueueID();
+		qservice.submit(tBean, jqID);
 		RealQueueTestUtils.waitForEvent(latch, 60000);
 	
 		assertEquals(1, RealQueueTestUtils.getStartEvents().size());
