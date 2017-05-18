@@ -140,12 +140,13 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 		// Provide lots of services that OSGi would normally.
 		Services.setEventService(eservice);
 		ServiceHolder.setEventService(eservice);
-		org.eclipse.scanning.command.Services.setEventService(eservice);
 		Services.setRunnableDeviceService(dservice);
-		org.eclipse.scanning.command.Services.setRunnableDeviceService(dservice);
 		Services.setGeneratorService(gservice);
 		Services.setConnector(connector);
 		Services.setWatchdogService(wservice);
+		org.eclipse.scanning.command.Services.setEventService(eservice);
+		org.eclipse.scanning.command.Services.setRunnableDeviceService(dservice);
+		org.eclipse.scanning.command.Services.setScannableDeviceService(connector);
 
 		org.eclipse.scanning.sequencer.ServiceHolder.setTestServices(lservice,
 				                                                     new DefaultNexusBuilderFactory(), 
