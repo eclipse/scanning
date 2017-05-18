@@ -21,7 +21,7 @@ import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.queues.IQueueControllerService;
-import org.eclipse.scanning.api.event.queues.beans.MoveAtom;
+import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
@@ -190,8 +190,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		CountDownLatch latch = null; //Make one
 		
 		//Set up PositionerAtom
-		MoveAtom mvAt = new MoveAtom("testMove", null,//configure move here
-				400);
+		PositionerAtom mvAt = new PositionerAtom("testMove", null, null); //TODO change me!!
 
 		//... and an enclosing SubTaskAtom...
 		SubTaskAtom stAt = new SubTaskAtom("testSubTask");
