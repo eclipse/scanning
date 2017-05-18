@@ -115,29 +115,58 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 
 	private final class MoveTask implements Callable<IPosition> {
 
-		@SuppressWarnings("rawtypes")
-		private IScannable scannable;
-		private IPosition  position;
+		private IScannable<?> scannable;
+		private IPosition     position;
 
 		public MoveTask(IScannable<?> iScannable, IPosition position) {
 			this.scannable = iScannable;
 			this.position  = position;
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public IPosition call() throws Exception {
 			
 			// Get the value in this position, may be null for monitors.
-			Object value = position.get(scannable.getName());
+			Object value    = position.get(scannable.getName());
+			Object achieved = value;
 			try {
-			    scannable.setPosition(value, position);
+				achieved = setPosition(scannable, value, position);
 			    
 			} catch (Exception ne) {
 				abort(scannable, value, position, ne);
 				throw ne;
 			}
-			return new MapPosition(scannable.getName(), position.getIndex(scannable.getName()), scannable.getPosition()); // Might not be exactly what we moved to
+			// achieved might not be equal to demand
+			if (achieved == null) achieved = scannable.getPosition();
+			return new MapPosition(scannable.getName(), position.getIndex(scannable.getName()), achieved); 
+		}
+
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		private Object setPosition(IScannable scannable, Object value, IPosition position) throws Exception {
+			
+			Object tolerance = scannable.getTolerance();
+			if (tolerance==null || !(value instanceof Number) || !(tolerance instanceof Number)) {
+				return scannable.setPosition(value, position);
+			}
+			Object currentValue = scannable.getPosition();
+			if (!(currentValue instanceof Number)) return scannable.setPosition(value, position);
+			
+			// Check tolerance against number
+			double tol = ((Number)tolerance).doubleValue();
+			double cur = ((Number)currentValue).doubleValue();
+			double val = ((Number)value).doubleValue();
+			
+			// If are already within tolerance return the value we are at
+			if (cur<(val+tol) && 
+			    cur>(val-tol)) { 
+				
+				return currentValue;
+			}
+			
+			// We need to move and did an extra getPosition()
+			// Note sure if this is really faster, depends how
+			// hardware of a given system actually works.
+			return scannable.setPosition(value, position);
 		}
 		
 	}

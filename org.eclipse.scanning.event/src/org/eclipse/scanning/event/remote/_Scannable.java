@@ -70,7 +70,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public void setPosition(T value, IPosition position) throws Exception {
+	public T setPosition(T value, IPosition position) throws Exception {
 		try {
 			// Will tell us that the value is changing by recording the time of the change 
 			addListener(); 
@@ -87,6 +87,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		} catch (Exception ne) {
 			logger.error("Cannot update device info for "+info.getName(), ne);
 		}
+		return value;
 	}
 	
 

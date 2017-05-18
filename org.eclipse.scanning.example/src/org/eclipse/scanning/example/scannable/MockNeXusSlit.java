@@ -115,7 +115,7 @@ public class MockNeXusSlit extends MockScannable implements INexusDevice<NXslit>
 		return nexusDelegate;
 	}
 
-	public void setPosition(Number initialValue, IPosition position) throws Exception {
+	public Number setPosition(Number initialValue, IPosition position) throws Exception {
 		Number value = initialValue;
 
 		if (value!=null) {
@@ -130,6 +130,7 @@ public class MockNeXusSlit extends MockScannable implements INexusDevice<NXslit>
 		if (position!=null) {
 			write(value, getPosition(), position);
 		}
+		return this.position;
 	}
 
 	private void write(Number demand, Number actual, IPosition loc) throws Exception {

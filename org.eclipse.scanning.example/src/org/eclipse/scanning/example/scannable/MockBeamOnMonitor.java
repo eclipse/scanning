@@ -25,14 +25,14 @@ public class MockBeamOnMonitor extends MockScannable {
 		super(string,d,i);
 	}
 
-	public void setPosition(Number position, IPosition loc) throws Exception {
+	public Number setPosition(Number position, IPosition loc) throws Exception {
 		
 		final int step = loc.getStepIndex();
 		if (step>0 && step%10==0) { // We wait
 			System.out.println("Beam is deamed to be off ");
 			throw new Exception("Cannot run scan further!");
 		}
-		super.setPosition(position, loc);
+		return super.setPosition(position, loc);
 	}
 
 }

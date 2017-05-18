@@ -19,6 +19,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
 
 	ScanTest.class,
+	ToleranceTest.class,
+    SetPositionTest.class,
 	SeekTest.class,
 	ParserTest.class,
 	BenchmarkScanTest.class,

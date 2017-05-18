@@ -44,6 +44,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 
 	private T                   max;
 	private T                   min;
+	private T                   tolerance;
 	private Map<String, Object> attributes;
 	private int                 level;
 	private String              name;
@@ -235,7 +236,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 			}
 
 			@Override
-			public void setPosition(T value, IPosition position) throws Exception {
+			public T setPosition(T value, IPosition position) throws Exception {
 				throw new Exception("Cannot set position, scannable is empty!");
 			}
 		};
@@ -269,6 +270,16 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	@Override
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
+	}
+	@Override
+	public T getTolerance() {
+		return tolerance;
+	}
+	@Override
+	public T setTolerance(T tolerance) {
+		T orig = this.tolerance;
+		this.tolerance = tolerance;
+		return orig;
 	}
 
 }
