@@ -203,13 +203,14 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 	
 	@Override
 	protected void doTerminate() throws EventException {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		try {
 			//Reentrant lock ensures execution method (and hence post-match 
 			//analysis) completes before terminate does
 			postMatchAnalysisLock.lockInterruptibly();
 			
 			terminated = true;
-			logger.debug("Terminate of '"+queueBean.getName()+"' requested; release processLatch (start post-match analysis)");
+			logger.debug("Termination of '"+queueBean.getName()+"' requested; release processLatch (start post-match analysis)");
 			processLatch.countDown();
 			
 			//Wait for post-match analysis to finish
@@ -223,6 +224,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 	
 	@Override
 	protected void doPause() throws EventException {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 //		if (!queueListener.isChildCommand()) {
 //			commandScanBean(Status.REQUEST_PAUSE);
 //		}
@@ -232,6 +234,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 
 	@Override
 	protected void doResume() throws EventException {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 //		if (!queueListener.isChildCommand()) {
 //			commandScanBean(Status.REQUEST_RESUME);
 //		}

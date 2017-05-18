@@ -99,13 +99,14 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 	
 	@Override
 	protected void doTerminate() throws EventException {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		try {
 			//Reentrant lock ensures execution method (and hence post-match 
 			//analysis) completes before terminate does
 			postMatchAnalysisLock.lockInterruptibly();
 
 			terminated = true;
-			logger.debug("Terminate of '"+queueBean.getName()+"' requested; release processLatch (start post-match analysis)");
+			logger.debug("Termination of '"+queueBean.getName()+"' requested; release processLatch (start post-match analysis)");
 			processLatch.countDown();
 			
 			//Wait for post-match analysis to finish
@@ -119,12 +120,14 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 	
 	@Override
 	protected void doPause() throws Exception {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		//TODO!
 		logger.warn("Pause not implemented on SubTaskAtomProcessor");
 	}
 	
 	@Override
 	protected void doResume() throws Exception {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		//TODO!
 		logger.warn("Resume not implemented on SubTaskAtomProcessor");
 	}
