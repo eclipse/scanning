@@ -27,7 +27,6 @@ import org.eclipse.scanning.api.event.queues.IQueueService;
  * contain all the sample metadata necessary to write the NeXus file. 
  * 
  * TODO Sample metadata holder.
- * FIXME java-doc
  * 
  * @author Michael Wharmby
  *
@@ -88,7 +87,7 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 			throw new NullPointerException("Attempting to add null atom to AtomQueue");
 		}
 		if(isAtomPresent(atom)) {
-			throw new IllegalArgumentException("Bean with identical UID already in queue.");
+			throw new IllegalArgumentException("SubTaskAtom with identical UID already in queue.");
 		}
 		//Add atom, recalculate the runtime and return
 		boolean result =  atomQueue.add(atom);
@@ -102,7 +101,7 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 	}
 
 	@Override
-	public int getIndex(String uid) {
+	public int getQueuePosition(String uid) {
 		for (SubTaskAtom atom: atomQueue) {
 			if (uid.equals(atom.getUniqueId())) return atomQueue.indexOf(atom);
 		}
@@ -169,6 +168,24 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 		} else if (!queueMessage.equals(other.queueMessage))
 			return false;
 		return true;
+	}
+	
+	@Override
+	public String toString() {
+		String atomQueueStr = "{";
+		for (QueueAtom qa : atomQueue) {
+			atomQueueStr = atomQueueStr+qa.getName()+" : "+qa.getStatus();
+			if (qa.getStatus().isRunning())
+				atomQueueStr = atomQueueStr+"("+qa.getPercentComplete()+")";
+			atomQueueStr = atomQueueStr+", ";
+		}
+		atomQueueStr = atomQueueStr.replaceAll(", $", "}"); //Replace trailing ", "
+		
+		return "TaskBean [name=" + name + ", atomQueue=" + atomQueueStr + ", status=" + status
+				+ ", message=" + message + ", queueMessage=" + queueMessage + ", percentComplete="
+				+ percentComplete + ", previousStatus=" + previousStatus + ", runTime=" + runTime 
+				+ ", userName=" + userName+ ", hostName=" + hostName + ", beamline="+ beamline 
+				+ ", submissionTime=" + submissionTime + "]";
 	}
 
 }

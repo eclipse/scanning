@@ -18,19 +18,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.scanning.api.event.queues.beans.MoveAtom;
+import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test for the {@link MoveAtom} class. This class only create the POJO.
+ * Test for the {@link PositionerAtom} class. This class only create the POJO.
  * Actual tests in {@link AbstractBeanTest}. Additional test to determine atom
  * configuration.
  * 
  * @author Michael Wharmby
  *
  */
-public class MoveAtomTest extends AbstractBeanTest<MoveAtom> {
+public class PositionerAtomTest extends AbstractBeanTest<PositionerAtom> {
 	
 	private String nameA = "testMoveA", nameB = "testMoveB";
 	private String deviceA = "testDeviceA", deviceB = "testDeviceB"
@@ -38,7 +38,6 @@ public class MoveAtomTest extends AbstractBeanTest<MoveAtom> {
 	private double targetA = 273.15, targetB = 957.845;
 	private int targetC = 1;
 	private String targetD = "barry";
-	private long timeA = 26430, timeB = 4329;
 	
 	@Before
 	public void buildBeans() throws Exception {
@@ -48,8 +47,8 @@ public class MoveAtomTest extends AbstractBeanTest<MoveAtom> {
 		beanBConf.put(deviceD, targetD);
 				
 		
-		beanA = new MoveAtom(nameA, deviceA, targetA, timeA);
-		beanB = new MoveAtom(nameB, beanBConf, timeB);
+		beanA = new PositionerAtom(nameA, deviceA, targetA);
+		beanB = new PositionerAtom(nameB, beanBConf);
 		
 	}
 	
@@ -63,6 +62,6 @@ public class MoveAtomTest extends AbstractBeanTest<MoveAtom> {
 		expected.add(deviceC);
 		expected.add(deviceD);
 		
-		assertEquals("Reported list and the expected list of names differ", expected, beanB.getMotorNames());
+		assertEquals("Reported list and the expected list of names differ", expected, beanB.getPositionerNames());
 	}
 }

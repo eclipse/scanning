@@ -9,7 +9,7 @@
  * Contributors:
  *    Matthew Gerring - initial API and implementation and/or initial documentation
  *******************************************************************************/
-package org.eclipse.scanning.test.event.queues;
+package org.eclipse.scanning.test.event.queues.integration;
 
 import static org.junit.Assert.assertEquals;
 
@@ -27,6 +27,7 @@ import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.event.queues.QueueProcessFactory;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.test.BrokerTest;
+import org.eclipse.scanning.test.event.queues.RealQueueTestUtils;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtom;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtomProcess;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
@@ -41,6 +42,20 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 	protected static IEventService evServ;
 	protected static IQueueService queueService;
 	protected static IQueueControllerService queueControl;
+	
+	/*
+	 * These three methods are called by OSGi to configure services during a
+	 * plugin test - see OSGI-INF/queueServiceIntegrationPluginTest.xml
+	 */
+	public static void setEventService(IEventService eServ) {
+		ServicesHolder.setEventService(eServ);
+	}
+	public static void setQueueService(IQueueService qServ) {
+		ServicesHolder.setQueueService(qServ);
+	}
+	public static void setQueueControllerService(IQueueControllerService qcServ) {
+		ServicesHolder.setQueueControllerService(qcServ);
+	}
 	
 	@Before
 	public void setup() throws Exception {

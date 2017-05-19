@@ -9,7 +9,7 @@
  * Contributors:
  *    Matthew Gerring - initial API and implementation and/or initial documentation
  *******************************************************************************/
-package org.eclipse.scanning.test.event.queues;
+package org.eclipse.scanning.test.event.queues.integration;
 
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;

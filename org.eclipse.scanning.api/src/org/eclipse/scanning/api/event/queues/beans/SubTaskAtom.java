@@ -17,7 +17,7 @@ import java.util.List;
 import org.eclipse.scanning.api.event.queues.IQueueService;
 
 /**
- * SubTaskBean is a type of {@link QueueAtom} implementing an 
+ * SubTaskAtom is a type of {@link QueueAtom} implementing an 
  * {@link IHasAtomQueue}. As a {@link QueueAtom} it can only be passed 
  * into an active-queue of an {@link IQueueService}.
  * 
@@ -26,9 +26,7 @@ import org.eclipse.scanning.api.event.queues.IQueueService;
  * a scan and post-processing. It should be able to provide a pointer to the 
  * parent queue's sample metadata.
  * 
- * SubTaskBeans may be nested inside of SubTaskBeans to provide a hierarchy.
- * 
- * TODO Update java-doc 
+ * SubTaskAtoms may be nested inside of SubTaskAtoms to provide a hierarchy.
  * 
  * @author Michael Wharmby
  * 
@@ -38,7 +36,7 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 	/**
 	 * Version ID for serialization. Should be updated when class changed. 
 	 */
-	private static final long serialVersionUID = 20161021L;
+	private static final long serialVersionUID = 20170503L;
 
 	private LinkedList<QueueAtom> atomQueue;
 	private String queueMessage;
@@ -52,7 +50,7 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 	}
 
 	/**
-	 * Basic constructor to set String name of bean
+	 * Basic constructor to set String name of atom
 	 * @param name String user-supplied name
 	 */
 	public SubTaskAtom(String name) {
@@ -88,7 +86,7 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 			throw new NullPointerException("Attempting to add null atom to AtomQueue");
 		}
 		if(isAtomPresent(atom)) {
-			throw new IllegalArgumentException("Bean with identical UID already in queue.");
+			throw new IllegalArgumentException("Atom with identical UID already in queue.");
 		}
 		//Add atom, recalculate the runtime and return
 		boolean result =  atomQueue.add(atom);
@@ -102,7 +100,7 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 	}
 
 	@Override
-	public int getIndex(String uid) {
+	public int getQueuePosition(String uid) {
 		for (QueueAtom atom: atomQueue) {
 			if (uid.equals(atom.getUniqueId())) return atomQueue.indexOf(atom);
 		}
@@ -169,6 +167,24 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 		} else if (!queueMessage.equals(other.queueMessage))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		String atomQueueStr = "{";
+		for (QueueAtom qa : atomQueue) {
+			atomQueueStr = atomQueueStr+qa.getName()+" : "+qa.getStatus();
+			if (qa.getStatus().isRunning())
+				atomQueueStr = atomQueueStr+"("+qa.getPercentComplete()+")";
+			atomQueueStr = atomQueueStr+", ";
+		}
+		atomQueueStr = atomQueueStr.replaceAll(", $", "}"); //Replace trailing ", "
+		
+		return "SubTaskAtom [name=" + name + ", atomQueue=" + atomQueueStr + ", status=" + status
+				+ ", message=" + message + ", queueMessage=" + queueMessage + ", percentComplete=" 
+				+ percentComplete + ", previousStatus=" + previousStatus + ", runTime=" + runTime 
+				+ ", userName=" + userName+ ", hostName=" + hostName + ", beamline="+ beamline 
+				+ ", submissionTime=" + submissionTime + "]";
 	}
 
 }

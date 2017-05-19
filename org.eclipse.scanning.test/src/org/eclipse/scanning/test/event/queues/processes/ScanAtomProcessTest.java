@@ -167,7 +167,7 @@ public class ScanAtomProcessTest {
 		pti.waitForBeanFinalStatus(500000l);//FIXME
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
 		
-		assertEquals("Wrong message set after termination.", "Scan aborted before completion (requested).", pti.getLastBroadcastBean().getMessage());
+		assertEquals("Wrong message set after termination.", "Scan requested to abort before completion", pti.getLastBroadcastBean().getMessage());
 		
 		assertEquals("Unexpected number of messages in publisher", 1, mockPub.getBroadcastBeans().size());
 		StatusBean pubBean = mockPub.getBroadcastBeans().get(0);

@@ -20,6 +20,8 @@ import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.event.queues.ServicesHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * TaskBeanProcess uses an {@link AtomQueueProcessor} to read the 
@@ -39,6 +41,11 @@ import org.eclipse.scanning.event.queues.ServicesHolder;
  */
 public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean, T> {
 	
+	private static Logger logger = LoggerFactory.getLogger(TaskBeanProcess.class);
+	/*
+	 * Used by {@link QueueProcessFactory} to identify the bean type this 
+	 * {@link QueueProcess} handles.
+	 */
 	public static final String BEAN_CLASS_NAME = TaskBean.class.getName();
 	
 	private AtomQueueProcessor<TaskBean, SubTaskAtom, T> atomQueueProcessor;
@@ -52,7 +59,7 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 	protected void run() throws EventException, InterruptedException {
 		executed = true;
 		//Do most of the work of processing in the atomQueueProcessor...
-		atomQueueProcessor.run();		
+		atomQueueProcessor.run();
 	}
 
 	@Override
@@ -62,13 +69,15 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 			postMatchAnalysisLock.lockInterruptibly();
 			if (isTerminated()) {
 				atomQueueProcessor.terminate();
-				queueBean.setMessage("Job-queue aborted before completion (requested)");
+				logger.debug("'"+bean.getName()+"' was requested to abort");
+				queueBean.setMessage("Job-queue was requested to abort before completion");
 			}else if (queueBean.getPercentComplete() >= 99.49) {//99.49 to catch rounding errors
-				//Completed successfully                 
+				//Completed successfully
 				updateBean(Status.COMPLETE, 100d, "Scan completed.");
 			} else {
 				//Failed: latch released before completion
-				updateBean(Status.FAILED, null, "Job-queue failed (caused by process Atom)");
+				updateBean(Status.FAILED, null, "Job-queue failed (caused by atom in queue)");
+				logger.info("'"+bean.getName()+"' failed. Job-queue paused and will not continue without user intervention");
 				//As we don't know the origin of the failure, pause *this* queue
 				IQueueControllerService controller = ServicesHolder.getQueueControllerService();
 				controller.pauseQueue(ServicesHolder.getQueueService().getJobQueueID());
@@ -96,12 +105,14 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 	
 	@Override
 	public void doTerminate() throws EventException {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		try {
 			//Reentrant lock ensures execution method (and hence post-match 
 			//analysis) completes before terminate does
 			postMatchAnalysisLock.lockInterruptibly();
 			
 			terminated = true;
+			logger.debug("Termination of '"+queueBean.getName()+"' requested; release processLatch (start post-match analysis)");
 			processLatch.countDown();
 			
 			//Wait for post-match analysis to finish
@@ -115,12 +126,16 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 	
 	@Override
 	protected void doPause() throws Exception {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		//TODO!
+		logger.warn("Pause not implemented on TaskBeanProcessor");
 	}
 	
 	@Override
 	protected void doResume() throws Exception {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		//TODO!
+		logger.warn("Resume not implemented on TaskBeanProcessor");
 	}
 	
 	@Override

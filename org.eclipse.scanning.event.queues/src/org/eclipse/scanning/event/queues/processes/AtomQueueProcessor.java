@@ -89,6 +89,7 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 		final P atomQueue = parentProcess.getQueueBean();
 		
 		//Create a new active queue to submit the atoms into
+		logger.debug("Registering active-queue for "+parentProcess.getQueueBean().getClass().getSimpleName()+" '"+parentProcess.getQueueBean().getName()+"'");
 		parentProcess.broadcast(Status.RUNNING, 0d, "Registering new active queue.");
 		activeQueueID = queueService.registerNewActiveQueue();
 		
@@ -97,6 +98,7 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 		 * otherwise the QueueListener doesn't know about the child beans it 
 		 * has to listen for. 
 		 */
+		logger.debug("Creating QueueListener for "+parentProcess.getQueueBean().getClass().getSimpleName()+" '"+parentProcess.getQueueBean().getName()+"'...");
 		queueListener = new QueueListener<>(
 				parentProcess, 
 				parentProcess.getQueueBean(), 
@@ -110,6 +112,7 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 		 */
 		parentProcess.broadcast(Status.RUNNING, 1d, "Submitting atoms to active queue.");
 		Queueable parentBean = parentProcess.getQueueBean();//TODO This is not needed - see atomQueue
+		int initialQueueSize = atomQueue.atomQueueSize();
 		while (atomQueue.atomQueueSize() > 0) {
 			QueueAtom nextAtom = atomQueue.viewNextAtom();
 			if (nextAtom.getBeamline() != parentBean.getBeamline()) {
@@ -123,6 +126,7 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 			}
 			queueController.submit(atomQueue.nextAtom(), activeQueueID);
 		}
+		logger.debug(initialQueueSize+" atoms submitted from "+parentProcess.getQueueBean().getClass().getSimpleName()+" '"+parentBean.getName()+"'");
 		
 		/*
 		 * Start processing & wait for it to end - after returning, we start 
@@ -131,7 +135,6 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 		parentProcess.broadcast(Status.RUNNING, 4d, "Beans submitted. Starting active queue...");
 		queueService.startActiveQueue(activeQueueID);
 		parentProcess.broadcast(Status.RUNNING, 5d, "Waiting for active queue to complete");
-		parentProcess.getProcessLatch().await();
 	}
 	
 	/**
@@ -142,7 +145,7 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 	 * @throws EventException if stop failed.
 	 */
 	protected void terminate() throws EventException {
-		//Calling IConsumer.stop() causes all jobs being processed to terminate 
+		//Calling IConsumer.stop() causes all jobs being processed to terminate
 		queueService.stopActiveQueue(activeQueueID, false);
 	}
 	
@@ -153,6 +156,7 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 	 * @throws EventException in case of problems during shutdown.
 	 */
 	protected void tidyQueue() throws EventException {
+		logger.debug("Cleaning up queue infrastructure for "+parentProcess.getQueueBean().getClass().getSimpleName()+" '"+parentProcess.getQueueBean().getName()+"'...");
 		//This should happen first to avoid spurious messages about termination
 		queueSubscriber.disconnect();
 		

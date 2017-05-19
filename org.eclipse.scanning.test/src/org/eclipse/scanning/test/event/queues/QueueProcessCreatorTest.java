@@ -22,7 +22,7 @@ import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.core.IProcessCreator;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.queues.IQueueProcess;
-import org.eclipse.scanning.api.event.queues.beans.MoveAtom;
+import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.points.models.IScanPathModel;
@@ -83,7 +83,7 @@ public class QueueProcessCreatorTest {
 	public void testProcessTypeCreation() throws Exception {
 		List<Queueable> testAtoms = new ArrayList<>();
 //		testAtoms.add(new MonitorAtom("Read bpm3", "bpm3", 10000)); FIXME
-		testAtoms.add(new MoveAtom("Move robot arm", "robot_arm", "1250", 12000));
+		testAtoms.add(new PositionerAtom("Move robot arm", "robot_arm", "1250"));
 		testAtoms.add(makeScanAtom());
 //		testAtoms.add(new ProcessAtom(...) TODO
 		testAtoms.add(TestAtomQueueBeanMaker.makeDummySubTaskBeanA());

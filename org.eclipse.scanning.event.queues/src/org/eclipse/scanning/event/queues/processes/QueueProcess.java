@@ -75,9 +75,13 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	
 	@Override
 	public void execute() throws EventException, InterruptedException {
+		logger.debug("Processing "+bean.getClass().getSimpleName()+": '"+bean.getName()+"'");
 		run();
+		logger.debug("Waiting for processing of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' to complete...");
 		processLatch.await();
+		logger.debug("Post-match analysis of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' begins... (Status: "+bean.getStatus()+"; Percent: "+bean.getPercentComplete()+")");
 		postMatchAnalysis();
+		logger.debug("Processing of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' complete (Status: "+bean.getStatus()+"; Percent: "+bean.getPercentComplete()+")");
 	}
 	
 	/**
