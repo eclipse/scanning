@@ -113,8 +113,8 @@ public class ClusterProcessingRunnableDevice extends AbstractRunnableDevice<Clus
 		operationBean.setDataKey(DEFAULT_ENTRY_PATH + GROUP_NAME_SOLSTICE_SCAN);
 
 		operationBean.setReadable(true); // true as this is a SWMR file so can be read while scan in running
-		operationBean.setXmx(model.getXmx()); // TODO what should this be set to?
-		operationBean.setNumberOfCores(1); // for now
+		operationBean.setXmx(model.getXmx());
+		operationBean.setNumberOfCores(model.getNumberOfCores());
 		operationBean.setTimeOut(model.getTimeOut());
 		
 		return operationBean;
