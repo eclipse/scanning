@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.malcolm.core;
 
+import java.io.File;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -428,11 +430,13 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 			((CompoundModel<?>) pointGenerator.getModel()).setDuration(exposureTime);
 		}
 		
-		final EpicsMalcolmModel epicsModel = new EpicsMalcolmModel(model.getFileDir(),
+		final String fileDir = model.getFileDir();
+		final String fileTemplate = "%s" + new File(fileDir).getName() + "-%s";
+		final EpicsMalcolmModel epicsModel = new EpicsMalcolmModel(fileDir, fileTemplate,
 				model.getAxesToMove(), pointGenerator);
 		return epicsModel;
 	}
-
+	
 	@Override
 	public void run(IPosition pos) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
 		MalcolmMessage reply = call(Thread.currentThread().getStackTrace(), getRunTimeout(), DeviceState.RUNNING);
@@ -620,16 +624,22 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 		private final IPointGenerator<?> generator;
 		private final List<String> axesToMove;
 		private final String fileDir;
+		private final String fileTemplate;
 
-		public EpicsMalcolmModel(String fileDir, List<String> axesToMove,
-				IPointGenerator<?> generator) {
+		public EpicsMalcolmModel(String fileDir, String fileTemplate,
+				List<String> axesToMove, IPointGenerator<?> generator) {
 			this.fileDir = fileDir;
+			this.fileTemplate = fileTemplate;
 			this.axesToMove = axesToMove;
 			this.generator = generator;
 		}
 
 		public String getFileDir() {
 			return fileDir;
+		}
+		
+		public String getFileTemplate() {
+			return fileTemplate;
 		}
 
 		public List<String> getAxesToMove() {
