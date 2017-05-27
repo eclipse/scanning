@@ -7,6 +7,10 @@ import java.util.Map;
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
+import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
+import org.eclipse.scanning.api.event.queues.beans.TaskBean;
+import org.eclipse.scanning.api.event.queues.models.SubTaskAtomModel;
+import org.eclipse.scanning.api.event.queues.models.TaskBeanModel;
 
 public class QueueBeanFactoryTest {
 	
@@ -29,6 +33,14 @@ public class QueueBeanFactoryTest {
 		//Get the atom and check it's config
 		PositionerAtom dum = (PositionerAtom)qbf.getQueueAtom(atomShrtNm);
 		assertFalse("No atom with the expected shortName registered", dum == null);
+		
+		//Register another atom with the same short name (this should throw an exception!)
+		try {
+			addBasicDummyPositionerConfig();
+			fail("Should not be able to add ");
+		} catch (QueueModelException qme) {
+			//Expected
+		}
 	}
 	
 	@Test
@@ -40,9 +52,21 @@ public class QueueBeanFactoryTest {
 		List<String> atoms = Arrays.asList(new String[]{atomShrtNm});
 		SubTaskAtomModel simpleSubTask = new SubTaskAtomModel("mvDum", "Move dummy", atoms);
 		qbf.registerAtom(simpleSubTask);
+		
+		SubTaskAtom mvDum = qbf.getQueueAtom("mvDum");
+		//TODO Assess whether this is the requested SubTaskAtom
+		
+		
 		List<String> subTasks = Arrays.asList(new String[]{simpleSubTask.getShortName()});
-		TaskBeanModel simpleTask = new TaskBeanModel("Execute move dummy");
+		TaskBeanModel simpleTask = new TaskBeanModel("execMvDum", "Execute move dummy", subTasks);
 		qbf.registerTask(simpleTask);
+		
+		TaskBean execDum = qbf.assembleTaskBeanModel("execMvDum");
+		//TODO assess whether this is the requested TaskBean
+		
+		
+		TaskBean secondExecDum = qbf.assembleDefaultTaskBean();
+		assertEquals("assembleDefault should return the same model as explicitly requested when one model registered", secondExecDum, execDum);
 	}
 	
 	private String addBasicDummyPositionerConfig() {
