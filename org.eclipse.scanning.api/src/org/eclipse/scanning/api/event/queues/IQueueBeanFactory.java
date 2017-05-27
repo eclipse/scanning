@@ -35,14 +35,16 @@ public interface IQueueBeanFactory {
 	 */
 	<Q extends QueueAtom> Q getQueueAtom(String shortName) throws QueueModelException;
 	
-	SubTaskAtom assembleSubTaskModel(String modelShortName);
+	SubTaskAtom assembleSubTask(String modelShortName)  throws QueueModelException;
 	
-	TaskBean assembleTaskBeanModel(String modelShortName);
+	TaskBean assembleTaskBean(String modelShortName) throws QueueModelException;
 	
-	TaskBean assembleDefaultTaskBean();
+	default TaskBean assembleDefaultTaskBean() throws QueueModelException {
+		return assembleTaskBean(getDefaultTaskBeanModelName());
+	}
 	
 	void setDefaultTaskBeanModel(String modelShortName);
 	
-	String getDefaultTaskBeanModel();
+	String getDefaultTaskBeanModelName();
 
 }
