@@ -174,9 +174,7 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 	public String toString() {
 		String atomQueueStr = "{";
 		for (QueueAtom qa : atomQueue) {
-			atomQueueStr = atomQueueStr+qa.getName()+" : "+qa.getStatus();
-			if (qa.getStatus().isRunning())
-				atomQueueStr = atomQueueStr+"("+qa.getPercentComplete()+")";
+			atomQueueStr = atomQueueStr + qa.getShortName() + "('" + qa.getName() + "')";
 			atomQueueStr = atomQueueStr+", ";
 		}
 		atomQueueStr = atomQueueStr.replaceAll(", $", "}"); //Replace trailing ", "

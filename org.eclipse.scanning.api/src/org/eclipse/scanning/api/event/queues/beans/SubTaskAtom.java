@@ -51,6 +51,7 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 
 	/**
 	 * Basic constructor to set String name of atom
+	 * 
 	 * @param name String user-supplied name
 	 */
 	public SubTaskAtom(String name) {
@@ -171,16 +172,15 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 
 	@Override
 	public String toString() {
+		String clazzName = this.getClass().getSimpleName();
 		String atomQueueStr = "{";
 		for (QueueAtom qa : atomQueue) {
-			atomQueueStr = atomQueueStr+qa.getName()+" : "+qa.getStatus();
-			if (qa.getStatus().isRunning())
-				atomQueueStr = atomQueueStr+"("+qa.getPercentComplete()+")";
+			atomQueueStr = atomQueueStr + qa.getShortName() + "('" + qa.getName() + "')";
 			atomQueueStr = atomQueueStr+", ";
 		}
 		atomQueueStr = atomQueueStr.replaceAll(", $", "}"); //Replace trailing ", "
 		
-		return "SubTaskAtom [name=" + name + ", atomQueue=" + atomQueueStr + ", status=" + status
+		return clazzName + " [name=" + name + ", atomQueue=" + atomQueueStr + ", status=" + status
 				+ ", message=" + message + ", queueMessage=" + queueMessage + ", percentComplete=" 
 				+ percentComplete + ", previousStatus=" + previousStatus + ", runTime=" + runTime 
 				+ ", userName=" + userName+ ", hostName=" + hostName + ", beamline="+ beamline 
