@@ -4,10 +4,25 @@ import java.util.List;
 
 public abstract class QueueableModel {
 	
+	private String name;
 	private String shortName;
 	private long runTime;
 	
 	private List<String> queueAtomShortNames;
+
+	protected QueueableModel(String shortName, String name, List<String> atomQueueShortNames) {
+		this.shortName = shortName;
+		this.name = name;
+		this.queueAtomShortNames = atomQueueShortNames;
+	}
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 
 	public String getShortName() {
 		return shortName;
@@ -70,7 +85,7 @@ public abstract class QueueableModel {
 	@Override
 	public String toString() {
 		String clazzName = this.getClass().getSimpleName();
-		return clazzName +" [shortName=" + shortName + ", runTime=" + runTime + ", queueAtomShortNames="
+		return clazzName +" [shortName=" + shortName + "(name=" + name + "), runTime=" + runTime + ", queueAtomShortNames="
 				+ queueAtomShortNames + "]";
 	}
 
