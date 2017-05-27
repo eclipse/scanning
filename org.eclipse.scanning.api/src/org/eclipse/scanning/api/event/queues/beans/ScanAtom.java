@@ -57,14 +57,16 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	 * Constructor with required arguments to configure a scan of positions 
 	 * using only detectors to collect data.
 	 * 
+	 * @param scShrtNm String short name used within the QueueBeanFactory
 	 * @param scName String name of scan
 	 * @param pMods List<IScanPathModel> describing the motion during the scan.
 	 * @param dMods Map<String,IDetectorModel> containing the detector 
 	 *              configuration for the scan.
 	 */
-	public ScanAtom(String scName, List<IScanPathModel> pMods, Map<String,Object> dMods) {
+	public ScanAtom(String scShrtNm, String scName, List<IScanPathModel> pMods, Map<String,Object> dMods) {
 		super();
 		setName(scName);
+		setShortName(scShrtNm);
 		pathModels = pMods;
 		detectorModels = dMods;
 	}
@@ -73,14 +75,15 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	 * Constructor with required arguments to configure a scan of positions 
 	 * using both detectors and monitors to collect data.
 	 * 
+	 * @param scShrtNm String short name used within the QueueBeanFactory
 	 * @param scName String name of scan
 	 * @param pMods List<IScanPathModel> describing the motion during the scan.
 	 * @param dMods Map<String,IDetectorModel> containing the detector 
 	 *              configuration for the scan.
 	 * @param mons List<String> names of monitors to use during scan.
 	 */
-	public ScanAtom(String scName, List<IScanPathModel> pMods, Map<String,Object> dMods, Collection<String> mons) {
-		this(scName, pMods, dMods);
+	public ScanAtom(String scShrtNm, String scName, List<IScanPathModel> pMods, Map<String,Object> dMods, Collection<String> mons) {
+		this(scShrtNm, scName, pMods, dMods);
 		monitors = mons;
 	}
 
