@@ -7,7 +7,7 @@ package org.eclipse.scanning.api.event.queues.models;
  * @author Michael Wharmby
  *
  */
-public class QueueModelException extends RuntimeException {
+public class QueueModelException extends Exception {
 
 	private static final long serialVersionUID = -9079623888539642342L;
 
