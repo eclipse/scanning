@@ -24,7 +24,9 @@ public class QueueBeanFactoryTest {
 	@Test
 	public void testPositionerAtomConfig() {
 		//Add positioner to the queue atom register
-		String atomShrtNm = addBasicDummyPositionerConfig();
+		String shortName = "testAtom";
+		PositionerAtom positAtom = new PositionerAtom(shortName, "Set dummy to 10", "dummy", 10);
+		qbf.registerAtom(positAtom);
 		
 		List<String> atomReg = qbf.getQueueAtomRegister();
 		assertEquals("Should only be one queueable registered in the factory", 1, atomReg.size());
@@ -46,35 +48,38 @@ public class QueueBeanFactoryTest {
 	@Test
 	public void testSimpleConfigAndBuild() {
 		//Add positioner to the queue atom register
-		String atomShrtNm = addBasicDummyPositionerConfig();
+		PositionerAtom positAtom = new PositionerAtom("setDummy", "Set dummy to 10", "dummy", 10);
+		PositionerAtom detXAtom = new PositionerAtom("setDetX", "Set detX to 10", "dummy", 225);
+		qbf.registerAtom(positAtom);
+		qbf.registerAtom(detXAtom);
 		
-		//Register a simple TaskBean and SubTaskAtom model containing the positioner
-		List<String> atoms = Arrays.asList(new String[]{atomShrtNm});
-		SubTaskAtomModel simpleSubTask = new SubTaskAtomModel("mvDum", "Move dummy", atoms);
+		//Register a simple SubTaskAtom model containing the positioner & detX setting
+		List<String> atoms = Arrays.asList(new String[]{"setDummy", "setDetX"});
+		SubTaskAtomModel simpleSubTask = new SubTaskAtomModel("mvDum", "Move dummy & set detector X position", atoms);
 		qbf.registerAtom(simpleSubTask);
 		
 		SubTaskAtom mvDum = qbf.getQueueAtom("mvDum");
-		//TODO Assess whether this is the requested SubTaskAtom
+		assertEquals("Name of returned SubTaskAtom is wrong", "Move dummy", mvDum.getName());
+		assertEquals("Short name of returned SubTaskAtom is wrong", "mvDum", mvDum.getShortName());
+		assertEquals("Unexpected number of atoms in AtomQueue", 2, mvDum.atomQueueSize());
+		List<QueueAtom> atomQueue = mvDum.getAtomQueue();
+		assertEquals("First atom is not the expected 'setDummy'", positAtom, atomQueue.get(0));
+		assertEquals("Second atom is not the expected 'setDetX'", detXAtom, atomQueue.get(1));
 		
-		
+		//Register a simple TaskBean model containing just the SubTaskAtom
 		List<String> subTasks = Arrays.asList(new String[]{simpleSubTask.getShortName()});
-		TaskBeanModel simpleTask = new TaskBeanModel("execMvDum", "Execute move dummy", subTasks);
+		TaskBeanModel simpleTask = new TaskBeanModel("execMvDum", "Execute move dummy & detX", subTasks);
 		qbf.registerTask(simpleTask);
 		
-		TaskBean execDum = qbf.assembleTaskBeanModel("execMvDum");
-		//TODO assess whether this is the requested TaskBean
-		
+		TaskBean execDum = qbf.assembleTaskBean("execMvDum");
+		assertEquals("Name of returned TaskBean is wrong", "Execute move dummy & detX", execDum.getName());
+		assertEquals("Short name of returned TaskBean is wrong", "execMvDum", execDum.getShortName());
+		assertEquals("Unexpected number of atoms in AtomQueue", 1, execDum.atomQueueSize());
+		SubTaskAtom atomQueueSubTaskAtom = execDum.getAtomQueue().get(0);
+		assertEquals("SubTaskAtom is not the expected 'mvDum'", mvDum, atomQueueSubTaskAtom);
 		
 		TaskBean secondExecDum = qbf.assembleDefaultTaskBean();
 		assertEquals("assembleDefault should return the same model as explicitly requested when one model registered", secondExecDum, execDum);
 	}
 	
-	private String addBasicDummyPositionerConfig() {
-		String shortName = "testAtom";
-		PositionerAtom positAtom = new PositionerAtom(shortName, "Set dummy to 10", "dummy", 10);
-		qbf.registerAtom(positAtom);
-		
-		return shortName;
-	}
-
 }
