@@ -15,7 +15,9 @@ import java.io.File;
 
 import org.eclipse.dawnsci.analysis.api.tree.GroupNode;
 import org.eclipse.dawnsci.nexus.INexusFileFactory;
+import org.eclipse.dawnsci.nexus.NexusException;
 import org.eclipse.dawnsci.nexus.NexusFile;
+import org.eclipse.january.DatasetException;
 import org.eclipse.january.IMonitor;
 import org.eclipse.january.dataset.Dataset;
 import org.eclipse.january.dataset.DatasetFactory;
@@ -33,8 +35,11 @@ import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.scan.IFilePathService;
+import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.event.queues.QueueProcessFactory;
 import org.eclipse.scanning.event.queues.ServicesHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MonitorAtomProcess reads back a single value from a monitor. It will use 
@@ -64,131 +69,137 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 	 * {@link QueueProcess} handles.
 	 */
 	public static final String BEAN_CLASS_NAME = MonitorAtom.class.getName();
+	
+	private static Logger logger = LoggerFactory.getLogger(MonitorAtomProcess.class);
+	
+	//Scanning infrastructure
+	private final IScannableDeviceService scanDevService;
+	private final IFilePathService fPathService;
+	private final INexusFileFactory nexusFileFactory;
 
 	public MonitorAtomProcess(T bean, IPublisher<T> publisher, Boolean blocking) throws EventException {
 		super(bean, publisher, blocking);
+		//Get the scanDevService from the OSGi configured holder.
+		scanDevService = ServicesHolder.getScannableDeviceService();
+		fPathService = ServicesHolder.getFilePathService();
+		nexusFileFactory = ServicesHolder.getNexusFileFactory();
 	}
 
 	@Override
 	protected void run() throws EventException, InterruptedException {
+		//Get the path where the NeXus file will be written to
+		logger.debug("Getting path for uniquely named NeXus file to write data to...");
+		broadcast(Status.RUNNING, 1.0, "Getting path for uniquely named NeXus file to write data to...");
+
+		File visitTmpDir = new File(fPathService.getTempDir());
+		final String fileName = UniqueUtils.getSafeName(queueBean.getName());
+		final File visitFile = UniqueUtils.getUnique(visitTmpDir, fileName, "nxs");
+		queueBean.setRunDirectory(visitTmpDir.getAbsolutePath());
+		// Tell downstream which file to read
+		String filePath = visitFile.getAbsolutePath();
+		queueBean.setFilePath(filePath);
+		
+		final NexusFile nxsFile = nexusFileFactory.newNexusFile(visitFile.getAbsolutePath());
 		try {
-			broadcast(Status.RUNNING, "Writing position of: "+getQueueBean().getMonitor());
-			broadcast(1.0);
+			logger.debug("Preparing NeXus file for writing...");
+			broadcast(Status.RUNNING, 20.0, "Opening NeXus file for writing...");
 			
-			// Write file
-			IScannableDeviceService sservice  = ServicesHolder.getScannableDeviceService();
-			IScannable<?>           scannable = sservice.getScannable(getQueueBean().getMonitor());
+			//Open the Nexus file & create the group/tree structure
+			nxsFile.openToWrite(true);
+			logger.debug("File '"+visitFile.getAbsolutePath()+"' created and ready for access");
+			broadcast(Status.RUNNING, 25.0);
+			final String datasetName = UniqueUtils.getSafeName(queueBean.getName());
+			GroupNode nxsParent = nxsFile.getGroup("/entry1/instrument", true);
+			if (isTerminated()) throw new InterruptedException();
 			
-			final File vistFile = createNewTemporaryFile();
-			getQueueBean().setRunDirectory(vistFile.getParent());
-			// Tell downstream which file to read
-		    getQueueBean().setFilePath(vistFile.getAbsolutePath());
+			logger.debug("Created NeXus '/entry1/instrument/<uniquename>' tree");
+			broadcast(Status.RUNNING, 30.0);
 			
-			final INexusFileFactory factory = ServicesHolder.getNexusFileFactory();
-			final NexusFile file = factory.newNexusFile(vistFile.getAbsolutePath());
-			file.openToWrite(true);
-			broadcast(Status.RUNNING, 10.0, "Retrieved motor value.");
+			//Create a LazyDataset ready to receive the monitor value
+			final int[] shape = new int[]{1}; // Not sure about this, what about vector-data from the scannable?
+			ILazyWriteableDataset datasetWriter = new LazyWriteableDataset(datasetName, Dataset.FLOAT, shape, shape, shape, null); // DO NOT COPY!
+			nxsFile.createData(nxsParent, datasetWriter);
+			SliceND slice = SliceND.createSlice(datasetWriter, new int[]{0}, new int[]{1});
+			if (isTerminated()) throw new InterruptedException();
 			
-			String dataset = writeScannable(file, scannable);
-			// Tell downstream which dataset to read
-			getQueueBean().setDataset(dataset);
+			//Read data, write slice and close file
+			logger.debug("Getting scannable'"+queueBean.getMonitor()+"' and reading current value");
+			broadcast(Status.RUNNING, 40.0, "Reading value of monitor '"+queueBean.getMonitor()+"'");
+			
+			IScannable<?> scannable = scanDevService.getScannable(queueBean.getMonitor());
+			try {
+				IDataset toWrite = DatasetFactory.createFromObject(scannable.getPosition());
+				datasetWriter.setSlice(new IMonitor.Stub(), toWrite, slice);
+			} catch (DatasetException dsEx) {
+				// Because getPosition throws Exception, we need to rethrow other exception types of interest
+				throw dsEx;
+			} catch (Exception ex) {
+				throw new ScanningException("Could not read scannable position", ex);
+			}
+			
+			nxsFile.close();
+			if (isTerminated()) throw new InterruptedException();
+			
+			logger.debug("Data successfully written to file");
+			broadcast(Status.RUNNING, 70.0, "Monitor value recorded to file");
+			
+			//Record the full dataset path in the MonitorAtom
+			queueBean.setDataset("/entry1/instrument/"+datasetName);
 			broadcast(99.6);
-						
-		} catch (Exception ne) {
-			ne.printStackTrace();
-			reportFail(ne, "Write of file with value from '"+getQueueBean().getMonitor()+"' failed with: \""+ne.getMessage()+"\".");
-			executed = true;		
-			broadcast(Status.FAILED);
+		} catch (NexusException nxEx) {
+			logger.error("Failed whilst accessing NeXus file '"+filePath+"': "+nxEx.getMessage());
+			broadcast(Status.FAILED, "Problems encountered accessing NeXus file: "+nxEx.getMessage());
+			throw new EventException("Problems encountered accessing NeXus file: "+nxEx.getMessage() ,nxEx);
+		} catch (DatasetException dsEx) {
+			logger.error("Could not pass data from monitor into LazyDataset for writing");
+			broadcast(Status.FAILED, "Failed writing to LazyDataset: "+dsEx.getMessage());
+			throw new EventException("Failed writing to LazyDataset: "+dsEx.getMessage(), dsEx);
+		} catch (ScanningException scEx) {
+			logger.error("Failed to get monitor with the name '"+queueBean.getMonitor()+"': "+scEx.getMessage());
+			broadcast(Status.FAILED, "Failed to get monitor with the name '"+queueBean.getMonitor()+"'");
+			throw new EventException("Failed to get monitor with the name '"+queueBean.getMonitor()+"'", scEx);
+		} catch (InterruptedException irEx) {
+			//We were terminated. Do tidy up and stop
+			logger.debug("Processing was interrupted. Starting cleanup...");
+			cleanUp(nxsFile);
 		} finally {
 			processLatch.countDown();
 		}
 	}
-
-	private String writeScannable(NexusFile file, IScannable<?> scannable) throws Exception {
+	
+	private void cleanUp(NexusFile nxsFile) {
+		final String path = nxsFile.getFilePath();
+		final File nxsFSObj = new File(path);
 		
-		// We make a lazy writeable dataset to write out the mandels.
-		final int[] shape = new int[]{1}; // Not sure about this, what about vector-data from the scannable?
-		
-		// Make NeXus group and lazy dataset (which can be used to append.
-		final String name = UniqueUtils.getSafeName(getQueueBean().getName());
-		GroupNode par = file.getGroup("/entry1/instrument", true); 
-		ILazyWriteableDataset writer = new LazyWriteableDataset(name, Dataset.FLOAT, shape, shape, shape, null); // DO NOT COPY!
-		file.createData(par, writer);
-		broadcast(Status.RUNNING, 20.0, "Lazydataset created.");
-		
-		// Write Value
-		SliceND slice = SliceND.createSlice(writer, new int[]{0}, new int[]{1});
-		IDataset toWrite = DatasetFactory.createFromObject(scannable.getPosition());
-		writer.setSlice(new IMonitor.Stub(), toWrite, slice); 
-		broadcast(Status.RUNNING, 50.0, "Slice written.");
+		if (nxsFSObj.exists()) {
+			try {
+				nxsFile.close();
+			} catch (NexusException nxEx) {
+				logger.debug("Failed to close Nexus file {} during cleanUp", path);
+			}
 			
-		file.close();
-		
-		return "/entry1/instrument/"+name;
-	}
-
-
-	private File createNewTemporaryFile() {
-		IFilePathService service = ServicesHolder.getFilePathService();
-		File dir = new File(service.getTempDir());
-		final String name = UniqueUtils.getSafeName(getQueueBean().getName());
-		return UniqueUtils.getUnique(dir, name, "nxs");
+			boolean deletedNexusFile = nxsFSObj.delete();
+			if (!deletedNexusFile) {
+				logger.warn("Failed to delete NeXus file{} during cleanup", path);
+			}
+		}
 	}
 
 	@Override
 	protected void postMatchAnalysis() throws EventException, InterruptedException {
-		try {
-			postMatchAnalysisLock.lockInterruptibly();
+		if (isTerminated()) {
+			queueBean.setMessage("Get value of '"+queueBean.getMonitor()+"' aborted (requested)");
+			logger.debug("'"+bean.getName()+"' was requested to abort");
+			return;
+		} else if (queueBean.getPercentComplete() >= 99.5 && !terminated) {
+			//Clean finish
+			updateBean(Status.COMPLETE, 100d, "Successfully stored current value of '"+queueBean.getMonitor()+"'");
+		} else {
+			//Scan failed
+			queueBean.setStatus(Status.FAILED);//<-- Don't set message here; it's broadcast above!
+			logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
+		} 
 
-			if (isTerminated()) {
-				broadcast("Move aborted before completion (requested).");
-				return;
-			}
-
-			executed = true;
-			if (queueBean.getPercentComplete() >= 99.5 && !terminated) {
-				//Clean finish
-				broadcast(Status.COMPLETE, 100d, "Device move(s) completed.");
-			} else {
-				//Scan failed
-				//TODO Set message? Or is it set elsewhere?
-				broadcast(Status.FAILED);
-			} 
-		} finally {
-			//And we're done, so let other processes continue
-			executionEnded();
-
-			postMatchAnalysisLock.unlock();
-
-			/*
-			 * N.B. Broadcasting needs to be done last; otherwise the next 
-			 * queue may start when we're not ready. Broadcasting should not 
-			 * happen if we've been terminated.
-			 */
-			if (!isTerminated()) {
-				broadcast();
-			}
-		}
-	}
-	
-	@Override
-	public void doTerminate() throws EventException {
-		try {
-			//Reentrant lock ensures execution method (and hence post-match 
-			//analysis) completes before terminate does
-			postMatchAnalysisLock.lockInterruptibly();
-
-			//TODO Additional abort action, not handled as part of run()?
-			terminated = true;
-
-			//Wait for post-match analysis to finish
-			continueIfExecutionEnded();
-			
-		} catch (InterruptedException iEx) {
-			throw new EventException(iEx);
-		} finally {
-			postMatchAnalysisLock.unlock();
-		}
 	}
 	
 	@Override
