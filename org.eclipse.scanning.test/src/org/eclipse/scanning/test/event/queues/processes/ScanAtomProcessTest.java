@@ -26,10 +26,10 @@ import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.queues.IQueue;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
-import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.event.status.StatusBean;
+import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.IScanPathModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.event.queues.ServicesHolder;
@@ -83,8 +83,14 @@ public class ScanAtomProcessTest {
 		List<String> monitors = new ArrayList<>();
 		monitors.add("bpm3");
 		monitors.add("i0");
+		
+		ScanRequest<?> scanReq = new ScanRequest<>();
+		scanReq.setDetectors(detectors);
+		scanReq.setCompoundModel(new CompoundModel<>(scanAxes));
+		scanReq.setMonitorNames(monitors);
 
-		scAt = new ScanAtom("VT scan across sample", scanAxes, detectors); 
+		scAt = new ScanAtom("vtScan", scanReq);
+		scAt.setName("VT scan across sample");
 
 		try {
 			scAt.setHostName(InetAddress.getLocalHost().getHostName());
@@ -132,9 +138,9 @@ public class ScanAtomProcessTest {
 		
 		//These are the statuses & percent completes reported by the processor as it sets up the run
 		Status[] reportedStatuses = new Status[]{Status.RUNNING, Status.RUNNING,
-				Status.RUNNING, Status.RUNNING, Status.RUNNING, Status.RUNNING};
-		Double[] reportedPercent = new Double[]{0d, 1d, 
-				2d, 3d, 4d, 5d};
+				Status.RUNNING, Status.RUNNING, Status.RUNNING};
+		Double[] reportedPercent = new Double[]{0d, 2d, 
+				3d, 4d, 5d};
 
 		pti.checkFirstBroadcastBeanStatuses(reportedStatuses, reportedPercent);
 		pti.checkLastBroadcastBeanStatuses(Status.COMPLETE, true);
@@ -142,12 +148,6 @@ public class ScanAtomProcessTest {
 		assertEquals("Wrong scan submit queue on bean", "fake.test.submit"+IQueue.SUBMISSION_QUEUE_SUFFIX, ((ScanAtom)pti.getLastBroadcastBean()).getScanSubmitQueueName());
 
 		pti.checkSubmittedBeans(mockSub, "fake.test.submit");
-		ScanBean submitted = (ScanBean)pti.getSubmittedBeans(mockSub, "fake.test.submit").get(0);
-		ScanRequest<?> submScanReq = submitted.getScanRequest();
-		assertEquals("Scan axis descriptions are wrong", scAt.getPathModels(), submScanReq.getCompoundModel().getModels());
-		assertEquals("Scan detector models are wrong", scAt.getDetectorModels(), submScanReq.getDetectors());
-		assertEquals("Scan monitors are wrong", scAt.getMonitors(), submScanReq.getMonitorNames());
-		
 		checkScanInfrastructureDisconnected();
 	}
 	
@@ -163,8 +163,8 @@ public class ScanAtomProcessTest {
 	@Test
 	public void testTermination() throws Exception {
 		pti.executeProcess(scAtProc, scAt);
-		pti.waitToTerminate(100l, true);
-		pti.waitForBeanFinalStatus(500000l);//FIXME
+		pti.waitToTerminate(100l, true);// <-- because we have child queue, this sets REQUEST_TERMINATE
+		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
 		
 		assertEquals("Wrong message set after termination.", "Scan requested to abort before completion", pti.getLastBroadcastBean().getMessage());

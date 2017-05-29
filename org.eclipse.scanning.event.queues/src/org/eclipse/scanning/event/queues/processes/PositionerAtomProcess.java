@@ -74,20 +74,16 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 	}
 
 	@Override
-	public Class<PositionerAtom> getBeanClass() {
-		return PositionerAtom.class;
-	}
-
-	@Override
 	protected void run() throws EventException, InterruptedException {
-		executed = true;
-		broadcast(Status.RUNNING,"Creating position from configured values.");
+		logger.debug("Creating target position object from configured values");
+		broadcast(Status.RUNNING,"Creating target position from configured values");
 		
 		final IPosition target = new MapPosition(queueBean.getPositionerConfig());
 		broadcast(10d);
 		
 		//Get the positioner
-		broadcast(Status.RUNNING, "Getting device positioner.");
+		logger.debug("Getting device positioner");
+		broadcast(Status.RUNNING, "Getting device positioner");
 		try {
 			positioner = deviceService.createPositioner();
 		} catch (ScanningException se) {
@@ -107,21 +103,28 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 			public synchronized void run() {
 				//Set positioner device(s)
 				try {
-					broadcast(Status.RUNNING, "Moving device(s) to requested position.");
+					logger.debug("Setting device(s) to requested position");
+					broadcast(Status.RUNNING, "Moving device(s) to requested position");
 					positioner.setPosition(target);
 					
 					//Check whether we received an interrupt whilst setting the positioner
 					if (Thread.currentThread().isInterrupted()) throw new InterruptedException("Position setting interrupted.");
 					//Completed cleanly
 					broadcast(99.5);
-					processLatch.countDown();
 				} catch (Exception ex) {
+					logger.debug("Positioner thread interrupted with: "+ex.getMessage());
 					if (isTerminated()) {
 						positioner.abort();
-						processLatch.countDown();
+						logger.debug("Termination requested. Aborting positioner...");
 					} else {
-						reportFail(ex, "Moving device(s) in '"+queueBean.getName()+"' failed with: \""+ex.getMessage()+"\".");
+						try {
+							broadcast(Status.FAILED, "Moving device(s) in '"+queueBean.getName()+"' failed with: '"+ex.getMessage()+"'");
+						} catch(EventException evEx) {
+							logger.error("Broadcasting bean failed with: \""+evEx.getMessage()+"\".");
+						}
 					}
+				} finally {
+					processLatch.countDown();
 				}
 			}
 		});
@@ -132,69 +135,44 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 	
 	@Override
 	protected void postMatchAnalysis() throws EventException, InterruptedException {
-		try {
-			postMatchAnalysisLock.lockInterruptibly();
-
-			if (isTerminated()) {
-				broadcast("Position change aborted before completion (requested).");
-				return;
-			}
-
-			if (queueBean.getPercentComplete() >= 99.5) {
-				//Clean finish
-				broadcast(Status.COMPLETE, 100d, "Position change completed.");
-			} else {
-				//Scan failed
-				//TODO Set message? Or is it set elsewhere?
-				positioner.abort();
-				broadcast(Status.FAILED);
-			} 
-		} finally {
-			//And we're done, so let other processes continue
-			executionEnded();
-
-			postMatchAnalysisLock.unlock();
-
-			/*
-			 * N.B. Broadcasting needs to be done last; otherwise the next 
-			 * queue may start when we're not ready. Broadcasting should not 
-			 * happen if we've been terminated.
-			 */
-			if (!isTerminated()) {
-				broadcast();
-			}
+		if (isTerminated()) {
+			positionThread.interrupt();
+			queueBean.setMessage("Position change aborted before completion (requested)");
+			logger.debug("'"+bean.getName()+"' was requested to abort");
+		} else if (queueBean.getPercentComplete() >= 99.5) {
+			//Clean finish
+			updateBean(Status.COMPLETE, 100d, "Set position completed successfully");
+		} else {
+			//Scan failed
+			positioner.abort();
+			queueBean.setStatus(Status.FAILED);//<-- Don't set message here; it's broadcast above!
+			logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
 		}
 	}
 	
 	@Override
-	protected void doTerminate() throws EventException {
-		try {
-			//Reentrant lock ensures execution method (and hence post-match 
-			//analysis) completes before terminate does
-			postMatchAnalysisLock.lockInterruptibly();
-
-			positionThread.interrupt();
-			terminated = true;
-
-			//Wait for post-match analysis to finish
-			continueIfExecutionEnded();
-		} catch (InterruptedException iEx) {
-			throw new EventException(iEx);
-		} finally {
-			postMatchAnalysisLock.unlock();
-		}
+	protected void specificTerminateAction() throws EventException {
+		positioner.abort();			//<--since setPosition is blocking we need to abort it before...
+		positionThread.interrupt(); //<-- ...we call interrupt.
 	}
 	
 	@Override
 	protected void doPause() throws EventException {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
+		//TODO
 		logger.error("Pause/resume not implemented on PositionerAtom");
-		throw new EventException("Pause/resume not implemented on PositionerAtom");
 	}
 
 	@Override
 	protected void doResume() throws EventException {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
+		//TODO
 		logger.error("Pause/resume not implemented on PositionerAtom");
-		throw new EventException("Pause/resume not implemented on PositionerAtom");
+	}
+	
+	@Override
+	public Class<PositionerAtom> getBeanClass() {
+		return PositionerAtom.class;
 	}
 
 }
