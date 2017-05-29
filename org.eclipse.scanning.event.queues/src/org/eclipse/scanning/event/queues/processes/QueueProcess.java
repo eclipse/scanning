@@ -75,13 +75,37 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	
 	@Override
 	public void execute() throws EventException, InterruptedException {
-		logger.debug("Processing "+bean.getClass().getSimpleName()+": '"+bean.getName()+"'");
+		logger.info("Processing "+bean.getClass().getSimpleName()+": '"+bean.getName()+"'");
+		executed = true;
 		run();
 		logger.debug("Waiting for processing of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' to complete...");
 		processLatch.await();
 		logger.debug("Post-match analysis of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' begins... (Status: "+bean.getStatus()+"; Percent: "+bean.getPercentComplete()+")");
-		postMatchAnalysis();
-		logger.debug("Processing of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' complete (Status: "+bean.getStatus()+"; Percent: "+bean.getPercentComplete()+")");
+		try {
+			postMatchAnalysisLock.lockInterruptibly();
+			postMatchAnalysis();
+		} finally {
+			//And we're done, so let other threads continue
+			executionEnded();
+			postMatchAnalysisLock.unlock();
+		}
+		logger.info("Processing of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' finished (Status: "+bean.getStatus()+"; Terminated? "+isTerminated()+"; Percent: "+bean.getPercentComplete()+")");
+		
+		/*
+		 * Beans that have completed execution need to be broadcast. 
+		 * N.B. Broadcasting needs to be done last; otherwise the next 
+		 * queue may start when we're not ready.
+		 */
+		if (bean.getStatus().isFinal() || isTerminated()) {
+			if (!isTerminated()) {
+				//Terminated beans get broadcast by the AbstractPausibleLockingProcess, so we don't
+				broadcast();
+			}
+		} else {
+			System.err.println(isTerminated());
+			logger.error(bean.getName()+" has a non-final state after processing complete (status="+bean.getStatus()+")");
+			throw new EventException(bean.getName()+" has a non-final state after processing complete!");
+		}
 	}
 	
 	/**
@@ -106,6 +130,43 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	 * @throws InterruptedException if the analysis lock is interrupted
 	 */
 	protected abstract void postMatchAnalysis() throws EventException, InterruptedException;
+	
+	/*
+	 * Method gets the postMatchAnalysis lock 
+	 */
+	@Override
+	protected void doTerminate() throws EventException {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
+		try {
+			//Reentrant lock ensures execution method (and hence post-match 
+			//analysis) completes before terminate does
+			postMatchAnalysisLock.lockInterruptibly();
+			
+			logger.info("'"+bean.getName()+"' requested to terminate...");
+			terminated = true;//<-- do this first, so specific actions can test we're terminated
+			specificTerminateAction();
+			logger.debug("Releasing processLatch to start post-match analysis");
+			processLatch.countDown();
+			
+			//Wait for post-match analysis to finish
+			continueIfExecutionEnded();
+		} catch (InterruptedException iEx) {
+			throw new EventException(iEx);
+		} finally {
+			postMatchAnalysisLock.unlock();
+		}
+	}
+	
+	/**
+	 * Called from doTerminate, this method is called to perform the 
+	 * termination actions. This is necessary so that doTerminate can lock out 
+	 * other threads and will itself only complete when execution is complete.
+	 * 
+	 * @throws EventException in case termination fails.
+	 */
+	protected void specificTerminateAction() throws EventException {
+		//Mostly we don't need to do anything
+	}
 	
 	@Override
 	public void updateBean(Status newStatus, Double newPercent, String newMessage) {
@@ -176,19 +237,6 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	 */
 	public CountDownLatch getProcessLatch() {
 		return processLatch;
-	}
-
-
-	protected void reportFail(Exception ex, String message) {
-		logger.error(message);
-		try {
-			//Bean has failed, but we don't want to set a final status here.
-			broadcast(Status.RUNNING, message);
-		} catch(EventException evEx) {
-			logger.error("Broadcasting bean failed with: \""+evEx.getMessage()+"\".");
-		} finally {
-			processLatch.countDown();
-		}
 	}
 
 }
