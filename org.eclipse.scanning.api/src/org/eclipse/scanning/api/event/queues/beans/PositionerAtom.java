@@ -46,13 +46,11 @@ public class PositionerAtom extends QueueAtom {
 	 * Constructor with required arguments to configure one positioner.
 	 * 
 	 * @param posShrtNm String short name used within the QueueBeanFactory
-	 * @param posName String automatically/user supplied name for this atom. 
 	 * @param positionDev String name of positioner to set.
 	 * @param target Object representing the target position.
 	 */
-	public PositionerAtom(String posShrtNm, String posName, String positionDev, Object target) {
+	public PositionerAtom(String posShrtNm, String positionDev, Object target) {
 		super();
-		setName(posName);
 		setShortName(posShrtNm);
 		positionerConfig = new LinkedHashMap<String, Object>();
 		positionerConfig.put(positionDev, target);
@@ -62,13 +60,11 @@ public class PositionerAtom extends QueueAtom {
 	 * Constructor with required arguments for multiple motor positions.
 	 * 
 	 * @param posShrtNm String short name used within the QueueBeanFactory
-	 * @param posName String automatically/user supplied name for this atom.
 	 * @param positionerConfig Map of form String positionerDev name Object 
 	 *                         target position.
 	 */
-	public PositionerAtom(String posShrtNm, String posName, Map<String, Object> positionerConfig) {
+	public PositionerAtom(String posShrtNm, Map<String, Object> positionerConfig) {
 		super();
-		setName(posName);
 		setShortName(posShrtNm);
 		this.positionerConfig = positionerConfig;
 	}

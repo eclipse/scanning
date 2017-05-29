@@ -17,8 +17,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
-import org.eclipse.scanning.api.points.models.StaticModel;
+import org.eclipse.scanning.api.event.scan.ScanRequest;
+import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.IScanPathModel;
+import org.eclipse.scanning.api.points.models.StaticModel;
 import org.eclipse.scanning.test.scan.mock.MockDetectorModel;
 import org.junit.Before;
 
@@ -31,30 +33,36 @@ import org.junit.Before;
  */
 public class ScanAtomTest extends AbstractBeanTest<ScanAtom> {
 	
-	private String nameA = "Test scan 1", nameB = "Test scan 2";
-	private List<IScanPathModel> modelsA, modelsB;
-	private Map<String, Object> detectorsA, detectorsB;
-	private List<String> monitors;
+	private String shrtNmA = "Test scan 1", shrtNmB = "Test scan 2";
 	
 	@Before
 	public void buildBeans() {
-		detectorsA = new HashMap<>();
+		//Config for first ScanAtom
+		Map<String, Object> detectorsA = new HashMap<>();
 		detectorsA.put("Test Detector A", new MockDetectorModel(30.0));
 		detectorsA.put("Test Detector B", new MockDetectorModel(30.0));
-		detectorsB = new HashMap<>();
+		
+		List<IScanPathModel> modelsA = new ArrayList<>();
+		modelsA.add(new StaticModel());
+		
+		ScanRequest<?> scanReq = new ScanRequest<>();
+		scanReq.setDetectors(detectorsA);
+		scanReq.setCompoundModel(new CompoundModel<>(modelsA));
+		
+		
+		//Config for second ScanAtom
+		Map<String, Object> detectorsB = new HashMap<>();
 		detectorsB.put("Test Detector C", new MockDetectorModel(50.0));
 		
-		modelsA = new ArrayList<>();
-		modelsA.add(new StaticModel());
-		modelsB = new ArrayList<>();
+		List<IScanPathModel> modelsB = new ArrayList<>();
 		modelsB.add(new StaticModel());
 		modelsB.add(new StaticModel());
 		
-		monitors = new ArrayList<>();
+		List<String> monitors = new ArrayList<>();
 		monitors.add("Fake monitor");
 		
-		beanA = new ScanAtom(nameA, modelsA, detectorsA);
-		beanB = new ScanAtom(nameB, modelsB, detectorsB, monitors);
+		beanA = new ScanAtom(shrtNmA, scanReq);
+		beanB = new ScanAtom(shrtNmB, modelsB, detectorsB, monitors);
 	}
 
 }

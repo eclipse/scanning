@@ -14,7 +14,7 @@ package org.eclipse.scanning.test.event.queues.beans;
 import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,23 +32,25 @@ import org.junit.Test;
  */
 public class PositionerAtomTest extends AbstractBeanTest<PositionerAtom> {
 	
-	private String nameA = "testMoveA", nameB = "testMoveB";
-	private String deviceA = "testDeviceA", deviceB = "testDeviceB"
-			, deviceC = "testDeviceC", deviceD = "testDeviceD";
+	private String shrtNmA = "tstMvA", shrtNmB = "tstMvB";
+	private String nameA = "Set cryostream to 273.15", nameB = "Set samX to 0.0, samY to 10 and cryojet to 273.15";
+	private String deviceA = "cryojet", deviceB = "samX", 
+			deviceC = "samY", deviceD = "blower";
 	private double targetA = 273.15, targetB = 957.845;
-	private int targetC = 1;
-	private String targetD = "barry";
+	private int targetC = 10;
+	private String targetD = "out";
 	
 	@Before
 	public void buildBeans() throws Exception {
-		Map<String, Object> beanBConf = new HashMap<>();
+		Map<String, Object> beanBConf = new LinkedHashMap<>();
 		beanBConf.put(deviceB, targetB);
 		beanBConf.put(deviceC, targetC);
 		beanBConf.put(deviceD, targetD);
-				
 		
-		beanA = new PositionerAtom(nameA, deviceA, targetA);
-		beanB = new PositionerAtom(nameB, beanBConf);
+		beanA = new PositionerAtom(shrtNmA, deviceA, targetA);
+		beanA.setName(nameA);
+		beanB = new PositionerAtom(shrtNmB, beanBConf);
+		beanB.setName(nameB);
 		
 	}
 	
@@ -64,4 +66,5 @@ public class PositionerAtomTest extends AbstractBeanTest<PositionerAtom> {
 		
 		assertEquals("Reported list and the expected list of names differ", expected, beanB.getPositionerNames());
 	}
+
 }

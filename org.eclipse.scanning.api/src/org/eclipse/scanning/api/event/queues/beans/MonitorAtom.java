@@ -44,12 +44,10 @@ public class MonitorAtom extends QueueAtom {
 	 * Constructor with arguments required to fully configure this atom
 	 * 
 	 * @param monShrtNm String short name used within the QueueBeanFactory
-	 * @param monName - name for atom
 	 * @param dev - name of monitor
 	 */
-	public MonitorAtom(String monShrtNm, String monName, String dev) {
+	public MonitorAtom(String monShrtNm, String dev) {
 		super();
-		setName(monName);
 		setShortName(monShrtNm);
 		monitor = dev;
 	}
