@@ -14,9 +14,28 @@ public interface IQueueBeanFactory {
 	
 	<Q extends QueueAtom> void registerAtom(Q atom) throws QueueModelException;
 	
+	default <Q extends QueueAtom> void replaceAtom(Q atom) throws QueueModelException {
+		unregisterAtom(atom.getShortName());
+		registerAtom(atom);
+	}
+	
 	void registerAtom(SubTaskAtomModel subTask) throws QueueModelException;
 	
+	default void replaceAtom(SubTaskAtomModel subTask) throws QueueModelException {
+		unregisterAtom(subTask.getShortName());
+		registerAtom(subTask);
+	}
+	
+	void unregisterAtom(String reference) throws QueueModelException;
+	
 	void registerTask(TaskBeanModel task) throws QueueModelException;
+	
+	default void replaceTask(TaskBeanModel task) throws QueueModelException {
+		unregisterTask(task.getShortName());
+		registerTask(task);
+	}
+	
+	void unregisterTask(String reference) throws QueueModelException;
 	
 	/**
 	 * Return a list of all the shortNames of the registered queue atoms (both 
@@ -30,20 +49,20 @@ public interface IQueueBeanFactory {
 	
 	/**
 	 * 
-	 * @param shortName
+	 * @param reference
 	 * @return
 	 */
-	<Q extends QueueAtom> Q getQueueAtom(String shortName) throws QueueModelException;
+	<Q extends QueueAtom> Q getQueueAtom(String reference) throws QueueModelException;
 	
-	SubTaskAtom assembleSubTask(String modelShortName)  throws QueueModelException;
+	SubTaskAtom assembleSubTask(String reference)  throws QueueModelException;
 	
-	TaskBean assembleTaskBean(String modelShortName) throws QueueModelException;
+	TaskBean assembleTaskBean(String reference) throws QueueModelException;
 	
 	default TaskBean assembleDefaultTaskBean() throws QueueModelException {
 		return assembleTaskBean(getDefaultTaskBeanModelName());
 	}
 	
-	void setDefaultTaskBeanModel(String modelShortName);
+	void setDefaultTaskBeanModel(String reference);
 	
 	String getDefaultTaskBeanModelName();
 
