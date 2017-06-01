@@ -23,6 +23,8 @@ public final class SolsticeConstants {
 	public static final String FIELD_NAME_SCAN_MODELS   = "scan_models";
 	public static final String FIELD_NAME_SCAN_DURATION = "scan_duration";
 	public static final String FIELD_NAME_SCAN_ESTIMATED_DURATION = "scan_estimated_duration";
+	public static final String FIELD_NAME_SCAN_DEAD_TIME = "scan_dead_time";
+	public static final String FIELD_NAME_SCAN_DEAD_TIME_PERCENT = "scan_dead_time_percent";
 	public static final String FIELD_NAME_SCAN_SHAPE    = "scan_shape";
 	
 	/**

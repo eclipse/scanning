@@ -90,7 +90,7 @@ public class ExampleMalcolmDeviceTest {
 			
 			EPICSv4ExampleModel pmac1 = new EPICSv4ExampleModel();
 			pmac1.setExposureTime(23.1);
-			pmac1.setFileDir("/TestFile/Dir");
+			pmac1.setFileDir("/path/to/ixx-1234");
 
 			// Set the generator on the device
 			// Cannot set the generator from @PreConfigure in this unit test.
@@ -272,6 +272,7 @@ public class ExampleMalcolmDeviceTest {
 			Structure configureStructure = FieldFactory.getFieldCreate().createFieldBuilder()
 					.add("generator", generatorStructure)
 					.add("fileDir", ScalarType.pvString)
+					.add("fileTemplate", ScalarType.pvString)
 					.createStructure();
 
 			PVStructure spiralGeneratorPVStructure = PVDataFactory.getPVDataCreate()
@@ -343,7 +344,9 @@ public class ExampleMalcolmDeviceTest {
 			configurePVStructure.getSubField(PVDouble.class, "generator.duration").put(23.1);
 
 			PVString fileDirVal = configurePVStructure.getSubField(PVString.class, "fileDir");
-			fileDirVal.put("/TestFile/Dir");
+			fileDirVal.put("/path/to/ixx-1234");
+			PVString fileTemplateVal = configurePVStructure.getSubField(PVString.class, "fileTemplate");
+			fileTemplateVal.put("%sixx-1234-%s");
 
 			assertEquals(configureStructure, configureCall.getStructure());
 			assertEquals(configurePVStructure, configureCall);

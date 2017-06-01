@@ -5,6 +5,7 @@ import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -20,6 +21,9 @@ import org.eclipse.scanning.api.event.core.ISubscriber;
 import org.eclipse.scanning.api.event.queues.IQueue;
 import org.eclipse.scanning.api.event.queues.IQueueControllerService;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
+import org.eclipse.scanning.api.event.scan.IScanListener;
+import org.eclipse.scanning.api.event.scan.ScanBean;
+import org.eclipse.scanning.api.event.scan.ScanEvent;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.event.status.StatusBean;
 import org.eclipse.scanning.event.queues.ServicesHolder;
@@ -30,10 +34,13 @@ public class RealQueueTestUtils {
 	
 	private static IEventService evServ;
 	private static IQueueControllerService queueControl;
-	private static List<ISubscriber<IBeanListener<? extends IdBean>>> subscList; 
+	private static List<ISubscriber<? extends EventListener>> subscList; 
 	
 	private static List<ConsumerCommandBean> cmdBeans;
 	private static List<StatusBean> statusBeans;
+	
+	//For listening to ScanServlets
+	private static List<ScanBean> startEvents, endEvents;
 	
 	public static void initialise(URI uri) {
 		RealQueueTestUtils.uri = uri;
@@ -44,6 +51,11 @@ public class RealQueueTestUtils {
 		statusBeans = new ArrayList<>();
 		
 		subscList = new ArrayList<>();
+		
+		//For listening to ScanServlets
+		startEvents = new ArrayList<>();
+		endEvents = new ArrayList<>();
+		
 	}
 	
 	public static void reset() throws EventException {
@@ -53,6 +65,10 @@ public class RealQueueTestUtils {
 			subsc.disconnect();
 		}
 		subscList.clear();
+		
+		//For listening to ScanServlets
+		startEvents.clear();
+		endEvents.clear();
 	}
 	
 	public static void dispose() throws EventException  {
@@ -146,16 +162,46 @@ public class RealQueueTestUtils {
 		return commandLatch;
 	}
 	
+	public static CountDownLatch createScanEndEventWaitLatch(String topicName) throws EventException {
+		final CountDownLatch scanLatch = new CountDownLatch(1);
+		
+		ISubscriber<IScanListener> beanEvtSubsc = evServ.createSubscriber(uri, topicName);
+		beanEvtSubsc.addListener(new IScanListener() {
+
+			@Override
+			public void scanStateChanged(ScanEvent evt) {
+				if (evt.getBean().scanStart()) {
+					startEvents.add(evt.getBean()); // Should be just one
+				}
+				if (evt.getBean().scanEnd()) {
+					endEvents.add(evt.getBean());
+					scanLatch.countDown();
+				}
+			}
+		});
+		subscList.add(beanEvtSubsc);
+		return scanLatch;
+	}
+	
 	/**
 	 * Wait for the given CountDownLatch to countdown or to exceed its timeout 
-	 * (10000ms if no time specified).
+	 * (10000ms).
 	 */
 	public static void waitForEvent(CountDownLatch latch) throws InterruptedException {
 		waitForEvent(latch, 10000, false);
 	}
+	/**
+	 * Wait for the given CountDownLatch to countdown or to exceed its timeout 
+	 * (10000ms if no time specified).
+	 */
 	public static void waitForEvent(CountDownLatch latch, long timeout) throws InterruptedException {
 		waitForEvent(latch, timeout, false);
 	}
+	/**
+	 * Wait for the given CountDownLatch to countdown or to exceed its timeout 
+	 * (10000ms if no time specified). The noFail argument stops JUnit.fail 
+	 * from being called when the latch is not released.
+	 */
 	public static void waitForEvent(CountDownLatch latch, long timeout, Boolean noFail) throws InterruptedException {
 		//We may get stuck if the consumer finishes processing faster than the test works through
 		//If so, we need to test for a non-empty status set with last bean status equal to our expectation
@@ -215,4 +261,11 @@ public class RealQueueTestUtils {
 		System.out.println("\n**************\nTimed out waiting for "+cons.getSubmitQueueName()+"\n**************");
 	}
 
+	public static List<ScanBean> getStartEvents() {
+		return startEvents;
+	}
+
+	public static List<ScanBean> getEndEvents() {
+		return endEvents;
+	}
 }

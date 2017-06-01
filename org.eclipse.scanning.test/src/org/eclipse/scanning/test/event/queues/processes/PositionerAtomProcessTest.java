@@ -17,12 +17,12 @@ import static org.junit.Assert.assertTrue;
 
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.event.EventException;
-import org.eclipse.scanning.api.event.queues.beans.MoveAtom;
+import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.event.status.StatusBean;
 import org.eclipse.scanning.event.queues.ServicesHolder;
-import org.eclipse.scanning.event.queues.processes.MoveAtomProcess;
+import org.eclipse.scanning.event.queues.processes.PositionerAtomProcess;
 import org.eclipse.scanning.event.queues.processes.QueueProcess;
 import org.eclipse.scanning.test.event.queues.mocks.MockPositioner;
 import org.eclipse.scanning.test.event.queues.mocks.MockScanService;
@@ -30,10 +30,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-public class MoveAtomProcessTest {
+public class PositionerAtomProcessTest {
 	
-	private MoveAtom mvAt;
-	private QueueProcess<MoveAtom, Queueable> mvAtProc;
+	private PositionerAtom posAt;
+	private QueueProcess<PositionerAtom, Queueable> posAtProc;
 	
 	//Infrastructure
 	private ProcessTestInfrastructure pti;
@@ -46,8 +46,8 @@ public class MoveAtomProcessTest {
 		mss = new MockScanService();
 		ServicesHolder.setDeviceService(mss);
 		
-		mvAt = new MoveAtom("Move robot arm", "robot_arm", "1250", 12000);
-		mvAtProc = new MoveAtomProcess<>(mvAt, pti.getPublisher(), false);
+		posAt = new PositionerAtom("Move robot arm", "robot_arm", "1250");
+		posAtProc = new PositionerAtomProcess<>(posAt, pti.getPublisher(), false);
 	}
 	
 	@After
@@ -66,11 +66,11 @@ public class MoveAtomProcessTest {
 	 */
 	@Test
 	public void testExecution() throws Exception {
-		pti.executeProcess(mvAtProc, mvAt);
+		pti.executeProcess(posAtProc, posAt);
 		pti.waitForExecutionEnd(10000l);
 		pti.checkLastBroadcastBeanStatuses(Status.COMPLETE, false);
 		
-		assertEquals("Incorrect message after execute", "Device move(s) completed.", pti.getLastBroadcastBean().getMessage());
+		assertEquals("Incorrect message after execute", "Position change completed.", pti.getLastBroadcastBean().getMessage());
 	}
 	
 	/**
@@ -81,20 +81,20 @@ public class MoveAtomProcessTest {
 	 * - termination message should be set on the bean
 	 * - IPositioner should have received an abort command
 	 * 
-	 * N.B. MoveAtomProcessorTest uses MockPostioner, which pauses for 100ms 
-	 * does something then pauses for 150ms.
+	 * N.B. PositionerAtomProcessorTest uses MockPostioner, which pauses for 
+	 * 100ms does something then pauses for 150ms.
 	 */
 	@Test
 	public void testTermination() throws Exception {
-		pti.executeProcess(mvAtProc, mvAt);
+		pti.executeProcess(posAtProc, posAt);
 		pti.waitToTerminate(100l);
 		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
 		
 		pti.waitForExecutionEnd(500);
-		assertEquals("Incorrect message after terminate", "Move aborted before completion (requested).", pti.getLastBroadcastBean().getMessage());
+		assertEquals("Incorrect message after terminate", "Position change aborted before completion (requested).", pti.getLastBroadcastBean().getMessage());
 		assertTrue("IPositioner not aborted", ((MockPositioner)mss.createPositioner()).isAborted());
-		assertFalse("Move should have been terminated", ((MockPositioner)mss.createPositioner()).isMoveComplete());
+		assertFalse("Position setting should have been terminated", ((MockPositioner)mss.createPositioner()).isMoveComplete());
 	}
 	
 //	@Test
@@ -111,10 +111,10 @@ public class MoveAtomProcessTest {
 	 */
 	@Test
 	public void testFailure() throws Exception {
-		MoveAtom failAtom = new MoveAtom("Error Causer", "BadgerApocalypseButton", "pushed", 1);
-		mvAtProc = new MoveAtomProcess<>(failAtom, pti.getPublisher(), false);
+		PositionerAtom failAtom = new PositionerAtom("Error Causer", "BadgerApocalypseButton", "pushed");
+		posAtProc = new PositionerAtomProcess<>(failAtom, pti.getPublisher(), false);
 		
-		pti.executeProcess(mvAtProc, failAtom);
+		pti.executeProcess(posAtProc, failAtom);
 		//Fail happens automatically since using MockDev.Serv.
 		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.FAILED, false);

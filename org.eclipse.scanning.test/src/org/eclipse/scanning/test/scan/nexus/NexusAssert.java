@@ -15,6 +15,8 @@ import static org.eclipse.dawnsci.nexus.builder.data.NexusDataBuilder.ATTR_NAME_
 import static org.eclipse.dawnsci.nexus.builder.data.NexusDataBuilder.ATTR_NAME_SIGNAL;
 import static org.eclipse.dawnsci.nexus.builder.data.NexusDataBuilder.ATTR_NAME_TARGET;
 import static org.eclipse.dawnsci.nexus.builder.data.NexusDataBuilder.ATTR_SUFFIX_INDICES;
+import static org.eclipse.scanning.sequencer.nexus.SolsticeConstants.FIELD_NAME_SCAN_DEAD_TIME;
+import static org.eclipse.scanning.sequencer.nexus.SolsticeConstants.FIELD_NAME_SCAN_DEAD_TIME_PERCENT;
 import static org.eclipse.scanning.sequencer.nexus.SolsticeConstants.FIELD_NAME_SCAN_DURATION;
 import static org.eclipse.scanning.sequencer.nexus.SolsticeConstants.FIELD_NAME_SCAN_ESTIMATED_DURATION;
 import static org.eclipse.scanning.sequencer.nexus.SolsticeConstants.FIELD_NAME_SCAN_FINISHED;
@@ -27,9 +29,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
+import java.time.temporal.TemporalAccessor;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,6 +54,8 @@ import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.ILazyDataset;
 import org.eclipse.january.dataset.PositionIterator;
+import org.eclipse.scanning.sequencer.nexus.SolsticeConstants;
+import org.junit.Assert;
 
 /**
  * 
@@ -151,6 +159,7 @@ public class NexusAssert {
 			appendPattern("HH:mm:ss").appendFraction(ChronoField.NANO_OF_SECOND, 3, 3, true).toFormatter();
 
 	private static void assertScanTimes(NXcollection solsticeScanCollection) {
+		// check the estimated scan duration dataset
 		DataNode estimatedTimeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_ESTIMATED_DURATION);
 		assertNotNull(estimatedTimeDataNode);
 		IDataset estimatedTimeDataset;
@@ -163,10 +172,12 @@ public class NexusAssert {
 		assertEquals(String.class, estimatedTimeDataset.getElementClass());
 		assertEquals(0, estimatedTimeDataset.getRank());
 		assertArrayEquals(new int[]{}, estimatedTimeDataset.getShape());
-		String estimatedTime = estimatedTimeDataset.getString();
-		assertNotNull(estimatedTime);
-		formatter.parse(estimatedTime); // throws exception if not a valid time
+		String estimatedTimeStr = estimatedTimeDataset.getString();
+		assertNotNull(estimatedTimeStr);
+		LocalTime estimatedTimeAsTime = LocalTime.parse(estimatedTimeStr, formatter); // throws exception if not a valid time
+		long estimateDurationMs = estimatedTimeAsTime.getLong(ChronoField.MILLI_OF_DAY);
 		
+		// check the actual scan duration dataset
 		DataNode actualTimeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_DURATION);
 		assertNotNull(actualTimeDataNode);
 		IDataset actualTimeDataset;
@@ -177,14 +188,56 @@ public class NexusAssert {
 		}
 		
 		// written as a 1d dataset of rank 1, as we can't write a scalar lazy writeable dataset
+		// TODO: is this now possible?
 		assertEquals(String.class, actualTimeDataset.getElementClass());
 		assertEquals(1, actualTimeDataset.getRank());
 		assertArrayEquals(new int[]{ 1 }, actualTimeDataset.getShape());
 		String actualTime = actualTimeDataset.getString(0);
 		assertNotNull(actualTime);
-		formatter.parse(estimatedTime); // throws exception if not a valid time
+		LocalTime scanDurationAsTime = LocalTime.parse(actualTime, formatter); // throws exception if not a valid time
+		long scanDurationMs = scanDurationAsTime.getLong(ChronoField.MILLI_OF_DAY);
+		
+		// check the scan dead time dataset
+		DataNode deadTimeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_DEAD_TIME);
+		assertNotNull(deadTimeDataNode);
+		IDataset deadTimeDataset;
+		try {
+			deadTimeDataset = deadTimeDataNode.getDataset().getSlice();
+		} catch (DatasetException e) {
+			throw new AssertionError("Could not get data from lazy dataset", e);
+		}
+		
+		// written as a 1d dataset of rank 1, as we can't write a scalar lazy writeable dataset
+		assertEquals(String.class, deadTimeDataset.getElementClass());
+		assertEquals(1, deadTimeDataset.getRank());
+		assertArrayEquals(new int[] { 1 }, deadTimeDataset.getShape());
+		String deadTimeStr = deadTimeDataset.getString(0);
+		assertNotNull(deadTimeStr);
+		LocalTime deadTimeAsTime = LocalTime.parse(deadTimeStr, formatter); // throws exception if not a valid time
+		long deadTimeMs = deadTimeAsTime.getLong(ChronoField.MILLI_OF_DAY);
+		
+		// The scan duration should be equal to the estimated time plus the dead time
+		assertEquals(estimateDurationMs + deadTimeMs, scanDurationMs);
+		
+		// check the percentage dead time
+		DataNode deadTimePercentDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_DEAD_TIME_PERCENT);
+		assertNotNull(deadTimePercentDataNode);
+		IDataset deadTimePercentDataset;
+		try {
+			deadTimePercentDataset = deadTimePercentDataNode.getDataset().getSlice();
+		} catch (DatasetException e) {
+			throw new AssertionError("Could not get data from lazy dataset", e);
+		}
+		
+		assertEquals(String.class, deadTimePercentDataset.getElementClass());
+		assertEquals(1, deadTimePercentDataset.getRank());
+		assertArrayEquals(new int[] { 1 }, deadTimePercentDataset.getShape());
+		String deadTimePercentStr = deadTimePercentDataset.getString(0);
+		double deadTimePercent = Double.parseDouble(deadTimePercentStr);
+		
+		assertEquals((double) deadTimeMs / scanDurationMs, deadTimePercent / 100, 0.001);
 	}
-
+	
 	private static void assertUniqueKeys(NXcollection keysCollection, boolean snake, boolean foldedGrid, int... sizes) {
 		// check the unique keys field - contains the step number for each scan
 		// point

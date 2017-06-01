@@ -41,6 +41,7 @@ class MockOperationContextImpl implements IOperationContext {
 	// And
 	private SliceND slicing;
 	private int[] dataDimensions;
+	private int numberOfCores = 1;
 	
 	// May be null
 	private IMonitor             monitor;
@@ -251,6 +252,12 @@ class MockOperationContextImpl implements IOperationContext {
 	public void setPoolSize(int slugCount) {
 		this.poolSize = slugCount;
 	}
+	public int getNumberOfCores() {
+		return numberOfCores;
+	}
+	public void setNumberOfCores(int numberOfCores) {
+		this.numberOfCores = numberOfCores;
+	}
 
 	@Override
 	public int[] getDataDimensions() {
@@ -270,5 +277,4 @@ class MockOperationContextImpl implements IOperationContext {
 	public ILiveOperationInfo getLiveInfo() {
 		return liveInfo;
 	}
-
 }

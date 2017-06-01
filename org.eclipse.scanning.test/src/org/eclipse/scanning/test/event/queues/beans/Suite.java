@@ -17,7 +17,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(org.junit.runners.Suite.class)
 @SuiteClasses({
 	MonitorAtomTest.class,
-	MoveAtomTest.class,
+	PositionerAtomTest.class,
 	ScanAtomTest.class,
 	SubTaskAtomTest.class,
 	TaskBeanTest.class

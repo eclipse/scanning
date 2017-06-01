@@ -32,6 +32,9 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 	@FieldDescriptor(visible=false)
 	private int timeOut = 60000;
 	
+	@FieldDescriptor(visible=false)
+	private int numberOfCores = 1;
+	
 	public ClusterProcessingModel() {
 		
 	}
@@ -77,7 +80,15 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 	public void setTimeOut(int timeOut) {
 		this.timeOut = timeOut;
 	}
-
+	
+	public int getNumberOfCores() {
+		return numberOfCores;
+	}
+	
+	public void setNumberOfCores(int numberOfCores) {
+		this.numberOfCores = numberOfCores;
+	}
+	
 	@Override
 	public String toString() {
 		return "ClusterProcessingModel [name=" + name + ", detectorName=" + detectorName + ", processingFilePath="
@@ -88,6 +99,7 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((detectorName == null) ? 0 : detectorName.hashCode());
+		result = prime * result + numberOfCores;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((processingFilePath == null) ? 0 : processingFilePath.hashCode());
 		result = prime * result + timeOut;
@@ -108,6 +120,8 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 				return false;
 		} else if (!detectorName.equals(other.detectorName))
 			return false;
+		if (numberOfCores != other.numberOfCores)
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
@@ -127,6 +141,8 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 			return false;
 		return true;
 	}
+
+	
 
 	
 	

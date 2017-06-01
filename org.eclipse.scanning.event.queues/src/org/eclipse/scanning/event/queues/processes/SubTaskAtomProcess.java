@@ -18,7 +18,8 @@ import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.status.Status;
-import org.eclipse.scanning.event.queues.QueueProcessFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SubTaskAtomProcess uses an {@link AtomQueueProcessor} to read the 
@@ -36,7 +37,9 @@ import org.eclipse.scanning.event.queues.QueueProcessFactory;
  */
 public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTaskAtom, T> {
 	
-	/**
+	
+	private static Logger logger = LoggerFactory.getLogger(SubTaskAtomProcess.class);
+	/*
 	 * Used by {@link QueueProcessFactory} to identify the bean type this 
 	 * {@link QueueProcess} handles.
 	 */
@@ -63,13 +66,15 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 			postMatchAnalysisLock.lockInterruptibly();
 			if (isTerminated()) {
 				atomQueueProcessor.terminate();
-				queueBean.setMessage("Active-queue aborted before completion (requested)");
+				logger.debug("'"+bean.getName()+"' was requested to abort");
+				queueBean.setMessage("Active-queue was requested to abort before completion");
 			}else if (queueBean.getPercentComplete() >= 99.49) {//99.49 to catch rounding errors
 				//Completed successfully
 				updateBean(Status.COMPLETE, 100d, "Scan completed.");
 			} else {
 				//Failed: latch released before completion
-				updateBean(Status.FAILED, null, "Active-queue failed (caused by process Atom)");
+				updateBean(Status.FAILED, null, "Active-queue failed (caused by atom in queue)");
+				logger.info("'"+bean.getName()+"' failed");
 			}
 		} finally {
 			//This should be run after we've reported the queue final state
@@ -94,13 +99,16 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 	
 	@Override
 	protected void doTerminate() throws EventException {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		try {
 			//Reentrant lock ensures execution method (and hence post-match 
 			//analysis) completes before terminate does
 			postMatchAnalysisLock.lockInterruptibly();
 
 			terminated = true;
+			logger.debug("Termination of '"+queueBean.getName()+"' requested; release processLatch (start post-match analysis)");
 			processLatch.countDown();
+			
 			//Wait for post-match analysis to finish
 			continueIfExecutionEnded();
 		} catch (InterruptedException iEx) {
@@ -112,12 +120,16 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 	
 	@Override
 	protected void doPause() throws Exception {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		//TODO!
+		logger.warn("Pause not implemented on SubTaskAtomProcessor");
 	}
 	
 	@Override
 	protected void doResume() throws Exception {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		//TODO!
+		logger.warn("Resume not implemented on SubTaskAtomProcessor");
 	}
 
 	@Override

@@ -17,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.eclipse.scanning.api.event.EventException;
+import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.core.IConsumer;
 import org.eclipse.scanning.api.event.queues.IQueueControllerService;
 import org.eclipse.scanning.api.event.queues.IQueueService;
@@ -42,6 +43,20 @@ public class QueueServicePluginTest extends BrokerTest {
 	
 	private DummyBean dummyBean;
 	
+	/*
+	 * These three methods are called by OSGi to configure services during a
+	 * plugin test - see OSGI-INF/queueServicePluginTest.xml
+	 */
+	public static void setEventService(IEventService eServ) {
+		ServicesHolder.setEventService(eServ);
+	}
+	public static void setQueueService(IQueueService qServ) {
+		ServicesHolder.setQueueService(qServ);
+	}
+	public static void setQueueControllerService(IQueueControllerService qcServ) {
+		ServicesHolder.setQueueControllerService(qcServ);
+	}
+	
 	@Before
 	public void setup() throws Exception {
 //		infrastructureServ = new EventInfrastructureFactoryService();
@@ -58,6 +73,7 @@ public class QueueServicePluginTest extends BrokerTest {
 	
 	@After
 	public void tearDown() throws EventException {
+		QueueProcessFactory.initialize(); //Remove the registered processes
 		queueControl.stopQueueService(false);
 		queueService.disposeService();
 	}
