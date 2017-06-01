@@ -1,4 +1,4 @@
-package org.eclipse.scanning.example.scannable.composite;
+package org.eclipse.scanning.device.composite;
 
 
 public class ChildFieldNode extends ChildNode {

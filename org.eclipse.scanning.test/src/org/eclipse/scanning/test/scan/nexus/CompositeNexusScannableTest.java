@@ -42,14 +42,14 @@ import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IRunListener;
 import org.eclipse.scanning.api.scan.event.RunEvent;
 import org.eclipse.scanning.api.scan.models.ScanModel;
+import org.eclipse.scanning.device.composite.ChildFieldNode;
+import org.eclipse.scanning.device.composite.ChildGroupNode;
+import org.eclipse.scanning.device.composite.ChildNode;
+import org.eclipse.scanning.device.composite.CompositeNexusScannable;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
 import org.eclipse.scanning.example.scannable.MockNeXusScannable;
 import org.eclipse.scanning.example.scannable.MockScannable;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;
-import org.eclipse.scanning.example.scannable.composite.ChildFieldNode;
-import org.eclipse.scanning.example.scannable.composite.ChildGroupNode;
-import org.eclipse.scanning.example.scannable.composite.ChildNode;
-import org.eclipse.scanning.example.scannable.composite.CompositeNexusScannable;
 import org.junit.BeforeClass;
 import org.junit.Test;
 

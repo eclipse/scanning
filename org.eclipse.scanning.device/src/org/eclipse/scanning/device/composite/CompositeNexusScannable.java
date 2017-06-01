@@ -1,4 +1,4 @@
-package org.eclipse.scanning.example.scannable.composite;
+package org.eclipse.scanning.device.composite;
 
 import java.util.Collections;
 import java.util.List;
