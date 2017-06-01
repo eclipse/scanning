@@ -111,7 +111,7 @@
 	<!-- Dummy Malcolm Triggered Detector Example -->
 	<bean id="dummyMalcolmTriggeredModel" class="org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredModel">
 		<property name="name" value="dummyMalcolmTriggered"/>
-		<proeprty name="bundle" value="org.eclipse.scanning.example"/>
+		<property name="bundle" value="org.eclipse.scanning.example"/>
 	</bean>
 	
 	<bean id="dummyMalcolmTriggeredInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
@@ -132,7 +132,7 @@
 	<!-- Dummy Software or Hardware Triggered Detector Example -->
 	<bean id="dummyHardwareOrSoftwareTriggeredModel" class="org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredModel">
 		<property name="name" value="dummyHardwareOrSoftwareTriggered"/>
-		<proeprty name="bundle" value="org.eclipse.scanning.example"/>
+		<property name="bundle" value="org.eclipse.scanning.example"/>
 	</bean>
 	
 	<bean id="dummyHardwareOrSoftwareTriggeredInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
