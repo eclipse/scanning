@@ -59,8 +59,8 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 	private final IRunnableDeviceService deviceService;
 	private IPositioner positioner;
 	
-	//For processor operation
-	private Thread positionThread;
+//TODO	//For processor operation
+//	private Thread positionThread;
 	
 	/**
 	 * Create a PositionerAtomProcess to position motors on the beamline. 
@@ -84,53 +84,24 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 		//Get the positioner
 		logger.debug("Getting device positioner");
 		broadcast(Status.RUNNING, "Getting device positioner");
+		
 		try {
 			positioner = deviceService.createPositioner();
-		} catch (ScanningException se) {
-			broadcast(Status.FAILED, "Failed to get device positioner: \""+se.getMessage()+"\".");
-			logger.error("Failed to get device positioner in "+queueBean.getName()+": \""+se.getMessage()+"\".");
-			throw new EventException("Failed to get device positioner", se);
-		}
-		broadcast(20d);
-				
-		//Create a new thread to call the position setting in
-		positionThread = new Thread(new Runnable() {
 			
-			/*
-			 * DO NOT SET FINAL STATUSES IN THIS THREAD - set them in the post-match analysis
-			 */
-			@Override
-			public synchronized void run() {
-				//Set positioner device(s)
-				try {
-					logger.debug("Setting device(s) to requested position");
-					broadcast(Status.RUNNING, "Moving device(s) to requested position");
-					positioner.setPosition(target);
-					
-					//Check whether we received an interrupt whilst setting the positioner
-					if (Thread.currentThread().isInterrupted()) throw new InterruptedException("Position setting interrupted.");
-					//Completed cleanly
-					broadcast(99.5);
-				} catch (Exception ex) {
-					logger.debug("Positioner thread interrupted with: "+ex.getMessage());
-					if (isTerminated()) {
-						positioner.abort();
-						logger.debug("Termination requested. Aborting positioner...");
-					} else {
-						try {
-							broadcast(Status.FAILED, "Moving device(s) in '"+queueBean.getName()+"' failed with: '"+ex.getMessage()+"'");
-						} catch(EventException evEx) {
-							logger.error("Broadcasting bean failed with: \""+evEx.getMessage()+"\".");
-						}
-					}
-				} finally {
-					processLatch.countDown();
-				}
-			}
-		});
-		positionThread.setDaemon(true);
-		positionThread.setPriority(Thread.MAX_PRIORITY);
-		positionThread.start();
+			//FIXME Add positionlistener here
+			broadcast(20d);
+			
+			//Set the positioner
+			logger.debug("Setting device(s) to requested position");
+			broadcast(Status.RUNNING, "Moving device(s) to requested position");
+			positioner.setPosition(target);
+			broadcast(99.5);
+		} catch (ScanningException se) {
+			broadcast(Status.FAILED, "Failed to set device positioner: \""+se.getMessage()+"\".");
+			logger.error("Failed to set device positioner in '"+queueBean.getName()+"': "+se.getMessage());
+		} finally {
+			processLatch.countDown();
+		}
 	}
 	
 	@Override
@@ -140,7 +111,6 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 
 	@Override
 	public void postMatchTerminated() {
-		positionThread.interrupt();
 		queueBean.setMessage("Position change aborted before completion (requested)");
 		logger.debug("'"+bean.getName()+"' was requested to abort");
 	}
@@ -154,8 +124,7 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 	
 	@Override
 	protected void terminateCleanupAction() throws EventException {
-		positioner.abort();			//<--since setPosition is blocking we need to abort it before...
-		positionThread.interrupt(); //<-- ...we call interrupt.
+		positioner.abort(); //<--since setPosition is blocking we need to abort it.
 	}
 	
 	@Override
