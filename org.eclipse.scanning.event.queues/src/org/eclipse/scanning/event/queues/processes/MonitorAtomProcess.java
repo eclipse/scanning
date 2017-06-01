@@ -149,15 +149,12 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 		} catch (NexusException nxEx) {
 			logger.error("Failed whilst accessing NeXus file '"+filePath+"': "+nxEx.getMessage());
 			broadcast(Status.FAILED, "Problems encountered accessing NeXus file: "+nxEx.getMessage());
-			throw new EventException("Problems encountered accessing NeXus file: "+nxEx.getMessage() ,nxEx);
 		} catch (DatasetException dsEx) {
 			logger.error("Could not pass data from monitor into LazyDataset for writing");
 			broadcast(Status.FAILED, "Failed writing to LazyDataset: "+dsEx.getMessage());
-			throw new EventException("Failed writing to LazyDataset: "+dsEx.getMessage(), dsEx);
 		} catch (ScanningException scEx) {
 			logger.error("Failed to get monitor with the name '"+queueBean.getMonitor()+"': "+scEx.getMessage());
 			broadcast(Status.FAILED, "Failed to get monitor with the name '"+queueBean.getMonitor()+"'");
-			throw new EventException("Failed to get monitor with the name '"+queueBean.getMonitor()+"'", scEx);
 		} catch (InterruptedException irEx) {
 			//We were terminated. Do tidy up and stop
 			logger.debug("Processing was interrupted. Starting cleanup...");

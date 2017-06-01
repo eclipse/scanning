@@ -100,10 +100,10 @@ public class MockPublisher<T> implements IPublisher<T> {
 					((DummyHasQueue)broadBean).setQueueMessage(((IHasChildQueue)bean).getQueueMessage());
 				}
 				
-			} if (bean instanceof MonitorAtom) {
+			} else if (bean instanceof MonitorAtom) {
 				broadBean = new MonitorAtom();
 				((MonitorAtom)broadBean).setFilePath(((MonitorAtom)bean).getFilePath());
-			}else {
+			} else {
 				broadBean = new StatusBean(); 
 			}
 			StatusBean loBean = (StatusBean)bean;
