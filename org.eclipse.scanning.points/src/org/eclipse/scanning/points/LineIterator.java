@@ -111,8 +111,10 @@ class LineIterator extends AbstractScanPointIterator {
         } else {
         	next = pyIterator.next();
         }
-        next.setExposureTime(model.getExposureTime()); // Usually 0
-        next.setStepIndex(index);
+        if (next!=null && model!=null) {
+	        next.setExposureTime(model.getExposureTime()); // Usually 0
+	        next.setStepIndex(index);
+        }
         ++index;
         return next;
 	}

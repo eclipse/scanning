@@ -1,7 +1,5 @@
 package org.eclipse.scanning.test;
 
-import org.eclipse.scanning.test.command.ScanRequestTest;
-import org.eclipse.scanning.test.scan.ThreadScanTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
 
