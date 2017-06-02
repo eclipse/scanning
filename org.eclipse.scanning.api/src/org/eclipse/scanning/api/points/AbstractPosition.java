@@ -21,9 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.eclipse.scanning.api.annotation.UiHidden;
-
-
 public abstract class AbstractPosition implements IPosition, Serializable {
 	
 	/**
@@ -33,15 +30,6 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	
 	private int stepIndex = -1;
 	protected List<Collection<String>> dimensionNames; // Dimension->Names@dimension
-	
-	@UiHidden
-	public int getStepIndex() {
-		return stepIndex;
-	}
-
-	public void setStepIndex(int stepIndex) {
-		this.stepIndex = stepIndex;
-	}
 
 	public final IPosition compound(IPosition parent) {
 		if (parent==null) return this; // this+null = this
@@ -230,7 +218,6 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	 * 
 	 * @return
 	 */
-	@UiHidden
 	public synchronized List<Collection<String>> getDimensionNames() {
 		if (dimensionNames==null||dimensionNames.isEmpty())  {
 			dimensionNames = new ArrayList<>();
@@ -243,7 +230,6 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	}
 
 	@Override
-	@UiHidden
 	public int getScanRank() {
 		return getDimensionNames().size();
 	}
@@ -253,4 +239,14 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		final String name = getDimensionNames(dimension).iterator().next();
 		return getIndex(name);
 	}
+	
+	
+	public int getStepIndex() {
+		return stepIndex;
+	}
+
+	public void setStepIndex(int stepIndex) {
+		this.stepIndex = stepIndex;
+	}
+
 }
