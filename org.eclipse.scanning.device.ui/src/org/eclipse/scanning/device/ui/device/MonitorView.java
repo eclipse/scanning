@@ -76,7 +76,7 @@ public class MonitorView extends ViewPart {
 		mans.add(rightClick);
 		
 		Activator.getDefault().getPreferenceStore().setDefault(DevicePreferenceConstants.SHOW_ACTIVATED_ONLY, true);
-        IAction showActivated = createPreferenceAction("Show existing monitors only.", DevicePreferenceConstants.SHOW_ACTIVATED_ONLY, "icons/funnel--minus.png");
+        IAction showActivated = createPreferenceAction("Show only active monitors", DevicePreferenceConstants.SHOW_ACTIVATED_ONLY, "icons/funnel--minus.png");
 
         ViewUtil.addGroups("view", mans, showActivated);
         
