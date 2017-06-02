@@ -146,6 +146,35 @@ public class MultiStepTest {
 	}
 	
 	@Test
+	public void testMultipleForwardWithExposureTime() throws Exception {
+		
+		MultiStepModel model = new MultiStepModel();
+		model.setName("x");
+		
+		model.addRange(10, 20, 2, 1.0);
+		model.addRange(25, 50, 5, 2.0);
+		model.addRange(100, 500, 50, 3.0);
+		
+		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
+		GeneratorUtil.testGeneratorPoints(gen);
+		final int expectedSize = 21; // 6 + 6 + 9
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
+		
+		List<IPosition> pointList = gen.createPoints();
+		assertEquals(expectedSize, pointList.size()); 
+		
+		assertEquals(1.0, pointList.get(0).getExposureTime(), 0.0001);
+		assertEquals(1.0, pointList.get(1).getExposureTime(), 0.0001);
+		assertEquals(1.0, pointList.get(5).getExposureTime(), 0.0001);
+		assertEquals(2.0, pointList.get(6).getExposureTime(), 0.0001);
+		assertEquals(2.0, pointList.get(11).getExposureTime(), 0.0001);
+		assertEquals(3.0, pointList.get(12).getExposureTime(), 0.0001);
+		assertEquals(3.0, pointList.get(20).getExposureTime(), 0.0001);
+	}
+	
+	@Test
 	public void testMultipleBackward() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
@@ -173,7 +202,37 @@ public class MultiStepTest {
 			assertEquals(new Scalar<>("x", i, expected), pointList.get(i));
 		}
 	}
-	
+
+	@Test
+	public void testMultipleBackwardExposureTime() throws Exception {
+		
+		MultiStepModel model = new MultiStepModel();
+		model.setName("x");
+		
+		model.addRange(500, 100, -50, 1.0);
+		model.addRange(50, 25, -5, 2.0);
+		model.addRange(20, 10, -2, 3.0);
+		
+		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
+		GeneratorUtil.testGeneratorPoints(gen);
+
+		final int expectedSize = 21; // 6 + 6 + 9
+		assertEquals(expectedSize, gen.size());
+		assertEquals(1, gen.getRank());
+		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
+		
+		List<IPosition> pointList = gen.createPoints();
+		assertEquals(expectedSize, pointList.size()); 
+		
+		assertEquals(1.0, pointList.get(0).getExposureTime(), 0.0001);
+		assertEquals(1.0, pointList.get(8).getExposureTime(), 0.0001);
+		assertEquals(2.0, pointList.get(9).getExposureTime(), 0.0001);
+		assertEquals(2.0, pointList.get(14).getExposureTime(), 0.0001);
+		assertEquals(3.0, pointList.get(15).getExposureTime(), 0.0001);
+		assertEquals(3.0, pointList.get(20).getExposureTime(), 0.0001);
+
+	}
+
 	@Test
 	public void testForwardNoGap() throws Exception {
 		MultiStepModel model = new MultiStepModel();

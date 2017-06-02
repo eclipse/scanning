@@ -200,6 +200,30 @@ public class StepTest {
 		checkSequence(gen, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0);
 		GeneratorUtil.testGeneratorPoints(gen, 7);
 	}
+	
+	@Test
+	public void testSequenceExposureTime() throws Exception {
+		StepModel model = new StepModel("Temperature", 290,300,1,0.1);	
+		IPointGenerator<StepModel> gen = service.createGenerator(model);
+		GeneratorUtil.testGeneratorPoints(gen, 0.1, 11);
+		
+		model = new StepModel("Temperature", 0,3, 0.6, 0.2);	
+		gen.setModel(model);
+		GeneratorUtil.testGeneratorPoints(gen, 0.2, 6);
+
+		model = new StepModel("Temperature", 1, 4, 0.6, 0.3);	
+		gen.setModel(model);
+		GeneratorUtil.testGeneratorPoints(gen, 0.3, 6);
+		
+		model = new StepModel("Temperature", 11, 14, 0.6, 0.4);	
+		gen.setModel(model);
+		GeneratorUtil.testGeneratorPoints(gen, 0.4, 6);
+
+		model = new StepModel("Temperature", 1,4, 0.5, 0.5);	
+		gen.setModel(model);
+		GeneratorUtil.testGeneratorPoints(gen, 0.5, 7);
+	}
+
 
 	private void checkSequence(IPointGenerator<StepModel> gen, double... positions) throws Exception {
 		

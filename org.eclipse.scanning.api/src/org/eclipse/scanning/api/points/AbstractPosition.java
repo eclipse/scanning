@@ -40,6 +40,7 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		ret.putAllIndices(parent);
 		ret.putAllIndices(this);
 		ret.setStepIndex(getStepIndex());
+		ret.setExposureTime(getExposureTime());
 		
 		List<Collection<String>> dimensionNames = new ArrayList<>();
 		dimensionNames.addAll(((AbstractPosition) parent).getDimensionNames());
@@ -88,6 +89,8 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		
 		if (checkStep) {
 			if (stepIndex != ((IPosition)obj).getStepIndex())
+				return false;
+			if (exposureTime != ((IPosition)obj).getExposureTime())
 				return false;
 		}
 
@@ -191,6 +194,11 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		}
         buf.append(", step=");
         buf.append(getStepIndex());
+        
+        if (getExposureTime()>0) {
+	        buf.append(", exp=");
+	        buf.append(getExposureTime());
+        }
         
     	buf.append("]");
     	return buf.toString();
