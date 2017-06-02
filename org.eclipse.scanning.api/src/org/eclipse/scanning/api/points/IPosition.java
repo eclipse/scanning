@@ -179,4 +179,33 @@ public interface IPosition {
 		for (String name : getNames()) indices.put(name, getIndex(name));
 		return indices;
 	}
+	
+	/**
+	 * Get the exposure time to be used for the detector, in seconds.
+	 * 
+	 * Exposure time is normally set before a 2D scan however for energy scans bands
+	 * of different energies can be created each with a different step increment and
+	 * potentially different exposure time. It is not possible to set different detectors
+	 * with different exposure times during the scan; that would require a map here.
+	 * Anthony Hull and I decided this should be part of a future change, when required.
+	 *
+	 * @return the exposure time in seconds. Can be zero but not negative. If zero then
+	 * no change is made to the detector's exposure time setting.
+	 */
+	public double getExposureTime();
+	
+	/**
+	 * Call to set the time 
+	 * 
+	 * Exposure time is normally set before a 2D scan however for energy scans bands
+	 * of different energies can be created each with a different step increment and
+	 * potentially different exposure time. It is not possible to set different detectors
+	 * with different exposure times during the scan; that would require a map here.
+	 * Anthony Hull and I decided this should be part of a future change, when required.
+	 *
+	 * @param time
+	 * @return
+	 */
+	public void setExposureTime(double time);
+
 }

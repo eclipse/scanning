@@ -29,6 +29,7 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	private static final long serialVersionUID = 8555957478192358365L;
 	
 	private int stepIndex = -1;
+	private double exposureTime;
 	protected List<Collection<String>> dimensionNames; // Dimension->Names@dimension
 
 	public final IPosition compound(IPosition parent) {
@@ -247,6 +248,14 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 
 	public void setStepIndex(int stepIndex) {
 		this.stepIndex = stepIndex;
+	}
+
+	public double getExposureTime() {
+		return exposureTime;
+	}
+
+	public void setExposureTime(double exposureTime) {
+		this.exposureTime = exposureTime;
 	}
 
 }
