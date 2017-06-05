@@ -426,6 +426,11 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	private void processException(Exception ne) throws ScanningException {
 		
+		if (ne instanceof InterruptedException) {
+			logger.warn("A device may have timed out", ne);
+		} else {
+			logger.debug("An error happened in the scan", ne);
+		}
 		runExceptions.add(ne);
 		if (!getBean().getStatus().isFinal()) getBean().setStatus(Status.FAILED);
 		getBean().setMessage(ne.getMessage());
