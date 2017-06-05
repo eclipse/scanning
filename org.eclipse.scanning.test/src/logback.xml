@@ -4,12 +4,12 @@
     <!-- encoders are assigned the type
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
     <encoder>
-      <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n [%thread]</pattern>
+      <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg [%thread]%n</pattern>
     </encoder>
   </appender>
 
   <logger name="org.apache.activemq" level="error" />
-  <root level="INFO">
+  <root level="DEBUG">
     <appender-ref ref="STDOUT" />
   </root>
 </configuration>
