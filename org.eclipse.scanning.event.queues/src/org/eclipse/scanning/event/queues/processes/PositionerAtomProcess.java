@@ -84,7 +84,6 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 		//Get the positioner
 		logger.debug("Getting device positioner");
 		broadcast(Status.RUNNING, "Getting device positioner");
-		
 		try {
 			positioner = deviceService.createPositioner();
 			
