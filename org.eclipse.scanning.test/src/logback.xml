@@ -9,7 +9,7 @@
   </appender>
 
   <logger name="org.apache.activemq" level="error" />
-  <root level="DEBUG">
+  <root level="INFO">
     <appender-ref ref="STDOUT" />
   </root>
 </configuration>
