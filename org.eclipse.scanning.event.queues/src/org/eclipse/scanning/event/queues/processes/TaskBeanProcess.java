@@ -62,23 +62,26 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 	}
 
 	@Override
-	protected void postMatchAnalysis() throws EventException, InterruptedException {
-		if (isTerminated()) {
-			atomQueueProcessor.terminate();
-			logger.debug("'"+bean.getName()+"' was requested to abort");
-			queueBean.setMessage("Job-queue was requested to abort before completion");
-		}else if (queueBean.getPercentComplete() >= 99.49) {//99.49 to catch rounding errors
-			//Completed successfully
-			updateBean(Status.COMPLETE, 100d, "Scan completed.");
-		} else {
-			//Failed: latch released before completion
-			updateBean(Status.FAILED, null, "Job-queue failed (caused by atom in queue)");
-			logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'. Job-queue paused and will not continue without user intervention");
-			//As we don't know the origin of the failure, pause *this* queue
-			IQueueControllerService controller = ServicesHolder.getQueueControllerService();
-			controller.pauseQueue(ServicesHolder.getQueueService().getJobQueueID());
-		}
-		//This should be run after we've reported the queue final state
+	public void postMatchCompleted() throws EventException {
+		updateBean(Status.COMPLETE, 100d, "Scan completed.");
+		atomQueueProcessor.tidyQueue();
+	}
+
+	@Override
+	public void postMatchTerminated() throws EventException {
+		atomQueueProcessor.terminate();
+		logger.debug("'"+bean.getName()+"' was requested to abort");
+		queueBean.setMessage("Job-queue was requested to abort before completion");
+		atomQueueProcessor.tidyQueue();
+	}
+
+	@Override
+	public void postMatchFailed() throws EventException {
+		updateBean(Status.FAILED, null, "Job-queue failed (caused by atom in queue)");
+		logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'. Job-queue paused and will not continue without user intervention");
+		//As we don't know the origin of the failure, pause *this* queue
+		IQueueControllerService controller = ServicesHolder.getQueueControllerService();
+		controller.pauseQueue(ServicesHolder.getQueueService().getJobQueueID());
 		atomQueueProcessor.tidyQueue();
 	}
 	

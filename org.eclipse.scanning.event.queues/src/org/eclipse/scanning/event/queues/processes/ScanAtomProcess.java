@@ -149,29 +149,30 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 	}
 
 	@Override
-	protected void postMatchAnalysis() throws EventException, InterruptedException {
-		if (isTerminated()) {
-			//Do different things if terminate was requested from the child
-			if (queueListener.isChildCommand()) {
-				//Nothing really to be done except set message
-				queueBean.setMessage("Scan aborted by scanning service");
-				logger.debug("'"+queueBean.getName()+"' was aborted by the scanning service");
-			} else {
-				queueBean.setMessage("Scan requested to abort before completion");
-				logger.debug("'"+bean.getName()+"' was requested to abort");
-				commandScanBean(Status.REQUEST_TERMINATE);
-			}
-		} else if (queueBean.getPercentComplete() >= 99.5) {
-			//Completed successfully
-			updateBean(Status.COMPLETE, 100d, "Scan completed successfully");
-		} else {
-			//Scan failed - don't set anything here as messages should have 
-			//been updated elsewhere (i.e. QueueListener)
-			queueBean.setStatus(Status.FAILED);
-			logger.error("'"+bean.getName()+"' failed. Last message was: "+bean.getMessage());
-		}
+	public void postMatchCompleted() throws EventException {
+		updateBean(Status.COMPLETE, 100d, "Scan completed successfully");
+		tidyScanActors();
+	}
 
-		//This should be run after we've reported the queue final state
+	@Override
+	public void postMatchTerminated() throws EventException {
+		//Do different things if terminate was requested from the child
+		if (queueListener.isChildCommand()) {
+			//Nothing really to be done except set message
+			queueBean.setMessage("Scan aborted by scanning service");
+			logger.debug("'"+queueBean.getName()+"' was aborted by the scanning service");
+		} else {
+			queueBean.setMessage("Scan requested to abort before completion");
+			logger.debug("'"+bean.getName()+"' was requested to abort");
+			commandScanBean(Status.REQUEST_TERMINATE);
+		}
+		tidyScanActors();
+	}
+
+	@Override
+	public void postMatchFailed() throws EventException {
+		queueBean.setStatus(Status.FAILED);
+		logger.error("'"+bean.getName()+"' failed. Last message was: "+bean.getMessage());
 		tidyScanActors();
 	}
 	

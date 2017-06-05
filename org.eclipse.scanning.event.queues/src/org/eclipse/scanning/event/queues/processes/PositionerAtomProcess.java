@@ -134,24 +134,26 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 	}
 	
 	@Override
-	protected void postMatchAnalysis() throws EventException, InterruptedException {
-		if (isTerminated()) {
-			positionThread.interrupt();
-			queueBean.setMessage("Position change aborted before completion (requested)");
-			logger.debug("'"+bean.getName()+"' was requested to abort");
-		} else if (queueBean.getPercentComplete() >= 99.5) {
-			//Clean finish
-			updateBean(Status.COMPLETE, 100d, "Set position completed successfully");
-		} else {
-			//Scan failed
-			positioner.abort();
-			queueBean.setStatus(Status.FAILED);//<-- Don't set message here; it's broadcast above!
-			logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
-		}
+	public void postMatchCompleted() {
+		updateBean(Status.COMPLETE, 100d, "Set position completed successfully");
+	}
+
+	@Override
+	public void postMatchTerminated() {
+		positionThread.interrupt();
+		queueBean.setMessage("Position change aborted before completion (requested)");
+		logger.debug("'"+bean.getName()+"' was requested to abort");
+	}
+
+	@Override
+	public void postMatchFailed() {
+		positioner.abort();
+		queueBean.setStatus(Status.FAILED);//<-- Don't set message here; it's broadcast above!
+		logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
 	}
 	
 	@Override
-	protected void specificTerminateAction() throws EventException {
+	protected void terminateCleanupAction() throws EventException {
 		positioner.abort();			//<--since setPosition is blocking we need to abort it before...
 		positionThread.interrupt(); //<-- ...we call interrupt.
 	}
