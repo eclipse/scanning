@@ -186,13 +186,17 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		logger.debug("Force-stopping active-queue(s)...");
 		if (active) stop(true);
 		
-		//Shutdown the responder
-		logger.debug("Disconnecting queueResponder...");
-		queueResponder.disconnect();
+		if (queueResponder != null) {
+			//Shutdown the responder
+			logger.debug("Disconnecting queueResponder...");
+			queueResponder.disconnect();
+		}
 
 		//Dispose the job queue
-		disconnectAndClear(jobQueue);
-		jobQueue = null;
+		if (jobQueue != null) {
+			disconnectAndClear(jobQueue);
+			jobQueue = null;
+		}
 		jobQueueID = null;
 		
 		//Mark the service not initialised
