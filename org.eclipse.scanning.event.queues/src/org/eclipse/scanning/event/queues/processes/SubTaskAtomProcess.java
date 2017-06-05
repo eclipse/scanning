@@ -58,21 +58,24 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 		atomQueueProcessor.run();
 	}
 	
-	@Override 
-	protected void postMatchAnalysis() throws EventException, InterruptedException {
-		if (isTerminated()) {
-			atomQueueProcessor.terminate();
-			queueBean.setMessage("Active-queue was requested to abort before completion");
-			logger.debug("'"+bean.getName()+"' was requested to abort");
-		}else if (queueBean.getPercentComplete() >= 99.49) {//99.49 to catch rounding errors
-			//Completed successfully
-			updateBean(Status.COMPLETE, 100d, "Scan completed.");
-		} else {
-			//Failed: latch released before completion
-			updateBean(Status.FAILED, null, "Active-queue failed (caused by atom in queue)");
-			logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
-		}
-		//This should be run after we've reported the queue final state
+	@Override
+	public void postMatchCompleted() throws EventException {
+		updateBean(Status.COMPLETE, 100d, "Scan completed.");
+		atomQueueProcessor.tidyQueue();
+	}
+
+	@Override
+	public void postMatchTerminated() throws EventException {
+		atomQueueProcessor.terminate();
+		queueBean.setMessage("Active-queue was requested to abort before completion");
+		logger.debug("'"+bean.getName()+"' was requested to abort");
+		atomQueueProcessor.tidyQueue();
+	}
+
+	@Override
+	public void postMatchFailed() throws EventException {
+		updateBean(Status.FAILED, null, "Active-queue failed (caused by atom in queue)");
+		logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
 		atomQueueProcessor.tidyQueue();
 	}
 	

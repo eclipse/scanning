@@ -43,7 +43,8 @@ import org.slf4j.LoggerFactory;
  *            {@link QueueBean} or a {@link QueueAtom}. 
  */
 public abstract class QueueProcess<Q extends Queueable, T extends Queueable> 
-		extends AbstractLockingPausableProcess<T> implements IQueueProcess<Q, T>, IQueueBroadcaster<T> {
+		extends AbstractLockingPausableProcess<T> implements IQueueProcess<Q, T>, IQueueBroadcaster<T>, 
+		IPostMatchAnalyser {
 	
 	private static Logger logger = LoggerFactory.getLogger(QueueProcess.class);
 	
@@ -102,7 +103,6 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 				broadcast();
 			}
 		} else {
-			System.err.println(isTerminated());
 			logger.error(bean.getName()+" has a non-final state after processing complete (status="+bean.getStatus()+")");
 			throw new EventException(bean.getName()+" has a non-final state after processing complete!");
 		}
@@ -129,10 +129,17 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	 * @throws EventException in case of broadcast failure.
 	 * @throws InterruptedException if the analysis lock is interrupted
 	 */
-	protected abstract void postMatchAnalysis() throws EventException, InterruptedException;
+	private void postMatchAnalysis() throws EventException, InterruptedException {
+		if (isTerminated()) postMatchTerminated();
+		else if (queueBean.getPercentComplete() >= 99.5) postMatchCompleted();
+		else postMatchFailed();
+	};
 	
-	/*
-	 * Method gets the postMatchAnalysis lock 
+	/**
+	 * Method called by terminate() in {@link AbstractLockingPausableProcess}. 
+	 * Prevents post-match analysis from starting before terminate actions 
+	 * have completed. Once complete, the process latch is released and post-
+	 * match analysis starts.
 	 */
 	@Override
 	protected void doTerminate() throws EventException {
@@ -144,7 +151,7 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 			
 			logger.info("'"+bean.getName()+"' requested to terminate...");
 			terminated = true;//<-- do this first, so specific actions can test we're terminated
-			specificTerminateAction();
+			terminateCleanupAction();
 			logger.debug("Releasing processLatch to start post-match analysis");
 			processLatch.countDown();
 			
@@ -164,7 +171,7 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	 * 
 	 * @throws EventException in case termination fails.
 	 */
-	protected void specificTerminateAction() throws EventException {
+	protected void terminateCleanupAction() throws EventException {
 		//Mostly we don't need to do anything
 	}
 	

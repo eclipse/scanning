@@ -183,20 +183,20 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 	}
 
 	@Override
-	protected void postMatchAnalysis() throws EventException, InterruptedException {
-		if (isTerminated()) {
-			queueBean.setMessage("Get value of '"+queueBean.getMonitor()+"' aborted (requested)");
-			logger.debug("'"+bean.getName()+"' was requested to abort");
-			return;
-		} else if (queueBean.getPercentComplete() >= 99.5 && !terminated) {
-			//Clean finish
-			updateBean(Status.COMPLETE, 100d, "Successfully stored current value of '"+queueBean.getMonitor()+"'");
-		} else {
-			//Scan failed
-			queueBean.setStatus(Status.FAILED);//<-- Don't set message here; it's broadcast above!
-			logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
-		} 
+	public void postMatchCompleted() {
+		updateBean(Status.COMPLETE, 100d, "Successfully stored current value of '"+queueBean.getMonitor()+"'");
+	}
 
+	@Override
+	public void postMatchTerminated() {
+		queueBean.setMessage("Get value of '"+queueBean.getMonitor()+"' aborted (requested)");
+		logger.debug("'"+bean.getName()+"' was requested to abort");
+	}
+
+	@Override
+	public void postMatchFailed() {
+		queueBean.setStatus(Status.FAILED);//<-- Don't set message here; it's broadcast above!
+		logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
 	}
 	
 	@Override
