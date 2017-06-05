@@ -94,6 +94,18 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 	public boolean isDeviceBusy() throws ScanningException;
 
 	/**
+	 * This method is the same as calling run(null). I.e. run without specifying start position.
+	 * 
+	 * @throws ScanningException
+	 * @throws InterruptedException
+	 * @throws TimeoutException
+	 * @throws ExecutionException
+	 */
+	default void run() throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
+		run(null);
+	}
+	
+	/**
 	 * Blocking call to execute the scan. The position specified may be null.
 	 * 
 	 * @throws ScanningException
