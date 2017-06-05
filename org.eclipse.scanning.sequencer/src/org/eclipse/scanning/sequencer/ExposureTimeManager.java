@@ -39,6 +39,7 @@ class ExposureTimeManager extends LevelRunner<IRunnableDevice<?>> {
 	private double                   tolerance = 0.0001; // 10% of a microsecond 
 
 	public ExposureTimeManager() {
+		super();
 		devices = new ArrayList<>(7);
 	}
 
@@ -87,7 +88,7 @@ class ExposureTimeManager extends LevelRunner<IRunnableDevice<?>> {
 		// Mark Booth says that sometimes the area detector
 		// pipeline has to be stopped and restarted. 99%
 		// of the time however 
-		run(position);
+		run(location);
 	}
 
 	private boolean isTimeDifferent(IRunnableDevice<?> device, double val) {
@@ -122,7 +123,7 @@ class ExposureTimeManager extends LevelRunner<IRunnableDevice<?>> {
 			IDetectorModel model = device.getModel();
 			model.setExposureTime(position.getExposureTime());
 			device.configure(model);
-			return position;
+			return null; // Faster
 		}
 
 	}
