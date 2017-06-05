@@ -192,7 +192,7 @@ abstract class LevelRunner<L extends ILevel> {
 	/**
 	 * The timeout is overridden by some subclasses.
 	 */
-	private long timeout = 10;
+	private long timeout = Long.getLong(" org.eclipse.scanning.sequencer.default.timeout", 10);
 
 	/** 
 	 * Blocks until all the tasks have complete. In order for this call to be worth
