@@ -44,6 +44,7 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 
 	private ILazyWriteableDataset context;
 	private IDataset              data;
+	private long                  writeSleep = 0;
 	
 	public RandomLineDevice() throws ScanningException {
 		super(Services.getRunnableDeviceService()); // So that spring will work.
@@ -88,7 +89,9 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 	}
 
 	@Override
-	public boolean write(IPosition pos) throws ScanningException {
+	public boolean write(IPosition pos) throws ScanningException, InterruptedException {
+		
+		if (writeSleep>0) Thread.sleep(writeSleep*1000);
 		try {
 			// In a real CV Scan the write step could be to either link in the HDF5 or read in its data 
 			// and write a new record. Avoiding reading in the HDF5 being preferable.
@@ -107,6 +110,12 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 	public void configure(RandomLineModel model) throws ScanningException {	
 		super.configure(model);
 		setName(model.getName());
+	}
+	public long getWriteSleep() {
+		return writeSleep;
+	}
+	public void setWriteSleep(long writeSleep) {
+		this.writeSleep = writeSleep;
 	}
 
 }
