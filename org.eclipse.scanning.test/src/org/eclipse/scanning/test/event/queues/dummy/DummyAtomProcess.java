@@ -27,20 +27,5 @@ public class DummyAtomProcess<T extends Queueable> extends DummyProcess<DummyAto
 	public Class<DummyAtom> getBeanClass() {
 		return DummyAtom.class;
 	}
-
-	@Override
-	public void postMatchCompleted() throws EventException {
-		//Not needed for DummyProcessing
-	}
-
-	@Override
-	public void postMatchTerminated() throws EventException {
-		//Not needed for DummyProcessing
-	}
-
-	@Override
-	public void postMatchFailed() throws EventException {
-		//Not needed for DummyProcessing
-	}
-
+	
 }

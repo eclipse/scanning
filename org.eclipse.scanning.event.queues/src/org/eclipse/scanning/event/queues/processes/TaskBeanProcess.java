@@ -70,7 +70,6 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 	@Override
 	public void postMatchTerminated() throws EventException {
 		atomQueueProcessor.terminate();
-		logger.debug("'"+bean.getName()+"' was requested to abort");
 		queueBean.setMessage("Job-queue was requested to abort before completion");
 		atomQueueProcessor.tidyQueue();
 	}
@@ -78,7 +77,7 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 	@Override
 	public void postMatchFailed() throws EventException {
 		updateBean(Status.FAILED, null, "Job-queue failed (caused by atom in queue)");
-		logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'. Job-queue paused and will not continue without user intervention");
+		logger.warn("Job-queue paused and will not continue without user intervention");
 		//As we don't know the origin of the failure, pause *this* queue
 		IQueueControllerService controller = ServicesHolder.getQueueControllerService();
 		controller.pauseQueue(ServicesHolder.getQueueService().getJobQueueID());

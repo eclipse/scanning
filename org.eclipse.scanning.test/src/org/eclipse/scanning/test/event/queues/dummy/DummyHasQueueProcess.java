@@ -28,19 +28,4 @@ public class DummyHasQueueProcess<T extends Queueable> extends DummyProcess<Dumm
 		return DummyHasQueue.class;
 	}
 
-	@Override
-	public void postMatchCompleted() throws EventException {
-		//Not needed for DummyProcessing
-	}
-
-	@Override
-	public void postMatchTerminated() throws EventException {
-		//Not needed for DummyProcessing
-	}
-
-	@Override
-	public void postMatchFailed() throws EventException {
-		//Not needed for DummyProcessing
-	}
-
 }

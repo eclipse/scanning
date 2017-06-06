@@ -142,14 +142,12 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 	public void postMatchTerminated() {
 		positionThread.interrupt();
 		queueBean.setMessage("Position change aborted before completion (requested)");
-		logger.debug("'"+bean.getName()+"' was requested to abort");
+//TODO		logger.debug("'"+bean.getName()+"' was requested to abort");
 	}
 
 	@Override
 	public void postMatchFailed() {
 		positioner.abort();
-		queueBean.setStatus(Status.FAILED);//<-- Don't set message here; it's broadcast above!
-		logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
 	}
 	
 	@Override
