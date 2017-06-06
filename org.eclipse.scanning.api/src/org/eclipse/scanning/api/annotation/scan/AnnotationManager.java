@@ -320,7 +320,7 @@ public class AnnotationManager {
 		List<Object> context = new ArrayList<>();
 		if (extraContext!=null) context.addAll(extraContext);
 		if (objects!=null && objects.length>0) {
-			for (Object object : context) {
+			for (Object object : objects) {
 				if (object != null) {
 					context.add(object);
 				}
