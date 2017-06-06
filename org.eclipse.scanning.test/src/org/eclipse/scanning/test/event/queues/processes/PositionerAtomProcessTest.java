@@ -62,6 +62,7 @@ public class PositionerAtomProcessTest {
 		
 		dService  = new RunnableDeviceServiceImpl(connector);
 		ServicesHolder.setDeviceService(dService);
+		ServicesHolder.setScannableDeviceService(connector);
 	}
 	
 	@Before
