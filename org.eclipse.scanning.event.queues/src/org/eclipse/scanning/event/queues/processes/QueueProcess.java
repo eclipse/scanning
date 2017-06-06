@@ -170,9 +170,19 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	 * @throws InterruptedException if the analysis lock is interrupted
 	 */
 	private void postMatchAnalysis() throws EventException, InterruptedException {
-		if (isTerminated()) postMatchTerminated();
-		else if (queueBean.getPercentComplete() >= 99.5) postMatchCompleted();
-		else postMatchFailed();
+		if (isTerminated()) {
+			logger.debug("'"+bean.getName()+"' was requested to abort");
+			postMatchTerminated();
+		}
+		else if (queueBean.getPercentComplete() >= 99.4) {
+			postMatchCompleted();
+			updateBean(Status.COMPLETE, 100d, null);
+		}
+		else {
+			logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
+			postMatchFailed();
+			queueBean.setStatus(Status.FAILED);
+		}
 	};
 	
 	/**

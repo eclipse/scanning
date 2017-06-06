@@ -20,19 +20,25 @@ public interface IPostMatchAnalyser {
 	 * When the processed bean has a percentComplete of 99.5% or more.
 	 * @throws EventException if event infrastructure clean-up fails.
 	 */
-	void postMatchCompleted() throws EventException;
+	default void postMatchCompleted() throws EventException {
+		//Implement as required
+	};
 	
 	/**
 	 * When the queueProcess has been marked terminated=true
 	 * @throws EventException if event infrastructure clean-up fails.
 	 */
-	void postMatchTerminated() throws EventException;
+	default void postMatchTerminated() throws EventException {
+		//Implement as required
+	};
 	
 	/**
 	 * When the state of the processed bean is unclear (e.g. not marked 
 	 * terminated or >99.5% complete).
 	 * @throws EventException if event infrastructure clean-up fails.
 	 */
-	void postMatchFailed() throws EventException;
+	default void postMatchFailed() throws EventException {
+		//Implement as required
+	};
 
 }

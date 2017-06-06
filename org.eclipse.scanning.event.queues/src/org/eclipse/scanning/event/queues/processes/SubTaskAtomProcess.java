@@ -68,14 +68,13 @@ public class SubTaskAtomProcess<T extends Queueable> extends QueueProcess<SubTas
 	public void postMatchTerminated() throws EventException {
 		atomQueueProcessor.terminate();
 		queueBean.setMessage("Active-queue was requested to abort before completion");
-		logger.debug("'"+bean.getName()+"' was requested to abort");
+//TODO		logger.debug("'"+bean.getName()+"' was requested to abort");
 		atomQueueProcessor.tidyQueue();
 	}
 
 	@Override
 	public void postMatchFailed() throws EventException {
-		updateBean(Status.FAILED, null, "Active-queue failed (caused by atom in queue)");
-		logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
+		queueBean.setMessage("Active-queue failed (caused by atom in queue)");
 		atomQueueProcessor.tidyQueue();
 	}
 	
