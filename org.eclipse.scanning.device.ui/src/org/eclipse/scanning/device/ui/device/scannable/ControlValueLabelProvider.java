@@ -13,8 +13,10 @@ package org.eclipse.scanning.device.ui.device.scannable;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -122,7 +124,7 @@ class ControlValueLabelProvider extends ColumnLabelProvider implements IStyledLa
 	@Override
 	public void dispose() {
 		super.dispose();
-		for (String name : scannables.keySet()) {
+		for (String name : Optional.of(scannables).orElse(Collections.emptyMap()).keySet()) {
 			((IPositionListenable)scannables.remove(name)).removePositionListener(this);
 		}
 	}

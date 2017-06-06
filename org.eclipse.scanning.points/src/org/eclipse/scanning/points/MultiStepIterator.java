@@ -12,6 +12,7 @@
 package org.eclipse.scanning.points;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.scanning.api.points.IPosition;
@@ -30,20 +31,23 @@ import org.eclipse.scanning.jython.JythonObjectFactory;
 public class MultiStepIterator extends AbstractScanPointIterator {
 	
 	private final MultiStepModel model;
+	private int                  index;
+	private double[]             points; 
+	private double[]             times; 
 	
 	public MultiStepIterator(MultiStepModel model) {
 		this.model = model;
 		
 		JythonObjectFactory<ScanPointIterator> arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
 
-		double[] points = createPositions();
+		createPositions();
 
-		ScanPointIterator iterator = arrayGeneratorFactory.createObject(
-				model.getName(), "mm", points);
+		ScanPointIterator iterator = arrayGeneratorFactory.createObject(model.getName(), "mm", points);
 		pyIterator = iterator;
 	}
 	
-	private double[] createPositions() {
+	private void createPositions() {
+		
 		int totalSize = 0;
 		boolean finalPosWasEnd = false;
 		List<double[]> positionArrays = new ArrayList<>(model.getStepModels().size());
@@ -75,14 +79,19 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 			previousEnd = stepModel.getStop();
 		}
 		
-		double[] allPositions = new double[totalSize];
-		int pos = 0;
-		for (double[] positions : positionArrays) {
-			System.arraycopy(positions, 0, allPositions, pos, positions.length);
-			pos += positions.length;
-		}
+		this.points = new double[totalSize];
+		this.times  = new double[totalSize];
+		this.index  = 0;
 		
-		return allPositions;
+		int pos        = 0;
+		int sindex     = 0;
+		for (double[] positions : positionArrays) {
+			System.arraycopy(positions, 0, points, pos, positions.length);
+			double time = model.getStepModels().get(sindex).getExposureTime();
+			Arrays.fill(times, pos, pos+positions.length, time);
+			pos += positions.length;
+			sindex+=1;
+		}
 	}
 	
 	private static int getSize(StepModel stepModel) {
@@ -99,7 +108,11 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 
 	@Override
 	public IPosition next() {
-		return pyIterator.next();
+		IPosition next = pyIterator.next();
+        next.setExposureTime(times[index]);
+        next.setStepIndex(index);
+        index++;
+		return next;
 	}
 
 }

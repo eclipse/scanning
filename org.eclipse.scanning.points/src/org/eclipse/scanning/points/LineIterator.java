@@ -29,6 +29,7 @@ class LineIterator extends AbstractScanPointIterator {
 
 	StepModel model;
 	private double value;
+	private int index;
 	
 	public LineIterator(StepGenerator gen) {
 		this.model = gen.getModel();
@@ -40,7 +41,8 @@ class LineIterator extends AbstractScanPointIterator {
         double start = model.getStart();
         double stop = model.getStop();
         int numPoints = (int) ((stop - start) / model.getStep() + 1);
-        
+		this.index = 0;
+       
 		ScanPointIterator iterator = lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
 		pyIterator = iterator;
 	}
@@ -91,10 +93,10 @@ class LineIterator extends AbstractScanPointIterator {
 		return pyIterator.hasNext();
 	}
 
-	int index = -1;
 	@Override
 	public IPosition next() {
 		
+		IPosition next = null;
         if (model instanceof CollatedStepModel) { // For AnnotatedScanTest
 			@SuppressWarnings("unchecked")
 			Scalar<Double> point = (Scalar<Double>) pyIterator.next();
@@ -102,13 +104,19 @@ class LineIterator extends AbstractScanPointIterator {
         	final MapPosition mp = new MapPosition();
         	for (String name : ((CollatedStepModel)model).getNames()) {
            		mp.put(name, value);
-           		mp.putIndex(name, index);
+           		mp.putIndex(name, -1);
 			}
-        	return mp;
+        	next = mp;
         	
         } else {
-    		return pyIterator.next();
+        	next = pyIterator.next();
         }
+        if (next!=null && model!=null) {
+	        next.setExposureTime(model.getExposureTime()); // Usually 0
+	        next.setStepIndex(index);
+        }
+        ++index;
+        return next;
 	}
 
 	public void remove() {

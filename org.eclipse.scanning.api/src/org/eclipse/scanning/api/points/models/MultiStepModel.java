@@ -38,6 +38,9 @@ public class MultiStepModel extends AbstractPointsModel {
 	public void addRange(double start, double stop, double step) {
 		stepModels.add(new StepModel(getName(), start, stop, step));
 	}
+	public void addRange(double start, double stop, double step, double exposure) {
+		stepModels.add(new StepModel(getName(), start, stop, step, exposure));
+	}
 	
 	public void addRange(StepModel stepModel) {
 		if (!getName().equals(stepModel.getName())) {
@@ -95,6 +98,10 @@ public class MultiStepModel extends AbstractPointsModel {
 			sb.append(", step=");
 			sb.append(stepModel.getStep());
 			sb.append("; ");
+			if (stepModel.getExposureTime()>0) {
+				sb.append(" exp=");
+				sb.append(stepModel.getExposureTime());
+			}
 		}
 		
 		sb.append(")]");

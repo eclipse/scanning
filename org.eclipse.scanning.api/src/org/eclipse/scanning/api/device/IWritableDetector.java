@@ -57,6 +57,6 @@ public interface IWritableDetector<T> extends IRunnableEventDevice<T>, INameable
 	 * @return true for a successful readout. If false the events will not be fired and the scan will continue.
 	 * @throws DeviceException
 	 */
-	boolean write(IPosition position) throws ScanningException;
+	boolean write(IPosition position) throws ScanningException, InterruptedException;
 
 }

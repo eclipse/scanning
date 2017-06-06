@@ -27,7 +27,7 @@ import org.eclipse.scanning.api.points.models.StepModel;
 class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
 	
 	MultiStepGenerator() {
-		setLabel("MultiStep");
+		setLabel("Multi-step");
 		setDescription("Creates a step scan as a series of ranges possibly with different step sizes");
 	}
 	

@@ -21,9 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.eclipse.scanning.api.annotation.UiHidden;
-
-
 public abstract class AbstractPosition implements IPosition, Serializable {
 	
 	/**
@@ -32,16 +29,8 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	private static final long serialVersionUID = 8555957478192358365L;
 	
 	private int stepIndex = -1;
+	private double exposureTime;
 	protected List<Collection<String>> dimensionNames; // Dimension->Names@dimension
-	
-	@UiHidden
-	public int getStepIndex() {
-		return stepIndex;
-	}
-
-	public void setStepIndex(int stepIndex) {
-		this.stepIndex = stepIndex;
-	}
 
 	public final IPosition compound(IPosition parent) {
 		if (parent==null) return this; // this+null = this
@@ -51,6 +40,7 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		ret.putAllIndices(parent);
 		ret.putAllIndices(this);
 		ret.setStepIndex(getStepIndex());
+		ret.setExposureTime(getExposureTime());
 		
 		List<Collection<String>> dimensionNames = new ArrayList<>();
 		dimensionNames.addAll(((AbstractPosition) parent).getDimensionNames());
@@ -99,6 +89,8 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		
 		if (checkStep) {
 			if (stepIndex != ((IPosition)obj).getStepIndex())
+				return false;
+			if (exposureTime != ((IPosition)obj).getExposureTime())
 				return false;
 		}
 
@@ -203,6 +195,11 @@ public abstract class AbstractPosition implements IPosition, Serializable {
         buf.append(", step=");
         buf.append(getStepIndex());
         
+        if (getExposureTime()>0) {
+	        buf.append(", exp=");
+	        buf.append(getExposureTime());
+        }
+        
     	buf.append("]");
     	return buf.toString();
 	}
@@ -230,7 +227,6 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	 * 
 	 * @return
 	 */
-	@UiHidden
 	public synchronized List<Collection<String>> getDimensionNames() {
 		if (dimensionNames==null||dimensionNames.isEmpty())  {
 			dimensionNames = new ArrayList<>();
@@ -243,7 +239,6 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	}
 
 	@Override
-	@UiHidden
 	public int getScanRank() {
 		return getDimensionNames().size();
 	}
@@ -253,4 +248,22 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		final String name = getDimensionNames(dimension).iterator().next();
 		return getIndex(name);
 	}
+	
+	
+	public int getStepIndex() {
+		return stepIndex;
+	}
+
+	public void setStepIndex(int stepIndex) {
+		this.stepIndex = stepIndex;
+	}
+
+	public double getExposureTime() {
+		return exposureTime;
+	}
+
+	public void setExposureTime(double exposureTime) {
+		this.exposureTime = exposureTime;
+	}
+
 }

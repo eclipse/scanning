@@ -82,7 +82,8 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	private IPositioner                          positioner;
 	private LevelRunner<IRunnableDevice<?>>      runners;
 	private LevelRunner<IRunnableDevice<?>>      writers;
-	private AnnotationManager                    manager;
+	private AnnotationManager                    annotationManager;
+	private ExposureTimeManager                  exposureManager;
 	
 	// the nexus file
 	private INexusScanFileManager nexusScanFileManager = null;
@@ -169,14 +170,16 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		}
 		
 		// Create the manager and populate it
-		if (manager!=null) manager.dispose(); // It is allowed to configure more than once.
-		manager = createAnnotationManager(model);
+		if (annotationManager!=null) annotationManager.dispose(); // It is allowed to configure more than once.
+		annotationManager = createAnnotationManager(model);
 
 		// create the location manager
-		location = new LocationManager(getBean(), model, manager);
+		location = new LocationManager(getBean(), model, annotationManager);
 		
 		// add the scan information to the context - it is created if not set on the scan model
-		manager.addContext(getScanInformation(location.getTotalSize()));
+		annotationManager.addContext(getScanInformation(location.getTotalSize()));
+		exposureManager = new ExposureTimeManager();
+		exposureManager.addDevices(model.getDetectors());
 		
 		// create the nexus file, if appropriate
 		nexusScanFileManager = NexusScanFileManagerFactory.createNexusScanFileManager(this);
@@ -231,8 +234,8 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		ScanModel model = getModel();
 		if (model.getPositionIterable()==null) throw new ScanningException("The model must contain some points to scan!");
 						
-		manager.addContext(getBean());
-		manager.addContext(model);
+		annotationManager.addContext(getBean());
+		annotationManager.addContext(model);
 	
 		boolean errorFound = false;
 		IPosition pos = null;
@@ -277,24 +280,26 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	        	if (!continueRunning) return;  // finally block performed 
 
 	        	// Run to the position
-        		manager.invoke(PointStart.class, pos);
-	        	positioner.setPosition(pos);   // moveTo in GDA8
+        		annotationManager.invoke(PointStart.class, pos);
+	        	positioner.setPosition(pos);          // moveTo in GDA8
+	        	exposureManager.setExposureTime(pos); // most of the time this does nothing.
 	        	
-	        	IPosition written = writers.await();          // Wait for the previous write out to return, if any
-	       		if (written!=null) manager.invoke(WriteComplete.class, written);
+	        	IPosition written = writers.await();  // Wait for the previous write out to return, if any
+	       		if (written!=null) annotationManager.invoke(WriteComplete.class, written);
 	        	
- 	        	runners.run(pos);              // GDA8: collectData() / GDA9: run() for Malcolm
-	        	writers.run(pos, false);       // Do not block on the readout, move to the next position immediately.
+ 	        	runners.run(pos);                     // GDA8: collectData() / GDA9: run() for Malcolm
+	        	writers.run(pos, false);              // Do not block on the readout, move to the next position immediately.
 	        	
 	        	// Send an event about where we are in the scan
-        		manager.invoke(PointEnd.class, pos);
+        		annotationManager.invoke(PointEnd.class, pos);
 	        	positionComplete(pos);
 	        	
+	        	logger.info("Scanning completed step "+location.getStepNumber()+". Position was "+pos);
 	        }
 	        
 	        // On the last iteration we must wait for the final readout.
         	IPosition written = writers.await();          // Wait for the previous write out to return, if any
-       		manager.invoke(WriteComplete.class, written);
+       		annotationManager.invoke(WriteComplete.class, written);
 
       	
 		} catch (ScanningException | InterruptedException i) {
@@ -320,12 +325,12 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	private void fireFirst(IPosition firstPosition) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, ScanningException, EventException {
 		
 		// Notify that we will do a run and provide the first position.
-		manager.invoke(ScanStart.class, firstPosition);
-		if (model.getFilePath()!=null) manager.invoke(FileDeclared.class, model.getFilePath(), firstPosition);
+		annotationManager.invoke(ScanStart.class, firstPosition);
+		if (model.getFilePath()!=null) annotationManager.invoke(FileDeclared.class, model.getFilePath(), firstPosition);
 		
 		final Set<String> otherFiles = nexusScanFileManager.getExternalFilePaths();
 		if (otherFiles!=null && otherFiles.size()>0) {
-			for (String path : otherFiles) if (path!=null) manager.invoke(FileDeclared.class, path, firstPosition);
+			for (String path : otherFiles) if (path!=null) annotationManager.invoke(FileDeclared.class, path, firstPosition);
 		}
 		
     	fireRunWillPerform(firstPosition);
@@ -390,7 +395,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 			
 		} finally {
        	    try {
-				manager.invoke(ScanFinally.class, last);
+				annotationManager.invoke(ScanFinally.class, last);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException | EventException e) {
 				throw new ScanningException(e);
 			}
@@ -422,11 +427,16 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	private void processException(Exception ne) throws ScanningException {
 		
+		if (ne instanceof InterruptedException) {
+			logger.warn("A device may have timed out", ne);
+		} else {
+			logger.debug("An error happened in the scan", ne);
+		}
 		runExceptions.add(ne);
 		if (!getBean().getStatus().isFinal()) getBean().setStatus(Status.FAILED);
 		getBean().setMessage(ne.getMessage());
 		try {
-			manager.invoke(ScanFault.class, ne);
+			annotationManager.invoke(ScanFault.class, ne);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException | EventException e) {
 			throw new ScanningException(ne);
 		}
@@ -483,7 +493,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		
 		// Will send the state of the scan off.
 		try {
-			manager.invoke(ScanEnd.class, lastPosition);
+			annotationManager.invoke(ScanEnd.class, lastPosition);
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException  | EventException e) {
 			throw new ScanningException(e);
 		}
@@ -524,11 +534,11 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
     		}
        	    if (awaitPaused) {
         		if (getDeviceState() != DeviceState.PAUSED) setDeviceState(DeviceState.PAUSED);
-        		manager.invoke(ScanPause.class);
+        		annotationManager.invoke(ScanPause.class);
         		paused.await();
         		getBean().setStatus(Status.RESUMED);
         		setDeviceState(DeviceState.RUNNING);
-        		manager.invoke(ScanResume.class);
+        		annotationManager.invoke(ScanResume.class);
         	}
     	} finally {
     		lock.unlock();
@@ -553,7 +563,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 		setDeviceState(DeviceState.ABORTED);
 		try {
-			manager.invoke(ScanAbort.class);
+			annotationManager.invoke(ScanAbort.class);
 		} catch (ScanningException e) {
 			throw e;
 		} catch (Exception other) {

@@ -323,7 +323,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	
 	public void fireStateChanged(DeviceState oldState, DeviceState newState) throws ScanningException {
 		
-		if (rlisteners==null) return;
+		if (rlisteners==null || rlisteners.isEmpty()) return;
 		
 		final RunEvent evt = new RunEvent(this, null, newState);
 		evt.setOldState(oldState);

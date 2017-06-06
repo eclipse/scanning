@@ -34,6 +34,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	ScanClusterProcessingTest.class,
 	SolsticeScanMonitorTest.class,
 	LinearScanTest.class,
+	ScanTimeoutTest.class,
 	NexusStepScanSpeedTest.class
 
 })

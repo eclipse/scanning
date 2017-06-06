@@ -108,8 +108,8 @@ public class KnownModelsTest extends ShellTest{
 
 	private List<ModelTest> createTestPointsModels() {
 		List<ModelTest> models = new ArrayList<>();
-		models.add(new ModelTest(new StepModel("x", 0, 10, 1), 4));
-		models.add(new ModelTest(new CollatedStepModel(0, 10, 1, "x1", "y1"), 5));
+		models.add(new ModelTest(new StepModel("x", 0, 10, 1), 5));
+		models.add(new ModelTest(new CollatedStepModel(0, 10, 1, "x1", "y1"), 6));
 		models.add(new ModelTest(new ArrayModel(0,1,2,3,4,5,6,7,8,9), 1));
 		models.add(new ModelTest(new GridModel("x", "y"), 6));	
 		models.add(new ModelTest(new RasterModel("x", "y"), 6));

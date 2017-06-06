@@ -231,7 +231,8 @@ public class BasicScanTest extends NexusTest {
 	}
 
 	private IRunnableDevice<ScanModel> createStepScan(IScannable<?> monitor,
-			IScannable<?> metadataScannable, int... size) throws Exception {
+			                                          IScannable<?> metadataScannable,
+			                                          int... size) throws Exception {
 		
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length];
 		// We add the outer scans, if any

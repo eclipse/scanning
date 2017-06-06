@@ -109,7 +109,9 @@ abstract class LevelRunner<L extends ILevel> {
 	 */
 	protected boolean run(IPosition loc, boolean block) throws ScanningException, InterruptedException {
 		
-		if (abortException!=null) throw abortException;
+		if (abortException!=null) {
+			throw abortException;
+		}
 
 		/** NOTE: The position is passed down to run in the tread pool.
 		 *  A subsequent run and await could in theory return the last
@@ -192,7 +194,7 @@ abstract class LevelRunner<L extends ILevel> {
 	/**
 	 * The timeout is overridden by some subclasses.
 	 */
-	private long timeout = 10;
+	private long timeout = Long.getLong(" org.eclipse.scanning.sequencer.default.timeout", 10);
 
 	/** 
 	 * Blocks until all the tasks have complete. In order for this call to be worth
@@ -220,6 +222,9 @@ abstract class LevelRunner<L extends ILevel> {
 	 * @return the position of the last 'run' call, which may not always be what was awaited.
 	 */
 	protected IPosition await(long time) throws InterruptedException, ScanningException{
+		if (abortException!=null) {
+			throw abortException;
+		}
 		if (eservice==null)          return position;
 		if (eservice.isTerminated()) {
 			eservice = null;
@@ -256,7 +261,7 @@ abstract class LevelRunner<L extends ILevel> {
 	}
 
 	private void abort(INameable device, String message, IPosition pos, Throwable ne) {
-		//logger.error(message, ne); // Just for testing we make sure that the stack is visible.
+		logger.debug(message, ne); // Just for testing we make sure that the stack is visible.
         abortException = ne instanceof ScanningException 
         		       ? (ScanningException)ne
         		       : new ScanningException(ne.getMessage(), ne);

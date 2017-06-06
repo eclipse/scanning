@@ -14,13 +14,14 @@ package org.eclipse.scanning.device.ui.util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.api.roi.IRectangularROI;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
-import org.eclipse.dawnsci.plotting.api.region.ColorConstants;
 import org.eclipse.dawnsci.plotting.api.region.IRegion;
 import org.eclipse.dawnsci.plotting.api.region.IRegion.RegionType;
 import org.eclipse.dawnsci.plotting.api.region.RegionUtils;
@@ -80,6 +81,7 @@ public class ScanRegions {
 
 	private static final BoundingBox bounds(List<IROI> rois) {
 		
+		rois = Optional.of(rois).orElse(Collections.emptyList());
 		IRectangularROI rect = rois.get(0).getBounds();
 		for (IROI roi : rois) rect = rect.bounds(roi);
 
@@ -123,9 +125,7 @@ public class ScanRegions {
 		String x = system.getSelectedXAxis().getTitle();
 		String y = system.getSelectedYAxis().getTitle();
 		region.setUserObject(new ScanRegion<IROI>(region.getName(), regionType, Arrays.asList(x,y))); 
-		region.setRegionColor(ColorConstants.blue);
-		region.setAlpha(25);
-		region.setLineWidth(1);
+		region.setAlpha(30);
 		if (roi!=null) {
 			region.setROI(roi);
 			system.addRegion(region);

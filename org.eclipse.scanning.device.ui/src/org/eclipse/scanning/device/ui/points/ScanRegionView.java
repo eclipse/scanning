@@ -472,7 +472,7 @@ public class ScanRegionView extends ViewPart {
             	public void run() {
             		try {
 						ScanRegions.createRegion(system, regionType, null);
-						ViewUtil.showTip(tip, "Drag a box in the '"+regionViewName+"' to create a scan region.");
+						ViewUtil.showTip(tip, "Click and drag in the '"+regionViewName+"' to create a scan region.");
 					} catch (Exception e) {
 						logger.error("Unable to create region!", e);
 					}

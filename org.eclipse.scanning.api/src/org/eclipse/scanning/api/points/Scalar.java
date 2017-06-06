@@ -29,11 +29,17 @@ public class Scalar<T> extends AbstractPosition {
 	private final T value;
 	
 	public Scalar(String name, int index, T value) {
+		this(name, index, value, 0d);
+	}
+
+	public Scalar(String name, int index, T value, double exposureTime) {
 		this.name  = name;
 		this.index = index;
 		this.value = value;
+		this.setStepIndex(index);
+		this.setExposureTime(exposureTime);
 	}
-
+	
 	@Override
 	public int size() {
 		return 1;

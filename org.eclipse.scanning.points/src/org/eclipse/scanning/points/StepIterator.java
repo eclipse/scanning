@@ -59,10 +59,10 @@ class StepIterator implements Iterator<IPosition> {
 				}
 	        	return mp;
         	} else {
-    		    return new Scalar<>(model.getName(), index, value);
+    		    return new Scalar<>(model.getName(), index, value, model.getExposureTime());
         	}
         } else {
-		    return new Scalar<>(model.getName(), index, value);
+		    return new Scalar<>(model.getName(), index, value, model.getExposureTime());
         }
 	}
 
