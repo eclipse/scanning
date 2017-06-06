@@ -25,6 +25,7 @@ import org.eclipse.scanning.test.event.queues.dummy.DummyBeanProcess;
 import org.eclipse.scanning.test.event.queues.dummy.DummyHasQueue;
 import org.eclipse.scanning.test.event.queues.dummy.DummyHasQueueProcess;
 import org.eclipse.scanning.test.event.queues.mocks.MockPublisher;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -32,6 +33,12 @@ public class QueueProcessFactoryTest {
 	
 	@Before
 	public void setUp() {
+		QueueProcessFactory.initialize();
+	}
+	
+	@After
+	public void tearDown() {
+		//Remove Dummy*Process so it doesn't cause bad behaviour in travis
 		QueueProcessFactory.initialize();
 	}
 	
