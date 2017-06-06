@@ -11,6 +11,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.models.ScanModel;
 import org.eclipse.scanning.example.detector.RandomLineDevice;
 import org.eclipse.scanning.example.detector.RandomLineModel;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,6 +25,11 @@ public class ScanTimeoutTest  extends NexusTest {
 		rlModel.setTimeout(10);
 		linedetector = (RandomLineDevice)dservice.createRunnableDevice(rlModel);
 		assertNotNull(linedetector);		
+	}
+	
+	@After
+	public void after() throws Exception {
+		linedetector.reset();
 	}
 
 	@Test
@@ -81,6 +87,11 @@ public class ScanTimeoutTest  extends NexusTest {
 		assertTrue("The time to run the scan must be less than 2000 but it was "+time+"ms", time<2000);
 	
 		assertEquals(4, linedetector.getCount("configure"));
+		assertEquals(0.001,  ((RandomLineModel)linedetector.getValue("configure", 0)).getExposureTime(), 0.000001);
+		assertEquals(0.0015, ((RandomLineModel)linedetector.getValue("configure", 1)).getExposureTime(), 0.000001);
+		assertEquals(0.002,  ((RandomLineModel)linedetector.getValue("configure", 2)).getExposureTime(), 0.000001);
+		assertEquals(0.003,  ((RandomLineModel)linedetector.getValue("configure", 3)).getExposureTime(), 0.000001);
+		
 		assertEquals(21, linedetector.getCount("run"));
 		assertEquals(21, linedetector.getCount("write"));
 	}

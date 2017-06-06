@@ -11,9 +11,12 @@
  *******************************************************************************/
 package org.eclipse.scanning.example.detector;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.eclipse.dawnsci.nexus.INexusDevice;
 import org.eclipse.dawnsci.nexus.NXdetector;
 import org.eclipse.dawnsci.nexus.NexusException;
@@ -45,7 +48,8 @@ import org.eclipse.scanning.example.Services;
  */
 public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> implements IWritableDetector<RandomLineModel>, INexusDevice<NXdetector> {
 
-	private Map<String, Integer> counts;
+	private Map<String, Integer>      counts;
+	private Map<String, List<Object>> values;
 
 	private ILazyWriteableDataset context;
 	private IDataset              data;
@@ -56,6 +60,7 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 		this.model = new RandomLineModel();
 		setDeviceState(DeviceState.IDLE);
 		counts = new HashMap<>();
+		values = new HashMap<>();
 	}
 	@ScanFinally
 	public void clean() {
@@ -87,7 +92,7 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 	
 	@Override
 	public void configure(RandomLineModel model) throws ScanningException {	
-		count(Thread.currentThread().getStackTrace());
+		count(Thread.currentThread().getStackTrace(), model);
 		super.configure(model);
 		setName(model.getName());
 	}
@@ -124,17 +129,30 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 		return true;
 	}
 
-	protected void count(StackTraceElement[] ste) {
+	protected void count(StackTraceElement[] ste) throws ScanningException {
+		count(ste, null);
+	}
+	protected void count(StackTraceElement[] ste, Object value) throws ScanningException {
 		String methodName = getMethodName(ste);
 		Integer count = counts.get(methodName);
 		if (count==null) count = 0;
 		count = count+1;
 		counts.put(methodName, count);
+		if (!values.containsKey(methodName)) values.put(methodName, new ArrayList<>());
+		try {
+			values.get(methodName).add(value!=null?BeanUtils.cloneBean(value):null);
+		} catch (Exception e) {
+			throw new ScanningException("Cannot clone information during test", e);
+		}
 	}
 	
 	public int getCount(String method) {
 		if (!counts.containsKey(method)) return 0;
 		return counts.get(method);
+	}
+	
+	public Object getValue(String method, int index) {
+		return values.get(method).get(index);
 	}
 	
 	protected static final String getMethodName ( StackTraceElement ste[] ) {  
@@ -154,8 +172,15 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 	    return methodName;  
 	}
 	
+	@Override
+	public void reset() throws ScanningException {
+		resetCount();
+		super.reset();
+	}
+	
 	public void resetCount() {
 		counts.clear();
+		values.clear();
 	}
 	public boolean isThrowWriteExceptions() {
 		return throwWriteExceptions;

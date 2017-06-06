@@ -2,7 +2,7 @@ package org.eclipse.scanning.example.detector;
 
 import org.eclipse.scanning.api.device.models.IDetectorModel;
 
-public class RandomLineModel implements IDetectorModel {
+public class RandomLineModel implements IDetectorModel, Cloneable {
 
 	private String name="line";
 	private double exposureTime=0.001;
