@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.ValidationException;
@@ -384,12 +383,12 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 			if (!dmodels.containsKey(odevice.getName())) continue; // Nothing to configure
 			Object dmodel = dmodels.get(odevice.getName());
 			
-			manager.invoke(PreConfigure.class, dmodel, generator, model, bean);
+			manager.invoke(PreConfigure.class, dmodel, generator, model, bean, publisher);
 			if (odevice instanceof AbstractRunnableDevice) {
 				((AbstractRunnableDevice<?>)odevice).setBean(bean);
 			}
 			odevice.configure(dmodel);
-			manager.invoke(PostConfigure.class, dmodel, generator, model, bean);
+			manager.invoke(PostConfigure.class, dmodel, generator, model, bean, publisher);
 		}
 		logger.debug("Configured detectors {}", dmodels!=null?dmodels.keySet():null);
 	}
