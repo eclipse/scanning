@@ -294,7 +294,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
         		annotationManager.invoke(PointEnd.class, pos);
 	        	positionComplete(pos);
 	        	
-	        	logger.debug("Scanning completed step "+location.getStepNumber()+". Position was "+pos);
+	        	logger.info("Scanning completed step "+location.getStepNumber()+". Position was "+pos);
 	        }
 	        
 	        // On the last iteration we must wait for the final readout.
