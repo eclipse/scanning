@@ -131,7 +131,7 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	 */
 	private void postMatchAnalysis() throws EventException, InterruptedException {
 		if (isTerminated()) postMatchTerminated();
-		else if (queueBean.getPercentComplete() >= 99.5) postMatchCompleted();
+		else if (queueBean.getPercentComplete() >= 99.4) postMatchCompleted();
 		else postMatchFailed();
 	};
 	
