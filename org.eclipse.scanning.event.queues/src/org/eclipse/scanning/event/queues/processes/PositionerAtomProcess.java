@@ -71,6 +71,9 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 		super(bean, publisher, blocking);
 		//Get the deviceService from the OSGi configured holder.
 		deviceService = ServicesHolder.getDeviceService();
+		
+		//We make direct calls to scanning infrastructure which block -> need to happen in separate thread
+		runInThread = true;
 	}
 
 	@Override
@@ -80,6 +83,7 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 		
 		final IPosition target = new MapPosition(queueBean.getPositionerConfig());
 		broadcast(10d);
+		if (isTerminated()) throw new InterruptedException("Termination requested");
 		
 		//Get the positioner
 		logger.debug("Getting device positioner");
@@ -88,18 +92,23 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 			positioner = deviceService.createPositioner();
 			
 			//FIXME Add positionlistener here
+			if (isTerminated()) throw new InterruptedException("Termination requested");
 			broadcast(20d);
 			
 			//Set the positioner
 			logger.debug("Setting device(s) to requested position");
 			broadcast(Status.RUNNING, "Moving device(s) to requested position");
+			if (isTerminated()) throw new InterruptedException("Termination requested");
 			positioner.setPosition(target);
+			if (isTerminated()) throw new InterruptedException("Termination requested");
 			broadcast(99.5);
 		} catch (ScanningException se) {
-			broadcast(Status.FAILED, "Failed to set device positioner: \""+se.getMessage()+"\".");
-			logger.error("Failed to set device positioner in '"+queueBean.getName()+"': "+se.getMessage());
-		} finally {
-			processLatch.countDown();
+			//Aborting setPosition causes it to throw a scanning exception. 
+			//We expect this when we terminate, so ignoring the exception is fine.
+			if (!isTerminated()) {
+				broadcast(Status.FAILED, "Failed to set device positioner: '"+se.getMessage()+"'");
+				logger.error("Failed to set device positioner in '"+queueBean.getName()+"': "+se.getMessage());
+			}
 		}
 	}
 	
