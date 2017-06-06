@@ -335,8 +335,9 @@ class JRandomOffsetMutator(object):
         
 class JExcluder(object):
     
-    def __init__(self, roi, scannables):
-        self.py_excluder = ROIExcluder([roi.py_roi], scannables)
+    def __init__(self, rois, scannables):
+        py_rois = [roi.py_roi for roi in rois]
+        self.py_excluder = ROIExcluder(py_rois, scannables)
         logging.debug(self.py_excluder.to_dict())
         
 class JCircularROI(object):

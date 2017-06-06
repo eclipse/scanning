@@ -1161,14 +1161,7 @@ public class PVDataSerializationTest {
 				createStructure();
 
 		// Excluders
-		PVStructure expectedExcluder1PVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
-		PVStringArray scannables1Val = expectedExcluder1PVStructure.getSubField(PVStringArray.class, "axes");
-		String[] scannables1 = new String[] {"stage_x", "stage_y"};
-		scannables1Val.put(0, scannables1.length, scannables1, 0);
-
 		PVStructure expectedROI1PVStructure = pvDataCreate.createPVStructure(expectedCircularRoiStructure);
-		PVUnionArray rois1 = expectedExcluder1PVStructure.getSubField(PVUnionArray.class, "rois");
-
 		PVDoubleArray startVal1 = expectedROI1PVStructure.getSubField(PVDoubleArray.class, "start");
 		double[] start1 = new double[] {2, 1};
 		startVal1.put(0, start1.length, start1, 0);
@@ -1179,19 +1172,7 @@ public class PVDataSerializationTest {
 		PVDouble angleVal1 = expectedROI1PVStructure.getSubField(PVDouble.class, "angle");
 		angleVal1.put(Math.PI / 2.0);
 
-		PVUnion[] roi1Array = new PVUnion[1];
-		roi1Array[0] = pvDataCreate.createPVUnion(union);
-		roi1Array[0].set(expectedROI1PVStructure);
-		rois1.put(0, roi1Array.length, roi1Array, 0);
-
-		PVStructure expectedExcluder2PVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
-		PVStringArray scannables2Val = expectedExcluder2PVStructure.getSubField(PVStringArray.class, "axes");
-		String[] scannables2 = new String[] {"stage_x", "stage_y"};
-		scannables2Val.put(0, scannables2.length, scannables2, 0);
-
 		PVStructure expectedROI2PVStructure = pvDataCreate.createPVStructure(expectedCircularRoiStructure);
-		PVUnionArray rois2 = expectedExcluder2PVStructure.getSubField(PVUnionArray.class, "rois");
-
 		PVDoubleArray startVal2 = expectedROI2PVStructure.getSubField(PVDoubleArray.class, "start");
 		double[] start2 = new double[] {-2, 2};
 		startVal2.put(0, start2.length, start2, 0);
@@ -1202,10 +1183,17 @@ public class PVDataSerializationTest {
 		PVDouble angleVal2 = expectedROI2PVStructure.getSubField(PVDouble.class, "angle");
 		angleVal2.put(0);
 
-		PVUnion[] roi2Array = new PVUnion[1];
-		roi2Array[0] = pvDataCreate.createPVUnion(union);
-		roi2Array[0].set(expectedROI2PVStructure);
-		rois2.put(0, roi2Array.length, roi2Array, 0);
+		PVStructure expectedExcluderPVStructure = pvDataCreate.createPVStructure(expectedExcluderStructure);
+		PVStringArray scannables1Val = expectedExcluderPVStructure.getSubField(PVStringArray.class, "axes");
+		String[] scannables1 = new String[] {"stage_x", "stage_y"};
+		scannables1Val.put(0, scannables1.length, scannables1, 0);
+		PVUnionArray rois = expectedExcluderPVStructure.getSubField(PVUnionArray.class, "rois");
+		PVUnion[] roiArray = new PVUnion[2];
+		roiArray[0] = pvDataCreate.createPVUnion(union);
+		roiArray[0].set(expectedROI1PVStructure);
+		roiArray[1] = pvDataCreate.createPVUnion(union);
+		roiArray[1].set(expectedROI2PVStructure);
+		rois.put(0, roiArray.length, roiArray, 0);
 
 		// Mutators
 		PVStructure expectedMutatorPVStructure = pvDataCreate.createPVStructure(expectedRandomOffsetMutatorStructure);
@@ -1261,11 +1249,9 @@ public class PVDataSerializationTest {
 		durationVal.put(1.5);
 		PVUnionArray excluders = expectedCompGenPVStructure.getSubField(PVUnionArray.class, "excluders");
 
-		PVUnion[] unionArray = new PVUnion[2];
+		PVUnion[] unionArray = new PVUnion[1];
 		unionArray[0] = pvDataCreate.createPVUnion(union);
-		unionArray[0].set(expectedExcluder1PVStructure);
-		unionArray[1] = pvDataCreate.createPVUnion(union);
-		unionArray[1].set(expectedExcluder2PVStructure);
+		unionArray[0].set(expectedExcluderPVStructure);
 
 		excluders.put(0, unionArray.length, unionArray, 0);
 
