@@ -13,7 +13,11 @@ package org.eclipse.scanning.points;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.points.AbstractPosition;
 import org.eclipse.scanning.api.points.GeneratorException;
@@ -167,18 +171,25 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 	 * @return
 	 */
 	public static Object[] getExcluders(Collection<?> regions) {
-		LinkedList<Object> pyRegions = new LinkedList<Object>();
+		// regions are grouped into excluders by scan axes covered
+		// two regions are in the same excluder iff they have the same axes
+		LinkedHashMap<List<String>, List<Object>> excluders = new LinkedHashMap<List<String>, List<Object>>();
 		JythonObjectFactory<?> excluderFactory = ScanPointGeneratorFactory.JExcluderFactory();
 		if (regions != null) {
 			for (Object region : regions) {
 				if (region instanceof ScanRegion) {
 					ScanRegion<?> sr = (ScanRegion<?>) region;
+					Optional<List<Object>> excluderOptional = excluders.entrySet().stream()
+							.filter(e -> sr.getScannables().containsAll(e.getKey()))
+							.map(e -> e.getValue())
+							.findFirst();
+					List<Object> rois = excluderOptional.orElse(new LinkedList<Object>());
+					if (!excluderOptional.isPresent()) {
+						excluders.put(sr.getScannables(), rois);
+					}
 					try {
 						Object pyRoi = makePyRoi(region);
-						if (pyRoi != null) {
-							Object pyExcluder = excluderFactory.createObject(pyRoi, sr.getScannables());
-							pyRegions.add(pyExcluder);
-						}
+						if (pyRoi != null) rois.add(pyRoi);
 					} catch (Exception e) {
 						logger.error("Could not convert ROI to PyRoi", e);
 					}
@@ -187,7 +198,10 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 				}
 			}
 		}
-		return pyRegions.toArray();
+		List<Object> pyExcluders = excluders.entrySet().stream()
+				.filter(e -> e.getValue().size() > 0)
+				.map(e -> excluderFactory.createObject(e.getValue().toArray(), e.getKey()))
+				.collect(Collectors.toList());
+		return pyExcluders.toArray();
 	}
-
 }

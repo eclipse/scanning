@@ -295,49 +295,36 @@ public class ExampleMalcolmDeviceTest {
 			unionArray[0] = pvu1;
 			configurePVStructure.getUnionArrayField("generator.generators").put(0, unionArray.length, unionArray, 0);
 
-			PVStructure expectedExcluder1PVStructure = PVDataFactory.getPVDataCreate().createPVStructure(excluderStructure);
-			PVStringArray scannables1Val = expectedExcluder1PVStructure.getSubField(PVStringArray.class, "axes");
-			String[] scannables1 = new String[] {"stage_x", "stage_y"};
-			scannables1Val.put(0, scannables1.length, scannables1, 0);
+			PVStructure expectedExcluderPVStructure = PVDataFactory.getPVDataCreate().createPVStructure(excluderStructure);
+			PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "axes");
+			String[] scannables = new String[] {"stage_x", "stage_y"};
+			scannablesVal.put(0, scannables.length, scannables, 0);
+			PVUnionArray rois = expectedExcluderPVStructure.getSubField(PVUnionArray.class, "rois");
 			
 			PVStructure expectedROIPVStructure1 = PVDataFactory.getPVDataCreate().createPVStructure(circularRoiStructure);
-			PVUnionArray rois1 = expectedExcluder1PVStructure.getSubField(PVUnionArray.class, "rois");
-
 			PVDoubleArray cr1CentreVal = expectedROIPVStructure1.getSubField(PVDoubleArray.class, "centre");
 			double[] cr1Centre = new double[] {0, 0};
 			cr1CentreVal.put(0, cr1Centre.length, cr1Centre, 0);
 			PVDouble radius1Val = expectedROIPVStructure1.getSubField(PVDouble.class, "radius");
 			radius1Val.put(2);
 
-			PVUnion[] roiArray1 = new PVUnion[1];
-			roiArray1[0] = PVDataFactory.getPVDataCreate().createPVUnion(union);
-			roiArray1[0].set(expectedROIPVStructure1);
-			rois1.put(0, roiArray1.length, roiArray1, 0);
-
-			PVStructure expectedExcluder2PVStructure = PVDataFactory.getPVDataCreate().createPVStructure(excluderStructure);
-			PVStringArray scannables2Val = expectedExcluder2PVStructure.getSubField(PVStringArray.class, "axes");
-			String[] scannables2 = new String[] {"stage_x", "stage_y"};
-			scannables2Val.put(0, scannables2.length, scannables2, 0);
-			
 			PVStructure expectedROIPVStructure2 = PVDataFactory.getPVDataCreate().createPVStructure(circularRoiStructure);
-			PVUnionArray rois2 = expectedExcluder2PVStructure.getSubField(PVUnionArray.class, "rois");
-
 			PVDoubleArray cr2CentreVal = expectedROIPVStructure2.getSubField(PVDoubleArray.class, "centre");
 			double[] cr2Centre = new double[] {-1, -2};
 			cr2CentreVal.put(0, cr2Centre.length, cr2Centre, 0);
 			PVDouble radius2Val = expectedROIPVStructure2.getSubField(PVDouble.class, "radius");
 			radius2Val.put(4);
 
-			PVUnion[] roiArray2 = new PVUnion[1];
-			roiArray2[0] = PVDataFactory.getPVDataCreate().createPVUnion(union);
-			roiArray2[0].set(expectedROIPVStructure2);
-			rois2.put(0, roiArray2.length, roiArray2, 0);
+			PVUnion[] roiArray = new PVUnion[2];
+			roiArray[0] = PVDataFactory.getPVDataCreate().createPVUnion(union);
+			roiArray[0].set(expectedROIPVStructure1);
+			roiArray[1] = PVDataFactory.getPVDataCreate().createPVUnion(union);
+			roiArray[1].set(expectedROIPVStructure2);
+			rois.put(0, roiArray.length, roiArray, 0);
 
-			PVUnion[] crUnionArray = new PVUnion[2];
+			PVUnion[] crUnionArray = new PVUnion[1];
 			crUnionArray[0] = PVDataFactory.getPVDataCreate().createPVUnion(union);
-			crUnionArray[0].set(expectedExcluder1PVStructure);
-			crUnionArray[1] = PVDataFactory.getPVDataCreate().createPVUnion(union);
-			crUnionArray[1].set(expectedExcluder2PVStructure);
+			crUnionArray[0].set(expectedExcluderPVStructure);
 
 			configurePVStructure.getUnionArrayField("generator.excluders").put(0, crUnionArray.length, crUnionArray, 0);
 

@@ -57,12 +57,14 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 			String[] regionAxes, PyObject[] mutators) {
 		JythonObjectFactory<PyObject> excluderFactory = ScanPointGeneratorFactory.JExcluderFactory();
 		JythonObjectFactory<ScanPointIterator> cpgFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
-		List<PyObject> pyRegions = Arrays.asList(regions).stream().map(r -> makePyRoi(r)).collect(Collectors.toList());
-		pyRegions = pyRegions.stream()
+		List<PyObject> pyRegions = Arrays.asList(regions)
+				.stream()
+				.map(r -> makePyRoi(r))
 				.filter(r -> r != null)
-				.map(r -> excluderFactory.createObject(r, new PyList(Arrays.asList(regionAxes))))
 				.collect(Collectors.toList());
-		ScanPointIterator cpgIterator = cpgFactory.createObject(iterators, pyRegions.toArray(), mutators);
+		PyObject excluder = excluderFactory.createObject(pyRegions.toArray(), new PyList(Arrays.asList(regionAxes)));
+		PyObject[] excluders = pyRegions.size() > 0 ? new PyObject[] {excluder} : new PyObject[] {};
+		ScanPointIterator cpgIterator = cpgFactory.createObject(iterators, excluders, mutators);
 		return cpgIterator;
 	}
 
