@@ -15,9 +15,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.scanning.api.device.models.IDetectorModel;
 import org.eclipse.scanning.api.event.queues.IQueueService;
 import org.eclipse.scanning.api.event.scan.ScanBean;
+import org.eclipse.scanning.api.event.scan.ScanRequest;
+import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.IScanPathModel;
 
 /**
@@ -36,10 +37,8 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	 */
 	private static final long serialVersionUID = 20161021L;
 	
-	private List<IScanPathModel> pathModels;
-	private Collection<String> monitors;
-	private Map<String,Object> detectorModels;
-//	private IProcess perPointProcess;//TODO
+	private ScanRequest<?> scanReq;
+	
 	private String queueMessage;
 	
 	private String scanSubmitQueueName;
@@ -54,154 +53,60 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	}
 	
 	/**
+	 * Constructor which allows specification of a scan using the full API of 
+	 * the {@link ScanRequest}.
+	 * 
+	 * @param scShrtNm String short name used within the QueueBeanFactory
+	 * @param scanReq {@link ScanRequest} describing the complete scan
+	 */
+	public ScanAtom(String scShrtNm, ScanRequest<?> scanReq) {
+		super();
+		setShortName(scShrtNm);
+		setScanReq(scanReq);
+	}
+	
+	/**
 	 * Constructor with required arguments to configure a scan of positions 
 	 * using only detectors to collect data.
 	 * 
-	 * @param scName String name of scan
-	 * @param pMods List<IScanPathModel> describing the motion during the scan.
-	 * @param dMods Map<String,IDetectorModel> containing the detector 
-	 *              configuration for the scan.
+	 * @param scShrtNm String short name used within the QueueBeanFactory
+	 * @param pMods List<IScanPathModel> describing the motion during the scan
+	 * @param dMods Map<String,Object> containing the detector configuration 
+	 *        for the scan (get these by calling 
+	 *        IRunnableDeviceService.getRunnableDevice(detector_name)
 	 */
-	public ScanAtom(String scName, List<IScanPathModel> pMods, Map<String,Object> dMods) {
+	public ScanAtom(String scShrtNm, List<IScanPathModel> pMods, Map<String,Object> dMods) {
 		super();
-		setName(scName);
-		pathModels = pMods;
-		detectorModels = dMods;
+		setShortName(scShrtNm);
+		scanReq = new ScanRequest<>();
+		scanReq.setCompoundModel(new CompoundModel<>(pMods));
+		scanReq.setDetectors(dMods);
 	}
 	
 	/**
 	 * Constructor with required arguments to configure a scan of positions 
 	 * using both detectors and monitors to collect data.
 	 * 
-	 * @param scName String name of scan
-	 * @param pMods List<IScanPathModel> describing the motion during the scan.
-	 * @param dMods Map<String,IDetectorModel> containing the detector 
-	 *              configuration for the scan.
-	 * @param mons List<String> names of monitors to use during scan.
+	 * @param scShrtNm String short name used within the QueueBeanFactory
+	 * @param pMods List<IScanPathModel> describing the motion during the scan
+	 * @param dMods Map<String,Object> containing the detector configuration 
+	 *        for the scan (get these by calling 
+	 *        IRunnableDeviceService.getRunnableDevice(detector_name)
+	 * @param mons List<String> names of monitors to use during scan
 	 */
-	public ScanAtom(String scName, List<IScanPathModel> pMods, Map<String,Object> dMods, Collection<String> mons) {
-		this(scName, pMods, dMods);
-		monitors = mons;
+	public ScanAtom(String scShrtNm, List<IScanPathModel> pMods, Map<String,Object> dMods, Collection<String> mons) {
+		this(scShrtNm, pMods, dMods);
+		scanReq.setMonitorNames(mons);
+	}
+	
+	public ScanRequest<?> getScanReq() {
+		return scanReq;
 	}
 
-	/**
-	 * Get the collection of models describing the motions during the scan.
-	 * 
-	 * @return Collection<IScanPathModel> models of motor moves.
-	 */
-	public List<IScanPathModel> getPathModels() {
-		return pathModels;
+	public void setScanReq(ScanRequest<?> scanReq) {
+		this.scanReq = scanReq;
 	}
 
-	/**
-	 * Change the collection of models describing the motor moves during scan.
-	 * 
-	 * @param pathModels Collection<IScanPathModel> models of motor moves.
-	 */
-	public void setPathModels(List<IScanPathModel> pathModels) {
-		this.pathModels = pathModels;
-	}
-	
-	/**
-	 * Add another motor movement model to the scan.
-	 * 
-	 * @param pathModel IScanPathModel model of motion for the scan.
-	 */
-	public void addPathModel(IScanPathModel pathModel) {
-		pathModels.add(pathModel);
-	}
-	
-	/**
-	 * Remove an existing motor movement model from the scan.
-	 * 
-	 * @param pathModel IScanPathModel to be removed from the scan.
-	 */
-	public void removePathModel(IScanPathModel pathModel) {
-		pathModels.remove(pathModel);
-	}
-
-	/**
-	 * Return the monitors for which values will be recorded during the scan.
-	 * 
-	 * @return Collection<String> monitor names which will be polled during 
-	 *         scan.
-	 */
-	public Collection<String> getMonitors() {
-		return monitors;
-	}
-
-	/**
-	 * Change the collection of monitors with values recorded during the scan.
-	 * 
-	 * @param monitors Collection<String> monitor names which will be polled 
-	 *                 during scan.
-	 */
-	public void setMonitors(Collection<String> monitors) {
-		this.monitors = monitors;
-	}
-	
-	/**
-	 * Add a monitor to the collection of monitors to be polled during the scan.
-	 *  
-	 * @param monitor String name of monitor to be added.
-	 */
-	public void addMonitor(String monitor) {
-		monitors.add(monitor);
-	}
-	
-	/**
-	 * Remove a monitor from the collection of monitors to be polled during the
-	 * scan.
-	 *  
-	 * @param monitor String name of monitor to be removed.
-	 */
-	public void removeMonitor(String monitor) {
-		monitors.remove(monitor);
-	}
-
-	/**
-	 * Return the mapping of names and models of detectors from which data will
-	 * be recorded during the scan.
-	 * 
-	 * @return Map<String, IDetectorModel> Key String names of detectors and 
-	 *         detector models.
-	 */
-	public Map<String, Object> getDetectorModels() {
-		return detectorModels;
-	}
-
-	/**
-	 * Replace the mapping of names and models of detectors from which data 
-	 * will be recorded during the scan.
-	 * 
-	 * @param Map<String, IDetectorModel> Key String names of detectors and 
-	 *         detector models.
-	 */
-	public void setDetectorModels(Map<String, Object> detModels) {
-		this.detectorModels = detModels;
-	}
-	
-	/**
-	 * Add a detector to the collection of detectors from which data will be 
-	 * recorded during the scan.
-	 * 
-	 * @param detName String name of detector.
-	 * @param detModel IDetectorModel configuration of detector.
-	 */
-	public void addDetector(String detName, IDetectorModel detModel) {
-		detectorModels.put(detName, detModel);
-	}
-	
-	/**
-	 * Remove a detector from the collection of detectors from which data will 
-	 * be recorded during the scan.
-	 * 
-	 * @param String name of detector to be removed.
-	 */
-	public void removeDetector(String detName) {
-		detectorModels.remove(detName);
-	}
-	
 	@Override
 	public String getQueueMessage() {
 		return queueMessage;
@@ -240,11 +145,9 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((detectorModels == null) ? 0 : detectorModels.hashCode());
-		result = prime * result + ((monitors == null) ? 0 : monitors.hashCode());
-		result = prime * result + ((pathModels == null) ? 0 : pathModels.hashCode());
 		result = prime * result + ((queueMessage == null) ? 0 : queueMessage.hashCode());
 		result = prime * result + ((scanBrokerURI == null) ? 0 : scanBrokerURI.hashCode());
+		result = prime * result + ((scanReq == null) ? 0 : scanReq.hashCode());
 		result = prime * result + ((scanStatusTopicName == null) ? 0 : scanStatusTopicName.hashCode());
 		result = prime * result + ((scanSubmitQueueName == null) ? 0 : scanSubmitQueueName.hashCode());
 		return result;
@@ -259,21 +162,6 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		if (getClass() != obj.getClass())
 			return false;
 		ScanAtom other = (ScanAtom) obj;
-		if (detectorModels == null) {
-			if (other.detectorModels != null)
-				return false;
-		} else if (!detectorModels.equals(other.detectorModels))
-			return false;
-		if (monitors == null) {
-			if (other.monitors != null)
-				return false;
-		} else if (!monitors.equals(other.monitors))
-			return false;
-		if (pathModels == null) {
-			if (other.pathModels != null)
-				return false;
-		} else if (!pathModels.equals(other.pathModels))
-			return false;
 		if (queueMessage == null) {
 			if (other.queueMessage != null)
 				return false;
@@ -283,6 +171,11 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 			if (other.scanBrokerURI != null)
 				return false;
 		} else if (!scanBrokerURI.equals(other.scanBrokerURI))
+			return false;
+		if (scanReq == null) {
+			if (other.scanReq != null)
+				return false;
+		} else if (!scanReq.equals(other.scanReq))
 			return false;
 		if (scanStatusTopicName == null) {
 			if (other.scanStatusTopicName != null)

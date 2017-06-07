@@ -27,5 +27,5 @@ public class DummyAtomProcess<T extends Queueable> extends DummyProcess<DummyAto
 	public Class<DummyAtom> getBeanClass() {
 		return DummyAtom.class;
 	}
-
+	
 }

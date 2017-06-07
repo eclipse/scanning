@@ -26,9 +26,7 @@ import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.event.scan.ScanBean;
-import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.event.status.Status;
-import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.ui.CommandConstants;
 import org.eclipse.scanning.event.queues.QueueProcessFactory;
 import org.eclipse.scanning.event.queues.ServicesHolder;
@@ -81,8 +79,6 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 
 	@Override
 	protected void run() throws EventException, InterruptedException {
-		executed = true;
-
 		//Get config for scanning infrastructure
 		URI scanBrokerURI;
 		String scanStatusTopicName, scanSubmitQueueName;
@@ -112,12 +108,6 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 		}
 		logger.debug("Found scanSubmitQueue="+scanSubmitQueueName);
 		
-		broadcast(Status.RUNNING, 1d, "Creating scan request from configured values.");
-		ScanRequest<?> scanReq = new ScanRequest<>();
-		scanReq.setCompoundModel(new CompoundModel<>(queueBean.getPathModels()));
-		scanReq.setDetectors(queueBean.getDetectorModels());
-		scanReq.setMonitorNames(queueBean.getMonitors());
-		
 		broadcast(Status.RUNNING, 2d, "Setting up ScanBean");
 		scanBean = new ScanBean();
 		if (scanBean.getUniqueId() == null) scanBean.setUniqueId(UUID.randomUUID().toString());
@@ -125,7 +115,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 		scanBean.setName(queueBean.getName());
 		scanBean.setHostName(queueBean.getHostName());
 		scanBean.setUserName(queueBean.getUserName());
-		scanBean.setScanRequest(scanReq);
+		scanBean.setScanRequest(queueBean.getScanReq());
 		
 		broadcast(Status.RUNNING, 3d, "Creating scanning infrastructure.");
 		logger.debug("Creating scan command publisher, submitter and subscriber...");
@@ -146,7 +136,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 		try {
 			scanSubmitter.submit(scanBean);
 			scanSubmitter.disconnect();
-			logger.debug("Submitted ScanBean ('"+scanBean.getName()+"') generated from '"+queueBean.getName()+"' and disconnected submitter");
+			logger.info("Submitted ScanBean ('"+scanBean.getName()+"') generated from '"+queueBean.getName()+"' and disconnected submitter");
 		} catch (EventException evEx) {
 			commandScanBean(Status.REQUEST_TERMINATE); //Just in case the submission worked, but the disconnect didn't, stop the runnning process
 			broadcast(Status.FAILED, "Failed to submit scan bean to scanning system: \""+evEx.getMessage()+"\".");
@@ -156,70 +146,34 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 		
 		//Allow scan to run
 		broadcast(Status.RUNNING, 5d, "Waiting for scan to complete...");
-//		processLatch.await();
 	}
 
 	@Override
-	protected void postMatchAnalysis() throws EventException, InterruptedException {
-		try {
-			postMatchAnalysisLock.lockInterruptibly();
-			if (isTerminated()) {
-				//Do different things if terminate was requested from the child
-				if (queueListener.isChildCommand()) {
-					queueBean.setMessage("Scan aborted by scanning service.");
-					logger.debug("'"+queueBean.getName()+"' was aborted by the scanning service.");
-				} else {
-					queueBean.setMessage("Scan requested to abort before completion");
-					logger.debug("'"+bean.getName()+"' was requested to abort");
-					commandScanBean(Status.REQUEST_TERMINATE);
-				}
-			} else if (queueBean.getPercentComplete() >= 99.5) {
-				//Completed successfully
-				updateBean(Status.COMPLETE, 100d, "Scan completed.");
-			} else {
-				//Scan failed - don't set anything here as messages should have 
-				//been updated elsewhere (i.e. QueueListener)
-				queueBean.setStatus(Status.FAILED);
-			}
-		} finally {
-			//This should be run after we've reported the queue final state
-			tidyScanActors();
-			
-			//And we're done, so let other processes continue
-			executionEnded();
-			
-			postMatchAnalysisLock.unlock();
-			
-			/*
-			 * N.B. Broadcasting needs to be done last; otherwise the next 
-			 * queue may start when we're not ready. Broadcasting should not 
-			 * happen if we've been terminated.
-			 */
-			if (!isTerminated()) {
-				broadcast();
-			}
-		}
+	public void postMatchCompleted() throws EventException {
+		updateBean(Status.COMPLETE, 100d, "Scan completed successfully");
+		tidyScanActors();
 	}
-	
+
 	@Override
-	protected void doTerminate() throws EventException {
-		if (finished) return; //Stops spurious messages/behaviour when processing already finished
-		try {
-			//Reentrant lock ensures execution method (and hence post-match 
-			//analysis) completes before terminate does
-			postMatchAnalysisLock.lockInterruptibly();
-			
-			terminated = true;
-			logger.debug("Termination of '"+queueBean.getName()+"' requested; release processLatch (start post-match analysis)");
-			processLatch.countDown();
-			
-			//Wait for post-match analysis to finish
-			continueIfExecutionEnded();
-		} catch (InterruptedException iEx) {
-			throw new EventException(iEx);
-		} finally {
-			postMatchAnalysisLock.unlock();
+	public void postMatchTerminated() throws EventException {
+		//Do different things if terminate was requested from the child
+		if (queueListener.isChildCommand()) {
+			//Nothing really to be done except set message
+			queueBean.setMessage("Scan aborted by scanning service");
+			logger.debug("'"+queueBean.getName()+"' was aborted by the scanning service");
+		} else {
+			queueBean.setMessage("Scan requested to abort before completion");
+			logger.debug("'"+bean.getName()+"' was requested to abort");
+			commandScanBean(Status.REQUEST_TERMINATE);
 		}
+		tidyScanActors();
+	}
+
+	@Override
+	public void postMatchFailed() throws EventException {
+		queueBean.setStatus(Status.FAILED);
+		logger.error("'"+bean.getName()+"' failed. Last message was: "+bean.getMessage());
+		tidyScanActors();
 	}
 	
 	@Override
@@ -228,8 +182,8 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 //		if (!queueListener.isChildCommand()) {
 //			commandScanBean(Status.REQUEST_PAUSE);
 //		}
-		//TODO!
-		logger.warn("Resume not implemented on ScanAtomProcessor");
+		//TODO
+		logger.error("Pause/resume not implemented on ScanAtom");
 	}
 
 	@Override
@@ -239,7 +193,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 //			commandScanBean(Status.REQUEST_RESUME);
 //		}
 		//TODO!
-		logger.warn("Pause not implemented on ScanAtomProcessor");
+		logger.error("Pause/resume not implemented on ScanAtom");
 	}
 
 	
@@ -265,7 +219,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 		}
 		scanBean.setStatus(command);
 		scanCommandPublisher.broadcast(scanBean);
-		logger.debug("Sent command to scan service (command="+command+")");
+		logger.info("Sent command to scan service (ScanBean='"+scanBean.getName()+"' command="+command+")");
 	}
 	
 	/**

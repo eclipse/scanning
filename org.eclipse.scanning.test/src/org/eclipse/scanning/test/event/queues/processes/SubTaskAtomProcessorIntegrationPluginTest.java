@@ -65,6 +65,7 @@ public class SubTaskAtomProcessorIntegrationPluginTest extends BrokerTest {
 	
 	@After
 	public void tearDown() throws EventException {
+		QueueProcessFactory.initialize(); //Remove the registered processes
 		queueControl.stopQueueService(false);
 		queueService.disposeService();
 	}

@@ -39,6 +39,7 @@ import org.eclipse.scanning.test.event.queues.dummy.DummyHasQueueProcess;
 import org.eclipse.scanning.test.event.queues.mocks.MockPublisher;
 import org.eclipse.scanning.test.event.queues.util.TestAtomQueueBeanMaker;
 import org.eclipse.scanning.test.scan.mock.MockDetectorModel;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,6 +69,12 @@ public class QueueProcessCreatorTest {
 		qpc = new QueueProcessCreator<>(true);
 		
 		statPub = new MockPublisher<Queueable>(null, "test.topic");
+		QueueProcessFactory.initialize();
+	}
+	
+	@After
+	public void tearDown() {
+		//Remove Dummy*Process so it doesn't cause bad behaviour in travis
 		QueueProcessFactory.initialize();
 	}
 

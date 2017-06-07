@@ -15,9 +15,9 @@ import org.eclipse.scanning.api.event.queues.IQueueService;
 
 /**
  * MonitorAtom is a type of {@link QueueAtom} which may be processed within an 
- * active-queue of an {@link IQueueService}. It contains name of a monitor 
- * which the current value needs to be recorded at a particular point in an 
- * experiment.
+ * active-queue of an {@link IQueueService}. It contains name of a monitor the
+ * current value of which will be on execution as a dataset within a file 
+ * (located at filePath).
  * 
  * @author Michael Wharmby
  *
@@ -42,24 +42,14 @@ public class MonitorAtom extends QueueAtom {
 	
 	/**
 	 * Constructor with arguments required to fully configure this atom
-	 * @param monName - name for atom
+	 * 
+	 * @param monShrtNm String short name used within the QueueBeanFactory
 	 * @param dev - name of monitor
 	 */
-	public MonitorAtom(String monName, String dev, long time) {
+	public MonitorAtom(String monShrtNm, String dev) {
 		super();
-		setName(monName);
+		setShortName(monShrtNm);
 		monitor = dev;
-		runTime = time;
-	}
-
-	@Override
-	public long getRunTime() {
-		return runTime;
-	}
-
-	@Override
-	public void setRunTime(long runTime) {
-		this.runTime = runTime;
 	}
 
 	/**
@@ -133,7 +123,13 @@ public class MonitorAtom extends QueueAtom {
 
 	@Override
 	public String toString() {
-		return "MonitorAtom [monitor=" + monitor + ", filePath=" + filePath + ", dataset=" + dataset + "]";
+		String clazzName = this.getClass().getSimpleName();
+		return clazzName + " [name=" + name + "(shortName=" + shortName + "), monitor=" + monitor
+				+ ", filePath=" + filePath + ", dataset=" + dataset + ", status=" + status
+				+ ", message=" + message + ", percentComplete=" + percentComplete + ", previousStatus=" 
+				+ previousStatus + ", runTime=" + runTime + ", userName=" + userName + ", hostName=" 
+				+ hostName + ", beamline="+ beamline + ", submissionTime=" + submissionTime 
+				+ ", properties=" + getProperties() + ", id=" + getUniqueId() + "]";
 	}
 	
 }

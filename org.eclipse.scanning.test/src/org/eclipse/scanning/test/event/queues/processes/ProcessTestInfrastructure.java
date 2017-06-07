@@ -68,7 +68,7 @@ public class ProcessTestInfrastructure {
 	 * @throws Exception
 	 */
 	public <R extends Queueable> void executeProcess(QueueProcess<R, Queueable> qProc, R procBean) throws Exception {
-		executeProcess(qProc, procBean, false);
+		executeProcess(qProc, procBean, false, true);
 	}
 	
 	/**
@@ -79,6 +79,13 @@ public class ProcessTestInfrastructure {
 	 * @throws Exception
 	 */
 	public <R extends Queueable> void executeProcess(QueueProcess<R, Queueable> qProc, R procBean, boolean hasChildQueue) throws Exception { 
+		executeProcess(qProc, procBean, hasChildQueue, true);
+	}
+	
+	/**
+	 * Same as above, except with an option not to allow execution to complete before
+	 */
+	public <R extends Queueable> void executeProcess(QueueProcess<R, Queueable> qProc, R procBean, boolean hasChildQueue, boolean wait) throws Exception {
 		this.qProc = qProc;
 		this.qBean = procBean;
 		
@@ -87,7 +94,7 @@ public class ProcessTestInfrastructure {
 		assertEquals("Should not be non-zero percent complete", 0d, procBean.getPercentComplete(), 0);
 		
 		//TODO Does this need to be in a thread? And do we then need the CountDownLatch?
-		Thread th = new Thread(new Runnable() {
+		final Thread th = new Thread(new Runnable() {
 			public void run() {
 				try {
 					qProc.execute();
@@ -102,9 +109,11 @@ public class ProcessTestInfrastructure {
 		th.setPriority(Thread.MAX_PRIORITY);
 		th.start();
 		
-		System.out.println("INFO: Sleeping for "+execTime+"ms to give the processor time to run...");
-		Thread.sleep(execTime);
-		assertTrue("QueueProcess should be marked executed after execution", qProc.isExecuted());
+		if (wait) {
+			System.out.println("INFO: Sleeping for "+execTime+"ms to give the processor time to run...");
+			Thread.sleep(execTime);
+			assertTrue("QueueProcess should be marked executed after execution", qProc.isExecuted());
+		}
 		
 		if (hasChildQueue) {
 			//We only want to test the process not the full pipeline

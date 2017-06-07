@@ -31,6 +31,7 @@ public abstract class Queueable extends StatusBean {
 	
 	protected long runTime;
 	protected String beamline;
+	protected String shortName;
 
 	protected Queueable() {
 		super();
@@ -54,17 +55,28 @@ public abstract class Queueable extends StatusBean {
 		this.runTime = runTime;
 	}
 
+	public String getShortName() {
+		return shortName;
+	}
+
+	public void setShortName(String shortName) {
+		this.shortName = shortName;
+	}
+
 	public void merge(Queueable with) {
 		super.merge(with);
 		this.runTime = with.runTime;
 		this.beamline = with.beamline;
+		this.shortName = with.shortName;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + ((beamline == null) ? 0 : beamline.hashCode());
 		result = prime * result + (int) (runTime ^ (runTime >>> 32));
+		result = prime * result + ((shortName == null) ? 0 : shortName.hashCode());
 		return result;
 	}
 
@@ -77,7 +89,17 @@ public abstract class Queueable extends StatusBean {
 		if (getClass() != obj.getClass())
 			return false;
 		Queueable other = (Queueable) obj;
+		if (beamline == null) {
+			if (other.beamline != null)
+				return false;
+		} else if (!beamline.equals(other.beamline))
+			return false;
 		if (runTime != other.runTime)
+			return false;
+		if (shortName == null) {
+			if (other.shortName != null)
+				return false;
+		} else if (!shortName.equals(other.shortName))
 			return false;
 		return true;
 	}
@@ -85,12 +107,11 @@ public abstract class Queueable extends StatusBean {
 	@Override
 	public String toString() {
 		String clazzName = this.getClass().getSimpleName();
-		return clazzName + "[previousStatus=" + previousStatus + ", status="
-				+ status + ", name=" + name + ", message=" + message
-				+ ", percentComplete=" + percentComplete + ", userName="
-				+ userName + ", hostName=" + hostName + ", submissionTime=" 
-				+ submissionTime + ", properties=" + getProperties()
-		        + ", id=" + getUniqueId() + "]";
+		return clazzName + " [name=" + name +" (shortname=" + shortName + "), status=" + status 
+				+ ", message=" + message + ", percentComplete=" + percentComplete
+				+ ", previousStatus=" + previousStatus + ", runTime=" + runTime + ", userName="
+				+ userName + ", hostName=" + hostName + ", beamline="+ beamline + ", submissionTime="
+				+ submissionTime + ", properties=" + getProperties() + ", id=" + getUniqueId() + "]";
 	}
 
 }

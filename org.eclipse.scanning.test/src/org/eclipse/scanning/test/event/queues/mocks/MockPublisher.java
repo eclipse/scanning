@@ -24,6 +24,7 @@ import org.eclipse.scanning.api.event.alive.PauseBean;
 import org.eclipse.scanning.api.event.core.IConsumer;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.queues.beans.IHasChildQueue;
+import org.eclipse.scanning.api.event.queues.beans.MonitorAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.event.status.StatusBean;
@@ -99,6 +100,9 @@ public class MockPublisher<T> implements IPublisher<T> {
 					((DummyHasQueue)broadBean).setQueueMessage(((IHasChildQueue)bean).getQueueMessage());
 				}
 				
+			} else if (bean instanceof MonitorAtom) {
+				broadBean = new MonitorAtom();
+				((MonitorAtom)broadBean).setFilePath(((MonitorAtom)bean).getFilePath());
 			} else {
 				broadBean = new StatusBean(); 
 			}

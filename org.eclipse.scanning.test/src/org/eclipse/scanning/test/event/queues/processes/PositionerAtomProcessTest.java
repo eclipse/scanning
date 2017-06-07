@@ -46,7 +46,8 @@ public class PositionerAtomProcessTest {
 		mss = new MockScanService();
 		ServicesHolder.setDeviceService(mss);
 		
-		posAt = new PositionerAtom("Move robot arm", "robot_arm", "1250");
+		posAt = new PositionerAtom("mvRbtRm", "robot_arm", "1250");
+		posAt.setName("Move robot arm");
 		posAtProc = new PositionerAtomProcess<>(posAt, pti.getPublisher(), false);
 	}
 	
@@ -70,7 +71,7 @@ public class PositionerAtomProcessTest {
 		pti.waitForExecutionEnd(10000l);
 		pti.checkLastBroadcastBeanStatuses(Status.COMPLETE, false);
 		
-		assertEquals("Incorrect message after execute", "Position change completed.", pti.getLastBroadcastBean().getMessage());
+		assertEquals("Incorrect message after execute", "Set position completed successfully", pti.getLastBroadcastBean().getMessage());
 	}
 	
 	/**
@@ -92,7 +93,7 @@ public class PositionerAtomProcessTest {
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
 		
 		pti.waitForExecutionEnd(500);
-		assertEquals("Incorrect message after terminate", "Position change aborted before completion (requested).", pti.getLastBroadcastBean().getMessage());
+		assertEquals("Incorrect message after terminate", "Position change aborted before completion (requested)", pti.getLastBroadcastBean().getMessage());
 		assertTrue("IPositioner not aborted", ((MockPositioner)mss.createPositioner()).isAborted());
 		assertFalse("Position setting should have been terminated", ((MockPositioner)mss.createPositioner()).isMoveComplete());
 	}
@@ -112,6 +113,7 @@ public class PositionerAtomProcessTest {
 	@Test
 	public void testFailure() throws Exception {
 		PositionerAtom failAtom = new PositionerAtom("Error Causer", "BadgerApocalypseButton", "pushed");
+		failAtom.setName("Error Causer");
 		posAtProc = new PositionerAtomProcess<>(failAtom, pti.getPublisher(), false);
 		
 		pti.executeProcess(posAtProc, failAtom);
@@ -121,8 +123,7 @@ public class PositionerAtomProcessTest {
 		
 		StatusBean lastBean = pti.getLastBroadcastBean();
 		
-		String req = "Moving device(s) in '"+lastBean.getName()+
-				"' failed with: \"The badger apocalypse cometh! (EXPECTED - we pressed the button...)\".";
+		String req = "Moving device(s) in 'Error Causer' failed with: 'The badger apocalypse cometh! (EXPECTED - we pressed the button...)'";
 		assertEquals("Fail message from IPositioner incorrectly set", req, lastBean.getMessage());
 		assertTrue("IPositioner not aborted", ((MockPositioner)mss.createPositioner()).isAborted());
 	}

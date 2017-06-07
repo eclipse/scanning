@@ -55,12 +55,6 @@ public abstract class DummyProcess<Q extends Queueable, T extends Queueable> ext
 	protected void run() throws EventException, InterruptedException {
 		//Do nothing - this is not needed for Dummy processing
 	}
-
-	@Override
-	protected void postMatchAnalysis() throws EventException, InterruptedException {
-		//Do nothing - this is not needed for Dummy processing
-		
-	}
 	
 	@Override
 	public void doTerminate() throws EventException {
