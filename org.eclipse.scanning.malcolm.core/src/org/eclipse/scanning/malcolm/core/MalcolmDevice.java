@@ -70,6 +70,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	private static String STATUS_ENDPOINT = "status";
 	private static String BUSY_ENDPOINT = "busy";
 	private static String CURRENT_STEP_ENDPOINT = "completedSteps";
+	private static String FILE_EXTENSION_H5 = "h5";
 
 	// Frequencies and Timeouts
 	// broadcast every 250 milliseconds
@@ -431,7 +432,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 		}
 		
 		final String fileDir = model.getFileDir();
-		final String fileTemplate = "%s" + new File(fileDir).getName() + "-%s";
+		final String fileTemplate = new File(fileDir).getName() + "-%s." + FILE_EXTENSION_H5;
 		final EpicsMalcolmModel epicsModel = new EpicsMalcolmModel(fileDir, fileTemplate,
 				model.getAxesToMove(), pointGenerator);
 		return epicsModel;

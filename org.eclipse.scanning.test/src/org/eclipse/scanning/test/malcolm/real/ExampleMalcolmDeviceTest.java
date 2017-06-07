@@ -346,7 +346,7 @@ public class ExampleMalcolmDeviceTest {
 			PVString fileDirVal = configurePVStructure.getSubField(PVString.class, "fileDir");
 			fileDirVal.put("/path/to/ixx-1234");
 			PVString fileTemplateVal = configurePVStructure.getSubField(PVString.class, "fileTemplate");
-			fileTemplateVal.put("%sixx-1234-%s");
+			fileTemplateVal.put("ixx-1234-%s.h5");
 
 			assertEquals(configureStructure, configureCall.getStructure());
 			assertEquals(configurePVStructure, configureCall);
