@@ -102,8 +102,17 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	
 	@After
 	public void disposeService() throws EventException {
-		qservice.stopQueueService(false);
+		rservice.stopQueueService(true);
 		((IDisconnectable)rservice).disconnect();
+		rservice = null;
+		
+		qservice.stopQueueService(true);
+		qservice = null;
+		
+		qServ.disposeService();
+		qServ = null;
+		ServicesHolder.setQueueService(null);
+		ServicesHolder.setQueueControllerService(null);
 		
 		RealQueueTestUtils.reset();
 	}
@@ -181,12 +190,14 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	
 	@Test
 	public void submitRemoveService() throws Exception {
+		System.out.println("\nService submitRemove test\n-------------------------");
 		setQueueNames();
 		testSubmitRemove(qservice); 
 	}
 	
 	@Test
 	public void submitRemoveRemote() throws Exception {
+		System.out.println("\nRemote submitRemove test\n------------------------");
 		setQueueNames();
 		testSubmitRemove(rservice); 
 	}
@@ -290,6 +301,7 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 			//Expected
 		}
 
+		System.out.println("\nsubmitRemove test done\n----------------------\n");
 	}
 	
 	private void setQueueNames() throws EventException {
