@@ -12,7 +12,6 @@
 package org.eclipse.scanning.malcolm.core;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -431,7 +430,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 		}
 		
 		final String fileDir = model.getFileDir();
-		final String fileTemplate = "%s" + new File(fileDir).getName() + "-%s";
+		final String fileTemplate = new File(fileDir).getName() + "-%s";
 		final EpicsMalcolmModel epicsModel = new EpicsMalcolmModel(fileDir, fileTemplate,
 				model.getAxesToMove(), pointGenerator);
 		return epicsModel;
