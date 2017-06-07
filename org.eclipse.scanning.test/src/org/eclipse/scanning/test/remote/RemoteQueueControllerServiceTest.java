@@ -31,6 +31,7 @@ import org.eclipse.scanning.api.event.queues.IQueueService;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.event.EventServiceImpl;
+import org.eclipse.scanning.event.queues.QueueProcessFactory;
 import org.eclipse.scanning.event.queues.QueueService;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.event.remote.RemoteServiceFactory;
@@ -93,6 +94,9 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		
 		//Last thing, reset the support utils.
 		RealQueueTestUtils.initialise(uri);
+		
+		//In travis submitRemove test fails because bean is consumed; reset QueueProcessFactory to prevent this
+		QueueProcessFactory.initialize();
 		
 	}
 	
@@ -194,7 +198,7 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		//For all submit/remove testing we don't want to process anything
 		qservice.pauseQueue(jqID);
 		qservice.pauseQueue(aqID);
-		Thread.sleep(100); //PauseBean takes time to have an effect
+		Thread.sleep(500); //PauseBean takes time to have an effect (increased time from 100)
 		
 		//Beans for submission
 		DummyBean albert = new DummyBean("Albert", 10),bernard = new DummyBean("Bernard", 20), fred = new DummyBean("Fred", 60), geoff = new DummyBean("Geoff", 70);
