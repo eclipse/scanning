@@ -171,7 +171,6 @@ public class ActivemqConnectorServiceJsonMarshallingTest {
 		assertArrayEquals(expected.getObject(), (Object[]) actual.getObject());
 	}
 
-	@Ignore("This test fails intermittently on travis")
 	@Test
 	public void testObjectArrayDeserialization() throws Exception {
 		Object[] actual = marshaller.unmarshal("[ \"a\", \"b\", 5 ]", Object[].class);
