@@ -84,7 +84,7 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	public void createService() throws EventException {
 		
 		//A bit of boilerplate to start the service under test
-		qServ =  new QueueService("test-queue-root", uri.toString());
+		qServ =  new QueueService("remote-test-queue-root", uri.toString());
 		qServ.init();
 		ServicesHolder.setQueueService(qServ);
 		qservice = (IQueueControllerService)qServ;
