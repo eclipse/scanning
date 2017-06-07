@@ -46,7 +46,6 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("This test has been intermittently failing on travis")
 public class RemoteQueueControllerServiceTest extends BrokerTest {
 
 	private static IQueueControllerService      qservice;
