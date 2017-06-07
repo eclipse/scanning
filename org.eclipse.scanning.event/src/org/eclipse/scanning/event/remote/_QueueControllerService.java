@@ -125,8 +125,8 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 		String submitQueueName = getQueue(queueID).getSubmissionQueueName();
 		boolean success = eventConnector.remove(bean, submitQueueName);
 		if (!success) {
-			logger.error("Bean removal failed. Is it in the status set already?");
-			throw new EventException("Bean removal failed.");
+			logger.error("Failed to remove "+bean.getClass().getSimpleName()+" '"+bean.getName()+"'. Is it in the status set already?");
+			throw new EventException("Failed to remove "+bean.getClass().getSimpleName()+" '"+bean.getName()+"'");
 		}
 	}
 
@@ -136,8 +136,8 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 		String submitQueueName = getQueue(queueID).getSubmissionQueueName();
 		boolean success = eventConnector.reorder(bean, move, submitQueueName);
 		if (!success) {
-			logger.error("Bean reordering failed. Is it in the status set already?");
-			throw new EventException("Bean reordering failed.");
+			logger.error("Failed reordering "+bean.getClass().getSimpleName()+" '"+bean.getName()+"'. Is it in the status set already?");
+			throw new EventException("Failed reordering "+bean.getClass().getSimpleName()+" '"+bean.getName()+"'");
 		}
 	}
 
@@ -150,14 +150,14 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 			String beanID = bean.getUniqueId();
 			beanState = getBeanStatus(beanID, queueID);
 		} catch (EventException evEx) {
-			logger.error("Could not get state of bean in queue. Is it in queue '"+queueID+"'? "+evEx.getMessage());
+			logger.error("Could not get state of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue. Is it in queue '"+queueID+"'? "+evEx.getMessage());
 			throw evEx;
 		}
 		if (beanState.isPaused()) {
-			logger.error("Bean '"+bean.getName()+"' is already paused.");
-			throw new IllegalStateException("Bean '"+bean.getName()+"' is already paused");
+			logger.error(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is already paused");
+			throw new IllegalStateException(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is already paused");
 		} else if (beanState == Status.SUBMITTED) {
-			logger.error("Bean is submitted but not being processed. Cannot pause.");
+			logger.error(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is submitted but not being processed. Cannot pause.");
 			throw new IllegalStateException("Cannot pause a bean with SUBMITTED status");
 		}
 
@@ -176,15 +176,15 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 			String beanID = bean.getUniqueId();
 			beanState = getBeanStatus(beanID, queueID);
 		} catch (EventException evEx) {
-			logger.error("Could not get state of bean in queue. Is it in queue '"+queueID+"'? "+evEx.getMessage());
+			logger.error("Could not get state of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue. Is it in queue '"+queueID+"'? "+evEx.getMessage());
 			throw evEx;
 		}
 		if (beanState.isResumed() || beanState.isRunning()) {
-			logger.error("Bean '"+bean.getName()+"' is already resumed/running.");
+			logger.error(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is already resumed/running.");
 			throw new IllegalStateException("Bean '"+bean.getName()+"' is already resumed/running");
 		} else if (beanState == Status.SUBMITTED) {
-			logger.error("Bean is submitted but not being processed. Cannot resume.");
-			throw new IllegalStateException("Cannot resume a bean with SUBMITTED status");
+			logger.error(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is submitted but not being processed. Cannot resume.");
+			throw new IllegalStateException("Cannot resume a "+bean.getClass().getSimpleName()+" '"+bean.getName()+"': has SUBMITTED status");
 		}
 
 		//The bean is resumable. Get the status topic name and publish the bean
@@ -202,14 +202,14 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 			String beanID = bean.getUniqueId();
 			beanState = getBeanStatus(beanID, queueID);
 		} catch (EventException evEx) {
-			logger.error("Could not get state of bean in queue. Is it in queue '"+queueID+"'? "+evEx.getMessage());
+			logger.error("Could not get state of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue. Is it in queue '"+queueID+"'? "+evEx.getMessage());
 			throw evEx;
 		}
 		if (beanState.isTerminated()) {
-			logger.error("Bean '"+bean.getName()+"' is already terminated.");
-			throw new IllegalStateException("Bean '"+bean.getName()+"' is already terminated");
+			logger.error(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is already terminated.");
+			throw new IllegalStateException(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is already terminated");
 		} else if (beanState == Status.SUBMITTED) {
-			logger.warn("Bean is submitted but not being processed. Bean will be removed, rather than terminated.");
+			logger.warn(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is submitted but not being processed. Bean will be removed, rather than terminated.");
 			remove(bean, queueID);
 			return;
 		}
