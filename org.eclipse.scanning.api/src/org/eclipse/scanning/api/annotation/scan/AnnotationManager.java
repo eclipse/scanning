@@ -319,17 +319,27 @@ public class AnnotationManager {
 	public List<Object> getContext(Object[] objects) {
 		List<Object> context = new ArrayList<>();
 		if (extraContext!=null) context.addAll(extraContext);
-		if (objects!=null && objects.length>0) context.addAll(Arrays.asList(objects));
+		if (objects!=null && objects.length>0) {
+			for (Object object : objects) {
+				if (object != null) {
+					context.add(object);
+				}
+			}
+		}
 		return context;
 	}
 
 	/**
-	 * 
+	 * @return true if item was added, false if there was a problem
 	 * @param object
 	 */
-	public void addContext(Object object) {
+	public boolean addContext(Object object) {
+		if (object==null) {
+			logger.info("Null object context accidentally added to "+getClass().getSimpleName());
+			return false;
+		}
 		if (extraContext == null) extraContext = new HashSet<>();
-		extraContext.add(object);
+		return extraContext.add(object);
 	}
 
 	/**

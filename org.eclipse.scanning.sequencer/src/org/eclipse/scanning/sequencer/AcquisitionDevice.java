@@ -178,6 +178,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		
 		// add the scan information to the context - it is created if not set on the scan model
 		annotationManager.addContext(getScanInformation(location.getTotalSize()));
+		annotationManager.addContext(getPublisher());
 		exposureManager = new ExposureTimeManager();
 		exposureManager.addDevices(model.getDetectors());
 		
