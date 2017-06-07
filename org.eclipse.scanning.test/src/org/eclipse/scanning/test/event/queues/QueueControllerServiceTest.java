@@ -280,7 +280,8 @@ public class QueueControllerServiceTest {
 			testController.resume(xavier, jqID);
 			fail("Expected EventException: Xavier not right bean type, should not be able to resume");
 		} catch (EventException evEx) {
-			assertTrue("Got unexpected exception - should be wrong type EventException", evEx.getMessage().contains("wrong type"));
+			assertTrue("Got unexpected exception - should be an EventException containing message '", 
+					(evEx.getMessage().contains("Bean type") && evEx.getMessage().contains("not supported by queue")));
 		}
 	}
 	
@@ -338,7 +339,8 @@ public class QueueControllerServiceTest {
 			testController.terminate(xavier, jqID);
 			fail("Expected EventException: Xavier not right bean type, should not be able to terminate");
 		} catch (EventException evEx) {
-			assertTrue("Got unexpected exception - should be wrong type EventException", evEx.getMessage().contains("wrong type"));
+			assertTrue("Got unexpected exception - should be an EventException containing message '", 
+					(evEx.getMessage().contains("Bean type") && evEx.getMessage().contains("not supported by queue")));
 		}		
 	}
 	
