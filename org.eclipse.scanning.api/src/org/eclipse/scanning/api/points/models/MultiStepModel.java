@@ -28,7 +28,7 @@ import org.eclipse.scanning.api.annotation.ui.TypeDescriptor;
 @TypeDescriptor(editor="org.eclipse.scanning.device.ui.composites.MultiStepComposite")
 public class MultiStepModel extends AbstractPointsModel {
 	
-	private static final String STEPMODELS = "stepModels";
+	private static final String FIELD_NAME = "stepModels";
 
 	private List<StepModel> stepModels;
 	
@@ -53,7 +53,7 @@ public class MultiStepModel extends AbstractPointsModel {
 	public void clear() {
 		List<StepModel> oldModels = new ArrayList<StepModel>(stepModels);
 		stepModels.clear();
-		firePropertyChange(STEPMODELS, oldModels, stepModels);
+		firePropertyChange(FIELD_NAME, oldModels, stepModels);
 	}
 
 	public void addRange(double start, double stop, double step) {
@@ -62,7 +62,7 @@ public class MultiStepModel extends AbstractPointsModel {
 	public void addRange(double start, double stop, double step, double exposure) {
 		List<StepModel> oldModels = new ArrayList<StepModel>(stepModels);
 		stepModels.add(new StepModel(getName(), start, stop, step, exposure));
-		firePropertyChange(STEPMODELS, oldModels, stepModels);
+		firePropertyChange(FIELD_NAME, oldModels, stepModels);
 	}
 	
 	public void addRange(StepModel stepModel) {
@@ -81,7 +81,7 @@ public class MultiStepModel extends AbstractPointsModel {
 	public void setStepModels(List<StepModel> stepModels) {
 		List<StepModel> oldModels = stepModels;
 		this.stepModels = stepModels;
-		firePropertyChange(STEPMODELS, oldModels, stepModels);
+		firePropertyChange(FIELD_NAME, oldModels, stepModels);
 	}
 
 	/**
