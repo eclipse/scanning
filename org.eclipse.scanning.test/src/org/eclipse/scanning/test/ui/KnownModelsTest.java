@@ -27,7 +27,6 @@ import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.ui.auto.IInterfaceService;
 import org.eclipse.scanning.api.ui.auto.IModelViewer;
-import org.eclipse.scanning.api.ui.auto.InterfaceInvalidException;
 import org.eclipse.scanning.device.ui.model.InterfaceService;
 import org.eclipse.scanning.example.detector.ConstantVelocityModel;
 import org.eclipse.scanning.example.detector.DarkImageModel;
@@ -95,7 +94,7 @@ public class KnownModelsTest extends ShellTest{
 			bot.shell("Point Model").display.syncExec(()->{
 				try {
 					viewer.setModel(tcase.getModel());
-				} catch (InterfaceInvalidException e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			});
