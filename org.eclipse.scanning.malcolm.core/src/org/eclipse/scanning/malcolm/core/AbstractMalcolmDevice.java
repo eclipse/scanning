@@ -37,6 +37,7 @@ import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
 import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 import org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService;
+import org.eclipse.scanning.api.malcolm.connector.MalcolmMethod;
 import org.eclipse.scanning.api.malcolm.connector.MessageGenerator;
 import org.eclipse.scanning.api.malcolm.event.IMalcolmListener;
 import org.eclipse.scanning.api.malcolm.event.MalcolmEventBean;
@@ -179,8 +180,8 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	protected MalcolmMessage createGetMessage(String endpoint) throws MalcolmDeviceException {
 		return connectionDelegate.createGetMessage(endpoint);
 	}
-	protected MalcolmMessage createCallMessage(String endpoint, Object params) throws MalcolmDeviceException {
-		return connectionDelegate.createCallMessage(endpoint, params);
+	protected MalcolmMessage createCallMessage(MalcolmMethod method, Object params) throws MalcolmDeviceException {
+		return connectionDelegate.createCallMessage(method, params);
 	}
 	protected MalcolmMessage createSubscribeMessage(String endpoint) throws MalcolmDeviceException {
 		return connectionDelegate.createSubscribeMessage(endpoint);
@@ -212,8 +213,9 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	protected MalcolmMessage send(MalcolmMessage message, long timeout) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
 	    return asynch(()->connector.send(this, message), timeout);
 	}
-	protected MalcolmMessage call(StackTraceElement[] trace, long timeout, DeviceState... states) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
-	    return asynch(()->connectionDelegate.call(trace, states), timeout);
+	
+	protected MalcolmMessage call(MalcolmMethod method, long timeout, DeviceState... states) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
+	    return asynch(()->connectionDelegate.call(method, states), timeout);
 	}
 	
 	/**
