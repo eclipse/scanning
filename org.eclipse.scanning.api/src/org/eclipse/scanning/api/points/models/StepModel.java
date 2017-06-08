@@ -137,4 +137,11 @@ public class StepModel extends AbstractPointsModel {
 	public void setExposureTime(double exposureTime) {
 		this.exposureTime = exposureTime;
 	}
+
+	public int size() {
+		// copied from StepGenerator.sizeOfValidModel
+		double div = ((getStop()-getStart())/getStep());
+		div += 0.01;
+		return (int)Math.floor(div+1);
+	}
 }

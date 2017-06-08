@@ -25,7 +25,7 @@ import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.junit.Before;
 
-public abstract class GeneratorTest {
+public abstract class AbstractGeneratorTest {
 
 	protected IPointGeneratorService service;
 

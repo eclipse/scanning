@@ -14,7 +14,6 @@ package org.eclipse.scanning.points;
 import java.text.MessageFormat;
 
 import org.eclipse.scanning.api.ModelValidationException;
-import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.MultiStepModel;

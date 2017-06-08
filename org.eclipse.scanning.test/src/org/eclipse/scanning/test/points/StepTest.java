@@ -18,10 +18,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.scanning.api.ModelValidationException;
+import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Scalar;
+import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.junit.Before;
@@ -224,6 +226,29 @@ public class StepTest {
 		GeneratorUtil.testGeneratorPoints(gen, 0.5, 7);
 	}
 
+	@Test
+	public void testSizeIndependent() throws GeneratorException {
+		
+		
+		StepModel mmodel = new StepModel("energy", 1,2,1); // 2 points	
+		assertEquals(2, service.createGenerator(mmodel).size());
+
+
+		mmodel = new StepModel("energy", 10,20,10); // 2 points	
+		assertEquals(2, service.createGenerator(mmodel).size());
+
+	
+		mmodel = new StepModel("energy", 100,200,100); // 2 points	
+		assertEquals(2, service.createGenerator(mmodel).size());
+		
+		mmodel = new StepModel("energy", 1000,2000,1000); // 2 points	
+		assertEquals(2, service.createGenerator(mmodel).size());
+
+		
+		mmodel = new StepModel("energy", 10000,20000,10000); // 2 points	
+		assertEquals(2, service.createGenerator(mmodel).size());
+
+	}
 
 	private void checkSequence(IPointGenerator<StepModel> gen, double... positions) throws Exception {
 		

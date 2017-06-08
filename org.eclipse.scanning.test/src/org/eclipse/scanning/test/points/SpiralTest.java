@@ -25,7 +25,7 @@ import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class SpiralTest extends GeneratorTest {
+public class SpiralTest extends AbstractGeneratorTest {
 
 	@Test
 	public void testSpiralNoROI() throws Exception {
