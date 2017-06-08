@@ -366,7 +366,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		}
 
 		@Override
-		public String getDeviceStatus() throws ScanningException {
+		public String getDeviceHealth() throws ScanningException {
 			return null;
 		}
 

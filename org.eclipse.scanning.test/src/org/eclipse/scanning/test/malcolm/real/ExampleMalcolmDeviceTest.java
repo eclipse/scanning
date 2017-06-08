@@ -107,7 +107,7 @@ public class ExampleMalcolmDeviceTest {
 			assertEquals(11, attribs.size());
 
 			boolean stateFound = false;
-			boolean statusFound = false;
+			boolean healthFound = false;
 			boolean busyFound = false;
 			boolean totalStepsFound = false;
 			boolean aFound = false;
@@ -123,8 +123,8 @@ public class ExampleMalcolmDeviceTest {
 			for (IDeviceAttribute<?> ma : attribs) {
 				if (ma.getName().equals("state")) {
 					stateFound = true;
-				} else if (ma.getName().equals("status")) {
-					statusFound = true;
+				} else if (ma.getName().equals("health")) {
+					healthFound = true;
 				} else if (ma.getName().equals("busy")) {
 					busyFound = true;
 				} else if (ma.getName().equals("totalSteps")) {
@@ -149,7 +149,7 @@ public class ExampleMalcolmDeviceTest {
 			}
 
 			assertTrue(stateFound);
-			assertTrue(statusFound);
+			assertTrue(healthFound);
 			assertTrue(busyFound);
 			assertTrue(totalStepsFound);
 			assertTrue(aFound);
@@ -172,12 +172,12 @@ public class ExampleMalcolmDeviceTest {
 			}
 
 			// Get a specific string attribute
-			Object statusValue = modelledDevice.getAttributeValue("status");
-			if (statusValue instanceof String) {
-				String statusValueStr = (String) statusValue;
-				assertEquals("Test Status", statusValueStr);
+			Object healthValue = modelledDevice.getAttributeValue("health");
+			if (healthValue instanceof String) {
+				String healthValueStr = (String) healthValue;
+				assertEquals("Test Health", healthValueStr);
 			} else {
-				fail("status value was expected to be a string but wasn't");
+				fail("health value was expected to be a string but wasn't");
 			}
 
 			// Get a specific boolean attribute
@@ -199,13 +199,13 @@ public class ExampleMalcolmDeviceTest {
 			}
 
 			// Get a specific string attribute (full attribute)
-			Object statusAttributeValue = modelledDevice.getAttribute("status");
-			if (statusAttributeValue instanceof StringAttribute) {
-				StringAttribute statusAttributeValueStr = (StringAttribute) statusAttributeValue;
-				assertEquals("status", statusAttributeValueStr.getName());
-				assertEquals("Test Status", statusAttributeValueStr.getValue());
+			Object healthAttributeValue = modelledDevice.getAttribute("health");
+			if (healthAttributeValue instanceof StringAttribute) {
+				StringAttribute healthAttributeValueStr = (StringAttribute) healthAttributeValue;
+				assertEquals("health", healthAttributeValueStr.getName());
+				assertEquals("Test Health", healthAttributeValueStr.getValue());
 			} else {
-				fail("status value was expected to be a StringAttribute but wasn't");
+				fail("health value was expected to be a StringAttribute but wasn't");
 			}
 			
 			// Get a specific table attribute (full attribute)

@@ -355,7 +355,7 @@ class DummyMalcolmRecord extends PVRecord {
         Structure deviceStructure = fb.
                 add(meta, metaStructure).
                 add("state", choiceStructure).
-                add("status", stringStructure).
+                add("health", stringStructure).
                 add("busy", booleanStructure).
                 add("totalSteps", intStructure).
                 add("abort", methodStructure).
@@ -384,8 +384,8 @@ class DummyMalcolmRecord extends PVRecord {
 		
         blockPVStructure.getSubField(PVString.class, STATEVALUE).put("IDLE");
         
-        // Status
-        blockPVStructure.getSubField(PVString.class, "status.value").put("Test Status");
+        // Health
+        blockPVStructure.getSubField(PVString.class, "health.value").put("Test Health");
         
         // Busy
         blockPVStructure.getSubField(PVBoolean.class, "busy.value").put(false);

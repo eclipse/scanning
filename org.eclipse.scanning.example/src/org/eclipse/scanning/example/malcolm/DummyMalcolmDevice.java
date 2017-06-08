@@ -339,7 +339,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	private static Logger logger = LoggerFactory.getLogger(DummyMalcolmDevice.class);
 	
 	private ChoiceAttribute state;
-	private StringAttribute status;
+	private StringAttribute health;
 	private BooleanAttribute busy;
 	private NumberAttribute completedSteps;
 	private NumberAttribute configuredSteps;
@@ -384,13 +384,13 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		state.setWriteable(false);
 		allAttributes.put(state.getName(), state);
 
-		status = new StringAttribute();
-		status.setValue("Waiting");
-		status.setName("status");
-		status.setLabel("status");
-		status.setDescription("Status of Block");
-		status.setWriteable(false);
-		allAttributes.put(status.getName(), status);
+		health = new StringAttribute();
+		health.setValue("Waiting");
+		health.setName("health");
+		health.setLabel("health");
+		health.setDescription("Health of Block");
+		health.setWriteable(false);
+		allAttributes.put(health.getName(), health);
 
 		busy = new BooleanAttribute();
 		busy.setValue(false);
@@ -668,7 +668,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	public void run(IPosition outerScanPosition) throws ScanningException, InterruptedException {
 		paused = false;
 		setDeviceState(DeviceState.RUNNING);
-		status.setValue("Running");
+		health.setValue("OK");
 		completedSteps.setValue(totalSteps.getValue());
 		
 		if (!firstRunCompleted) {
@@ -710,7 +710,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 			firePositionComplete(innerScanPosition);
 		}
 		
-		status.setValue("Finished writing");
+		health.setValue("OK");
 		setDeviceState(DeviceState.READY);
 	}
 
@@ -829,7 +829,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		DeviceState deviceState = getDeviceState();
 		if (deviceState == null) deviceState = DeviceState.IDLE;
 		state.setValue(deviceState.toString());
-		status.setValue(getDeviceStatus());
+		health.setValue(deviceState == DeviceState.FAULT ? "Fault" : "OK");
 		busy.setValue(isDeviceBusy());
 		
 		datasets = createDatasetsAttribute(model);

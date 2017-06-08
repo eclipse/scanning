@@ -66,7 +66,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
     // Static data
 	private static Logger logger = LoggerFactory.getLogger(MalcolmDevice.class);	
 	private static String STATE_ENDPOINT = "state";
-	private static String STATUS_ENDPOINT = "status";
+	private static String HEALTH_ENDPOINT = "health";
 	private static String BUSY_ENDPOINT = "busy";
 	private static String CURRENT_STEP_ENDPOINT = "completedSteps";
 	private static String FILE_EXTENSION_H5 = "h5";
@@ -327,15 +327,15 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	}
 
 	@Override
-	public String getDeviceStatus() throws MalcolmDeviceException {
+	public String getDeviceHealth() throws MalcolmDeviceException {
 		try {
-			final MalcolmMessage message = createGetMessage(STATUS_ENDPOINT);
+			final MalcolmMessage message = createGetMessage(HEALTH_ENDPOINT);
 			final MalcolmMessage reply   = send(message, getTimeout());
 			if (reply.getType()==Type.ERROR) {
 				throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
 			}
 
-			return MalcolmUtil.getStatus(reply);
+			return MalcolmUtil.getHealth(reply);
 			
 		} catch (MalcolmDeviceException mne) {
 			throw mne;
