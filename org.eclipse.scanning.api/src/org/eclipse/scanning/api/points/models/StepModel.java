@@ -37,7 +37,8 @@ public class StepModel extends AbstractPointsModel {
 			         unit="s", 
 			         minimum=0.001, 
 			         fieldPosition=4,
-			         role=FieldRole.EXPERT) // TODO This is optional
+			         role=FieldRole.EXPERT, 
+			         visible=false)
 	private double exposureTime;
 
 	public StepModel() {
