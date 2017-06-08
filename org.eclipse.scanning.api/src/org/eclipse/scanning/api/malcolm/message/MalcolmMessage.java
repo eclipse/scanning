@@ -13,6 +13,8 @@ package org.eclipse.scanning.api.malcolm.message;
 
 import java.util.Map;
 
+import org.eclipse.scanning.api.malcolm.connector.MalcolmMethod;
+
 /**
  * Class used to define malcolm object which 
  * sends information to the server.
@@ -32,7 +34,7 @@ public class MalcolmMessage {
 	private long   id;
 	private String param;
 	private String endpoint;
-	private String method;
+	private MalcolmMethod method;
 	private String message;
 	private Object arguments;
 	private Object value;
@@ -144,10 +146,10 @@ public class MalcolmMessage {
 		this.value = val;
 	}
 	
-	public String getMethod() {
+	public MalcolmMethod getMethod() {
 		return method;
 	}
-	public void setMethod(String method) {
+	public void setMethod(MalcolmMethod method) {
 		this.method = method;
 	}
 	public String getMessage() {

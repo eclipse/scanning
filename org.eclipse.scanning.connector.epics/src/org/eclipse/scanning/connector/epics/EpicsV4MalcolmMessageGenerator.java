@@ -15,6 +15,7 @@ import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
 import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 import org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService;
+import org.eclipse.scanning.api.malcolm.connector.MalcolmMethod;
 import org.eclipse.scanning.api.malcolm.connector.MessageGenerator;
 import org.eclipse.scanning.api.malcolm.message.MalcolmMessage;
 import org.eclipse.scanning.api.malcolm.message.Type;
@@ -70,41 +71,26 @@ class EpicsV4MalcolmMessageGenerator implements MessageGenerator<MalcolmMessage>
 		return msg;
 	}
 	
-	private MalcolmMessage createCallMessage(final String methodName) throws MalcolmDeviceException {
+	private MalcolmMessage createCallMessage(final MalcolmMethod method) throws MalcolmDeviceException {
 		final MalcolmMessage msg = createMalcolmMessage();
 		msg.setType(Type.CALL);
-		msg.setMethod(methodName); 
+		msg.setMethod(method); 
 		return msg;
 	}
 	@Override
-	public MalcolmMessage createCallMessage(final String methodName, Object arg) throws MalcolmDeviceException {
-		final MalcolmMessage msg = createCallMessage(methodName);
+	public MalcolmMessage createCallMessage(MalcolmMethod method, Object arg) throws MalcolmDeviceException {
+		final MalcolmMessage msg = createCallMessage(method);
 		msg.setArguments(arg);
 		return msg;
 	}
 	
 	@Override
-	public MalcolmMessage call(StackTraceElement[] stackTrace, DeviceState... latches) throws MalcolmDeviceException {
-		final MalcolmMessage msg   = createCallMessage(getMethodName(stackTrace));
+	public MalcolmMessage call(MalcolmMethod method, DeviceState... latches) throws MalcolmDeviceException {
+		final MalcolmMessage msg   = createCallMessage(method);
 		final MalcolmMessage reply = service.send(device, msg);
 		// TODO What about state changes? Should we block?
 		//if (latches!=null) latch(latches);
 		return reply;
 	}
-	
-	private static final String getMethodName(StackTraceElement ste[]) {
-	    String methodName = "";
-	    boolean flag = false;
-	   
-	    for (StackTraceElement s : ste) {
-	        if (flag) {
-	            methodName = s.getMethodName();
-	            break;
-	        }
-	        flag = s.getMethodName().equals("getStackTrace");
-	    }
-	    return methodName;
-	}
-	
 
 }
