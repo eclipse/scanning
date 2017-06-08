@@ -14,6 +14,7 @@ package org.eclipse.scanning.points;
 import java.text.MessageFormat;
 
 import org.eclipse.scanning.api.ModelValidationException;
+import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
@@ -25,7 +26,7 @@ import org.eclipse.scanning.api.points.models.StepModel;
  * @author Matthew Dickie
  */
 class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
-	
+
 	MultiStepGenerator() {
 		setLabel("Multi-step");
 		setDescription("Creates a step scan as a series of ranges possibly with different step sizes");
@@ -53,7 +54,7 @@ class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
 		
 		for (StepModel stepModel : model.getStepModels()) {
 			// check the inner step model has the same sign
-			if (!model.getName().equals(stepModel.getName())) {
+			if (model.getName()==null || stepModel.getName()==null || !model.getName().equals(stepModel.getName())) {
 				throw new ModelValidationException(MessageFormat.format(
 						"Child step model must have the same name as the MultiStepModel. Expected ''{0}'', was ''{1}''", model.getName(), stepModel.getName()),
 						model, "name");
