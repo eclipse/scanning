@@ -77,11 +77,11 @@ public class MalcolmUtil {
 		throw new Exception("Unable to get state from value Map");
 	}
 	
-	public static String getStatus(MalcolmMessage msg) throws Exception {
-		return getStatus(msg, true);
+	public static String getHealth(MalcolmMessage msg) throws Exception {
+		return getHealth(msg, true);
 	}
 	
-	public static String getStatus(MalcolmMessage msg, boolean requireException) throws Exception {
+	public static String getHealth(MalcolmMessage msg, boolean requireException) throws Exception {
 
 		try {
 			if (msg.getValue() instanceof String) {
@@ -91,9 +91,9 @@ public class MalcolmUtil {
 				return attribute.getValue().toString();
 			} else {
 				try {
-				    return getStringValueFromMap((Map)msg.getValue(), "status");
+				    return getStringValueFromMap((Map)msg.getValue(), "health");
 				} catch (Exception ne) {
-					throw new Exception("Value is not a map containing status!", ne);
+					throw new Exception("Value is not a map containing health!", ne);
 				}
 			}
 		} catch (Exception ne) {

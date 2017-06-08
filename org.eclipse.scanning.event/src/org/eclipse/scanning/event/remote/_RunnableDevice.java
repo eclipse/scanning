@@ -61,9 +61,9 @@ class _RunnableDevice<M> extends _AbstractRemoteDevice<M> implements IRunnableDe
 	}
 	
 	@Override
-	public String getDeviceStatus() throws ScanningException {
+	public String getDeviceHealth() throws ScanningException {
 		update();
-		return info.getStatus();
+		return info.getHealth();
 	}
 
 	@Override

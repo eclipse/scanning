@@ -108,9 +108,9 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	private boolean activated = false;
 	
 	/**
-	 * The device status, free text to describe the current status of the device.
+	 * The device health, free text to describe the current status of the device.
 	 */
-	private String status;
+	private String health;
 	
 	/**
 	 * Whether the device is busy or not
@@ -242,7 +242,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + Arrays.hashCode(permittedValues);
 		result = prime * result + ((state == null) ? 0 : state.hashCode());
-		result = prime * result + ((status == null) ? 0 : status.hashCode());
+		result = prime * result + ((health == null) ? 0 : health.hashCode());
 		result = prime * result + ((supportedScanModes == null) ? 0 : supportedScanModes.hashCode());
 		result = prime * result + ((unit == null) ? 0 : unit.hashCode());
 		result = prime * result + ((upper == null) ? 0 : upper.hashCode());
@@ -307,10 +307,10 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 			return false;
 		if (state != other.state)
 			return false;
-		if (status == null) {
-			if (other.status != null)
+		if (health == null) {
+			if (other.health != null)
 				return false;
-		} else if (!status.equals(other.status))
+		} else if (!health.equals(other.health))
 			return false;
 		if (supportedScanModes == null) {
 			if (other.supportedScanModes != null)
@@ -401,12 +401,12 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 		return wasactivated;
 	}
 
-	public String getStatus() {
-		return status;
+	public String getHealth() {
+		return health;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
+	public void setHealth(String health) {
+		this.health = health;
 	}
 	
 	public boolean isBusy() {

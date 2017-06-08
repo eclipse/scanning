@@ -83,9 +83,9 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 	
 	/**
 	 * 
-	 * @return the current device Status.
+	 * @return the current device Health.
 	 */
-	public String getDeviceStatus() throws ScanningException;
+	public String getDeviceHealth() throws ScanningException;
 	
 	/**
 	 * 

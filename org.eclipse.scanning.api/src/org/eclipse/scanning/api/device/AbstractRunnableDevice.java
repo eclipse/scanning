@@ -510,7 +510,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		if (includeNonAlive || deviceInformation.isAlive()) {
 			try {
 				deviceInformation.setState(getDeviceState());
-				deviceInformation.setStatus(getDeviceStatus());
+				deviceInformation.setHealth(getDeviceHealth());
 				deviceInformation.setBusy(isDeviceBusy());
 				deviceInformation.setAlive(isAlive());
 			} catch (Exception ex) {
@@ -577,11 +577,11 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	}
 	
 	/**
-	 * Please override to provide a device status (which a malcolm device will have)
+	 * Please override to provide a device health (which a malcolm device will have)
 	 * The default returns null.
-	 * @return the current device Status.
+	 * @return the current device Health.
 	 */
-	public String getDeviceStatus() throws ScanningException {
+	public String getDeviceHealth() throws ScanningException {
 		return null;
 	}
 	
