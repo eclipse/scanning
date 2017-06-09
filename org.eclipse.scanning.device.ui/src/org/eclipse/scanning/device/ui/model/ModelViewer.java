@@ -46,6 +46,7 @@ import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.annotation.ui.FieldRole;
 import org.eclipse.scanning.api.annotation.ui.FieldUtils;
 import org.eclipse.scanning.api.annotation.ui.FieldValue;
+import org.eclipse.scanning.api.annotation.ui.TypeDescriptor;
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
@@ -108,7 +109,8 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 	private static final Logger logger = LoggerFactory.getLogger(ModelViewer.class);
 	
 	// UI
-	private TableViewer viewer;
+	private TableViewer viewer;	      // Edits beans with a table of values
+	private TypeEditor  typeEditor;   // Edits beans with TypeDescriptor custom editors
 	private Composite   content;
 	private Composite   validationComposite;
 	private Label       validationMessage;
@@ -170,6 +172,11 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 	            event.height=24;
 	        }
 	    });		
+		
+		this.typeEditor = new TypeEditor(content,  SWT.NONE);
+		typeEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
+		GridUtils.setVisible(typeEditor, false);
+		
 		this.validationComposite = new Composite(content, SWT.NONE);
 		validationComposite.setLayout(new GridLayout(2, false));
 		validationComposite.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
@@ -330,7 +337,7 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 							field.set(path);
 							refresh();
 						} catch (Exception e) {
-							e.printStackTrace();
+							logger.error("Cannot set the field "+field.getName()+" with value "+path, e);
 						}
 					}
 				}
@@ -378,7 +385,7 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 				
 			} catch (Exception ne) {
 				validationException = ne instanceof ModelValidationException ? (ModelValidationException)ne : null;
-				validationMessage.setText(ne.getMessage());
+				if (ne.getMessage()!=null) validationMessage.setText(ne.getMessage());
 				validationError = true;
 			}
 		}
@@ -442,14 +449,28 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 		this.validator = (IValidator<Object>)v;
 	}
 
-	public void setModel(T model) throws InterfaceInvalidException {
+	@Override
+	public void setModel(T model) throws Exception {
 		if (viewer.getTable().isDisposed()) return;
 		if (viewer.isCellEditorActive())    return;
 		this.model = model;
-		viewer.setInput(model);
+		
+		if (isCustomEditor(model)) {
+			GridUtils.setVisible(viewer.getTable(), false);
+			GridUtils.setVisible(typeEditor,        true);
+			typeEditor.setModel(model);
+		} else {
+			GridUtils.setVisible(viewer.getTable(), true);
+			GridUtils.setVisible(typeEditor,        false);
+		    viewer.setInput(model);
+		}
 		refresh();
 	}
 	
+	private boolean isCustomEditor(T model) {
+		return model.getClass().getAnnotation(TypeDescriptor.class)!=null;
+	}
+
 	public T getModel() {
 		return model;
 	}

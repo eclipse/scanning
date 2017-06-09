@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,9 @@ import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.models.BoundingBox;
+import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.GridModel;
+import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.eclipse.scanning.points.PySerializable;
@@ -452,4 +455,23 @@ public class CompoundTest {
 		assertEquals(size.length, pos.size());
 		
 	}
+	
+	@Test
+	public void testMultiAroundGrid() throws Exception {
+		
+		final MultiStepModel mmodel = new MultiStepModel();
+		mmodel.setName("energy");
+		mmodel.addStepModel(new StepModel("energy", 10000,20000,10000)); // 2 points
+		
+		assertEquals(2, service.createGenerator(mmodel).size());
+
+		
+		GridModel gmodel = new GridModel("stage_x", "stage_y", 5, 5);
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+		
+		IPointGenerator<?> scan = service.createCompoundGenerator(new CompoundModel(Arrays.asList(mmodel, gmodel)));
+
+		assertEquals(50, scan.size());
+	}
+
 }

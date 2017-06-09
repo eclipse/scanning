@@ -29,6 +29,7 @@ import org.eclipse.scanning.server.servlet.DeviceServlet;
 import org.eclipse.scanning.server.servlet.Services;
 import org.eclipse.scanning.test.BrokerDelegate;
 import org.eclipse.scanning.test.ScanningTestClassRegistry;
+import org.eclipse.scanning.test.ui.composites.MultiStepCompositeTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
 
@@ -43,6 +44,7 @@ import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 	BoundingBoxTest.class,
 	ScannableViewerTest.class,
 	ScannableViewerTest2.class,
+	MultiStepCompositeTest.class,
 	ControlTreeViewerTest.class // Must be last!
 
 })

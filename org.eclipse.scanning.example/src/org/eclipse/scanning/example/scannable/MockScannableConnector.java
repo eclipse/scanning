@@ -78,6 +78,11 @@ public class MockScannableConnector implements IScannableDeviceService, IDisconn
 	private void createMockObjects() {
 		
 		if (cache==null) cache = new HashMap<String, INameable>(3);
+		
+		MockScannable energy = new MockScannable("energy", 10000d,  1, "eV");
+		energy.setMinimum(0);
+		energy.setMaximum(35000);
+		register(energy);
 		register(new MockPausingMonitor("pauser", 10d,  -1));
 		register(new MockTopupScannable("topup", 1000));
 		register(new MockScannable("beamcurrent", 5d,  1, "mA"));

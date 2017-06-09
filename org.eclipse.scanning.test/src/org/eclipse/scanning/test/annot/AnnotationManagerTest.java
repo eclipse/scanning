@@ -248,14 +248,14 @@ public class AnnotationManagerTest {
 	
 	@Test(expected=Exception.class)
 	public void checkNoDevicesError() throws Exception {
-		AnnotationManager m = new AnnotationManager(null);
+		AnnotationManager m = new AnnotationManager();
 		m.addDevices();
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
 	public void checkRepeatedTypes() throws Exception {
 		try {
-			AnnotationManager m = new AnnotationManager(null);
+			AnnotationManager m = new AnnotationManager();
 	        m.addDevices(new RepeatedTypeDevice());
 		} catch(Exception ne) {
 			System.out.println(ne.getMessage());
@@ -330,7 +330,7 @@ public class AnnotationManagerTest {
 	@Test
 	public void checkSimpleOrder() throws Exception {
 		
-		AnnotationManager m = new AnnotationManager(null);
+		AnnotationManager m = new AnnotationManager();
 		
 		List<OrderedDevice> devices = new ArrayList<>();
 		for (int i = 0; i < 100; i++) devices.add(new OrderedDevice("device"+i));
@@ -349,7 +349,7 @@ public class AnnotationManagerTest {
 	@Test
 	public void checkOrderByLevel() throws Exception {
 		
-		AnnotationManager m = new AnnotationManager(null);
+		AnnotationManager m = new AnnotationManager();
 		
 		// We add them not by level
 		List<OrderedDevice> devices = new ArrayList<>();
@@ -378,7 +378,7 @@ public class AnnotationManagerTest {
 	@Test
 	public void checkOrderByCallThenByLevel() throws Exception {
 		
-		AnnotationManager m = new AnnotationManager(null);
+		AnnotationManager m = new AnnotationManager();
 		
 		// We add them not by level
 		List<OrderedDevice> fds = new ArrayList<>();
@@ -417,7 +417,7 @@ public class AnnotationManagerTest {
 		
 		final int size = 1000;
 		
-		AnnotationManager m = new AnnotationManager(null);
+		AnnotationManager m = new AnnotationManager();
 		
 		// We add them not by level
 		for (int i = 0; i < size; i++) {

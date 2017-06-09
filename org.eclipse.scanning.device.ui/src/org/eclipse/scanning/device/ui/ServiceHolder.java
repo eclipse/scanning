@@ -193,4 +193,8 @@ public class ServiceHolder {
 	public static void setStashingService(IStashingService stashingService) {
 		ServiceHolder.stashingService = stashingService;
 	}
+	
+	public static BundleContext getContext() {
+		return context;
+	}
 }

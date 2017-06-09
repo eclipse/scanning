@@ -37,7 +37,8 @@ public class StepModel extends AbstractPointsModel {
 			         unit="s", 
 			         minimum=0.001, 
 			         fieldPosition=4,
-			         role=FieldRole.EXPERT) // TODO This is optional
+			         role=FieldRole.EXPERT, 
+			         visible=false)
 	private double exposureTime;
 
 	public StepModel() {
@@ -135,5 +136,12 @@ public class StepModel extends AbstractPointsModel {
 
 	public void setExposureTime(double exposureTime) {
 		this.exposureTime = exposureTime;
+	}
+
+	public int size() {
+		// copied from StepGenerator.sizeOfValidModel
+		double div = ((getStop()-getStart())/getStep());
+		div += 0.01;
+		return (int)Math.floor(div+1);
 	}
 }

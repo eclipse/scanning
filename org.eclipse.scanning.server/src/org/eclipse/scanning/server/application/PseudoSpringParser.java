@@ -199,7 +199,7 @@ public class PseudoSpringParser implements ISpringParser {
 		return getOSGiBundle(bundleName);
 	}
 
-	public Bundle getOSGiBundle(String symbolicName) {
+	private Bundle getOSGiBundle(String symbolicName) {
 		
 		ServiceReference<PackageAdmin> ref = context.getBundleContext().getServiceReference(PackageAdmin.class);
 		PackageAdmin packageAdmin = context.getBundleContext().getService(ref);

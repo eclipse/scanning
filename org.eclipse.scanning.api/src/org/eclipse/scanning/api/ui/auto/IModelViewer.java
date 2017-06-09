@@ -40,7 +40,7 @@ public interface IModelViewer<T> {
 	 * @param model
 	 * @throws exception if interface cannot be rendered from this model.
 	 */
-	void setModel(T model) throws InterfaceInvalidException;
+	void setModel(T model) throws Exception;
 
 	
 	/**

@@ -34,7 +34,7 @@ import org.eclipse.scanning.api.points.models.GridModel;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class GridTest extends GeneratorTest {
+public class GridTest extends AbstractGeneratorTest {
 
 	@Test
 	public void testFillingRectangleNoROI() throws Exception {

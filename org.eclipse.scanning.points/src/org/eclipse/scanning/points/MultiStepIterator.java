@@ -53,7 +53,7 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 		List<double[]> positionArrays = new ArrayList<>(model.getStepModels().size());
 		double previousEnd = 0;
 		for (StepModel stepModel : model.getStepModels()) {
-			int size = getSize(stepModel);
+			int size = stepModel.size();
 			double pos = stepModel.getStart();
 
 			// if the start of this model is the end of the previous one, and the end of the
@@ -92,13 +92,6 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 			pos += positions.length;
 			sindex+=1;
 		}
-	}
-	
-	private static int getSize(StepModel stepModel) {
-		// copied from StepGenerator.sizeOfValidModel
-		double div = ((stepModel.getStop()-stepModel.getStart())/stepModel.getStep());
-		div += (Math.abs(stepModel.getStep()) / 100); // add tolerance of 1% of step value
-		return (int)Math.floor(div+1);
 	}
 	
 	@Override

@@ -17,19 +17,22 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(org.junit.runners.Suite.class)
 @SuiteClasses({
 
+	ArrayTest.class,
+	CompoundTest.class, 
 	GridTest.class, 
 	LinearTest.class, 
-	RasterTest.class, 
-	StepTest.class, 
-	CompoundTest.class, 
+	// LissajousTest.class, FIXME Why does this not work?
+	MultiStepTest.class, 
+	PointServiceTest.class,
 	RandomOffsetDecoratorTest.class,
-	ScanRankTest.class,
-	SpiralTest.class,
+	RandomOffsetGridTest.class,	
+	RasterTest.class, 
 	ScanPointGeneratorFactoryTest.class,
-	ArrayTest.class,
-	RandomOffsetGridTest.class,
-	PointServiceTest.class
-
+	ScanRankTest.class,
+	ScanShapeTest.class,
+	SpiralTest.class,
+	StaticTest.class,
+	StepTest.class
 
 	// TODO Smoke tests?
 	//GridTestLarge.class, 
