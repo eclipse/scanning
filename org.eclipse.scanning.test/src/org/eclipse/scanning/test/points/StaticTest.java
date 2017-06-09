@@ -24,8 +24,10 @@ import org.eclipse.scanning.api.points.StaticPosition;
 import org.eclipse.scanning.api.points.models.StaticModel;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("This test does not run on Travis")
 public class StaticTest {
 	
 	private IPointGeneratorService service;
