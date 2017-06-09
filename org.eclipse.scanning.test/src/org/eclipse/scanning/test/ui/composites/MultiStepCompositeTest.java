@@ -236,6 +236,81 @@ public class MultiStepCompositeTest extends ShellTest{
 		}
 	}
 
-	
-	
+	@Test
+	public void addNineDeleteThree() throws Exception {
+		try {
+			for (int i = 0; i < 9; i++) {
+				if (bot.button().isEnabled()) bot.button(0).click();
+			};
+			for (int i = 0; i < 3; i++) {
+				bot.button(1).click();
+			};
+		
+			assertEquals(6, bot.table(0).rowCount());
+			synchExec(()->controller.uiToBean());
+			assertEquals(6, model.getStepModels().size());
+			
+			
+		} finally {
+			model.clear();
+		}
+	}
+
+	@Test
+	public void addElevenDeleteThree() throws Exception {
+		try {
+			for (int i = 0; i < 11; i++) {
+				if (bot.button().isEnabled()) bot.button(0).click();
+			};
+			for (int i = 0; i < 3; i++) {
+				bot.button(1).click();
+			};
+		
+			assertEquals(7, bot.table(0).rowCount()); // 7 not 8 because 10 is the limit.
+			synchExec(()->controller.uiToBean());
+			assertEquals(7, model.getStepModels().size());
+			
+			
+		} finally {
+			model.clear();
+		}
+	}
+
+	@Test
+	public void checkNotRedAfterTwoAdds() throws Exception {
+		try {
+			for (int i = 0; i < 2; i++) {
+				if (bot.button().isEnabled()) bot.button(0).click();
+			};
+			Color red = new Color(bot.getDisplay(), 255, 0, 0, 255);
+			assertFalse(bot.styledText(1).foregroundColor().equals(red));
+			assertFalse(bot.styledText(2).foregroundColor().equals(red));
+			
+			
+		} finally {
+			model.clear();
+		}
+	}
+
+	/**
+	 * This test checks that the 'energy' scannable changed the default
+	 * bounds to its bounds (35000)
+	 * @throws Exception
+	 */
+	@Test
+	public void checkRedAfterFourAdds() throws Exception {
+		try {
+			for (int i = 0; i < 4; i++) {
+				if (bot.button().isEnabled()) bot.button(0).click();
+			};
+			Color red = new Color(bot.getDisplay(), 255, 0, 0, 255);
+			assertEquals(red, bot.styledText(0).foregroundColor());
+			assertEquals(red, bot.styledText(1).foregroundColor());
+			
+			
+		} finally {
+			model.clear();
+		}
+	}
+
 }
