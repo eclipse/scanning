@@ -36,8 +36,8 @@ public class StepModelComposite extends Composite {
 		start = new ScaleBox(this, SWT.NONE);
 		start.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		start.setUnit("eV");
-		start.setMinimum(0);
-		start.setMaximum(35000);
+		start.setMinimum(Integer.getInteger("org.eclipse.scanning.device.ui.composites.stepStartMin", -100000).doubleValue());
+		start.setMaximum(Integer.getInteger("org.eclipse.scanning.device.ui.composites.stepStartMax", 100000).doubleValue());
 		
 		label = new Label(this, SWT.NONE);
 		label.setText("Stop");
@@ -46,7 +46,7 @@ public class StepModelComposite extends Composite {
 		stop.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		stop.setUnit("eV");
 		stop.setMinimum(start);
-		stop.setMaximum(35000);
+		stop.setMaximum(Integer.getInteger("org.eclipse.scanning.device.ui.composites.stepStopMax", 100000).doubleValue());
 		
 		label = new Label(this, SWT.NONE);
 		label.setText("Step");
@@ -54,8 +54,8 @@ public class StepModelComposite extends Composite {
 		step = new ScaleBox(this, SWT.NONE);
 		step.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		step.setUnit("eV");
-		step.setMinimum(0.00001);
-		step.setMaximum(35000);
+		step.setMinimum(Integer.getInteger("org.eclipse.scanning.device.ui.composites.stepMin", -10000).doubleValue());
+		step.setMaximum(Integer.getInteger("org.eclipse.scanning.device.ui.composites.stepMax", 10000).doubleValue());
 
 		label = new Label(this, SWT.HORIZONTAL|SWT.SEPARATOR);
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));

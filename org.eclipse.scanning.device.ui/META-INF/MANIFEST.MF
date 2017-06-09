@@ -26,6 +26,7 @@ Bundle-Activator: org.eclipse.scanning.device.ui.Activator
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/*.xml
 Export-Package: org.eclipse.scanning.device.ui,
+ org.eclipse.scanning.device.ui.composites,
  org.eclipse.scanning.device.ui.device,
  org.eclipse.scanning.device.ui.device.scannable,
  org.eclipse.scanning.device.ui.model,

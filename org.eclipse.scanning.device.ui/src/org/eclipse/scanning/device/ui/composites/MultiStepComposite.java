@@ -105,7 +105,10 @@ public class MultiStepComposite extends Composite {
 		List<String> items = IFilterService.DEFAULT.filter("org.eclipse.scanning.scannableFilter", names);
 		Collections.sort(items, new SortNatural<>(false));
 		name.setItems(items.toArray(new String[items.size()]));
-		if (model.getName()!=null) name.select(items.indexOf(model.getName()));
+		if (model.getName()!=null && items!=null) {
+			int index = items.indexOf(model.getName());
+			name.select(index);
+		}
 		getParent().layout(new Control[]{this});
 	}
 

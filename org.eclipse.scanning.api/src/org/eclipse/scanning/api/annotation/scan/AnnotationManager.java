@@ -67,7 +67,14 @@ public class AnnotationManager {
 	private Collection<Class<? extends Annotation>> annotations;
 	private IServiceResolver resolver;
 
+	public AnnotationManager() {
+		this((IServiceResolver)null, DeviceAnnotations.getAllAnnotations());
+	}
 	
+	public AnnotationManager(Class<? extends Annotation>... a) {
+		this(null, a);
+	}
+
 	public AnnotationManager(IServiceResolver resolver) {
 		this(resolver, DeviceAnnotations.getAllAnnotations());
 	}
