@@ -347,23 +347,8 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public boolean isDeviceBusy() throws MalcolmDeviceException {
-		try {
-			final MalcolmMessage message = createGetMessage(BUSY_ENDPOINT);
-			final MalcolmMessage reply   = send(message, getTimeout());
-			if (reply.getType()==Type.ERROR) {
-				throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
-			}
-
-			return MalcolmUtil.getBusy(reply);
-			
-		} catch (MalcolmDeviceException mne) {
-			throw mne;
-			
-		} catch (Exception ne) {
-			throw new MalcolmDeviceException(this, "Cannot connect to device '" + getName() + "'", ne);
-		}
+		return getDeviceState().isRestState() == false;
 	}
-
 
 	@Override
 	public void validate(M params) throws ValidationException {

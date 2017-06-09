@@ -24,8 +24,8 @@ import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
 import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.malcolm.MalcolmTable;
+import org.eclipse.scanning.api.malcolm.attributes.HealthAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
-import org.eclipse.scanning.api.malcolm.attributes.StringAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.TableAttribute;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
@@ -200,12 +200,12 @@ public class ExampleMalcolmDeviceTest {
 
 			// Get a specific string attribute (full attribute)
 			Object healthAttributeValue = modelledDevice.getAttribute("health");
-			if (healthAttributeValue instanceof StringAttribute) {
-				StringAttribute healthAttributeValueStr = (StringAttribute) healthAttributeValue;
+			if (healthAttributeValue instanceof HealthAttribute) {
+				HealthAttribute healthAttributeValueStr = (HealthAttribute) healthAttributeValue;
 				assertEquals("health", healthAttributeValueStr.getName());
 				assertEquals("Test Health", healthAttributeValueStr.getValue());
 			} else {
-				fail("health value was expected to be a StringAttribute but wasn't");
+				fail("health value was expected to be a HealthAttribute but wasn't");
 			}
 			
 			// Get a specific table attribute (full attribute)

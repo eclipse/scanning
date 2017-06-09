@@ -61,12 +61,12 @@ import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 import org.eclipse.scanning.api.malcolm.MalcolmTable;
 import org.eclipse.scanning.api.malcolm.attributes.BooleanAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.ChoiceAttribute;
+import org.eclipse.scanning.api.malcolm.attributes.HealthAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.MalcolmAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType;
 import org.eclipse.scanning.api.malcolm.attributes.NumberAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.StringArrayAttribute;
-import org.eclipse.scanning.api.malcolm.attributes.StringAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.TableAttribute;
 import org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService;
 import org.eclipse.scanning.api.malcolm.connector.MessageGenerator;
@@ -339,7 +339,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	private static Logger logger = LoggerFactory.getLogger(DummyMalcolmDevice.class);
 	
 	private ChoiceAttribute state;
-	private StringAttribute health;
+	private HealthAttribute health;
 	private BooleanAttribute busy;
 	private NumberAttribute completedSteps;
 	private NumberAttribute configuredSteps;
@@ -384,7 +384,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		state.setWriteable(false);
 		allAttributes.put(state.getName(), state);
 
-		health = new StringAttribute();
+		health = new HealthAttribute();
 		health.setValue("Waiting");
 		health.setName("health");
 		health.setLabel("health");

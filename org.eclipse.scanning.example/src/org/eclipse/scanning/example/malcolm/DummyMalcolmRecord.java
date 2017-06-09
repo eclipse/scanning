@@ -167,12 +167,12 @@ class DummyMalcolmRecord extends PVRecord {
     			setId(CORE_ID+"ChoiceMeta:1.0").
                 createStructure();
         
-        Structure stringMetaStructure = FIELDCREATE.createFieldBuilder().
+        Structure healthMetaStructure = FIELDCREATE.createFieldBuilder().
     			add(description, ScalarType.pvString).
     			addArray(tags, ScalarType.pvString).
     			add(writeable, ScalarType.pvBoolean).
     			add(label, ScalarType.pvString).
-    			setId(CORE_ID+"StringMeta:1.0").
+    			setId(CORE_ID+"HealthMeta:1.0").
     			createStructure();
         
         Structure booleanMetaStructure = FIELDCREATE.createFieldBuilder().
@@ -258,8 +258,8 @@ class DummyMalcolmRecord extends PVRecord {
     			setId(eid).
     			createStructure();
         
-        Structure stringStructure = FIELDCREATE.createFieldBuilder().
-    			add(meta, stringMetaStructure).
+        Structure healthStructure = FIELDCREATE.createFieldBuilder().
+    			add(meta, healthMetaStructure).
     			add(value, ScalarType.pvString).
     			setId(eid).
     			createStructure();
@@ -355,7 +355,7 @@ class DummyMalcolmRecord extends PVRecord {
         Structure deviceStructure = fb.
                 add(meta, metaStructure).
                 add("state", choiceStructure).
-                add("health", stringStructure).
+                add("health", healthStructure).
                 add("busy", booleanStructure).
                 add("totalSteps", intStructure).
                 add("abort", methodStructure).
