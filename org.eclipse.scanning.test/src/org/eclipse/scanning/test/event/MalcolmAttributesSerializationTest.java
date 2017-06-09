@@ -17,24 +17,18 @@ import org.eclipse.scanning.api.malcolm.MalcolmTable;
 import org.eclipse.scanning.api.malcolm.attributes.BooleanArrayAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.BooleanAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.ChoiceAttribute;
+import org.eclipse.scanning.api.malcolm.attributes.HealthAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.NumberArrayAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.NumberAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.PointGeneratorAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.StringArrayAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.StringAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.TableAttribute;
-import org.eclipse.scanning.api.points.IPointGenerator;
-import org.eclipse.scanning.api.points.IPointGeneratorService;
-import org.eclipse.scanning.api.points.models.BoundingBox;
-import org.eclipse.scanning.api.points.models.CompoundModel;
-import org.eclipse.scanning.api.points.models.GridModel;
 import org.eclipse.scanning.example.classregistry.ScanningExampleClassRegistry;
-import org.eclipse.scanning.points.PointGeneratorService;
 import org.eclipse.scanning.points.classregistry.ScanningAPIClassRegistry;
 import org.eclipse.scanning.points.serialization.PointsModelMarshaller;
 import org.eclipse.scanning.test.ScanningTestClassRegistry;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class MalcolmAttributesSerializationTest {
@@ -178,6 +172,21 @@ public class MalcolmAttributesSerializationTest {
 		
 		String json = service.marshal(attrib);
 		StringAttribute newAttrib = service.unmarshal(json, StringAttribute.class);
+		assertEquals(attrib, newAttrib);
+	}
+	
+	@Test
+	public void testSerializeHealthAttribute() throws Exception {
+		HealthAttribute attrib = new HealthAttribute();
+		attrib.setName("healthAttribute");
+		attrib.setLabel("Health Attribute");
+		attrib.setDescription("Description of a health attribute");
+		attrib.setTags(new String[] { "foo", "bar" });
+		attrib.setWriteable(true);
+		attrib.setValue("Good Health");
+		
+		String json = service.marshal(attrib);
+		HealthAttribute newAttrib = service.unmarshal(json, HealthAttribute.class);
 		assertEquals(attrib, newAttrib);
 	}
 	

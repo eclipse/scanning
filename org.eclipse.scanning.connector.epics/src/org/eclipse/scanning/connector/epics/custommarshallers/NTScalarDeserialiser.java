@@ -13,6 +13,7 @@ package org.eclipse.scanning.connector.epics.custommarshallers;
 
 import org.eclipse.scanning.api.malcolm.attributes.BooleanAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.ChoiceAttribute;
+import org.eclipse.scanning.api.malcolm.attributes.HealthAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.NumberAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.StringAttribute;
 import org.epics.pvdata.pv.PVField;
@@ -117,7 +118,19 @@ public class NTScalarDeserialiser implements IPVStructureDeserialiser {
 			}
 			
 			return attribute;
-		}
+		} else if (metaId.startsWith(HealthAttribute.HEALTH_ID)) {
+			HealthAttribute attribute = new HealthAttribute();
+			
+			attribute.setDescription(description);
+			attribute.setLabel(label);
+			attribute.setTags(tagsArrayData.data);
+			attribute.setWriteable(writeable);
+			attribute.setName(pvStructure.getFullName());
+			
+			String value = pvStructure.getStringField(valueField).get();
+			attribute.setValue(value);
+			return attribute;
+		} 
 		
 		throw new Exception("Unrecognised NTScalar type: " + metaId);
 	}
