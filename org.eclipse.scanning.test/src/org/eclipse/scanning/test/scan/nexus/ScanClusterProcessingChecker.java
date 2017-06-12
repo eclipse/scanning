@@ -76,7 +76,7 @@ public class ScanClusterProcessingChecker {
 		this.filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
 		this.detectorName = scanModel.getDetectors().get(0).getName();
 
-		assertEquals(DeviceState.READY, scanner.getDeviceState());
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 	}
 	
 	public void checkNexusFile(int... sizes) throws Exception {

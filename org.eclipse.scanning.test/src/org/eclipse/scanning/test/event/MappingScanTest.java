@@ -100,7 +100,7 @@ public class MappingScanTest extends BrokerTest{
 		bean.setName("Test Mapping Scan");
 		bean.setBeamline("I05-1");
 		bean.setUserName("Joe Bloggs");
-		bean.setDeviceState(DeviceState.IDLE);
+		bean.setDeviceState(DeviceState.READY);
 		bean.setPreviousStatus(Status.SUBMITTED);
 		bean.setStatus(Status.QUEUED);
 		bean.setFilePath("/dls/tmp/fred.h5");
@@ -167,7 +167,7 @@ public class MappingScanTest extends BrokerTest{
 		//System.out.println("Did hardware scan of size " + size);
 		assertTrue("Did hardware scan of size " + size, size == gen.size());
 
-		bean.setDeviceState(DeviceState.READY);
+		bean.setDeviceState(DeviceState.ARMED);
 		publisher.broadcast(bean);
 
 	}

@@ -90,7 +90,7 @@ public class EpicsV4ConnectorTest {
 		// Get the device state.
 		DeviceState deviceState = modelledDevice.getDeviceState();
 
-		assertEquals(DeviceState.IDLE, deviceState);
+		assertEquals(DeviceState.READY, deviceState);
 
 	}
 	
@@ -107,7 +107,7 @@ public class EpicsV4ConnectorTest {
 		// Get the device state.
 		DeviceState deviceState = modelledDevice.getDeviceState();
 
-		assertEquals(DeviceState.IDLE, deviceState);
+		assertEquals(DeviceState.READY, deviceState);
 
 	}
 
@@ -227,7 +227,7 @@ public class EpicsV4ConnectorTest {
 			// Get the device state.
 			DeviceState deviceState = modelledDevice.getDeviceState();
 			
-			assertEquals(DeviceState.IDLE, deviceState);
+			assertEquals(DeviceState.READY, deviceState);
 			
 			List<IROI> regions = new LinkedList<>();
 			regions.add(new CircularROI(2, 6, 1));
@@ -282,7 +282,7 @@ public class EpicsV4ConnectorTest {
 			// Get the device state.
 			DeviceState deviceState = modelledDevice.getDeviceState();
 			
-			assertEquals(DeviceState.IDLE, deviceState);
+			assertEquals(DeviceState.READY, deviceState);
 			
 			List<IROI> regions = new LinkedList<>();
 			regions.add(new CircularROI(2, 6, 1));

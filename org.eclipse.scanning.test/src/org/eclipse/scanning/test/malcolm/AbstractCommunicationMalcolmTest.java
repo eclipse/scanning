@@ -130,7 +130,7 @@ public abstract class AbstractCommunicationMalcolmTest extends AbstractMalcolmTe
 		} catch (Exception expected) {
 			return;
 		}
-		throw new Exception(DeviceState.IDLE+" did not throw an exception on aborting!");
+		throw new Exception(DeviceState.READY+" did not throw an exception on aborting!");
 	}
 	
 	@Test
@@ -142,7 +142,7 @@ public abstract class AbstractCommunicationMalcolmTest extends AbstractMalcolmTe
 		} catch (Exception expected) {
 			return;
 		}
-		throw new Exception(DeviceState.IDLE+" did not throw an exception on aborting!");
+		throw new Exception(DeviceState.READY+" did not throw an exception on aborting!");
 	}
 
 }

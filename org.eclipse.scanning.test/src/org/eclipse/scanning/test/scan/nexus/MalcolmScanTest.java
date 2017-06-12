@@ -191,8 +191,8 @@ public class MalcolmScanTest extends NexusTest {
 		checkSize(scanner, shape);
 		checkFiles();
 
-		// Check we reached ready (it will normally throw an exception on error)
-		assertEquals(DeviceState.READY, scanner.getDeviceState());
+		// Check we reached armed (it will normally throw an exception on error)
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 		checkNexusFile(scanner, snake, shape); // Step model is +1 on the size
 	}
 	

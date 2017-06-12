@@ -21,7 +21,7 @@ package org.eclipse.scanning.api.event.scan;
  */
 public enum DeviceState {
 
-	RESETTING,IDLE,EDITING,EDITABLE,SAVING,REVERTING,READY,CONFIGURING,RUNNING,POSTRUN,PAUSED,SEEKING,ABORTING,ABORTED,FAULT,DISABLING,DISABLED,OFFLINE;
+	RESETTING,READY,EDITING,EDITABLE,SAVING,REVERTING,ARMED,CONFIGURING,RUNNING,POSTRUN,PAUSED,SEEKING,ABORTING,ABORTED,FAULT,DISABLING,DISABLED,OFFLINE;
 
 	private String stringVal;
 	
@@ -41,7 +41,7 @@ public enum DeviceState {
 	 * @return
 	 */
 	public boolean isRunnable() {
-		return this==READY;
+		return this==ARMED;
 	}
 	
 	public boolean isRunning() {
@@ -53,19 +53,19 @@ public enum DeviceState {
 	 * @return
 	 */
 	public boolean isBeforeRun() {
-		return this==READY || this==IDLE || this == CONFIGURING;
+		return this==ARMED || this==READY || this == CONFIGURING;
 	}
 
 	public boolean isRest() {
-		return this==FAULT || this==IDLE || this==CONFIGURING || this==READY || this==ABORTED || this==DISABLED;
+		return this==FAULT || this==READY || this==CONFIGURING || this==ARMED || this==ABORTED || this==DISABLED;
 	}
 
 	public boolean isAbortable() {
-		return this==RUNNING || this==CONFIGURING || this==PAUSED || this==SEEKING || this==READY || this==POSTRUN;
+		return this==RUNNING || this==CONFIGURING || this==PAUSED || this==SEEKING || this==ARMED || this==POSTRUN;
 	}
 	
 	public boolean isResetable() {
-		return this==FAULT || this==ABORTED || this==DISABLED || this==READY;
+		return this==FAULT || this==ABORTED || this==DISABLED || this==ARMED;
 	}
 
 	public boolean isTransient() {
@@ -73,7 +73,7 @@ public enum DeviceState {
 	}
 
 	public boolean isRestState() {
-		return this==IDLE || this==READY || this==FAULT || this==ABORTED || this==DISABLED;
+		return this==READY || this==ARMED || this==FAULT || this==ABORTED || this==DISABLED;
 	}
 	
 	

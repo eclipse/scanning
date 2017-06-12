@@ -237,7 +237,7 @@ public class RequesterTest extends BrokerTest {
 		
 		MandelbrotModel model = info.getModel();
 		model.setExposureTime(0);
-		assertTrue(info.getState()==DeviceState.IDLE); // We do not set an exposure as part of the test.
+		assertTrue(info.getState()==DeviceState.READY); // We do not set an exposure as part of the test.
 		
 		// Now we will reconfigure the device
 		// and send a new request
@@ -254,7 +254,7 @@ public class RequesterTest extends BrokerTest {
 		if (info==null) throw new Exception("There were no devices found and at least the mandelbrot example should have been!");
 		assertTrue(model.getExposureTime()==100); // We do not set an exposure as part of the test.
 		assertTrue(model.getEscapeRadius()==15); // We do not set an exposure as part of the test.
-		assertTrue(info.getState()==DeviceState.READY); // We do not set an exposure as part of the test.
+		assertTrue(info.getState()==DeviceState.ARMED); // We do not set an exposure as part of the test.
 	}
 
 }
