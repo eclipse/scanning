@@ -85,7 +85,7 @@ public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel>
 	public DummyMalcolmTriggeredDetector() throws ScanningException {
 		super(Services.getRunnableDeviceService());
 		this.model = (T) new DummyMalcolmTriggeredModel();
-		setDeviceState(DeviceState.IDLE);
+		setDeviceState(DeviceState.READY);
 		setSupportedScanMode(ScanMode.HARDWARE);
 	}
 	

@@ -175,8 +175,8 @@ public class ThreadScanTest extends BrokerTest {
 
 		if (exceptions.size()>0) throw exceptions.get(0);
 		
-		if (device.getDeviceState()!=DeviceState.READY) {
-			throw new Exception("The state at the end of the pause/resume cycle(s) must be "+DeviceState.READY+" not "+device.getDeviceState());
+		if (device.getDeviceState()!=DeviceState.ARMED) {
+			throw new Exception("The state at the end of the pause/resume cycle(s) must be "+DeviceState.ARMED+" not "+device.getDeviceState());
 		}
 		
 		int expectedThreads = usedThreads.size() > 0 ? usedThreads.get(0) : threadcount;
@@ -229,7 +229,7 @@ public class ThreadScanTest extends BrokerTest {
 		
 		
 		// No fudgy sleeps allowed in test must be as dataacq would use.
-		if (ignoreReady && device.getDeviceState()==DeviceState.READY) return;
+		if (ignoreReady && device.getDeviceState()==DeviceState.ARMED) return;
 		
 		device.pause();
 		

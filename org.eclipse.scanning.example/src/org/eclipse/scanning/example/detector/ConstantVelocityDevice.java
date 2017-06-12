@@ -51,7 +51,7 @@ public class ConstantVelocityDevice extends AbstractRunnableDevice<ConstantVeloc
 	public ConstantVelocityDevice() throws ScanningException {
 		super(Services.getRunnableDeviceService()); // So that spring will work.
 		this.model = new ConstantVelocityModel();
-		setDeviceState(DeviceState.IDLE);
+		setDeviceState(DeviceState.READY);
 	}
 	@ScanFinally
 	public void clean() {

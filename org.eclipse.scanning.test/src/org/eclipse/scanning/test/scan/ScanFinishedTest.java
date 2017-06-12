@@ -114,7 +114,7 @@ public class ScanFinishedTest {
 		
 		scanner.run(null);
 		
-		assertEquals(DeviceState.READY, scanner.getDeviceState());
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 		assertScanFinished(entry);
 	}
 	
@@ -144,7 +144,7 @@ public class ScanFinishedTest {
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
 		scanner.run(null);
 		
-		assertEquals(DeviceState.READY, scanner.getDeviceState());
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 		
 		@SuppressWarnings("rawtypes")
 		IRunnableDevice device = dservice.getRunnableDevice(mmodel.getName());

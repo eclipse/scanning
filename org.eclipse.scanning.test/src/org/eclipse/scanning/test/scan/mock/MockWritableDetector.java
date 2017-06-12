@@ -85,7 +85,7 @@ public class MockWritableDetector extends AbstractRunnableDevice<MockDetectorMod
 	@Override
 	public void resume() throws ScanningException {
         try {
-			setDeviceState(getModel()!=null ? DeviceState.READY : DeviceState.IDLE);
+			setDeviceState(getModel()!=null ? DeviceState.ARMED : DeviceState.READY);
 		} catch (Exception e) {
 			throw new ScanningException(this, e);
 		}

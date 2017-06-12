@@ -200,8 +200,8 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 			writers = LevelRunner.createEmptyRunner();
 		}
 		
-		// notify that the device is now ready
-		setDeviceState(DeviceState.READY); 
+		// notify that the device is now armed
+		setDeviceState(DeviceState.ARMED); 
 		
 		// record the time taken to configure the device
 		long after = System.currentTimeMillis();
@@ -229,7 +229,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	@Override
 	public void run(IPosition parent) throws ScanningException, InterruptedException {
 		
-		if (getDeviceState()!=DeviceState.READY) throw new ScanningException("The device '"+getName()+"' is not ready. It is in state "+getDeviceState());
+		if (getDeviceState()!=DeviceState.ARMED) throw new ScanningException("The device '"+getName()+"' is not armed. It is in state "+getDeviceState());
 		createScanLatch();
 		
 		ScanModel model = getModel();
@@ -498,7 +498,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException  | EventException e) {
 			throw new ScanningException(e);
 		}
-   	    setDeviceState(DeviceState.READY); // Fires!
+   	    setDeviceState(DeviceState.ARMED); // Fires!
 				
 	}
 
@@ -520,7 +520,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	 */
 	private boolean checkPaused() throws Exception {
 		
-		if (!getDeviceState().isRunning() && getDeviceState()!=DeviceState.READY) {
+		if (!getDeviceState().isRunning() && getDeviceState()!=DeviceState.ARMED) {
 			if (getDeviceState().isRestState()) return false;
 			throw new Exception("The scan state is "+getDeviceState());
 		}
@@ -530,7 +530,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
     		throw new ScanningException(this, "Internal Error - Could not obtain lock to run device!");    		
     	}
     	try {
-    		if (!getDeviceState().isRunning() && getDeviceState()!=DeviceState.READY) {
+    		if (!getDeviceState().isRunning() && getDeviceState()!=DeviceState.ARMED) {
     			throw new Exception("The scan state is "+getDeviceState());
     		}
        	    if (awaitPaused) {

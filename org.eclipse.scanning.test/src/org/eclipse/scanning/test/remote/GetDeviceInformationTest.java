@@ -300,7 +300,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		}
 
 		private boolean alive = true;
-		private DeviceState deviceState = DeviceState.IDLE;
+		private DeviceState deviceState = DeviceState.READY;
 		private String name = "";
 		private boolean up = false;
 		private boolean deviceStateChecked = false;

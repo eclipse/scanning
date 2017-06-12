@@ -119,8 +119,8 @@ public class LowLevelDetectorPluginTest {
 		IRunnableDevice<ScanModel> scanner = createTestScanner(det, 5, 8);
 		scanner.run(null);
 		
-		// Check we reached ready (it will normally throw an exception on error)
-		assertEquals(DeviceState.READY, scanner.getDeviceState());
+		// Check we reached armed (it will normally throw an exception on error)
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 		
 
 		// Check what was written. Quite a bit to do here, it is not written in the 
