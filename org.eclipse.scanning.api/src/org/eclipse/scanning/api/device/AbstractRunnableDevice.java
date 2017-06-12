@@ -193,7 +193,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	}
 	
 	public void reset() throws ScanningException {
-		setDeviceState(DeviceState.IDLE);
+		setDeviceState(DeviceState.READY);
 	}
 
 
@@ -405,7 +405,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	@Override
 	public void configure(T model) throws ScanningException {
 		this.model = model;
-		setDeviceState(DeviceState.READY);
+		setDeviceState(DeviceState.ARMED);
 	}
 
 

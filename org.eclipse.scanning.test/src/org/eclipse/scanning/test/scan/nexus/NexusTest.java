@@ -220,7 +220,7 @@ public class NexusTest extends TmpTest {
 	protected NXentry checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake,
 			boolean foldedGrid, int[] sizes) throws Exception {
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
-		assertEquals(DeviceState.READY, scanner.getDeviceState());
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 
 		NXroot rootNode = getNexusRoot(scanner);
 		NXentry entry = rootNode.getEntry();

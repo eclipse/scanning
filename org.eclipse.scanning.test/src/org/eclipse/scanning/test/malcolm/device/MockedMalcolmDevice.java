@@ -77,7 +77,7 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 		super(new EpicsV4ConnectorService(), null); // Hard coded, that's the way we role in tests.
 		this.latcher = latcher;
 		this.taskRunLock    = new ReentrantLock(true);
-		setDeviceState(DeviceState.IDLE);
+		setDeviceState(DeviceState.READY);
 		setName(name);
 		this.factory = new NexusFileFactoryHDF5();
 	}
@@ -154,7 +154,7 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 				throw new MalcolmDeviceException(this, "Cannot sleep during configure!", e);
 			}
 		}
-		setDeviceState(DeviceState.READY);
+		setDeviceState(DeviceState.ARMED);
 		
 		// We configure a bean with all the scan specific things
 		final MalcolmEventBean bean = new MalcolmEventBean();
@@ -262,7 +262,7 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
     		
     		setDeviceState(DeviceState.POSTRUN); // Devices go into postrun after running
 			
-			setDeviceState(DeviceState.READY); // State change
+			setDeviceState(DeviceState.ARMED); // State change
 	        sendEvent(new MalcolmEventBean(getState())); // Scan end event
 
         

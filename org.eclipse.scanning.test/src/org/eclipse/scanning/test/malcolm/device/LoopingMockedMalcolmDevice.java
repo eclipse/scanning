@@ -31,7 +31,7 @@ public class LoopingMockedMalcolmDevice extends PausableMockedMalcolmDevice {
 	
 	public LoopingMockedMalcolmDevice(final String name,  final LatchDelegate latcher) throws ScanningException {
 		super(name, latcher);
-		setState(DeviceState.IDLE);
+		setState(DeviceState.READY);
 		setName(name);
 	}
 
@@ -58,7 +58,7 @@ public class LoopingMockedMalcolmDevice extends PausableMockedMalcolmDevice {
 	        
 	        // Send scan start
 	        MalcolmEventBean bean = new MalcolmEventBean();
-	        bean.setPreviousState(DeviceState.READY);
+	        bean.setPreviousState(DeviceState.ARMED);
 	        bean.setDeviceState(DeviceState.RUNNING);
 			sendEvent(bean);
 	           
@@ -76,10 +76,10 @@ public class LoopingMockedMalcolmDevice extends PausableMockedMalcolmDevice {
 
 			} // End fake scanning loop.
 			
-			setState(DeviceState.IDLE); // State change
+			setState(DeviceState.READY); // State change
 	        bean = new MalcolmEventBean();
 	        bean.setPreviousState(DeviceState.RUNNING);
-	        bean.setDeviceState(DeviceState.IDLE);
+	        bean.setDeviceState(DeviceState.READY);
 			sendEvent(bean);
         } 
 		catch (Exception ne) {

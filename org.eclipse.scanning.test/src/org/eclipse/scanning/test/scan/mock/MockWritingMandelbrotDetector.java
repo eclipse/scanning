@@ -78,7 +78,7 @@ public class MockWritingMandelbrotDetector extends AbstractRunnableDevice<MockWr
 	public void configure(MockWritingMandlebrotModel model) throws ScanningException {
 		
 		this.model      = model;
-		setDeviceState(DeviceState.READY);
+		setDeviceState(DeviceState.ARMED);
 		
 		// We make a lazy writeable dataset to write out the mandels.
 		final int[] shape = new int[]{model.getxSize(), model.getySize(), model.getRows(), model.getColumns()};

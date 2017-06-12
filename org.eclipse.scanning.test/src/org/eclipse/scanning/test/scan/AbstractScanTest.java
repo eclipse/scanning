@@ -374,7 +374,7 @@ public class AbstractScanTest extends BrokerTest {
 			// Bit of a hack to get the generator from the model - should this be easier?
 			IPointGenerator<?> gen = (IPointGenerator<?>)((ScanModel)((AbstractRunnableDevice)scanner).getModel()).getPositionIterable();
 			assertEquals(gen.size(), events.size());
-			assertEquals(Arrays.asList(DeviceState.CONFIGURING, DeviceState.READY, DeviceState.RUNNING, DeviceState.READY), states);
+			assertEquals(Arrays.asList(DeviceState.CONFIGURING, DeviceState.ARMED, DeviceState.RUNNING, DeviceState.ARMED), states);
 			
 			for (ScanBean b : events) assertEquals("fred", b.getUniqueId());
 		

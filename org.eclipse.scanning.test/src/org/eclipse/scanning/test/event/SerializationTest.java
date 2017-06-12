@@ -90,7 +90,7 @@ public class SerializationTest {
 		final ScanBean sent = new ScanBean();
 		sent.setDeviceName("fred");
 		sent.setDeviceState(DeviceState.RUNNING);
-		sent.setPreviousDeviceState(DeviceState.READY);
+		sent.setPreviousDeviceState(DeviceState.ARMED);
 		sent.setPosition(new MapPosition("x", 0, 1.0));
 		sent.setUniqueId(UUID.randomUUID().toString());
 		sent.setHostName(InetAddress.getLocalHost().getHostName());
