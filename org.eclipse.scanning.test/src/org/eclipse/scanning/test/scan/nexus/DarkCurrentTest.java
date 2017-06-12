@@ -107,7 +107,7 @@ public class DarkCurrentTest extends NexusTest {
 	
 	private void checkNexusFile(IRunnableDevice<ScanModel> scanner, int... sizes) throws NexusException, ScanningException, DatasetException {
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
-		assertEquals(DeviceState.READY, scanner.getDeviceState());
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 		
 		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
 		NexusFile nf = fileFactory.newNexusFile(filePath);

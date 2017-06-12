@@ -105,7 +105,7 @@ class DummyMalcolmRecord extends PVRecord {
             }
 
 
-        	pvRecord.getPVStructure().getSubField(PVString.class, STATEVALUE).put("READY");
+        	pvRecord.getPVStructure().getSubField(PVString.class, STATEVALUE).put("ARMED");
             
         	pvRecord.releaseControl();
             callback.requestDone(statusOk, returnPvStructure);
@@ -377,12 +377,12 @@ class DummyMalcolmRecord extends PVRecord {
         PVStructure blockPVStructure = PVDATACREATE.createPVStructure(deviceStructure);
         
      // State
-		String[] choicesArray = new String[] {"Resetting","Idle","Ready","Configuring","Running","PostRun","Paused","Rewinding","Aborting","Aborted","Fault","Disabling","Disabled"};
+		String[] choicesArray = new String[] {"Resetting","Ready","Armed","Configuring","Running","PostRun","Paused","Rewinding","Aborting","Aborted","Fault","Disabling","Disabled"};
 
 		PVStringArray choices = blockPVStructure.getSubField(PVStringArray.class, "state.meta.choices");
 		choices.put(0, choicesArray.length, choicesArray, 0);
 		
-        blockPVStructure.getSubField(PVString.class, STATEVALUE).put("IDLE");
+        blockPVStructure.getSubField(PVString.class, STATEVALUE).put("READY");
         
         // Health
         blockPVStructure.getSubField(PVString.class, "health.value").put("Test Health");

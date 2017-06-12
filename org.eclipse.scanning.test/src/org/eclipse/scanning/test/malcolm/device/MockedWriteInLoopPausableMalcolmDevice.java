@@ -129,7 +129,7 @@ public class MockedWriteInLoopPausableMalcolmDevice extends LoopingMockedMalcolm
 				throw new MalcolmDeviceException(this, "Cannot sleep during configure!", e);
 			}
 		}
-		setState(DeviceState.READY);
+		setState(DeviceState.ARMED);
 		
 		// We configure a bean with all the scan specific things
 		final MalcolmEventBean bean = new MalcolmEventBean();

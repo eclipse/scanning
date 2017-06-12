@@ -66,7 +66,7 @@ public class MandelbrotDetector extends AbstractRunnableDevice<MandelbrotModel> 
 	public MandelbrotDetector() throws IOException, ScanningException {
 		super(Services.getRunnableDeviceService()); // Necessary if you are going to spring it
 		this.model = new MandelbrotModel();
-		setDeviceState(DeviceState.IDLE);
+		setDeviceState(DeviceState.READY);
 	}
 	
 	@ScanFinally
@@ -228,8 +228,8 @@ public class MandelbrotDetector extends AbstractRunnableDevice<MandelbrotModel> 
 			throw new ScanningException("Failed to write the data to the NeXus file", e);
 		}
 
-		// Finished writing set state back to ready
-		setDeviceState(DeviceState.READY);
+		// Finished writing set state back to armed
+		setDeviceState(DeviceState.ARMED);
 		return true;
 	}
 

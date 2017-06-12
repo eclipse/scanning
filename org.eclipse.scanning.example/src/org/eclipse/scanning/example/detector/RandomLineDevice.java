@@ -58,7 +58,7 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 	public RandomLineDevice() throws ScanningException {
 		super(Services.getRunnableDeviceService()); // So that spring will work.
 		this.model = new RandomLineModel();
-		setDeviceState(DeviceState.IDLE);
+		setDeviceState(DeviceState.READY);
 		counts = new HashMap<>();
 		values = new HashMap<>();
 	}

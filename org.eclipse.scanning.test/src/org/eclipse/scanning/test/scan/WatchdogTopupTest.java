@@ -291,7 +291,7 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		
 		scanner.latch();
 		
-		assertEquals(DeviceState.READY, scanner.getDeviceState()); // Should still be paused
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState()); // Should still be paused
 	}
 
 	

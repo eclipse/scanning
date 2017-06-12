@@ -248,13 +248,13 @@ public abstract class AbstractMalcolmTest {
         if (expectExceptions && exceptions.size()>0) return device; // Pausing failed as expected
 
         // Wait for end of run for 30 seconds, otherwise we carry on (test will then likely fail)
-        if (doLatch && device.getDeviceState()!=DeviceState.IDLE) {
+        if (doLatch && device.getDeviceState()!=DeviceState.READY) {
         	device.latch(30, TimeUnit.SECONDS, DeviceState.RUNNING, DeviceState.PAUSED, DeviceState.SEEKING); // Wait until not running.
         }
 
 		if (exceptions.size()>0) throw exceptions.get(0);
 		if (doLatch) { // If we waited we can check it completed, otherwise it is probably still going.
-			if (device.getDeviceState()!=DeviceState.IDLE) throw new Exception("The state at the end of the pause/resume cycle(s) must be "+DeviceState.IDLE);
+			if (device.getDeviceState()!=DeviceState.READY) throw new Exception("The state at the end of the pause/resume cycle(s) must be "+DeviceState.READY);
 			int expectedThreads = usedThreads.size() > 0 ? usedThreads.get(0) : threadcount;
 	 		// TODO Sometimes too many pause events come from the real malcolm connection.
 			if (beans.size()<expectedThreads) throw new Exception("The pause event was not encountered the correct number of times! Found "+beans.size()+" required "+expectedThreads);
@@ -267,7 +267,7 @@ public abstract class AbstractMalcolmTest {
 		
 		
 		// No fudgy sleeps allowed in test must be as dataacq would use.
-		if (ignoreReady && device.getDeviceState()==DeviceState.READY) return;
+		if (ignoreReady && device.getDeviceState()==DeviceState.ARMED) return;
 		System.out.println("Pausing device in state: "+device.getDeviceState()+" Its locked state is: "+device.isLocked());
 		try {
 		    device.pause();

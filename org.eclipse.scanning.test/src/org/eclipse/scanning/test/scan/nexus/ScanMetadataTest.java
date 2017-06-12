@@ -226,7 +226,7 @@ public class ScanMetadataTest extends NexusTest {
 			List<ScanMetadata> scanMetadata, int... sizes) throws Exception {
 
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
-		assertEquals(DeviceState.READY, scanner.getDeviceState());
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 
 		NXroot rootNode = getNexusRoot(scanner);
 		NXentry entry = rootNode.getEntry();

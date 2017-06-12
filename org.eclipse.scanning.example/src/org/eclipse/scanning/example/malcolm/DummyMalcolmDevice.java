@@ -368,7 +368,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 				Services.getRunnableDeviceService()); // Necessary if you are going to spring it
 		this.model = new DummyMalcolmModel();
 		setupAttributes();
-		setDeviceState(DeviceState.IDLE);
+		setDeviceState(DeviceState.READY);
 	}
 	
 	private void setupAttributes() {
@@ -377,7 +377,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		state = new ChoiceAttribute();
 		state.setChoices(Arrays.stream(DeviceState.values()).map(
 				state -> state.toString()).toArray(String[]::new));
-		state.setValue(DeviceState.IDLE.toString());
+		state.setValue(DeviceState.READY.toString());
 		state.setName("state");
 		state.setLabel("state");
 		state.setDescription("State of Block");
@@ -711,7 +711,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		}
 		
 		health.setValue("OK");
-		setDeviceState(DeviceState.READY);
+		setDeviceState(DeviceState.ARMED);
 	}
 
 	private void createNexusFiles() throws ScanningException {
@@ -827,7 +827,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 
 	private void updateAttributesWithLatestValues() throws ScanningException {
 		DeviceState deviceState = getDeviceState();
-		if (deviceState == null) deviceState = DeviceState.IDLE;
+		if (deviceState == null) deviceState = DeviceState.READY;
 		state.setValue(deviceState.toString());
 		health.setValue(deviceState == DeviceState.FAULT ? "Fault" : "OK");
 		busy.setValue(isDeviceBusy());

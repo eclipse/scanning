@@ -73,7 +73,7 @@ public class LegacyDeviceSupportScanTest {
 	
 	private void checkNexusFile(final IRunnableDevice<ScanModel> scanner, int... sizes) throws Exception {
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
-		assertEquals(DeviceState.READY, scanner.getDeviceState());
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 		
 		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
 		NexusFile nf = fileFactory.newNexusFile(filePath);

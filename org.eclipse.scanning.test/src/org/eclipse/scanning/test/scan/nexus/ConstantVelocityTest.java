@@ -116,7 +116,7 @@ public class ConstantVelocityTest extends NexusTest {
 	private void checkNexusFile(IRunnableDevice<ScanModel> scanner, int... sizes) throws Exception {
 		
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>)scanner).getModel();                      
-		assertEquals(DeviceState.READY, scanner.getDeviceState());                                                
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());                                                
 		NXroot rootNode = getNexusRoot(scanner);
 		NXentry entry = rootNode.getEntry();
 		NXinstrument instrument = entry.getInstrument();

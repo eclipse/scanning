@@ -320,6 +320,10 @@ public class EpicsV4ConnectorService implements IMalcolmConnectorService<Malcolm
 		MalcolmMessage returnMessage = new MalcolmMessage();
 		PvaClientChannel pvaChannel = null;
 		
+		if (message.getMethod().startsWith("lambda")) {
+			message.setMethod("reset");
+		}
+		
 		try {
 			PVStructure pvResult = null;
 			PVStructure pvRequest = mapper.convertMalcolmMessageToPVStructure(message);

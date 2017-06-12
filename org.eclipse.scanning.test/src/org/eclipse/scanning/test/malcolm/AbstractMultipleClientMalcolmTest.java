@@ -55,15 +55,15 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 			
 			for (int i = 0; i < 10; i++) {
 				System.out.println("Device state is "+zebra.getDeviceState());
-				if (zebra.getDeviceState() == DeviceState.IDLE) {
-					throw new Exception("The device should not be IDLE! It was "+zebra.getDeviceState());
+				if (zebra.getDeviceState() == DeviceState.READY) {
+					throw new Exception("The device should not be READY! It was "+zebra.getDeviceState());
 				}
 				Thread.sleep(1000);
 			}
 		} finally {
 		}
 		
-		if (!states.containsAll(Arrays.asList(new DeviceState[]{DeviceState.READY, DeviceState.RUNNING}))){
+		if (!states.containsAll(Arrays.asList(new DeviceState[]{DeviceState.ARMED, DeviceState.RUNNING}))){
 			throw new Exception("Not all expected states encountered during run! States found were "+states);
 		}
 		
@@ -102,8 +102,8 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 
 						for (int i = 0; i < 5; i++) {
 							System.out.println("Device state is "+zebra.getDeviceState());
-							if (zebra.getDeviceState() == DeviceState.IDLE) {
-								exceptions.add(new Exception("The device should not be IDLE!"));
+							if (zebra.getDeviceState() == DeviceState.READY) {
+								exceptions.add(new Exception("The device should not be READY!"));
 							}
 							Thread.sleep(1000);
 						}
@@ -120,7 +120,7 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 		
 		
 		
-		if (!states.containsAll(Arrays.asList(new DeviceState[]{DeviceState.READY, DeviceState.RUNNING}))){
+		if (!states.containsAll(Arrays.asList(new DeviceState[]{DeviceState.ARMED, DeviceState.RUNNING}))){
 			throw new Exception("Not all expected states encountered during run! States found were "+states);
 		}
 		
@@ -152,15 +152,15 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 			// device connections (although MockService will not do this)
 			for (int i = 0; i < 10; i++) {
 				System.out.println("Device state is "+zebra.getDeviceState());
-				if (zebra.getDeviceState() == DeviceState.IDLE) {
-					throw new Exception("The device should not be IDLE!");
+				if (zebra.getDeviceState() == DeviceState.READY) {
+					throw new Exception("The device should not be READY!");
 				}
 				Thread.sleep(1000);
 			}
 		} finally {
 		}
 		
-		if (!states.containsAll(Arrays.asList(new DeviceState[]{DeviceState.READY, DeviceState.RUNNING, DeviceState.PAUSED, DeviceState.SEEKING}))){
+		if (!states.containsAll(Arrays.asList(new DeviceState[]{DeviceState.ARMED, DeviceState.RUNNING, DeviceState.PAUSED, DeviceState.SEEKING}))){
 			throw new Exception("Not all expected states encountered during run! States found were "+states);
 		}
 		
