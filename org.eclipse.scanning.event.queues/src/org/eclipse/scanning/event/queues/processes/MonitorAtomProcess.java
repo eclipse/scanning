@@ -83,6 +83,9 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 		scanDevService = ServicesHolder.getScannableDeviceService();
 		fPathService = ServicesHolder.getFilePathService();
 		nexusFileFactory = ServicesHolder.getNexusFileFactory();
+		
+		//We make direct calls to scanning infrastructure which block -> need to happen in separate thread
+		runInThread = true;
 	}
 
 	@Override
@@ -98,6 +101,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 		// Tell downstream which file to read
 		String filePath = visitFile.getAbsolutePath();
 		queueBean.setFilePath(filePath);
+		if (isTerminated()) throw new InterruptedException("Termination requested");
 		
 		final NexusFile nxsFile = nexusFileFactory.newNexusFile(visitFile.getAbsolutePath());
 		try {
@@ -110,7 +114,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			broadcast(Status.RUNNING, 25.0);
 			final String datasetName = UniqueUtils.getSafeName(queueBean.getName());
 			GroupNode nxsParent = nxsFile.getGroup("/entry1/instrument", true);
-			if (isTerminated()) throw new InterruptedException();
+			if (isTerminated()) throw new InterruptedException("Termination requested");
 			
 			logger.debug("Created NeXus '/entry1/instrument/<uniquename>' tree");
 			broadcast(Status.RUNNING, 30.0);
@@ -120,7 +124,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			ILazyWriteableDataset datasetWriter = new LazyWriteableDataset(datasetName, Dataset.FLOAT, shape, shape, shape, null); // DO NOT COPY!
 			nxsFile.createData(nxsParent, datasetWriter);
 			SliceND slice = SliceND.createSlice(datasetWriter, new int[]{0}, new int[]{1});
-			if (isTerminated()) throw new InterruptedException();
+			if (isTerminated()) throw new InterruptedException("Termination requested");
 			
 			//Read data, write slice and close file
 			logger.debug("Getting scannable'"+queueBean.getMonitor()+"' and reading current value");
@@ -138,7 +142,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			}
 			
 			nxsFile.close();
-			if (isTerminated()) throw new InterruptedException();
+			if (isTerminated()) throw new InterruptedException("Termination requested");
 			
 			logger.debug("Data successfully written to file");
 			broadcast(Status.RUNNING, 70.0, "Monitor value recorded to file");
@@ -159,8 +163,6 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			//We were terminated. Do tidy up and stop
 			logger.debug("Processing was interrupted. Starting cleanup...");
 			cleanUp(nxsFile);
-		} finally {
-			processLatch.countDown();
 		}
 	}
 	

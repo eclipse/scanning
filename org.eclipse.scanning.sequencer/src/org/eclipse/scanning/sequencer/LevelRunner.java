@@ -171,7 +171,7 @@ abstract class LevelRunner<L extends ILevel> {
 			throw i;
 		} catch (Exception ne) {
 			if (abortException!=null) throw abortException;
-			throw new ScanningException("Scanning interupted while moving to new position!", ne);
+			throw new ScanningException("Scanning interrupted while moving to new position!", ne);
 			
 		} finally {
 			if (block) await();

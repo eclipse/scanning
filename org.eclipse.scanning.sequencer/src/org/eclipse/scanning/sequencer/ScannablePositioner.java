@@ -90,7 +90,7 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 				IScannable<?> scannable = connectorService.getScannable(name);
 			    ret.put(name, scannable.getPosition());
 			} catch (Exception ne) {
-				throw new ScanningException("Cannout read value of "+name, ne);
+				throw new ScanningException("Cannot read value of "+name, ne);
 			}
 		}
 		ret.setStepIndex(position.getStepIndex());

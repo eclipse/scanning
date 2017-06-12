@@ -209,11 +209,14 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 				
 				// We will pretend there are 10 points in any move for notification
 				double increment = distance/10d;
-				long   pauseTime= Math.abs(Math.round(time/10d)*1000); // pause in ms
+				long   pauseTime= Math.abs(Math.round(time/10*1000)); // pause in ms
+				
+//TODO Helpful for debugging tests				System.err.println("Distance="+distance+" Time="+time+" Increment="+increment);
 				
 				double currentPosition = orig.doubleValue();
 				for (int i = 0; i <10; i++) {
 					if (terminate==TerminationPreference.PANIC) return this.position;
+//TODO Helpful for debugging tests					System.err.println("Pausing for "+pauseTime+" ("+i+"/10)");
 					Thread.sleep(pauseTime);
 					waitedTime+=pauseTime;
 					currentPosition+=increment;

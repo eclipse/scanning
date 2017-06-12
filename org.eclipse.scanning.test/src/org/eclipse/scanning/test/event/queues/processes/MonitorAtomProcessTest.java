@@ -106,8 +106,8 @@ public class MonitorAtomProcessTest {
 	 */
 	@Test
 	public void testTermination() throws Exception {
-		pti.executeProcess(monAtProc, monAt, false, false);
-		pti.waitToTerminate(0l);
+		pti.executeProcess(monAtProc, monAt,false, false);
+		pti.waitToTerminate(2l);
 		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
 		
@@ -115,7 +115,9 @@ public class MonitorAtomProcessTest {
 		assertEquals("Incorrect message after terminate", "Get value of 'thermocouple1' aborted (requested)", pti.getLastBroadcastBean().getMessage());
 		//Get the filepath set for the monitor output and check it does not exist
 		MonitorAtom termAt = (MonitorAtom)pti.getLastBroadcastBean();
-		assertFalse("Nexus file not deleted during cleanup", new File(termAt.getFilePath()).exists());
+		if (termAt.getFilePath() != null) {
+			assertFalse("Nexus file not deleted during cleanup", new File(termAt.getFilePath()).exists());
+		}
 	}
 	
 //	@Test

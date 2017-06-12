@@ -49,7 +49,10 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	private static Logger logger = LoggerFactory.getLogger(QueueProcess.class);
 	
 	protected final Q queueBean;
-	protected boolean blocking = true, executed = false, terminated = false, finished = false;
+	 //Blocking should block (or not) this QueueProcess; runInThread runs calls to scanning 
+	//infrastructure which themselves are blocking in a separate thread
+	protected boolean blocking = true, runInThread = false;
+	protected boolean executed = false, terminated = false, finished = false;
 	
 	protected final CountDownLatch processLatch = new CountDownLatch(1);
 	
@@ -78,7 +81,11 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	public void execute() throws EventException, InterruptedException {
 		logger.info("Processing "+bean.getClass().getSimpleName()+": '"+bean.getName()+"'");
 		executed = true;
-		run();
+		if (runInThread) {
+			runInThread();
+		} else {
+			run();
+		}
 		logger.debug("Waiting for processing of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' to complete...");
 		processLatch.await();
 		logger.debug("Post-match analysis of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' begins... (Status: "+bean.getStatus()+"; Percent: "+bean.getPercentComplete()+")");
@@ -119,6 +126,39 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	 * @throws InterruptedException if child run thread is interrupted
 	 */
 	protected abstract void run() throws EventException, InterruptedException;
+	
+	/**
+	 * Creates a separate thread in which the run() method will be called. 
+	 * This is useful when the implementing class makes calls to blocking 
+	 * methods in, for example, the scanning infrastructure. By putting these 
+	 * calls into a thread, we retain the same sequence of behaviours. At the 
+	 * end of the thread, the processLatch is released.
+	 */
+	private void runInThread() {
+		final Thread thread = new Thread(new Runnable() {
+			public void run() {
+				try {
+					QueueProcess.this.run();
+				} catch (EventException | InterruptedException ex) {
+					//If we've been terminated, we don't want to report this as failed.
+					//Just ignore the exception
+					if (!isTerminated()) {
+						try {
+							logger.error("Processing "+queueBean.getClass().getSimpleName()+" '"+queueBean.getName()+"' failed with: '"+ex.getMessage()+"'");
+							broadcast(Status.FAILED, "Processing "+queueBean.getClass().getSimpleName()+" '"+queueBean.getName()+"' failed with: '"+ex.getMessage()+"'");
+						} catch (EventException evEx) {
+							logger.error("Broadcasting bean failed with: '"+evEx.getMessage()+"'");
+						}
+					}
+				} finally {
+					processLatch.countDown();
+				}
+			}
+		}, queueBean.getClass().getSimpleName()+" '"+queueBean.getName()+"' processing thread");
+		thread.setDaemon(true);
+		thread.setPriority(Thread.MAX_PRIORITY);
+		thread.start();
+	}
 	
 	/**
 	 * On completion of processing, determine the outcome - i.e. did 

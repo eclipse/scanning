@@ -11,7 +11,14 @@
  *******************************************************************************/
 package org.eclipse.scanning.event.queues.processes;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
+import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IConsumer;
 import org.eclipse.scanning.api.event.core.IPublisher;
@@ -21,7 +28,9 @@ import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
+import org.eclipse.scanning.api.scan.PositionEvent;
 import org.eclipse.scanning.api.scan.ScanningException;
+import org.eclipse.scanning.api.scan.event.IPositionListener;
 import org.eclipse.scanning.api.scan.event.IPositioner;
 import org.eclipse.scanning.event.queues.QueueProcessFactory;
 import org.eclipse.scanning.event.queues.ServicesHolder;
@@ -35,8 +44,6 @@ import org.slf4j.LoggerFactory;
  * It uses the server's {@link IRunnableDeviceService} to create an 
  * {@link IPositioner} which it passes the target positions to.
  * 
- * TODO Implement reporting back of the percent complete (when it might 
- *      become available).
  * TODO Implement pausing/resuming when implemented in the IPositioner system.
  * 
  * @author Michael Wharmby
@@ -59,9 +66,6 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 	private final IRunnableDeviceService deviceService;
 	private IPositioner positioner;
 	
-	//For processor operation
-	private Thread positionThread;
-	
 	/**
 	 * Create a PositionerAtomProcess to position motors on the beamline. 
 	 * deviceService ({@link IRunnableDeviceService}) is configured using OSGi 
@@ -71,6 +75,9 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 		super(bean, publisher, blocking);
 		//Get the deviceService from the OSGi configured holder.
 		deviceService = ServicesHolder.getDeviceService();
+		
+		//We make direct calls to scanning infrastructure which block -> need to happen in separate thread
+		runInThread = true;
 	}
 
 	@Override
@@ -80,57 +87,108 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 		
 		final IPosition target = new MapPosition(queueBean.getPositionerConfig());
 		broadcast(10d);
+		if (isTerminated()) throw new InterruptedException("Termination requested");
 		
 		//Get the positioner
 		logger.debug("Getting device positioner");
 		broadcast(Status.RUNNING, "Getting device positioner");
 		try {
 			positioner = deviceService.createPositioner();
-		} catch (ScanningException se) {
-			broadcast(Status.FAILED, "Failed to get device positioner: \""+se.getMessage()+"\".");
-			logger.error("Failed to get device positioner in "+queueBean.getName()+": \""+se.getMessage()+"\".");
-			throw new EventException("Failed to get device positioner", se);
-		}
-		broadcast(20d);
-				
-		//Create a new thread to call the position setting in
-		positionThread = new Thread(new Runnable() {
+			final double configCompletePercent = 20d, positionCompletePercent = 99.5 - configCompletePercent; //Bean must be 99.5% complete for QueueProcess to mark Status.COMPLETE
+			final Map<String, Object> initialPositions = getDeviceInitialPositions(target);
+			final Map<String, Object> initialTargetDifference = findInitialTargetDifference(initialPositions, target);
+			if (isTerminated()) throw new InterruptedException("Termination requested");
 			
-			/*
-			 * DO NOT SET FINAL STATUSES IN THIS THREAD - set them in the post-match analysis
-			 */
-			@Override
-			public synchronized void run() {
-				//Set positioner device(s)
-				try {
-					logger.debug("Setting device(s) to requested position");
-					broadcast(Status.RUNNING, "Moving device(s) to requested position");
-					positioner.setPosition(target);
+			positioner.addPositionListener(new IPositionListener() {
+				
+
+				@Override
+				public void positionChanged(PositionEvent evt) throws ScanningException {
+					beanProgressUpdate(evt);
+				}
+
+				@Override
+				public void levelPerformed(PositionEvent evt) throws ScanningException {
+					beanProgressUpdate(evt);
+				}
+
+				@Override
+				public void positionPerformed(PositionEvent evt) throws ScanningException {
+					//We completed the move, time to hand control back
+					try {
+						broadcast(99.5);
+					} catch (EventException evEx) {
+						logger.error("Broadcasting bean state failed with: "+evEx.getMessage());
+						throw new ScanningException("Broadcasting bean state failed with: "+evEx.getMessage(), evEx);
+					}
+				}
+
+				/**
+				 * Determine the fractional completeness of the position 
+				 * setting and update the {@link PositionerAtom} percent 
+				 * complete. A 'configCompletePercent' amount of percent 
+				 * complete is set prior to the move starting, so it is only 
+				 * the remainder which changes as the position setting 
+				 * progresses. 
+				 * 
+				 * @param evt PositionEvent to analyse
+				 * @throws ScanningException if broadcasting of the bean fails
+				 */
+				private void beanProgressUpdate(PositionEvent evt) throws ScanningException {
+					IPosition currentPosition = evt.getPosition();
+					double targetCompleteness = calculateCompleteness(currentPosition, initialPositions, initialTargetDifference);
 					
-					//Check whether we received an interrupt whilst setting the positioner
-					if (Thread.currentThread().isInterrupted()) throw new InterruptedException("Position setting interrupted.");
-					//Completed cleanly
-					broadcast(99.5);
-				} catch (Exception ex) {
-					logger.debug("Positioner thread interrupted with: "+ex.getMessage());
-					if (isTerminated()) {
-						positioner.abort();
-						logger.debug("Termination requested. Aborting positioner...");
-					} else {
+					try {
+						broadcast(configCompletePercent + (positionCompletePercent * targetCompleteness));
+					} catch (EventException evEx) {
+						logger.error("Broadcasting bean state failed with: "+evEx.getMessage());
+						throw new ScanningException("Broadcasting bean state failed with: "+evEx.getMessage(), evEx);
+					}
+				}
+				
+				/**
+				 * Calculate the amount of the position setting that has been completed, 
+				 * returned as a fraction.
+				 * 
+				 * @param current IPosition
+				 * @param initial Map<String, Object> positions of all scannables
+				 * @param initialDelta difference between initial and target positions
+				 * @return double fraction of the move completed
+				 */
+				private double calculateCompleteness(IPosition current, Map<String, Object> initial, Map<String, Object> initialDelta) {
+					List<Double> arr = new ArrayList<>();
+
+					for (String name : initialDelta.keySet()) {
 						try {
-							broadcast(Status.FAILED, "Moving device(s) in '"+queueBean.getName()+"' failed with: '"+ex.getMessage()+"'");
-						} catch(EventException evEx) {
-							logger.error("Broadcasting bean failed with: \""+evEx.getMessage()+"\".");
+							arr.add((current.getValue(name) - ((Number)initial.get(name)).doubleValue()) / ((Number)initialDelta.get(name)).doubleValue());
+						} catch (ClassCastException ccEx) {
+							if (current.get(name).equals(initialDelta.get(name))) {
+								arr.add(1d);
+							} else {
+								arr.add(0d);
+							}
 						}
 					}
-				} finally {
-					processLatch.countDown();
+					return arr.stream().collect(Collectors.averagingDouble(val -> val));
 				}
+			});
+			
+			if (isTerminated()) throw new InterruptedException("Termination requested");
+			broadcast(configCompletePercent);
+			
+			//Set the positioner
+			logger.debug("Setting device(s) to requested position");
+			broadcast(Status.RUNNING, "Moving device(s) to requested position");
+			if (isTerminated()) throw new InterruptedException("Termination requested");
+			positioner.setPosition(target);
+		} catch (ScanningException se) {
+			//Aborting setPosition causes it to throw a scanning exception. 
+			//We expect this when we terminate, so ignoring the exception is fine.
+			if (!isTerminated()) {
+				broadcast(Status.FAILED, "Failed to set device positioner: '"+se.getMessage()+"'");
+				logger.error("Failed to set device positioner in '"+queueBean.getName()+"': "+se.getMessage());
 			}
-		});
-		positionThread.setDaemon(true);
-		positionThread.setPriority(Thread.MAX_PRIORITY);
-		positionThread.start();
+		}
 	}
 	
 	@Override
@@ -140,9 +198,7 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 
 	@Override
 	public void postMatchTerminated() {
-		positionThread.interrupt();
 		queueBean.setMessage("Position change aborted before completion (requested)");
-//TODO		logger.debug("'"+bean.getName()+"' was requested to abort");
 	}
 
 	@Override
@@ -152,8 +208,7 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 	
 	@Override
 	protected void terminateCleanupAction() throws EventException {
-		positioner.abort();			//<--since setPosition is blocking we need to abort it before...
-		positionThread.interrupt(); //<-- ...we call interrupt.
+		positioner.abort(); //<--since setPosition is blocking we need to abort it.
 	}
 	
 	@Override
@@ -173,6 +228,59 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 	@Override
 	public Class<PositionerAtom> getBeanClass() {
 		return PositionerAtom.class;
+	}
+	
+	/**
+	 * Finds the initial positions of all of the scannables listed in the 
+	 * target IPosition object and returns them as a Map of their scannable 
+	 * names against the position values.
+	 * 
+	 * @param target IPosition supplied by {@link PositionerAtom}
+	 * @return Map<String, Object> scannable names and positions
+	 * @throws EventException when the scannable name could not be found or 
+	 * the position could not be returned
+	 */
+	private Map<String, Object> getDeviceInitialPositions(IPosition target) throws EventException {
+		IScannableDeviceService connectorService = ServicesHolder.getScannableDeviceService();
+		final Map<String, Object> initialPositions = new HashMap<>();
+		for (String name : target.getNames())
+			try {
+				initialPositions.put(name, connectorService.getScannable(name).getPosition());
+			} catch (ScanningException ex) {
+				logger.error("Scannable device service could not find scannable '"+name+"': "+ex.getMessage());
+				throw new EventException("Scannable device service could not find scannable '"+name+"'", ex);
+			} catch (Exception ex) {
+				logger.error("Failed to get initial position of scannable '"+name+"': "+ex.getMessage());
+				throw new EventException("Failed to get initial position of scannable '"+name+"'", ex);
+			}
+		return initialPositions;
+
+	}
+	
+	/**
+	 * Calculate the difference between the initial positions and the target 
+	 * positions of all the scannables named in the target {@link IPosition} 
+	 * from the {@link PositionerAtom}.
+	 * 
+	 * @param initial Map<String, Object> the initial positions of named 
+	 *        scannables
+	 * @param targetPos IPosition target from {@link PositionerAtom}
+	 * @return Map<String, Object> position difference to change from initial 
+	 *         position to target
+	 */
+	private Map<String, Object> findInitialTargetDifference(Map<String, Object> initial, IPosition targetPos) throws EventException {
+		HashMap<String, Object> diff = new HashMap<>();
+
+		for (String name : targetPos.getNames()) {
+			Object posDiff;
+			try {
+				posDiff = targetPos.getValue(name) - ((Number)initial.get(name)).doubleValue();
+			} catch (ClassCastException ccEx) {
+				posDiff = targetPos.get(name);
+			}
+			diff.put(name, posDiff);
+		}
+		return diff;
 	}
 
 }
