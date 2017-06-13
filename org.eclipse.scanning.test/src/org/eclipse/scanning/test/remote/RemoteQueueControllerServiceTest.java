@@ -107,7 +107,8 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		rservice = null;
 		
 		qservice.stopQueueService(true);
-		if (qServ != null) { 
+		if (qServ != null) {
+			System.out.println("qserv="+qServ);
 			qServ.disposeService();
 			qServ = null;
 		}
