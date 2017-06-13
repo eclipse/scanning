@@ -79,5 +79,9 @@ public class DeviceWatchdogService implements IDeviceWatchdogService {
 	public IDeviceWatchdog getWatchdog(String name) {
 		return templates.get(name);
 	}
+	@Override
+	public List<String> getRegisteredNames() {
+		return new ArrayList<String>(templates.keySet());
+	}
 
 }
