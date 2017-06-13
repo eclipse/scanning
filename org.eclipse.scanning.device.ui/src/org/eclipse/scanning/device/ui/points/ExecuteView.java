@@ -390,6 +390,8 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+		
+		if (!getViewSite().getPage().isPartVisible(this)) return;
 		if (selection instanceof IStructuredSelection) {
 			Object ob = ((IStructuredSelection)selection).getFirstElement();
 			
