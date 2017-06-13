@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.richbeans.widgets.table.ISeriesItemDescriptor;
 import org.eclipse.richbeans.widgets.table.ISeriesItemFilter;
 import org.eclipse.richbeans.widgets.table.SeriesTable;
+import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.models.IScanPathModel;
 import org.slf4j.Logger;
@@ -64,7 +65,7 @@ final class GeneratorFilter implements ISeriesItemFilter {
 		}
 	}
 	
-	public List<GeneratorDescriptor<?>> createDescriptors(List<? extends IScanPathModel> models) throws Exception {
+	public List<GeneratorDescriptor<?>> createDescriptors(List<? extends IScanPathModel> models) throws GeneratorException {
 		
 	    List<GeneratorDescriptor<?>> descriptions = new ArrayList<>();
 		if (models!=null && models.size()>0) {
@@ -78,12 +79,14 @@ final class GeneratorFilter implements ISeriesItemFilter {
 	}
 
 	
-	public List<Object> getModels(List<ISeriesItemDescriptor> seriesItems) throws Exception {
-		List<Object> models = new ArrayList<>();
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getModels(List<ISeriesItemDescriptor> seriesItems) {
+		if (seriesItems==null) return null;
+		List<T> models = new ArrayList<>();
 		for (ISeriesItemDescriptor des : seriesItems) {
 			if (des instanceof GeneratorDescriptor) {
 				GeneratorDescriptor<?> gdes = (GeneratorDescriptor<?>)des;
-				models.add(gdes.getModel());
+				models.add((T)gdes.getModel());
 			}
 		}
 		if (models.size()>0) {
