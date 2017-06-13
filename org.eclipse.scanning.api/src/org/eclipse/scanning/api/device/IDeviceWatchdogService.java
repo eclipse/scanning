@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.api.device;
 
+import java.util.List;
+
 /**
  * 
    <h3>Welcome to Watchdogs</h3>
@@ -89,5 +91,11 @@ public interface IDeviceWatchdogService {
 	 * @return the watchdog with this name
 	 */
 	IDeviceWatchdog getWatchdog(String name);
+	
+	/**
+	 * 
+	 * @return the names of all the current watch dogs
+	 */
+	List<String> getRegisteredNames();
 
 }

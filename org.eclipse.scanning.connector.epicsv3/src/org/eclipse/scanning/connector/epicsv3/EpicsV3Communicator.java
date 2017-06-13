@@ -749,8 +749,7 @@ public class EpicsV3Communicator implements ContextExceptionListener, ContextMes
 	private DBR getDBR(Channel ch, DBRType type, int count, double timeout) throws TimeoutException, CAException {
 		int elementCount = ch.getElementCount();
 		if (elementCount < count) {
-			logger.warn("Requested "+count+" elements from "+ch.getName()+" but channel elementCount is " + elementCount +
-					" ask Controls to increase EPICS_CA_MAX_ARRAY_BYTES.");
+			logger.warn("Requested {} elements from {} but channel elementCount is {} ask Controls to increase the records .NELM field.",count,ch.getName(),elementCount );
 		}
 		try {
 			GetListenerImpl listener = new GetListenerImpl();
