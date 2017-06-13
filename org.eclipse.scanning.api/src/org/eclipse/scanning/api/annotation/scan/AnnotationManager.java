@@ -71,6 +71,7 @@ public class AnnotationManager {
 		this((IServiceResolver)null, DeviceAnnotations.getAllAnnotations());
 	}
 	
+	@SafeVarargs
 	public AnnotationManager(Class<? extends Annotation>... a) {
 		this(null, a);
 	}
