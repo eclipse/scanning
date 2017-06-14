@@ -78,7 +78,15 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		Services.setEventService(eservice);
 		ServicesHolder.setEventService(eservice);		
 	}
-
+	
+	@AfterClass
+	public static void tearDownClass() throws EventException {
+		ServicesHolder.setEventService(null);
+		Services.setEventService(null);
+		eservice = null;
+		
+		RealQueueTestUtils.dispose();
+	}
 	
 	@Before
 	public void createService() throws EventException {
@@ -107,22 +115,18 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		rservice = null;
 		
 		qservice.stopQueueService(true);
-		if (qServ != null) {
-			System.out.println("qserv="+qServ);
+		try {
 			qServ.disposeService();
-			qServ = null;
+		} catch (Exception ex) {
+			System.out.println("ERROR: Exception caught whilst disposing qServ "+qServ+"\nWill set to null anyway, so this can be ignored");
 		}
+		qServ = null;
 		qservice = null;
 		
 		ServicesHolder.setQueueService(null);
 		ServicesHolder.setQueueControllerService(null);
 		
 		RealQueueTestUtils.reset();
-	}
-	
-	@AfterClass
-	public static void tearDownClass() throws EventException {
-		RealQueueTestUtils.dispose();
 	}
 
 	@Test
