@@ -79,17 +79,20 @@ public class TaskBeanProcessTest {
 	}
 	
 	@AfterClass
-	public static void tearDownClass() {
-		ServicesHolder.unsetQueueControllerService(controller);
+	public static void tearDownClass() throws EventException {
+		ServicesHolder.setQueueControllerService(null);
 		controller = null;
 		
-		ServicesHolder.unsetEventService(mockEvServ);
+		ServicesHolder.setEventService(null);
 		mockEvServ = null;
 		mockPub = null;
-		
-		ServicesHolder.unsetQueueService(qServ);
-		qServ = null;
+		mockCons = null;
 		mockSub = null;
+		
+		ServicesHolder.setQueueService(null);
+		qServ.disposeService();
+		qServ = null;
+		controller = null;
 	}
 	
 	@Before

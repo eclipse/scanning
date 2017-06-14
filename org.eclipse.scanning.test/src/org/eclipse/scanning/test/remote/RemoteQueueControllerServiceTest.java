@@ -78,13 +78,21 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 		Services.setEventService(eservice);
 		ServicesHolder.setEventService(eservice);		
 	}
-
+	
+	@AfterClass
+	public static void tearDownClass() throws EventException {
+		ServicesHolder.setEventService(null);
+		Services.setEventService(null);
+		eservice = null;
+		
+		RealQueueTestUtils.dispose();
+	}
 	
 	@Before
 	public void createService() throws EventException {
 		
 		//A bit of boilerplate to start the service under test
-		qServ =  new QueueService("test-queue-root", uri.toString());
+		qServ =  new QueueService("remote-test-queue-root", uri.toString());
 		qServ.init();
 		ServicesHolder.setQueueService(qServ);
 		qservice = (IQueueControllerService)qServ;
@@ -102,15 +110,23 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	
 	@After
 	public void disposeService() throws EventException {
-		qservice.stopQueueService(false);
+		rservice.stopQueueService(true);
 		((IDisconnectable)rservice).disconnect();
+		rservice = null;
+		
+		qservice.stopQueueService(true);
+		try {
+			qServ.disposeService();
+		} catch (Exception ex) {
+			System.out.println("ERROR: Exception caught whilst disposing qServ "+qServ+"\nWill set to null anyway, so this can be ignored");
+		}
+		qServ = null;
+		qservice = null;
+		
+		ServicesHolder.setQueueService(null);
+		ServicesHolder.setQueueControllerService(null);
 		
 		RealQueueTestUtils.reset();
-	}
-	
-	@AfterClass
-	public static void tearDownClass() throws EventException {
-		RealQueueTestUtils.dispose();
 	}
 
 	@Test
@@ -181,12 +197,14 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 	
 	@Test
 	public void submitRemoveService() throws Exception {
+		System.out.println("\nService submitRemove test\n-------------------------");
 		setQueueNames();
 		testSubmitRemove(qservice); 
 	}
 	
 	@Test
 	public void submitRemoveRemote() throws Exception {
+		System.out.println("\nRemote submitRemove test\n------------------------");
 		setQueueNames();
 		testSubmitRemove(rservice); 
 	}
@@ -290,6 +308,7 @@ public class RemoteQueueControllerServiceTest extends BrokerTest {
 			//Expected
 		}
 
+		System.out.println("\nsubmitRemove test done\n----------------------\n");
 	}
 	
 	private void setQueueNames() throws EventException {

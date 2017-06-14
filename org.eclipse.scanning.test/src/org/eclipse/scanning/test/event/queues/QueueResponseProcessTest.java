@@ -42,7 +42,7 @@ public class QueueResponseProcessTest {
 	
 	private DummyBean submDummy, statDummy;
 	private MockPublisher<QueueRequest> mockPub;
-	private MockConsumer<Queueable> mockCons = new MockConsumer<>();
+	private MockConsumer<Queueable> mockCons;
 	private MockEventService mockEvServ;
 	
 	private String qRoot = IQueueService.DEFAULT_QUEUE_ROOT;
@@ -56,6 +56,8 @@ public class QueueResponseProcessTest {
 	
 	@Before
 	public void setUp() throws EventException {
+		mockCons = new MockConsumer<>();
+		
 		//Make sure we have clear queues before we start
 		mockCons.clearQueue(mockCons.getStatusSetName());
 		mockCons.clearQueue(mockCons.getSubmitQueueName());
@@ -84,7 +86,25 @@ public class QueueResponseProcessTest {
 	}
 	
 	@After
-	public void tearDown() {
+	public void tearDown() throws EventException {
+		submDummy = null;
+		statDummy = null;
+		
+		qResponseCreator = null;
+		
+		qControl.stopQueueService(true);
+		qServ.disposeService();
+		qServ = null;
+		qControl = null;
+		
+		mockPub = null;
+		mockCons = null;
+		mockEvServ = null;
+		
+		ServicesHolder.setQueueService(null);
+		ServicesHolder.setQueueControllerService(null);
+		ServicesHolder.setEventService(null);
+		
 		qReq = null;
 		qAns = null;
 	}

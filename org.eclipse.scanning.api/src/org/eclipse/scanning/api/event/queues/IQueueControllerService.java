@@ -20,6 +20,7 @@ import org.eclipse.scanning.api.event.core.ISubscriber;
 import org.eclipse.scanning.api.event.queues.beans.QueueBean;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.status.Status;
+import org.slf4j.Logger;
 
 /**
  * Service to allow the server based {@link IQueueService} to be controlled 
@@ -268,5 +269,91 @@ public interface IQueueControllerService {
 	 * @throws EventException - if the bean wasn't found in the queue.
 	 */
 	public Status getBeanStatus(String beanID, String queueID) throws EventException;
+	
+	/**
+	 * Return the logger configured on this class.
+	 * @return Logger
+	 */
+	public Logger getLogger();
+	
+	/**
+	 * Attempt to determine the current {@link Status} of a bean in a queue.
+	 * 
+	 * @param bean <T extends {@link Queueable}> whose {@link Status} we wish 
+	 *        to determine
+	 * @param queueID String ID of the queue where this bean is being processed
+	 * @return current {@link Status} of the bean
+	 * @throws EventException if the bean could not be found in the queue
+	 */
+	default <T extends Queueable> Status attemptBeanStatusCheck(T bean, String queueID) throws EventException {
+		try {
+			String beanID = bean.getUniqueId();
+			return getBeanStatus(beanID, queueID);
+		} catch (EventException evEx) {
+			getLogger().error("Could not get state of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' in queue. Is it in queue '"+queueID+"'? "+evEx.getMessage());
+			throw evEx;
+		}
+	}
+	
+	/**
+	 * Handler for reporting the outcomes of methods of the 
+	 * {@link IQueueControllerService} and for determining whether these 
+	 * methods can be run in the first place. Requires access to a logger to 
+	 * provide error reporting.
+	 * 
+	 */
+	interface ExceptionHandler {
+		
+		/**
+		 * If the boolean reported to this method indicates a failure, an 
+		 * error message is passed to the logger (returned by getLogger()) and 
+		 * an {@link EventException} is thrown. 
+ 		 * 
+		 * @param success boolean indicating whether the method succeeded
+		 * @param operating String message to indicate the calling method
+		 * @param bean <T extends Queueable> bean which was being operated on 
+		 *        and the type and name of which will be reported
+		 * @throws EventException in case of failure of the calling operation 
+		 *         being reported on
+		 */
+		default <T extends Queueable> void handleOutcome(boolean success, String operating, T bean) throws EventException {
+			if (!success) {
+				getLogger().error("Failed "+operating+" "+bean.getClass().getSimpleName()+" '"+bean.getName()+"'. Is it in the status set already?");
+				throw new EventException("Failed "+operating+" "+bean.getClass().getSimpleName()+" '"+bean.getName()+"'");
+			}
+		}
+		
+		/**
+		 * Test whether a given bean is already in the state it is being 
+		 * requested to change to. Throw an error if it is or if it is only 
+		 * SUBMITTED (i.e. not being processed).
+		 * 
+		 * @param isStatusGroup boolean indicating whether bean status is a 
+		 *        member of the the same group of statuses as the status it is 
+		 *        being set to (see {@link Status}
+		 * @param operation String message to indicate the method changing 
+		 *        status
+		 * @param bean <T extends Queueable> bean which was being operated on 
+		 *        and the type and name of which will be reported
+		 * @param beanState {@link Status} the bean currently has in the queue
+		 */
+		default <T extends Queueable> void alreadyAtState(boolean isStatusGroup, String operation, T bean, Status beanState) {
+			//bean.getStatus() should not be that - beanState is returned by a method!
+			if (isStatusGroup) {
+				getLogger().error(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is already "+operation+"d");
+				throw new IllegalStateException(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is already "+operation+"d");
+			} else if (beanState == Status.SUBMITTED) {
+				getLogger().error(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is submitted but not being processed. Cannot "+operation);
+				throw new IllegalStateException("Cannot pause a bean with SUBMITTED status");
+			}
+			
+		}
+		
+		/**
+		 * Return a logger which can be used to report method results
+		 * @return Logger
+		 */
+		public Logger getLogger();
+	}
 
 }

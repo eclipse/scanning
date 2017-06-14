@@ -60,6 +60,13 @@ public class MonitorAtomProcessTest {
 	
 	@After
 	public void tearDown() {
+		ServicesHolder.setNexusFileFactory(null);
+		ServicesHolder.setScannableDeviceService(null);
+		ServicesHolder.setFilePathService(null);
+		
+		monAt = null;
+		monAtProc = null;
+		
 		pti = null;
 	}
 	

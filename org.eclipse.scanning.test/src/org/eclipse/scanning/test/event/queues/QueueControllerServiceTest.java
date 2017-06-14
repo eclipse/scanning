@@ -34,6 +34,7 @@ import org.eclipse.scanning.test.event.queues.mocks.MockConsumer;
 import org.eclipse.scanning.test.event.queues.mocks.MockEventService;
 import org.eclipse.scanning.test.event.queues.mocks.MockPublisher;
 import org.eclipse.scanning.test.event.queues.mocks.MockSubmitter;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -76,6 +77,28 @@ public class QueueControllerServiceTest {
 		jqSubmQ = testController.getJobQueue().getSubmissionQueueName();
 		aqID = ((IQueueService)testController).registerNewActiveQueue();
 		aqSubmQ = testController.getQueue(aqID).getSubmissionQueueName();
+	}
+	
+	@After
+	public void tearDown() throws EventException {
+		//Clear destination names
+		qRoot = null;
+		uri = null;
+		jqID = null;
+		jqSubmQ = null;
+		aqID = null;
+		aqSubmQ = null;
+		
+		testController.stopQueueService(true);
+		testController = null;
+		
+		ServicesHolder.setEventService(null);
+		
+		//Set mock services null
+		mockPub = null;
+		mockCmdPub = null;
+		mockSub = null;
+		mockEvServ = null;
 	}
 	
 	/**
@@ -130,7 +153,7 @@ public class QueueControllerServiceTest {
 			testController.remove(carlos, aqID);
 			fail("Expected EventException: Carlos has already been removed");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		
 		/*
@@ -140,19 +163,19 @@ public class QueueControllerServiceTest {
 			testController.submit(carlos, jqID);
 			fail("Expected EventException when wrong queueable type submitted (atom in job-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.remove(bernard, aqID);
 			fail("Expected EventException when wrong queueable type submitted (bean in atom-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.remove(xavier, aqID);
 			fail("Expected EventException: Xavier was never submitted = can't be removed");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 	}
 	
@@ -193,13 +216,13 @@ public class QueueControllerServiceTest {
 			testController.reorder(carlos, 2, jqID);
 			fail("Expected EventException when wrong queueable type reordered (atom in job-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.reorder(xavier, 3, aqID);
 			fail("Expected EventException: Xavier not submitted, should not be able to reorder");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 	}
 	
@@ -230,7 +253,7 @@ public class QueueControllerServiceTest {
 			testController.pause(albert, jqID);
 			fail("Expected IllegalStateException on repeated pause");
 		} catch (IllegalStateException isEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		
 		/*
@@ -246,7 +269,7 @@ public class QueueControllerServiceTest {
 			testController.resume(albert, jqID);
 			fail("Expected IllegalStateException on repeated resume");
 		} catch (IllegalStateException isEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		
 		/*
@@ -261,26 +284,28 @@ public class QueueControllerServiceTest {
 			testController.pause(carlos, jqID);
 			fail("Expected EventException when wrong queueable type paused (atom in job-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.resume(albert, aqID);
 			fail("Expected EventException when wrong queueable type resumed (bean in active-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.pause(xavier, aqID);
 			fail("Expected EventException: Xavier not submitted, should not be able to pause");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		//Testing bean type test comes before bean exists/state test fails
 		try {
 			testController.resume(xavier, jqID);
 			fail("Expected EventException: Xavier not right bean type, should not be able to resume");
 		} catch (EventException evEx) {
-			assertTrue("Got unexpected exception - should be wrong type EventException", evEx.getMessage().contains("wrong type"));
+			System.out.println("^---- Expected exception");
+			assertTrue("Got unexpected exception - should be an EventException containing message '", 
+					(evEx.getMessage().contains("Bean type") && evEx.getMessage().contains("not supported by queue")));
 		}
 	}
 	
@@ -309,7 +334,7 @@ public class QueueControllerServiceTest {
 			testController.terminate(albert, jqID);
 			fail("Expected IllegalStateException on repeated terminate");
 		} catch (IllegalStateException isEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 
 		/*
@@ -326,19 +351,21 @@ public class QueueControllerServiceTest {
 			testController.terminate(carlos, jqID);
 			fail("Expected EventException when wrong queueable type terminated (atom in job-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.terminate(xavier, aqID);
 			fail("Expected EventException: Xavier not submitted, should not be able to terminate");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.terminate(xavier, jqID);
 			fail("Expected EventException: Xavier not right bean type, should not be able to terminate");
 		} catch (EventException evEx) {
-			assertTrue("Got unexpected exception - should be wrong type EventException", evEx.getMessage().contains("wrong type"));
+			System.out.println("^---- Expected exception");
+			assertTrue("Got unexpected exception - should be an EventException containing message '", 
+					(evEx.getMessage().contains("Bean type") && evEx.getMessage().contains("not supported by queue")));
 		}		
 	}
 	

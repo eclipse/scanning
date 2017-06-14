@@ -12,16 +12,13 @@
 package org.eclipse.scanning.test.event.queues.processes;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.status.Status;
-import org.eclipse.scanning.api.event.status.StatusBean;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.event.queues.processes.PositionerAtomProcess;
 import org.eclipse.scanning.event.queues.processes.QueueProcess;
@@ -29,8 +26,6 @@ import org.eclipse.scanning.example.scannable.MockNeXusScannable;
 import org.eclipse.scanning.example.scannable.MockScannable;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;
 import org.eclipse.scanning.sequencer.RunnableDeviceServiceImpl;
-import org.eclipse.scanning.test.event.queues.mocks.MockPositioner;
-import org.eclipse.scanning.test.event.queues.mocks.MockScanService;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -65,6 +60,14 @@ public class PositionerAtomProcessTest {
 		ServicesHolder.setScannableDeviceService(connector);
 	}
 	
+	@AfterClass
+	public static void tearDownClass() {
+		ServicesHolder.unsetDeviceService(dService);
+		dService = null;
+		
+		connector = null;
+	}
+	
 	@Before
 	public void setUp() throws Exception {
 		pti = new ProcessTestInfrastructure();
@@ -81,15 +84,10 @@ public class PositionerAtomProcessTest {
 	
 	@After
 	public void tearDown() {
-		pti = null;
-	}
-	
-	@AfterClass
-	public static void tearDownClass() {
-		ServicesHolder.unsetDeviceService(dService);
-		dService = null;
+		posAt = null;
+		posAtProc = null;
 		
-		connector = null;
+		pti = null;
 	}
 	
 	@Test

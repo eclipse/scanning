@@ -35,6 +35,7 @@ public abstract class QueueControllerService implements IQueueService, IQueueCon
 	private static final Logger logger = LoggerFactory.getLogger(QueueControllerService.class);
 	
 	private IQueueControllerEventConnector eventConnector;
+	private ExceptionHandler resultHandler;
 	
 	protected boolean init = false;
 	
@@ -55,6 +56,15 @@ public abstract class QueueControllerService implements IQueueService, IQueueCon
 		eventConnector = new QueueControllerEventConnector();
 		eventConnector.setEventService(ServicesHolder.getEventService());
 		eventConnector.setUri(getURI());
+		
+		resultHandler = new ExceptionHandler() {
+
+			@Override
+			public Logger getLogger() {
+				return logger;
+			}
+			
+		};
 		
 		init = true;
 	}
@@ -84,10 +94,7 @@ public abstract class QueueControllerService implements IQueueService, IQueueCon
 		String submitQueueName = getQueue(queueID).getSubmissionQueueName();
 		boolean success = eventConnector.remove(bean, submitQueueName);
 		
-		if (!success) {
-			logger.error("Bean removal failed. Is it in the status set already?");
-			throw new EventException("Bean removal failed.");
-		}
+		resultHandler.handleOutcome(success, "remove", bean);
 	}
 
 	@Override
@@ -96,32 +103,15 @@ public abstract class QueueControllerService implements IQueueService, IQueueCon
 		String submitQueueName = getQueue(queueID).getSubmissionQueueName();
 		boolean success = eventConnector.reorder(bean, move, submitQueueName);		
 		
-		if (!success) {
-			logger.error("Bean reordering failed. Is it in the status set already?");
-			throw new EventException("Bean reordering failed.");
-		}
-
+		resultHandler.handleOutcome(success, "reordering", bean);
 	}
 
 	@Override
 	public <T extends Queueable> void pause(T bean, String queueID) throws EventException {
 		//Determine if bean is the right type & in a pausable state
 		checkBeanType(bean, queueID);
-		Status beanState;
-		try {
-			String beanID = bean.getUniqueId();
-			beanState = getBeanStatus(beanID, queueID);
-		} catch (EventException evEx) {
-			logger.error("Could not get state of bean in queue. Is it in queue '"+queueID+"'? "+evEx.getMessage());
-			throw evEx;
-		}
-		if (beanState.isPaused()) {
-			logger.error("Bean '"+bean.getName()+"' is already paused.");
-			throw new IllegalStateException("Bean '"+bean.getName()+"' is already paused");
-		} else if (beanState == Status.SUBMITTED) {
-			logger.error("Bean is submitted but not being processed. Cannot pause.");
-			throw new IllegalStateException("Cannot pause a bean with SUBMITTED status");
-		}
+		Status beanState = attemptBeanStatusCheck(bean, queueID);
+		resultHandler.alreadyAtState(beanState.isPaused(), "pause", bean, beanState);
 		
 		//The bean is pausable. Get the status topic name and publish the bean
 		String statusTopicName = getQueue(queueID).getStatusTopicName();
@@ -133,21 +123,8 @@ public abstract class QueueControllerService implements IQueueService, IQueueCon
 	public <T extends Queueable> void resume(T bean, String queueID) throws EventException {
 		//Determine if bean is the right type & in a resumable state
 		checkBeanType(bean, queueID);
-		Status beanState;
-		try {
-			String beanID = bean.getUniqueId();
-			beanState = getBeanStatus(beanID, queueID);
-		} catch (EventException evEx) {
-			logger.error("Could not get state of bean in queue. Is it in queue '"+queueID+"'? "+evEx.getMessage());
-			throw evEx;
-		}
-		if (beanState.isResumed() || beanState.isRunning()) {
-			logger.error("Bean '"+bean.getName()+"' is already resumed/running.");
-			throw new IllegalStateException("Bean '"+bean.getName()+"' is already resumed/running");
-		} else if (beanState == Status.SUBMITTED) {
-			logger.error("Bean is submitted but not being processed. Cannot resume.");
-			throw new IllegalStateException("Cannot resume a bean with SUBMITTED status");
-		}
+		Status beanState = attemptBeanStatusCheck(bean, queueID);
+		resultHandler.alreadyAtState(beanState.isResumed() || beanState.isRunning(), "resume", bean, beanState);
 
 		//The bean is resumable. Get the status topic name and publish the bean
 		String statusTopicName = getQueue(queueID).getStatusTopicName();
@@ -159,22 +136,8 @@ public abstract class QueueControllerService implements IQueueService, IQueueCon
 	public <T extends Queueable> void terminate(T bean, String queueID) throws EventException {
 		//Determine if bean is the right type & in a terminatable state
 		checkBeanType(bean, queueID);
-		Status beanState;
-		try {
-			String beanID = bean.getUniqueId();
-			beanState = getBeanStatus(beanID, queueID);
-		} catch (EventException evEx) {
-			logger.error("Could not get state of bean in queue. Is it in queue '"+queueID+"'? "+evEx.getMessage());
-			throw evEx;
-		}
-		if (beanState.isTerminated()) {
-			logger.error("Bean '"+bean.getName()+"' is already terminated.");
-			throw new IllegalStateException("Bean '"+bean.getName()+"' is already terminated");
-		} else if (beanState == Status.SUBMITTED) {
-			logger.warn("Bean is submitted but not being processed. Bean will be removed, rather than terminated.");
-			remove(bean, queueID);
-			return;
-		}
+		Status beanState = attemptBeanStatusCheck(bean, queueID);
+		resultHandler.alreadyAtState(beanState.isTerminated(), "terminate", bean, beanState);
 
 		//The bean is terminatable. Get the status topic name and publish the bean
 		String statusTopicName = getQueue(queueID).getStatusTopicName();
@@ -234,6 +197,11 @@ public abstract class QueueControllerService implements IQueueService, IQueueCon
 		return statusFinder.find();
 	}
 	
+	@Override
+	public Logger getLogger() {
+		return logger;
+	}
+	
 	/**
 	 * Convenience check that the bean we're going to pass to the consumer 
 	 * will be the right type, based on the job-queue accepting only 
@@ -249,7 +217,7 @@ public abstract class QueueControllerService implements IQueueService, IQueueCon
 			if (bean instanceof QueueAtom) return;
 		}
 		logger.error("Bean type ("+bean.getClass().getSimpleName()+") not supported by queue "+queueID);
-		throw new EventException("Bean is wrong type for given queueID");
+		throw new EventException("Bean type ("+bean.getClass().getSimpleName()+") not supported by queue with given queueID");
 	}
 	
 }
