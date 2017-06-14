@@ -5,8 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.Arrays;
-
 import javax.inject.Inject;
 
 import org.eclipse.richbeans.api.binding.IBeanController;
@@ -34,7 +32,7 @@ public class MultiStepCompositeTest extends ShellTest{
 
 	private MultiStepModel     model;
 	private MultiStepComposite ui;
-	private IBeanController    controller;
+	private IBeanController<MultiStepModel>    controller;
 	
 	@Override
 	protected Shell createShell(Display display) throws Exception {
