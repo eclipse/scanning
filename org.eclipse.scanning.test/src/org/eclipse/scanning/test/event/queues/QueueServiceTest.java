@@ -129,7 +129,7 @@ public class QueueServiceTest {
 			testQServ.start();
 			fail("Should not be able to start service immediately after disposal");
 		} catch (EventException ex) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 	}
 	
@@ -280,7 +280,7 @@ public class QueueServiceTest {
 				testQServ.getQueue(activeQIDs.get(i));
 				fail("Queue should no longer exist in registry");
 			} catch (EventException evEx) {
-				//Expected
+				//Expected - doesn't throw a log message
 			}
 		}
 		activeQIDs = new ArrayList<>(testQServ.getAllActiveQueueIDs());
@@ -292,7 +292,7 @@ public class QueueServiceTest {
 			testQServ.deRegisterActiveQueue(activeQIDs.get(0));
 			fail("Should not be able to deregister a running active-queue");
 		} catch (EventException evEx) {
-			//Expected
+			//Expected - doesn't throw a log message
 		}
 		
 		//Check queue registration not possible without start
@@ -303,7 +303,7 @@ public class QueueServiceTest {
 			testQServ.registerNewActiveQueue();
 			fail("QueueService should be started before active queue can be registered");
 		} catch (IllegalStateException isEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 	}
 
