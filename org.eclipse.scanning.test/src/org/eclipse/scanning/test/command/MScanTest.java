@@ -23,6 +23,26 @@ public class MScanTest extends AbstractScanCommandsTest {
 	}
 	
 	@Test
+	public void testStepAroundGridScanNoDetector() throws Exception {
+		pi.exec("mscan([step(axis='energy', start=300, stop=310, step=5), grid(axes=('xNex', 'yNex'), start=(0, 0), stop=(10, 10), count=(2, 2), snake=True)])");
+	}
+	
+	@Test
+	public void testMultiStep() throws Exception {
+		pi.exec("mscan(mstep(axis='energy', stepModels=[StepModel('energy', 300, 310, 5)]))");
+	}
+	
+	@Test
+	public void testMulti1StepAroundGridScanNoDetector() throws Exception {
+		pi.exec("mscan([mstep(axis='energy', stepModels=[StepModel('energy', 300, 310, 5)]), grid(axes=('xNex', 'yNex'), start=(0, 0), stop=(10, 10), count=(2, 2), snake=True)])");
+	}
+	
+	@Test
+	public void testMulti2StepAroundGridScanNoDetector() throws Exception {
+		pi.exec("mscan([mstep(axis='energy', stepModels=[StepModel('energy', 290, 300, 5), StepModel('energy', 300, 310, 5)]), grid(axes=('xNex', 'yNex'), start=(0, 0), stop=(10, 10), count=(2, 2), snake=True)])");
+	}
+	
+	@Test
 	public void testGridWithROIScan() throws Exception {
 		pi.exec("mscan(grid(axes=('xNex', 'yNex'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 2), snake=False, roi=[circ(origin=(0.0, 1.0), radius=2.0)]), det=detector('mandelbrot', 0.001))");
 	}

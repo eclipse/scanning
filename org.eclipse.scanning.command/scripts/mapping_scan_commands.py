@@ -51,10 +51,12 @@ from org.eclipse.dawnsci.analysis.dataset.roi import (
 from org.eclipse.scanning.api.event.IEventService import (
     SUBMISSION_QUEUE, STATUS_TOPIC)
 from org.eclipse.scanning.api.event.scan import (ScanBean, ScanRequest)
+
 from org.eclipse.scanning.api.points.models import (
-    StepModel, CollatedStepModel, GridModel, RasterModel, SinglePointModel,
+    StepModel, MultiStepModel, CollatedStepModel, GridModel, RasterModel, SinglePointModel,
     OneDEqualSpacingModel, OneDStepModel, ArrayModel,
     BoundingBox, BoundingLine, CompoundModel, RepeatedPointModel)
+
 from org.eclipse.scanning.command.Services import (
     getEventService, getRunnableDeviceService, getScannableDeviceService)
 
@@ -247,6 +249,37 @@ def step(axis=None, start=None, stop=None, step=None, **kwargs):
                  'start': start,
                  'stop': stop,
                  'step': step})
+
+    return model, _listify(roi)
+
+def mstep(axis=None, stepModels=None, **kwargs):
+    """Define a multi step scan path to be passed to mscan().
+
+    Note that this function may be called with or without keyword syntax. That
+    is, the following are mutually equivalent:
+    >>> step(axis=my_scannable, start=0, stop=10, step=1)
+    >>> step(my_scannable, 0, 10, 1)
+    """
+    try:
+        assert None not in (axis, stepModels)
+    except (TypeError, ValueError):
+        raise ValueError(
+            '`axis`, `steps`, must be provided.')
+
+
+    # For the first argument, users can pass either a Scannable object
+    # or a string. IScanPathModels are only interested in the string (i.e.
+    # the Scannable's name).
+    axis = _stringify(axis)
+    _processKeywords(axis, kwargs)
+
+    # No such thing as ROIs for StepModels.
+    roi = None
+    
+    model = _instantiate(
+                MultiStepModel,
+                {'name'       : axis,
+                 'stepModels' : stepModels})
 
     return model, _listify(roi)
 
