@@ -42,7 +42,7 @@ public class QueueServiceTest {
 	
 	private MockConsumer<DummyBean> mockCons;
 	private MockPublisher<ConsumerCommandBean> mockCmdPub;
-	private MockEventService mockEvServ = new MockEventService();
+	private MockEventService mockEvServ;
 	
 	private IQueueService testQServ;
 	
@@ -51,12 +51,12 @@ public class QueueServiceTest {
 	
 	@Before
 	public void setUp() throws Exception {
+		mockEvServ = new MockEventService();
 		mockCons = new MockConsumer<>();
 		mockCmdPub = new MockPublisher<>(null, null);
 		mockEvServ.setMockConsumer(mockCons);
 		mockEvServ.setMockCmdPublisher(mockCmdPub);
 		ServicesHolder.setEventService(mockEvServ);
-
 		
 		qRoot = IQueueService.DEFAULT_QUEUE_ROOT; //This is auto-configured, but need the variables for tests
 		uri = "file:///foo/bar";
@@ -70,7 +70,18 @@ public class QueueServiceTest {
 	@After
 	public void tearDown() throws Exception {
 		testQServ.disposeService();
-		ServicesHolder.unsetQueueService(testQServ);
+		testQServ = null;
+		
+		//Dispose of mocks
+		mockCons = null;
+		mockCmdPub = null;
+		mockEvServ = null;
+		
+		ServicesHolder.setEventService(null);
+		ServicesHolder.setQueueService(null);
+		
+		qRoot = null;
+		uri = null;
 	}
 	
 	/**

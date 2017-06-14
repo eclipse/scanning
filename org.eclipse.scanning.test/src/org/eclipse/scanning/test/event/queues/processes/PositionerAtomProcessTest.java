@@ -56,6 +56,9 @@ public class PositionerAtomProcessTest {
 		ServicesHolder.unsetDeviceService(mss);
 		mss = null;
 		
+		posAt = null;
+		posAtProc = null;
+		
 		pti = null;
 	}
 	
