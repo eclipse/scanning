@@ -56,7 +56,8 @@ Import-Package: javax.jms,
  org.python.util,
  org.slf4j;version="1.7.2"
 Bundle-ActivationPolicy: lazy
-Export-Package: org.eclipse.scanning.test.scan.mock,
+Export-Package: org.eclipse.scanning.test,
+ org.eclipse.scanning.test.scan.mock,
  org.eclipse.scanning.test.scan.nexus,
  org.eclipse.scanning.test.scan.real
 Bundle-ClassPath: logback/ch.qos.logback.classic_1.0.7.v20121108-1250.jar,
