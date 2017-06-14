@@ -43,6 +43,10 @@
         <property name="bundle"   value="org.eclipse.dawnsci.remotedataset.server" /> <!-- Delete for real spring? -->
     </bean>
     
+    <bean id="queueService" class="org.eclipse.scanning.event.queues.QueueServiceSpringInitializer" init-method="initialiseQueueService">
+    	<property name="bundle" value="org.eclipse.scanning.event.queues" /> <!-- Delete for real spring? -->
+    </bean>
+    
 
 	<import resource="example_detectors.xml"/>
 	<import resource="example_watchdogs.xml"/>

@@ -25,23 +25,34 @@ import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
 import org.eclipse.scanning.test.event.queues.mocks.MockConsumer;
 import org.eclipse.scanning.test.event.queues.mocks.MockEventService;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class QueueTest {
 	
 	private MockConsumer<DummyBean> mockCons;
-	private MockEventService mockEvServ = new MockEventService();
+	private MockEventService mockEvServ;
 	private String qRoot = "test-queue";
 	private URI uri;
 	
 	@Before
 	public void setUp() throws Exception {
+		mockEvServ = new MockEventService();
 		mockCons = new MockConsumer<>();
 		mockEvServ.setMockConsumer(mockCons);
 		
 		ServicesHolder.setEventService(mockEvServ);
 		uri = new URI("file:///foo/bar");
+	}
+	
+	@After
+	public void tearDown() {
+		uri = null;
+		mockCons = null;
+		mockEvServ = null;
+		
+		ServicesHolder.setEventService(null);
 	}
 	
 	/**

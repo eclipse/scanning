@@ -16,8 +16,10 @@ import static org.junit.Assert.fail;
 
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.queues.IQueueProcess;
+import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.event.queues.QueueProcessFactory;
+import org.eclipse.scanning.event.queues.processes.PositionerAtomProcess;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtom;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtomProcess;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
@@ -69,10 +71,9 @@ public class QueueProcessFactoryTest {
 		IQueueProcess<?,?> processTwo = QueueProcessFactory.getProcessor(dBe, mockPub, false);
 		if(!(processTwo instanceof DummyBeanProcess)) fail("Wrong IProcessor type returned for DummyBean.");
 		
-//		FIXME
-//		MoveAtom mvAt = new MoveAtom("Sam1", "Sam1", 3, 20);
-//		IQueueProcess<?,?> processThree = QueueProcessFactory.getProcessor(mvAt.getClass().getName());
-//		if(!(processThree instanceof MoveAtomProcessor)) fail("Wrong IProcessor type returned for MoveAtom.");
+		PositionerAtom mvAt = new PositionerAtom("Sam1", "Sam1", 3);
+		IQueueProcess<?,?> processThree = QueueProcessFactory.getProcessor(mvAt, mockPub, false);
+		if(!(processThree instanceof PositionerAtomProcess)) fail("Wrong IProcessor type returned for MoveAtom.");
 		
 		try {
 			DummyHasQueue dHQ = new DummyHasQueue("Dilbert", 25);
@@ -80,7 +81,7 @@ public class QueueProcessFactoryTest {
 			IQueueProcess<?,?> processFour = QueueProcessFactory.getProcessor(dHQ, mockPub, false);
 			fail("DummyHasQueue not registered, should not be able to get processor!");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 	}
 

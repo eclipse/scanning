@@ -84,8 +84,25 @@ public class _QueueControllerServiceTest {
 	}
 	
 	@After
-	public void tearDown() {
+	public void tearDown() throws EventException {
+		//Clear destination names
+		qRoot = null;
+		jqID = null;
+		jqSubmQ = null;
+		aqID = null;
+		aqSubmQ = null;
+		
+		testController.stopQueueService(true);
+		testController = null;
+		
 		ServicesHolder.setEventService(null);
+		
+		//Set mock services null
+		mockPub = null;
+		mockCmdPub = null;
+		mockSub = null;
+		mockReq = null;
+		mockEvServ = null;
 	}
 		
 	/**
@@ -199,7 +216,7 @@ public class _QueueControllerServiceTest {
 			testController.remove(carlos, aqID);
 			fail("Expected EventException: Carlos has already been removed");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}		
 		/* 
 		 * Prevent submission/removal of wrong bean type to wrong queue
@@ -208,19 +225,19 @@ public class _QueueControllerServiceTest {
 			testController.submit(carlos, jqID);
 			fail("Expected IllegalArgumentException when wrong queueable type submitted (atom in job-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.remove(bernard, aqID);
 			fail("Expected IllegalArgumentException when wrong queueable type submitted (bean in atom-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.remove(xavier, aqID);
 			fail("Expected EventException: Xavier was never submitted = can't be removed");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 
 	}
@@ -266,13 +283,13 @@ public class _QueueControllerServiceTest {
 			testController.reorder(carlos, 2, jqID);
 			fail("Expected EventException when wrong queueable type reordered (atom in job-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}	
 		try {
 			testController.reorder(xavier, 3, aqID);
 			fail("Expected EventException: Xavier not submitted, should not be able to reorder");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 	}
 	
@@ -312,7 +329,7 @@ public class _QueueControllerServiceTest {
 			testController.pause(albert, jqID);
 			fail("Expected IllegalStateException on repeated pause");
 		} catch (IllegalStateException isEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		replies = mockReq.getReplies();
 		assertEquals("Extra requests were sent", 2, replies.size());
@@ -340,7 +357,7 @@ public class _QueueControllerServiceTest {
 			testController.resume(albert, jqID);
 			fail("Expected IllegalStateException on repeated resume");
 		} catch (IllegalStateException isEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		replies = mockReq.getReplies();
 		assertEquals("Extra requests were sent", 2, replies.size());
@@ -359,25 +376,26 @@ public class _QueueControllerServiceTest {
 			testController.pause(carlos, jqID);
 			fail("Expected EventException when wrong queueable type paused (atom in job-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.resume(albert, aqID);
 			fail("Expected EventException when wrong queueable type resumed (bean in active-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.pause(xavier, aqID);
 			fail("Expected EventException: Xavier not submitted, should not be able to pause");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		//Testing bean type test comes before bean exists/state test fails
 		try {
 			testController.resume(xavier, jqID);
 			fail("Expected EventException: Xavier not right bean type, should not be able to resume");
 		} catch (EventException evEx) {
+			System.out.println("^---- Expected exception");
 			assertTrue("Got unexpected exception - should be wrong type EventException", evEx.getMessage().contains("wrong type"));
 		}
 	}
@@ -418,7 +436,7 @@ public class _QueueControllerServiceTest {
 			testController.terminate(albert, jqID);
 			fail("Expected IllegalStateException on repeated terminate");
 		} catch (IllegalStateException isEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		replies = mockReq.getReplies();
 		assertEquals("Extra requests were sent", 2, replies.size());
@@ -446,19 +464,20 @@ public class _QueueControllerServiceTest {
 			testController.terminate(carlos, jqID);
 			fail("Expected EventException when wrong queueable type terminated (atom in job-queue)");
 		} catch (EventException iaEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		try {
 			testController.terminate(xavier, aqID);
 			fail("Expected EventException: Xavier not submitted, should not be able to terminate");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 		//Testing bean type test comes before bean exists/state test fails
 		try {
 			testController.terminate(xavier, jqID);
 			fail("Expected EventException: Xavier not right bean type, should not be able to terminate");
 		} catch (EventException evEx) {
+			System.out.println("^---- Expected exception");
 			assertTrue("Got unexpected exception - should be wrong type EventException", evEx.getMessage().contains("wrong type"));
 		}
 	}
