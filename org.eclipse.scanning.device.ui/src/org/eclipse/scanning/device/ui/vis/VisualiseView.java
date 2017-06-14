@@ -11,27 +11,19 @@
  *******************************************************************************/
 package org.eclipse.scanning.device.ui.vis;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.dawnsci.plotting.api.IPlottingService;
 import org.eclipse.dawnsci.plotting.api.IPlottingSystem;
 import org.eclipse.dawnsci.plotting.api.PlotType;
 import org.eclipse.dawnsci.plotting.api.region.IRegionSystem;
 import org.eclipse.dawnsci.plotting.api.tool.IToolPageSystem;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.scanning.api.IModelProvider;
 import org.eclipse.scanning.api.annotation.ui.FieldValue;
 import org.eclipse.scanning.api.points.models.ScanRegion;
-import org.eclipse.scanning.device.ui.Activator;
 import org.eclipse.scanning.device.ui.ScanningPerspective;
 import org.eclipse.scanning.device.ui.ServiceHolder;
-import org.eclipse.scanning.device.ui.util.ViewUtil;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbenchPart;
@@ -102,7 +94,11 @@ public class VisualiseView extends ViewPart implements IAdaptable, ISelectionLis
 		if (object instanceof FieldValue) {
 			processModel(((FieldValue)object).getModel());
 		} else if (object instanceof IModelProvider<?>) {
-			processModel(((IModelProvider)object).getModel());
+			try {
+				processModel(((IModelProvider<?>)object).getModel());
+			} catch (Exception e) {
+				logger.error("Problem getting model from "+object, e);
+			}
 		} else if (object instanceof ScanRegion) {
 			if (controller!=null) controller.refresh(); // Axes might have changed
 		}
