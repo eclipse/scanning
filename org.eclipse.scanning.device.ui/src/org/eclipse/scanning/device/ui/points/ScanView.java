@@ -14,12 +14,12 @@ package org.eclipse.scanning.device.ui.points;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
@@ -48,11 +48,13 @@ import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.richbeans.widgets.file.FileSelectionDialog;
 import org.eclipse.richbeans.widgets.internal.GridUtils;
 import org.eclipse.richbeans.widgets.table.ISeriesItemDescriptor;
+import org.eclipse.richbeans.widgets.table.SeriesItemView;
 import org.eclipse.richbeans.widgets.table.SeriesTable;
 import org.eclipse.richbeans.widgets.table.event.SeriesItemEvent;
 import org.eclipse.richbeans.widgets.table.event.SeriesItemListener;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.EventException;
+import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
@@ -110,7 +112,7 @@ import org.slf4j.LoggerFactory;
  * TODO Convert to e4 view?
  *
  */
-public class ScanView  extends ViewPart implements SeriesItemListener {
+public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemListener {
 	
 	public static final String ID = "org.eclipse.scanning.device.ui.scanEditor";
 	
@@ -161,18 +163,19 @@ public class ScanView  extends ViewPart implements SeriesItemListener {
 		if (stash.isStashed()) {
 			try {
 				final List<IScanPathModel> models = stash.unstash(List.class);
-				this.saved = pointsFilter.createDescriptors(models);
+				setPath(models);
 			} catch (Exception e) {
 				logger.error("Cannot load generators to memento!", e);
 			}
 		}
 	}
-	
+
 	@Override
     public void saveState(IMemento memento) {
 		super.saveState(memento);
+		
 		try {
-			final List<Object> models = pointsFilter.getModels(seriesTable.getSeriesItems());
+			final List<IScanPathModel> models = getPath();
 	    	stash.stash(models);
 	    	
 	        for (String propName : trees.keySet()) {
@@ -398,7 +401,7 @@ public class ScanView  extends ViewPart implements SeriesItemListener {
 	public <T> T getAdapter(Class<T> clazz) {
 		
 		if (CompoundModel.class == clazz) {
-			List<IScanPathModel> models = getModels();
+			List<IScanPathModel> models = getPath();
 			if (models==null) return null;
 			CompoundModel<IROI> cm = new CompoundModel<IROI>(models);
 			final List<ScanRegion<IROI>> regions = ScanRegions.getScanRegions(PlotUtil.getRegionSystem());
@@ -414,7 +417,7 @@ public class ScanView  extends ViewPart implements SeriesItemListener {
 			return (T)getGenerators();
 			
 		} else if (clazz==Object[].class||clazz==List.class) {
-			return (T)getModels();
+			return (T)getPath();
 			
 		} else if (clazz==IPosition[].class) {
 			
@@ -467,7 +470,7 @@ public class ScanView  extends ViewPart implements SeriesItemListener {
 	private IAction delete;
 	private IAction clear;
 	
-	private String lastPath = null;
+	private static String lastPath = System.getProperty("GDA/gda.var", System.getProperty("user.home"));
 	private final static String[] extensions = new String[]{"json", "*.*"};
 	private final static String[] files = new String[]{"Scan files (json)", "All Files"};
 
@@ -495,8 +498,7 @@ public class ScanView  extends ViewPart implements SeriesItemListener {
 
 		addGroup("location", tmanager, start, before, after, end);
 		addGroup("location", mmanager, start, before, after, end);
-	
-		
+
 		add = new Action("Insert", Activator.getImageDescriptor("icons/clipboard-list.png")) {
 			public void run() {
 				seriesTable.addNew();
@@ -523,7 +525,7 @@ public class ScanView  extends ViewPart implements SeriesItemListener {
 		final IAction save = new Action("Save scan", IAction.AS_PUSH_BUTTON) {
 			public void run() {
 				
-				List<IScanPathModel> models = getModels();
+				List<IScanPathModel> models = getPath();
 				
 				if (models == null) return;
 				FileSelectionDialog dialog = new FileSelectionDialog(site.getShell());
@@ -653,15 +655,6 @@ public class ScanView  extends ViewPart implements SeriesItemListener {
 		}
 		return pipeline;
 	}
-	private List<IScanPathModel> getModels() {
-		
-		IPointGenerator<?>[] gens = getGenerators();
-		if (gens==null || gens.length<1) return null;
-		List<IScanPathModel> mods = new ArrayList<>(gens.length);
-		for (int i = 0; i < gens.length; i++) mods.add((IScanPathModel)gens[i].getModel());
-		return mods;
-	}
-
 
 	private void setDynamicMenuOptions(IMenuManager mm) {
 		
@@ -688,8 +681,7 @@ public class ScanView  extends ViewPart implements SeriesItemListener {
 						((GeneratorDescriptor)current).getSeriesObject().setEnabled(isChecked());
 						seriesTable.refreshTable();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						logger.error("Problem refreshing series table!", e);
 					}
 				}
 			}
@@ -769,6 +761,30 @@ public class ScanView  extends ViewPart implements SeriesItemListener {
 	public void itemRemoved(SeriesItemEvent evt) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	private List<IScanPathModel> getPath() {
+		return pointsFilter.getModels(seriesTable.getSeriesItems());
+	}
+
+	private List<IScanPathModel> setPath(List<IScanPathModel> path) {
+		List<IScanPathModel> old = pointsFilter.getModels(seriesTable.getSeriesItems());
+		try {
+			this.saved = pointsFilter.createDescriptors(path);
+		} catch (GeneratorException e) {
+			logger.error("Unable to create descriptors for "+path);
+		}
+		return old;
+	}
+
+	@Override
+	public <T> boolean isSeriesOf(Class<T> class1) {
+		return class1==IPointGenerator.class;
+	}
+
+	@Override
+	public ISeriesItemDescriptor find(Predicate<ISeriesItemDescriptor> predicate) {
+		return seriesTable.find(predicate);
 	}
 
 }
