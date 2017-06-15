@@ -15,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * A single value position. Instances of this class are immutable.
+ * A single value position.
  * 
  * @param <T> the type of the value of this position 
  * @author Matthew Gerring

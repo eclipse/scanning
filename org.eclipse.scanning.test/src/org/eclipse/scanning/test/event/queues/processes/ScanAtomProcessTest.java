@@ -41,6 +41,7 @@ import org.eclipse.scanning.test.event.queues.mocks.MockSubmitter;
 import org.eclipse.scanning.test.event.queues.mocks.MockSubscriber;
 import org.eclipse.scanning.test.scan.mock.MockDetectorModel;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -66,6 +67,16 @@ public class ScanAtomProcessTest {
 		mockEvServ.setMockSubmitter(mockSub);
 		mockEvServ.setMockSubscriber(mockSubsc);
 		ServicesHolder.setEventService(mockEvServ);
+	}
+	
+	@AfterClass
+	public static void tearDownClass() {
+		mockPub = null;
+		mockSub = null;
+		mockSubsc = null;
+		mockEvServ = null;
+		
+		ServicesHolder.setEventService(null);
 	}
 	
 	@Before
@@ -116,6 +127,9 @@ public class ScanAtomProcessTest {
 	
 	@After
 	public void tearDown() {
+		scAt = null;
+		scAtProc = null;
+		
 		pti = null;
 	}
 	

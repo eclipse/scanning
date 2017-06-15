@@ -22,6 +22,7 @@ import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.core.IProcessCreator;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.queues.IQueueProcess;
+import org.eclipse.scanning.api.event.queues.beans.MonitorAtom;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
@@ -85,11 +86,11 @@ public class QueueProcessCreatorTest {
 	 * 
 	 * @throws Exception
 	 */
-	@Test //TODO FIXME
+	@Test //TODO FIXME Add missing bean types
 	@SuppressWarnings("unchecked")
 	public void testProcessTypeCreation() throws Exception {
 		List<Queueable> testAtoms = new ArrayList<>();
-//		testAtoms.add(new MonitorAtom("Read bpm3", "bpm3", 10000)); FIXME
+		testAtoms.add(new MonitorAtom("Read bpm3", "bpm3"));
 		testAtoms.add(new PositionerAtom("Move robot arm", "robot_arm", "1250"));
 		testAtoms.add(makeScanAtom());
 //		testAtoms.add(new ProcessAtom(...) TODO

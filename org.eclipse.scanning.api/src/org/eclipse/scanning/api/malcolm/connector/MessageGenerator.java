@@ -26,13 +26,13 @@ import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 public interface MessageGenerator<T> {
 
 	/**
-	 * Automatically generates a call for a given method by using the method name from the stack.
+	 * Automatically generates a call for a given method
 	 * 
-	 * @param stackTrace
+	 * @param method
 	 * @param running
 	 * @throws MalcolmDeviceException
 	 */
-	T call(StackTraceElement[] stackTrace, DeviceState... states) throws MalcolmDeviceException;
+	T call(MalcolmMethod method, DeviceState... states) throws MalcolmDeviceException;
 	
 	/**
 	 * Create a get message
@@ -43,12 +43,12 @@ public interface MessageGenerator<T> {
 
 	/**
 	 * Create a call message
-	 * @param methodName
+	 * @param method
 	 * @param params
 	 * @return
 	 * @throws MalcolmDeviceException
 	 */
-	T createCallMessage(String methodName, Object params) throws MalcolmDeviceException;
+	T createCallMessage(MalcolmMethod method, Object params) throws MalcolmDeviceException;
 
 	
     /**

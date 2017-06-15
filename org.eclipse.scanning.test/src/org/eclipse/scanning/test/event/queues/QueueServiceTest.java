@@ -42,7 +42,7 @@ public class QueueServiceTest {
 	
 	private MockConsumer<DummyBean> mockCons;
 	private MockPublisher<ConsumerCommandBean> mockCmdPub;
-	private MockEventService mockEvServ = new MockEventService();
+	private MockEventService mockEvServ;
 	
 	private IQueueService testQServ;
 	
@@ -51,12 +51,12 @@ public class QueueServiceTest {
 	
 	@Before
 	public void setUp() throws Exception {
+		mockEvServ = new MockEventService();
 		mockCons = new MockConsumer<>();
 		mockCmdPub = new MockPublisher<>(null, null);
 		mockEvServ.setMockConsumer(mockCons);
 		mockEvServ.setMockCmdPublisher(mockCmdPub);
 		ServicesHolder.setEventService(mockEvServ);
-
 		
 		qRoot = IQueueService.DEFAULT_QUEUE_ROOT; //This is auto-configured, but need the variables for tests
 		uri = "file:///foo/bar";
@@ -70,7 +70,18 @@ public class QueueServiceTest {
 	@After
 	public void tearDown() throws Exception {
 		testQServ.disposeService();
-		ServicesHolder.unsetQueueService(testQServ);
+		testQServ = null;
+		
+		//Dispose of mocks
+		mockCons = null;
+		mockCmdPub = null;
+		mockEvServ = null;
+		
+		ServicesHolder.setEventService(null);
+		ServicesHolder.setQueueService(null);
+		
+		qRoot = null;
+		uri = null;
 	}
 	
 	/**
@@ -118,7 +129,7 @@ public class QueueServiceTest {
 			testQServ.start();
 			fail("Should not be able to start service immediately after disposal");
 		} catch (EventException ex) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 	}
 	
@@ -269,7 +280,7 @@ public class QueueServiceTest {
 				testQServ.getQueue(activeQIDs.get(i));
 				fail("Queue should no longer exist in registry");
 			} catch (EventException evEx) {
-				//Expected
+				//Expected - doesn't throw a log message
 			}
 		}
 		activeQIDs = new ArrayList<>(testQServ.getAllActiveQueueIDs());
@@ -281,7 +292,7 @@ public class QueueServiceTest {
 			testQServ.deRegisterActiveQueue(activeQIDs.get(0));
 			fail("Should not be able to deregister a running active-queue");
 		} catch (EventException evEx) {
-			//Expected
+			//Expected - doesn't throw a log message
 		}
 		
 		//Check queue registration not possible without start
@@ -292,7 +303,7 @@ public class QueueServiceTest {
 			testQServ.registerNewActiveQueue();
 			fail("QueueService should be started before active queue can be registered");
 		} catch (IllegalStateException isEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 	}
 
