@@ -185,5 +185,9 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 		}
 		controller.dispose();
 	}
+	
+	public boolean isCustomEditor(T model) {
+		return model.getClass().getAnnotation(TypeDescriptor.class)!=null;
+	}
 
 }

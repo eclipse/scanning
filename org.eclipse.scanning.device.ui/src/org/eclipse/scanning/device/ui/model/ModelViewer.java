@@ -524,9 +524,11 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 		if (viewer.isCellEditorActive())    return;
 		this.model = model;
 		
-		this.save.setModelClass((Class<T>)model.getClass());
-		this.load.setModelClass((Class<T>)model.getClass());
-		if (isCustomEditor(model)) {
+		if (save!=null) this.save.setModelClass((Class<T>)model.getClass());
+		if (load!=null) this.load.setModelClass((Class<T>)model.getClass());
+		
+		// Switch UI as appropriate
+		if (typeEditor.isCustomEditor(model)) {
 			GridUtils.setVisible(viewer.getTable(), false);
 			GridUtils.setVisible(typeEditor,        true);
 			typeEditor.setModel(model);
@@ -539,10 +541,6 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 			content.layout(new Control[]{viewer.getTable()});
 		}
 		validate(); 
-	}
-	
-	private boolean isCustomEditor(T model) {
-		return model.getClass().getAnnotation(TypeDescriptor.class)!=null;
 	}
 
 	public T getModel() {
