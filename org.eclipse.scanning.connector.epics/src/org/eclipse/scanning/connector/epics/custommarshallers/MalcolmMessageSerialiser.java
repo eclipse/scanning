@@ -98,7 +98,7 @@ public class MalcolmMessageSerialiser implements IPVStructureSerialiser<MalcolmM
 			PVString method = methodName.getSubField(PVString.class, "method");
 			PVStructure parameters = pvStructure.getStructureField("parameters");
 			
-			method.put(msg.getMethod());
+			method.put(msg.getMethod().toString());
 			
 			if (msg.getArguments() != null) {
 				if (msg.getArguments() instanceof Map) {
