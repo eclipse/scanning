@@ -529,7 +529,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 				
 				if (models == null) return;
 				FileSelectionDialog dialog = new FileSelectionDialog(site.getShell());
-				if (lastPath != null) dialog.setPath(lastPath);
+				if (getLastPath() != null) dialog.setPath(getLastPath());
 				dialog.setExtensions(extensions);
 				dialog.setNewFile(true);
 				dialog.setFolderSelector(false);
@@ -541,7 +541,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 					path = path.concat("." + extensions[0]);
 				}
 				saveScans(path, models);
-				lastPath = path;
+				setLastPath(path);
 			}
 		};
 		
@@ -559,7 +559,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 				if (dialog.open() == Dialog.CANCEL) return;
 				String path = dialog.getPath();
 				readScans(path);
-				lastPath = path;
+				setLastPath(path);
 			}
 		};
 		save.setImageDescriptor(Activator.getImageDescriptor("icons/mask-import-wiz.png"));
@@ -785,6 +785,14 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 	@Override
 	public ISeriesItemDescriptor find(Predicate<ISeriesItemDescriptor> predicate) {
 		return seriesTable.find(predicate);
+	}
+
+	public static String getLastPath() {
+		return lastPath;
+	}
+
+	public synchronized static void setLastPath(String lastPath) {
+		ScanView.lastPath = lastPath;
 	}
 
 }
