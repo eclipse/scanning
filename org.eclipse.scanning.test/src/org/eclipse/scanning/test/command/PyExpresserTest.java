@@ -211,6 +211,28 @@ public class PyExpresserTest {
 	}
 	
 	@Test
+	public void testMultiStepModelOneStepWithExposure() throws Exception{
+
+		MultiStepModel mmodel = new MultiStepModel();
+		mmodel.setName("fred");
+		
+		StepModel smodel = new StepModel();
+		smodel.setStart(0);
+		smodel.setStop(10);
+		smodel.setStep(1);
+		smodel.setName("fred");
+		smodel.setExposureTime(0.1);
+		mmodel.addStepModel(smodel);
+
+		assertEquals(  // Concise.
+				"mstep('fred', [StepModel('fred', 0.0, 10.0, 1.0, 0.1)])",
+				factory.pyExpress(mmodel, false));
+		assertEquals(  // Verbose.
+				"mstep(axis='fred', [StepModel('fred', 0.0, 10.0, 1.0, 0.1)])",
+				factory.pyExpress(mmodel, true));
+	}
+	
+	@Test
 	public void testMultiStepModelTwoSteps() throws Exception{
 
 		MultiStepModel mmodel = new MultiStepModel();

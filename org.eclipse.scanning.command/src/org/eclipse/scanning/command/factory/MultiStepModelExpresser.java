@@ -42,12 +42,19 @@ class MultiStepModelExpresser extends PyModelExpresser<MultiStepModel> {
 
 	static final String getString(StepModel model) {
 		// TODO Use StringBuilder
-		return "StepModel("
-				+"'"+model.getName()+"'"+", "
-				+model.getStart()+", "
-				+model.getStop()+", "
-				+model.getStep()
-			+")";
+		StringBuilder ret = new StringBuilder("StepModel(");
+		ret.append("'"+model.getName()+"'"+", ");
+		ret.append(model.getStart()+", ");
+		ret.append(model.getStop()+", ");
+		ret.append(model.getStep());
+		
+		if (model.getExposureTime()>0d) {
+			ret.append(", ");
+			ret.append(model.getExposureTime());
+		}
+			
+		ret.append(")");
+		return ret.toString();
 	}
 
 }

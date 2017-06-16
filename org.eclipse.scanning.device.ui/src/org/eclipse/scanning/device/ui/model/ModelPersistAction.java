@@ -46,8 +46,8 @@ public class ModelPersistAction<T> extends Action {
 	 */
 	public static enum PersistType {
 		
-		SAVE("Save list to file",   "icons/folder-export.png"), 
-		LOAD("load list from file", "icons/folder-import.png");
+		SAVE("Save model to file",   "icons/folder-export.png"), 
+		LOAD("Load model from file", "icons/folder-import.png");
 		
 		private final String          label;
 		private final String          descriptor;

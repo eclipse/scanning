@@ -93,6 +93,7 @@ public class StepModel extends AbstractPointsModel {
 		long temp;
 		temp = Double.doubleToLongBits(exposureTime);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((label == null) ? 0 : label.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		temp = Double.doubleToLongBits(start);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -113,6 +114,11 @@ public class StepModel extends AbstractPointsModel {
 			return false;
 		StepModel other = (StepModel) obj;
 		if (Double.doubleToLongBits(exposureTime) != Double.doubleToLongBits(other.exposureTime))
+			return false;
+		if (label == null) {
+			if (other.label != null)
+				return false;
+		} else if (!label.equals(other.label))
 			return false;
 		if (name == null) {
 			if (other.name != null)
