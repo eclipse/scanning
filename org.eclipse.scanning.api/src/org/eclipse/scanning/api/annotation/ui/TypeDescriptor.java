@@ -41,4 +41,10 @@ public @interface TypeDescriptor {
 	 * @return
 	 */
 	public String bundle() default "";
+	
+	/**
+	 * This is the property shown in the UI to name the thing which we are editing 
+	 * with the editor we have referenced. For instance "scans" or "xanes".
+	 */
+	public String label() default "";
 }

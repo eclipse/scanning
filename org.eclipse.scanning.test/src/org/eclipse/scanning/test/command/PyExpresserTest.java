@@ -27,6 +27,7 @@ import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.GridModel;
+import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
 import org.eclipse.scanning.api.points.models.StepModel;
@@ -175,8 +176,95 @@ public class PyExpresserTest {
 	}
 
 	@Test
-	public void testGridModel()
-			throws Exception {
+	public void testMultiStepModelNoSteps() throws Exception{
+
+		MultiStepModel mmodel = new MultiStepModel();
+		mmodel.setName("fred");
+		
+		assertEquals(  // Concise.
+				"mstep('fred', [])",
+				factory.pyExpress(mmodel, false));
+		assertEquals(  // Verbose.
+				"mstep(axis='fred', [])",
+				factory.pyExpress(mmodel, true));
+	}
+	
+	@Test
+	public void testMultiStepModelOneStep() throws Exception{
+
+		MultiStepModel mmodel = new MultiStepModel();
+		mmodel.setName("fred");
+		
+		StepModel smodel = new StepModel();
+		smodel.setStart(0);
+		smodel.setStop(10);
+		smodel.setStep(1);
+		smodel.setName("fred");
+		mmodel.addStepModel(smodel);
+
+		assertEquals(  // Concise.
+				"mstep('fred', [StepModel('fred', 0.0, 10.0, 1.0)])",
+				factory.pyExpress(mmodel, false));
+		assertEquals(  // Verbose.
+				"mstep(axis='fred', [StepModel('fred', 0.0, 10.0, 1.0)])",
+				factory.pyExpress(mmodel, true));
+	}
+	
+	@Test
+	public void testMultiStepModelOneStepWithExposure() throws Exception{
+
+		MultiStepModel mmodel = new MultiStepModel();
+		mmodel.setName("fred");
+		
+		StepModel smodel = new StepModel();
+		smodel.setStart(0);
+		smodel.setStop(10);
+		smodel.setStep(1);
+		smodel.setName("fred");
+		smodel.setExposureTime(0.1);
+		mmodel.addStepModel(smodel);
+
+		assertEquals(  // Concise.
+				"mstep('fred', [StepModel('fred', 0.0, 10.0, 1.0, 0.1)])",
+				factory.pyExpress(mmodel, false));
+		assertEquals(  // Verbose.
+				"mstep(axis='fred', [StepModel('fred', 0.0, 10.0, 1.0, 0.1)])",
+				factory.pyExpress(mmodel, true));
+	}
+	
+	@Test
+	public void testMultiStepModelTwoSteps() throws Exception{
+
+		MultiStepModel mmodel = new MultiStepModel();
+		mmodel.setName("fred");
+		
+		StepModel smodel = new StepModel();
+		smodel.setStart(0);
+		smodel.setStop(10);
+		smodel.setStep(1);
+		smodel.setName("fred");
+		mmodel.addStepModel(smodel);
+		
+		smodel = new StepModel();
+		smodel.setStart(20);
+		smodel.setStop(30);
+		smodel.setStep(2);
+		smodel.setName("bill");
+		mmodel.addStepModel(smodel);
+
+		assertEquals(  // Concise.
+				"mstep('fred', [StepModel('fred', 0.0, 10.0, 1.0), StepModel('bill', 20.0, 30.0, 2.0)])",
+				factory.pyExpress(mmodel, false));
+		
+		String expected = "mstep(axis='fred', [StepModel('fred', 0.0, 10.0, 1.0), StepModel('bill', 20.0, 30.0, 2.0)])";
+		String actual   = factory.pyExpress(mmodel, true);
+		assertEquals(expected, actual);
+	}
+	
+
+
+	@Test
+	public void testGridModel() throws Exception {
 
 		BoundingBox bbox = new BoundingBox();
 		bbox.setFastAxisStart(0);

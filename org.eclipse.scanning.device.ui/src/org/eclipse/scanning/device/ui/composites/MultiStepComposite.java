@@ -44,8 +44,8 @@ public class MultiStepComposite extends Composite {
 	// UI
     private final ComboWrapper                  name;
 	private final VerticalListEditor<StepModel> steps;
-	private IScannableDeviceService scannableConnectorService;
-	private StepModelComposite stepComposite;
+	private IScannableDeviceService             scannableConnectorService;
+	private StepModelComposite                  stepComposite;
 
 	public MultiStepComposite(Composite parent, int style) throws ScanningException {
 		super(parent, style);
@@ -74,6 +74,7 @@ public class MultiStepComposite extends Composite {
 		steps.setListHeight(80);		
 		steps.setRequireSelectionPack(false);
 		steps.setTemplateName("Step");
+		steps.setNameField("label");
 		
 		stepComposite = new StepModelComposite(this, SWT.NONE);
 		stepComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));

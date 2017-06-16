@@ -14,6 +14,24 @@ package org.eclipse.scanning.api.stashing;
 import java.io.File;
 
 public interface IStashing {
+	
+	/**
+	 * Get the name of the stash. Used when messages are shown to the user
+	 * @param name
+	 * @return
+	 */
+	default String getStashName() {
+		return "scans";
+	}
+	
+	/**
+	 * Set the name of the stash. Used when messages are shown to the user
+	 * @param name
+	 * @return
+	 */
+	default String setStashName(String name) {
+		return "scans";
+	}
 
 	/**
 	 * 

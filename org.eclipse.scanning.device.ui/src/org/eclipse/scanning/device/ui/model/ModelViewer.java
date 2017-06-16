@@ -12,6 +12,7 @@
 package org.eclipse.scanning.device.ui.model;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -21,6 +22,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
@@ -40,6 +42,8 @@ import org.eclipse.jface.viewers.TableViewerFocusCellManager;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.richbeans.widgets.internal.GridUtils;
 import org.eclipse.richbeans.widgets.menu.CheckableActionGroup;
+import org.eclipse.richbeans.widgets.table.ISeriesItemDescriptor;
+import org.eclipse.richbeans.widgets.table.SeriesItemView;
 import org.eclipse.scanning.api.IModelProvider;
 import org.eclipse.scanning.api.IValidator;
 import org.eclipse.scanning.api.ModelValidationException;
@@ -56,12 +60,13 @@ import org.eclipse.scanning.api.points.models.IBoundingBoxModel;
 import org.eclipse.scanning.api.points.models.IScanPathModel;
 import org.eclipse.scanning.api.ui.CommandConstants;
 import org.eclipse.scanning.api.ui.auto.IModelViewer;
-import org.eclipse.scanning.api.ui.auto.InterfaceInvalidException;
 import org.eclipse.scanning.device.ui.Activator;
 import org.eclipse.scanning.device.ui.ServiceHolder;
+import org.eclipse.scanning.device.ui.model.ModelPersistAction.PersistType;
 import org.eclipse.scanning.device.ui.points.ScanView;
 import org.eclipse.scanning.device.ui.util.PageUtil;
 import org.eclipse.scanning.device.ui.util.ScanRegions;
+import org.eclipse.scanning.device.ui.util.ViewUtil;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
@@ -87,6 +92,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.slf4j.Logger;
@@ -110,10 +116,11 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 	
 	// UI
 	private TableViewer viewer;	      // Edits beans with a table of values
-	private TypeEditor  typeEditor;   // Edits beans with TypeDescriptor custom editors
+	private TypeEditor<T>  typeEditor;   // Edits beans with TypeDescriptor custom editors
 	private Composite   content;
 	private Composite   validationComposite;
 	private Label       validationMessage;
+	private ModelPersistAction<T> save, load;
 	
 	/**
 	 * Caution, the view site may be null.
@@ -130,7 +137,6 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 
 	// Services
 	private IRunnableDeviceService dservice;
-
 	
 	ModelViewer() {
 		super();
@@ -153,7 +159,43 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 		content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		GridUtils.removeMargins(content);
 		
-		this.viewer = new TableViewer(content, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
+		this.viewer = createTableViewer(content);		
+		
+		this.typeEditor = new TypeEditor<>(this, content,  SWT.NONE);
+		typeEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
+		GridUtils.setVisible(typeEditor, false);
+		
+		this.validationComposite = new Composite(content, SWT.NONE);
+		validationComposite.setLayout(new GridLayout(2, false));
+		validationComposite.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
+		
+		final Label error = new Label(validationComposite, SWT.NONE);
+		error.setImage(Activator.getImageDescriptor("icons/error.png").createImage());
+		error.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false));
+		
+		this.validationMessage = new Label(validationComposite, SWT.WRAP);
+		validationMessage.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+		validationMessage.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
+		GridUtils.setVisible(validationComposite, false);
+
+		if (PageUtil.getPage()!=null) {
+			ISelection selection = PageUtil.getPage().getSelection();
+			processWorkbenchSelection(selection); // If model view is selected later but something it can process is the page selection...
+			
+			if (model==null) { // Go and look for the model on a view
+				final IViewPart part  = PageUtil.getPage().findView(ScanView.ID);
+				final Object    model = part!=null ? part.getAdapter(IScanPathModel.class) : null;
+				processObject(model);
+			}
+		}
+		
+		createActions();
+		
+		return (U)content;
+	}
+
+	private TableViewer createTableViewer(Composite content2) {
+		TableViewer viewer = new TableViewer(content, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
 		viewer.setContentProvider(createContentProvider());
 		
 		viewer.getTable().setLinesVisible(true);
@@ -173,23 +215,6 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 	        }
 	    });		
 		
-		this.typeEditor = new TypeEditor(content,  SWT.NONE);
-		typeEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
-		GridUtils.setVisible(typeEditor, false);
-		
-		this.validationComposite = new Composite(content, SWT.NONE);
-		validationComposite.setLayout(new GridLayout(2, false));
-		validationComposite.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
-		
-		final Label error = new Label(validationComposite, SWT.NONE);
-		error.setImage(Activator.getImageDescriptor("icons/error.png").createImage());
-		error.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false));
-		
-		this.validationMessage = new Label(validationComposite, SWT.WRAP);
-		validationMessage.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
-		validationMessage.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
-		GridUtils.setVisible(validationComposite, false);
-
 		TableViewerFocusCellManager focusCellManager = new TableViewerFocusCellManager(viewer, new FocusCellOwnerDrawHighlighter(viewer));
 		ColumnViewerEditorActivationStrategy actSupport = new ColumnViewerEditorActivationStrategy(viewer) {
 			@Override
@@ -235,30 +260,24 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 				}
 			}
 		});
-		
-		if (PageUtil.getPage()!=null) {
-			ISelection selection = PageUtil.getPage().getSelection();
-			processWorkbenchSelection(selection); // If model view is selected later but something it can process is the page selection...
-			
-			if (model==null) { // Go and look for the model on a view
-				final IViewPart part  = PageUtil.getPage().findView(ScanView.ID);
-				final Object    model = part!=null ? part.getAdapter(IScanPathModel.class) : null;
-				processObject(model);
-			}
-		}
-		
-		createActions();
-		
-		return (U)content;
+
+		return viewer;
 	}
 
 	private void createActions() {
 		
-		List<IContributionManager> mans = null;
+		if (site==null) return;
 		
+		List<IContributionManager> mans = Arrays.asList(site.getActionBars().getToolBarManager(), site.getActionBars().getMenuManager());
+		
+		// TODO We should be able to switch around different roles
+		// and show parameters in the table depending on role.
 		CheckableActionGroup group = new CheckableActionGroup();
 		createFieldRoleActions(group);
 		
+		this.save = new ModelPersistAction<T>(typeEditor, PersistType.SAVE);
+		this.load = new ModelPersistAction<T>(typeEditor, PersistType.LOAD);
+		ViewUtil.addGroups("save", mans, save, load);
 	}
 
 	private void createFieldRoleActions(CheckableActionGroup group) {
@@ -374,6 +393,55 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 		viewer.refresh();
 	}
 	
+	@Override
+	public void updateModel(T model) {
+		T old      = this.model;
+		this.model = model;
+		validate();
+		setSelection(new StructuredSelection(model));
+		setSeriesItem(old, model);
+	}
+	
+	private void setSeriesItem(T old, T model) {
+		
+		// Find a view reference claiming to edit the thing which we changed.
+		IViewReference ref = Arrays.stream(PageUtil.getPage(site).getViewReferences())
+				                      .filter(des->isScanView(des))
+				                      .findFirst()
+				                      .orElse(null);
+		if (ref!=null) {
+			SeriesItemView view = (SeriesItemView)ref.getPart(false);
+			ISeriesItemDescriptor des = view.find(d->isDescriptor(d, old));
+			if (des!=null) {
+				try {
+					@SuppressWarnings("unchecked")
+					IPointGenerator<Object> gen = (IPointGenerator<Object>)des.getSeriesObject();
+					gen.setModel(model);
+				} catch (Exception ne) {
+					logger.error("Problem setting the model of a descriptor after the model changed!", ne);
+				}
+			}
+		}
+	}
+
+	private boolean isScanView(IViewReference des) {
+		IViewPart part = des.getView(false);
+		if (part instanceof SeriesItemView) {
+			SeriesItemView view = (SeriesItemView)part;
+			return view.isSeriesOf(IPointGenerator.class);
+		}
+		return false;
+	}
+
+	private boolean isDescriptor(ISeriesItemDescriptor des, Object oldModel) {
+		try {
+			IPointGenerator<?> gen = (IPointGenerator<?>)des.getSeriesObject();
+			return gen.getModel().equals(oldModel);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
 	private void validate() {
 		
 		if (validator==null) {
@@ -449,26 +517,30 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 		this.validator = (IValidator<Object>)v;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void setModel(T model) throws Exception {
 		if (viewer.getTable().isDisposed()) return;
 		if (viewer.isCellEditorActive())    return;
 		this.model = model;
 		
-		if (isCustomEditor(model)) {
+		if (save!=null) this.save.setModelClass((Class<T>)model.getClass());
+		if (load!=null) this.load.setModelClass((Class<T>)model.getClass());
+		
+		// Switch UI as appropriate
+		if (typeEditor.isCustomEditor(model)) {
 			GridUtils.setVisible(viewer.getTable(), false);
 			GridUtils.setVisible(typeEditor,        true);
 			typeEditor.setModel(model);
+			content.layout(new Control[]{typeEditor});
+			// Intentionally no viewer.refresh() in this case.
 		} else {
 			GridUtils.setVisible(viewer.getTable(), true);
 			GridUtils.setVisible(typeEditor,        false);
 		    viewer.setInput(model);
+			content.layout(new Control[]{viewer.getTable()});
 		}
-		refresh();
-	}
-	
-	private boolean isCustomEditor(T model) {
-		return model.getClass().getAnnotation(TypeDescriptor.class)!=null;
+		validate(); 
 	}
 
 	public T getModel() {

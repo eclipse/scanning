@@ -23,6 +23,9 @@ public class StepModel extends AbstractPointsModel {
 	@FieldDescriptor(label="Device", device=DeviceType.SCANNABLE, fieldPosition=0)
 	private String name;
 	
+	@FieldDescriptor(visible=false)
+	private String label;
+	
 	@FieldDescriptor(label="Start", scannable="name", hint="This is the start position for the scan", fieldPosition=1) // The scannable lookup gets the units
 	private double start;
 	
@@ -90,6 +93,7 @@ public class StepModel extends AbstractPointsModel {
 		long temp;
 		temp = Double.doubleToLongBits(exposureTime);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((label == null) ? 0 : label.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		temp = Double.doubleToLongBits(start);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
@@ -110,6 +114,11 @@ public class StepModel extends AbstractPointsModel {
 			return false;
 		StepModel other = (StepModel) obj;
 		if (Double.doubleToLongBits(exposureTime) != Double.doubleToLongBits(other.exposureTime))
+			return false;
+		if (label == null) {
+			if (other.label != null)
+				return false;
+		} else if (!label.equals(other.label))
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -143,5 +152,13 @@ public class StepModel extends AbstractPointsModel {
 		double div = ((getStop()-getStart())/getStep());
 		div += 0.01;
 		return (int)Math.floor(div+1);
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
 	}
 }

@@ -12,6 +12,9 @@
 package org.eclipse.scanning.device.ui.model;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IContributionManager;
@@ -106,6 +109,8 @@ public class ModelView extends ViewPart implements ISelectionListener {
 
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+
+		if (!getViewSite().getPage().isPartVisible(this)) return;
 		if (selection instanceof IStructuredSelection) {
 			Object ob = ((IStructuredSelection)selection).getFirstElement();
 			String       name = null;
@@ -116,7 +121,7 @@ public class ModelView extends ViewPart implements ISelectionListener {
 				GridUtils.setVisible(modelEditor.getControl(), true);
 				GridUtils.setVisible(treeViewer.getControl(), false);
 				getSite().setSelectionProvider((ISelectionProvider)modelEditor);
-				setActionsVisible(false);
+				setActionsVisible(false, ModelPersistAction.IDS);
 	
 			} else if (ob instanceof DeviceInformation) {
 				DeviceInformation info = (DeviceInformation)ob;
@@ -146,16 +151,22 @@ public class ModelView extends ViewPart implements ISelectionListener {
 		}		
 	}
 
-	private void setActionsVisible(boolean vis) {
-		setActionsVisible(getViewSite().getActionBars().getToolBarManager(), vis);
-		setActionsVisible(getViewSite().getActionBars().getMenuManager(), vis);
+	private void setActionsVisible(boolean vis, String... ignoredIds) {
+		setActionsVisible(getViewSite().getActionBars().getToolBarManager(), vis, ignoredIds);
+		setActionsVisible(getViewSite().getActionBars().getMenuManager(), vis, ignoredIds);
 		getViewSite().getActionBars().updateActionBars();
 		parent.getParent().layout(new Control[]{parent});
 		parent.layout(true);
 	}
 
-	private void setActionsVisible(IContributionManager man, boolean vis) {
+	private void setActionsVisible(IContributionManager man, boolean vis, String... ignoredIds) {
+		
+		List<String> ignore = Arrays.asList(Optional.of(ignoredIds).orElse(new String[]{""}));
 		for (IContributionItem item : man.getItems()) {
+			if (ignore.contains(item.getId())) {
+				item.setVisible(true);
+				continue;
+			}
 			item.setVisible(vis);
 		}
 	}

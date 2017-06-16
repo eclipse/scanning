@@ -38,6 +38,7 @@ class Stashing implements IStashing {
 	private final File file;
 
 	private IMarshallerService marshallerService;
+	private String stashName = "scans";
 	
 	/**
 	 * 
@@ -57,15 +58,18 @@ class Stashing implements IStashing {
 		return new File(path + "/.solstice/" + fileName);
 	}
 
+	@Override
 	public boolean isStashed() {
 		return file.exists();
 	}
 	
+	@Override
 	public void stash(Object object) throws Exception {
 		final String json = marshallerService.marshal(object);
 		write(file, json);
 	}
 	
+	@Override
 	public <T> T unstash(Class<T> clazz) throws Exception {
 		
 		if (!isStashed()) return null;
@@ -126,28 +130,30 @@ class Stashing implements IStashing {
 	 * @param models
 	 * @param shell
 	 */
+	@Override
 	public void save(Object object) {
 		try {
 			
 			if (file.exists()) {
 				boolean ok = MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), "Confirm Overwrite", "Are you sure that you would like to overwrite '"+file.getName()+"'?");
-				if (ok) return;
+				if (!ok) return;
 			}
 			
 			stash(object);
 			
 		} catch (Exception e) {
-			ErrorDialog.openError(Display.getCurrent().getActiveShell(), "Error Saving Information", "An exception occurred while writing to file.",
+			ErrorDialog.openError(Display.getCurrent().getActiveShell(), "Error Saving Information", "An exception occurred while writing the "+getStashName()+" to file.",
 					              new Status(IStatus.ERROR, "org.eclipse.scanning.device.ui", e.getMessage()));
 		    logger.error("Error Saving Information", e);
 		}
 	}
 	
+	@Override
 	public <T> T load(Class<T> clazz) {
 		try {
             return unstash(clazz);	
 		} catch (Exception e) {
-			MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Exception while reading scans from file", "An exception occurred while reading scans from a file.\n" + e.getMessage());
+			MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Exception while reading "+getStashName()+" from file", "An exception occurred while reading "+getStashName()+" from a file.\n" + e.getMessage());
 		    return null;
 		}
      
@@ -158,8 +164,21 @@ class Stashing implements IStashing {
 		return file.getAbsolutePath();
 	}
 
+	@Override
 	public File getFile() {
 		return file;
+	}
+
+	@Override
+	public String getStashName() {
+		return stashName;
+	}
+
+	@Override
+	public String setStashName(String stashName) {
+		String old = this.stashName;
+		this.stashName = stashName;
+		return old;
 	}
 
 }

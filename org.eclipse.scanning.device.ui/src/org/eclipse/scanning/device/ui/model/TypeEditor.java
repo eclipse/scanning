@@ -5,10 +5,9 @@ import java.lang.reflect.Constructor;
 import javax.inject.Inject;
 
 import org.eclipse.richbeans.api.binding.IBeanController;
-import org.eclipse.richbeans.api.event.ValueAdapter;
-import org.eclipse.richbeans.api.event.ValueEvent;
 import org.eclipse.richbeans.binding.BeanService;
 import org.eclipse.richbeans.widgets.internal.GridUtils;
+import org.eclipse.scanning.api.IModelProvider;
 import org.eclipse.scanning.api.annotation.scan.AnnotationManager;
 import org.eclipse.scanning.api.annotation.ui.TypeDescriptor;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
@@ -28,20 +27,41 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings("deprecation")
-public class TypeEditor extends Composite {
+/**
+ * 
+ * An editor that can edit a bean class, loading its UI dynamically using
+ * the @TypeDescritor annotation
+ * 
+ * This editor can be used with {@link ModelPersistAction} to read and save
+ * values from the UI to the bean to file.
+ * 
+ * @author Matthew Gerring
+ *
+ * @param <T>
+ */
+public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(TypeEditor.class);
 
-	private IBeanController controller;
+	private IBeanController<T> controller;
+	private IModelProvider<T>  provider;
 	
-	public TypeEditor(Composite parent, int style) {
+	/**
+	 * 
+	 * @param provider - may not be null
+	 * @param parent - must be set for SWT
+	 * @param style - may be SWT.NONE or other composite switches
+	 */
+	public TypeEditor(IModelProvider<T> provider, Composite parent, int style) {
 		super(parent, style);
+		assert(provider!=null);
+		this.provider = provider;
 		setLayout(new GridLayout(1, false));
 		GridUtils.removeMargins(this);
 	}
 	
-	public void setModel(Object model) throws Exception {
+	@Override
+	public void setModel(T model) throws Exception {
 		
 		deactivate();
 	
@@ -49,23 +69,30 @@ public class TypeEditor extends Composite {
 		controller = BeanService.getInstance().createController(ui, model);
 		controller.beanToUI();
 		controller.switchState(true);
-		controller.addValueListener(new ValueAdapter("ui change") {		
-			@Override
-			public void valueChangePerformed(ValueEvent e) {
-				// Save the values
-				try {
-					controller.uiToBean();
-				} catch (Exception e1) {
-					logger.error("Problem recording bean data!", e1);
-				}
+		controller.addValueListener(e-> {
+			// Save the values
+			try {
+				controller.uiToBean();
+				if (provider!=null) provider.updateModel(model);
+			} catch (Exception e1) {
+				logger.error("Problem recording bean data!", e1);
 			}
 		});
 	}
 	
-	public Object getModel() throws Exception {
-		
+	@Override
+	public T getModel() throws Exception {	
 		controller.uiToBean();
         return controller.getBean();
+	}
+	
+	/**
+	 * Called from 
+	 */
+	@Override
+	public void updateModel(T model) throws Exception {
+        controller.setBean(model);
+        if (provider!=null) provider.updateModel(model);
 	}
 	
 	private Object createUserInterface(Object model) throws Exception {
@@ -92,7 +119,7 @@ public class TypeEditor extends Composite {
 		manager.addContext(model);
 		manager.addDevices(ret);	
 		manager.invoke(Inject.class);
-		
+
 		return ret;
 	}
 
@@ -143,7 +170,7 @@ public class TypeEditor extends Composite {
 		return null;
 	}
 
-	public void deactivate() throws Exception {
+	private void deactivate() throws Exception {
 		
 		if (controller==null) return;
 		
@@ -157,6 +184,10 @@ public class TypeEditor extends Composite {
 			((IDisposable)ui).dispose();
 		}
 		controller.dispose();
+	}
+	
+	public boolean isCustomEditor(T model) {
+		return model.getClass().getAnnotation(TypeDescriptor.class)!=null;
 	}
 
 }

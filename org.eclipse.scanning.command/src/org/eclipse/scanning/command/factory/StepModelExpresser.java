@@ -23,17 +23,21 @@ class StepModelExpresser extends PyModelExpresser<StepModel> {
 		
 		if (rois != null && rois.size() > 0) throw new IllegalStateException("StepModels cannot be associated with ROIs.");
 		
+		return getString(model, verbose);
+	}
+
+	static final String getString(StepModel model, boolean verbose) {
 		// TODO Use StringBuilder
 		return "step("
-			+(verbose?"axis=":"")
-			+"'"+model.getName()+"'"+", "
-			+(verbose?"start=":"")
-			+model.getStart()+", "
-			+(verbose?"stop=":"")
-			+model.getStop()+", "
-			+(verbose?"step=":"")
-			+model.getStep()
-		+")";
+				+(verbose?"axis=":"")
+				+"'"+model.getName()+"'"+", "
+				+(verbose?"start=":"")
+				+model.getStart()+", "
+				+(verbose?"stop=":"")
+				+model.getStop()+", "
+				+(verbose?"step=":"")
+				+model.getStep()
+			+")";
 	}
 
 }

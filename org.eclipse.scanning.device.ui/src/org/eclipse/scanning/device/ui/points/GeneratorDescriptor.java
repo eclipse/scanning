@@ -63,7 +63,7 @@ public class GeneratorDescriptor<T extends IScanPathModel> implements ISeriesIte
 	}
 
 	@Override
-	public IPointGenerator<?> getSeriesObject() throws GeneratorException {
+	public IPointGenerator<?> getSeriesObject() {
 		return generator;
 	}
 

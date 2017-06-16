@@ -25,6 +25,7 @@ import org.eclipse.scanning.api.device.models.IReflectedModel;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.api.points.models.GridModel;
+import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
 import org.eclipse.scanning.api.points.models.StepModel;
@@ -50,6 +51,7 @@ public class PyExpressionFactory {
 		Map<Class<?>, PyModelExpresser<?>> exp = new LinkedHashMap<Class<?>, PyModelExpresser<?>>(7);
 		
 		exp.put(StepModel.class,           new StepModelExpresser());
+		exp.put(MultiStepModel.class,      new MultiStepModelExpresser());
 		exp.put(GridModel.class,           new GridModelExpresser());
 		exp.put(RasterModel.class,         new RasterModelExpresser());
 		exp.put(ArrayModel.class,          new ArrayModelExpresser());

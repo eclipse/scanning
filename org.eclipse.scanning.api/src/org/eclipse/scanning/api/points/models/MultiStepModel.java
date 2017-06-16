@@ -48,6 +48,17 @@ public class MultiStepModel extends AbstractPointsModel {
 	}
 	
 	/**
+	 * Used from mapping_scan_commands.py
+	 * @param name
+	 * @param stepModels
+	 */
+	public MultiStepModel(String name, List<StepModel> stepModels) {
+		super();
+		setName(name);
+		this.stepModels = stepModels;
+	}
+
+	/**
 	 * Must implement clear() method on beans being used with BeanUI.
 	 */
 	public void clear() {
