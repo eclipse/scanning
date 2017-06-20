@@ -1,8 +1,11 @@
 package org.eclipse.scanning.test.event.queues;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
@@ -12,6 +15,9 @@ import org.eclipse.scanning.api.event.queues.beans.TaskBean;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.SubTaskAtomModel;
 import org.eclipse.scanning.api.event.queues.models.TaskBeanModel;
+import org.eclipse.scanning.event.queues.QueueBeanFactory;
+import org.junit.Before;
+import org.junit.Test;
 
 public class QueueBeanFactoryTest {
 	
@@ -23,10 +29,11 @@ public class QueueBeanFactoryTest {
 	}
 	
 	@Test
-	public void testAddRemoveAtoms() {
+	public void testAddRemoveAtoms() throws QueueModelException {
 		//Add positioner to the queue atom register
 		String reference = "testAtom";
-		PositionerAtom positAtom = new PositionerAtom(reference, "Set dummy to 10", "dummy", 10);
+		PositionerAtom positAtom = new PositionerAtom(reference, "dummy", 10);
+		positAtom.setName("Set dummy to 10");
 		qbf.registerAtom(positAtom);
 		
 		List<String> atomReg = qbf.getQueueAtomRegister();
@@ -38,11 +45,12 @@ public class QueueBeanFactoryTest {
 		assertFalse("No atom with the expected reference registered", dum == null);
 		
 		
-		PositionerAtom detXAtom = new PositionerAtom("setDetX", "Set detX to 10", "dummy", 225);
+		PositionerAtom detXAtom = new PositionerAtom("setDetX", "dummy", 225);
+		detXAtom.setName("Set detX to 10");
 		qbf.registerAtom(detXAtom);
 //TODO?		atomReg = qbf.getQueueAtomRegister();
 		assertEquals("Should be two queue atoms registered in the factory", 2, atomReg.size());
-		SubTaskAtomModel simpleSubTask = new SubTaskAtomModel("mvDum", "Move dummy & set detector X position", atoms);
+		SubTaskAtomModel simpleSubTask = new SubTaskAtomModel("mvDum", "Move dummy & set detector X position", atomReg);
 		qbf.registerAtom(simpleSubTask);
 //TODO?		atomReg = qbf.getQueueAtomRegister();
 		assertEquals("Should be three queue atoms registered in the factory", 3, atomReg.size());
@@ -74,10 +82,12 @@ public class QueueBeanFactoryTest {
 	}
 	
 	@Test
-	public void testSimpleConfigAndBuild() {
+	public void testSimpleConfigAndBuild() throws QueueModelException {
 		//Add positioner to the queue atom register
-		PositionerAtom positAtom = new PositionerAtom("setDummy", "Set dummy to 10", "dummy", 10);
-		PositionerAtom detXAtom = new PositionerAtom("setDetX", "Set detX to 10", "dummy", 225);
+		PositionerAtom positAtom = new PositionerAtom("setDummy","dummy", 10);
+		positAtom.setName("Set dummy to 10");
+		PositionerAtom detXAtom = new PositionerAtom("setDetX", "dummy", 225);
+		detXAtom.setName("Set detX to 10");
 		qbf.registerAtom(positAtom);
 		qbf.registerAtom(detXAtom);
 		
@@ -87,7 +97,7 @@ public class QueueBeanFactoryTest {
 		qbf.registerAtom(simpleSubTask);
 		
 		SubTaskAtom mvDum = qbf.getQueueAtom("mvDum");
-		assertEquals("Name of returned SubTaskAtom is wrong", "Move dummy", mvDum.getName());
+		assertEquals("Name of returned SubTaskAtom is wrong", "Move dummy & set detector X position", mvDum.getName());
 		assertEquals("Short name of returned SubTaskAtom is wrong", "mvDum", mvDum.getShortName());
 		assertEquals("Unexpected number of atoms in AtomQueue", 2, mvDum.atomQueueSize());
 		List<QueueAtom> atomQueue = mvDum.getAtomQueue();
