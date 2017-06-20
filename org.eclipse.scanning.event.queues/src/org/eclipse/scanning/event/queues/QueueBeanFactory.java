@@ -107,6 +107,7 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	public void unregisterTask(String reference) throws QueueModelException {
 		if (taskBeanModelRegistry.containsKey(reference)) {
 			taskBeanModelRegistry.remove(reference);
+			if (defaultTaskBeanShortName == reference) defaultTaskBeanShortName = null;
 			return;
 		}
 		logger.error("Cannot unregister TaskBeanModel. No TaskBeanModel registered for reference '"+reference+"'");
@@ -136,6 +137,10 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	@Override
 	public SubTaskAtom assembleSubTask(String reference) throws QueueModelException {
 		SubTaskAtomModel stModel = subTaskModelRegistry.get(reference);
+		if (stModel == null) {
+			logger.error("Failed to assemble SubTaskAtom: No SubTaskAtomModel registered for reference'"+reference+"'");
+			throw new QueueModelException("No SubTaskAtomModel registered for reference'"+reference+"'");
+		}
 		
 		SubTaskAtom stAtom = new SubTaskAtom(reference, stModel.getName());
 		populateAtomQueue(stModel, stAtom);
@@ -146,6 +151,10 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	@Override
 	public TaskBean assembleTaskBean(String reference) throws QueueModelException {
 		TaskBeanModel tbModel = taskBeanModelRegistry.get(reference);
+		if (tbModel == null) {
+			logger.error("Failed to assemble TaskBean: No TaskBeanModel registered for reference'"+reference+"'");
+			throw new QueueModelException("No TaskBeanModel registered for reference'"+reference+"'");
+		}
 		
 		TaskBean tBean = new TaskBean(reference, tbModel.getName());
 		populateAtomQueue(tbModel, tBean);
@@ -160,7 +169,7 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	 * {@link SubTaskAtom} (respectively). 
 	 * @param model {@link QueueableModel} instance containing atom list
 	 * @param queueHolder {@link IHasAtomQueue} instance to be supplied with 
-	 *                    atoms
+	 *        atoms
 	 * @throws QueueModelException if an atom was not present in the registry
 	 */
 	private <P extends IHasAtomQueue<T>, Q extends QueueableModel, T extends QueueAtom> void populateAtomQueue(Q model, P queueHolder) throws QueueModelException {
@@ -182,7 +191,11 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	}
 
 	@Override
-	public String getDefaultTaskBeanModelName() {
+	public String getDefaultTaskBeanModelName() throws QueueModelException {
+		if (defaultTaskBeanShortName == null) {
+			logger.error("No default TaskBeanModel set");
+			throw new QueueModelException("No default TaskBeanModel set");
+		}
 		return defaultTaskBeanShortName;
 	}
 
