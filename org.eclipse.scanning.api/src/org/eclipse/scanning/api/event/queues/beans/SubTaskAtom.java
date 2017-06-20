@@ -59,6 +59,17 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 		atomQueue = new LinkedList<>();
 		setName(name);
 	}
+	
+	/**
+	 * Basic constructor to set String short name and name of atom
+	 * 
+	 * @param stShrtNm String short name used within the QueueBeanFactory
+	 * @param name String user-supplied name
+	 */
+	public SubTaskAtom(String stShrtNm, String name) {
+		this(name);
+		setShortName(stShrtNm);
+	}
 
 	@Override
 	public List<QueueAtom> getAtomQueue() {

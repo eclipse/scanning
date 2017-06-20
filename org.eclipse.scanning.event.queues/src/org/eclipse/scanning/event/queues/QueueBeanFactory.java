@@ -6,10 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
+import org.eclipse.scanning.api.event.queues.beans.IHasAtomQueue;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
+import org.eclipse.scanning.api.event.queues.models.QueueableModel;
 import org.eclipse.scanning.api.event.queues.models.SubTaskAtomModel;
 import org.eclipse.scanning.api.event.queues.models.TaskBeanModel;
 import org.slf4j.Logger;
@@ -135,16 +137,8 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	public SubTaskAtom assembleSubTask(String reference) throws QueueModelException {
 		SubTaskAtomModel stModel = subTaskModelRegistry.get(reference);
 		
-		SubTaskAtom stAtom = new SubTaskAtom(stModel.getName());
-		for (String qaShrtNm : stModel.getQueueAtomShortNames()) {
-			try {
-				QueueAtom qAtom = getQueueAtom(qaShrtNm);
-				stAtom.addAtom(qAtom);
-			} catch (QueueModelException qme) {
-				logger.error("Could not assemble SubTaskAtom due to missing child atom: "+qme.getMessage());
-				throw new QueueModelException("Could not assemble SubTaskAtom: "+qme.getLocalizedMessage(), qme);
-			}
-		}
+		SubTaskAtom stAtom = new SubTaskAtom(reference, stModel.getName());
+		populateAtomQueue(stModel, stAtom);
 		
 		return stAtom;
 	}
@@ -153,9 +147,32 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	public TaskBean assembleTaskBean(String reference) throws QueueModelException {
 		TaskBeanModel tbModel = taskBeanModelRegistry.get(reference);
 		
-		TaskBean tBean = new TaskBean(tbModel.getName());
+		TaskBean tBean = new TaskBean(reference, tbModel.getName());
+		populateAtomQueue(tbModel, tBean);
 		
 		return tBean;
+	}
+	
+	/**
+	 * Used by assembleX methods to get atoms in the queueAtomShortNames Lists 
+	 * of a given {@link TaskBeanModel} or {@link SubTaskAtomModel} and put 
+	 * them into a new, real atomQueue in an instance of {@link TaskBean} or 
+	 * {@link SubTaskAtom} (respectively). 
+	 * @param model {@link QueueableModel} instance containing atom list
+	 * @param queueHolder {@link IHasAtomQueue} instance to be supplied with 
+	 *                    atoms
+	 * @throws QueueModelException if an atom was not present in the registry
+	 */
+	private <P extends IHasAtomQueue<T>, Q extends QueueableModel, T extends QueueAtom> void populateAtomQueue(Q model, P queueHolder) throws QueueModelException {
+		for (String stShrtNm : model.getQueueAtomShortNames()) {
+			try {
+				T at = getQueueAtom(stShrtNm);
+				queueHolder.addAtom(at);
+			} catch (QueueModelException qme) {
+				logger.error("Could not assemble SubTaskAtom due to missing child atom: "+qme.getMessage());
+				throw new QueueModelException("Could not assemble SubTaskAtom: "+qme.getMessage(), qme);
+			}
+		}
 	}
 
 	@Override
