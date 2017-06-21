@@ -7,9 +7,9 @@
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
 <unit id="uk.ac.diamond.scisoft.peema.feature.feature.group" version="1.2.0.v20170601-1255"/>
-<unit id="uk.ac.diamond.dawn.product.feature.feature.group" version="2.5.0.v20170601-1855"/>
+<unit id="uk.ac.diamond.dawn.product.feature.feature.group" version="2.5.0.v20170612-1332"/>
 <unit id="org.eclipse.equinox.executable.feature.group" version="3.6.200.v20150602-1417"/>
-<unit id="org.dawnsci.base.product.feature.feature.group" version="2.5.0.v20170601-1525"/>
+<unit id="org.dawnsci.base.product.feature.feature.group" version="2.5.0.v20170612-0955"/>
 <repository location="http://www.opengda.org/DawnDiamond/2.5/updates/release/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
@@ -72,7 +72,7 @@
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20160221192158/repository/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
-<unit id="org.mariadb.jdbc" version="1.4.6.0"/>
+<unit id="org.mariadb.jdbc" version="2.0.2"/>
 <repository location="https://alfred.diamond.ac.uk/p2/orbit/continuous/repository/"/>
 </location>
 </locations>
