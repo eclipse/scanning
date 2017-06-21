@@ -48,11 +48,9 @@ public class QueueBeanFactoryTest {
 		PositionerAtom detXAtom = new PositionerAtom("setDetX", "dummy", 225);
 		detXAtom.setName("Set detX to 10");
 		qbf.registerAtom(detXAtom);
-//TODO?		atomReg = qbf.getQueueAtomRegister();
 		assertEquals("Should be two queue atoms registered in the factory", 2, atomReg.size());
 		SubTaskAtomModel simpleSubTask = new SubTaskAtomModel("mvDum", "Move dummy & set detector X position", atomReg);
 		qbf.registerAtom(simpleSubTask);
-//TODO?		atomReg = qbf.getQueueAtomRegister();
 		assertEquals("Should be three queue atoms registered in the factory", 3, atomReg.size());
 		qbf.unregisterAtom("setDetX");
 		assertEquals("Should be two queue atoms registered in the factory", 2, atomReg.size());
@@ -69,7 +67,7 @@ public class QueueBeanFactoryTest {
 			qbf.getQueueAtom("mvDum");
 			fail("Fetching unregistered atom did not throw an exception");
 		} catch (QueueModelException qme) {
-			//expected
+			//Exception is expected - that' what I'm testing for
 		}
 		
 		//Register another atom with the same short name (this should throw an exception!)
@@ -77,7 +75,7 @@ public class QueueBeanFactoryTest {
 			qbf.registerAtom(positAtom);
 			fail("Should not be able to add ");
 		} catch (QueueModelException qme) {
-			//Expected
+			//Exception is expected - that' what I'm testing for
 		}
 	}
 	
