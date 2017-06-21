@@ -42,7 +42,7 @@ public class QueueTableVariable<A, V> extends QueueVariableDecorator<A, V> {
 	@Override
 	protected V processArg(A parameter) {
 		V tableValue = table.evaluate().get(parameter);
-//		if (tableValue == null) throw new QueueModelException("No value for "+parameter+" in table"); //FIXME
+		if (tableValue == null) throw new QueueModelException("No value for "+parameter+" in table");
 		return tableValue;
 	}
 

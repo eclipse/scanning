@@ -32,7 +32,7 @@ public class QueueValue<V> implements IQueueValue<V> {
 
 	@Override
 	public V evaluate() {
-//		if (value == null) throw new QueueModelException("Value was never initialised"); //FIXME
+		if (value == null) throw new QueueModelException("Value was never initialised");
 		return value;
 	}
 	

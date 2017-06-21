@@ -41,8 +41,7 @@ public class QueueListVariable<V> extends QueueVariableDecorator<Integer,V> {
 		try {
 			return list.evaluate().get(parameter);
 		} catch (IndexOutOfBoundsException iEOBEx) {
-			return null; //FIXME!!!!
-			//throw new QueueModelException("No value at index "+parameter+". ", iEOBEx);
+			throw new QueueModelException("No value at index "+parameter+". ", iEOBEx);
 		}
 	}
 
