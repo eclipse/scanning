@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueVariable;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueListVariable;
@@ -37,14 +38,14 @@ public class ModelArgsTest {
 	}
 	
 	@Test
-	public void testSimpleArgument() {		
+	public void testSimpleArgument() throws QueueModelException {		
 		IQueueValue<Double> argumA = new QueueValue<>(12.);
 		argumA.evaluate();
 		assertEquals("Arg has wrong value", 12., argumA.evaluate(), 0);
 	}
 	
 	@Test
-	public void testListArgument() {
+	public void testListArgument() throws QueueModelException {
 		//Return value-by-index from Arg
 		IQueueVariable<Integer, Double> argumD = new QueueListVariable<>(new QueueValue<>(0), new QueueValue<>(simpleList));
 		assertEquals("ArrayArg has wrong value at index 0", 88., argumD.evaluate(), 0);
@@ -57,7 +58,7 @@ public class ModelArgsTest {
 	}
 	
 	@Test
-	public void testLookupArgument() {
+	public void testLookupArgument() throws QueueModelException {
 		//First a simple lookup to return a single value
 		IQueueValue<Double> argumB = new QueueTableVariable<>(new QueueValue<>("311"), new QueueValue<>(simpleTable));
 		assertEquals("LookupArg has wrong value for string 311", 100., argumB.evaluate(), 0);
@@ -68,7 +69,7 @@ public class ModelArgsTest {
 	}
 	
 	@Test
-	public void testQueueValueStacking() {
+	public void testQueueValueStacking() throws QueueModelException {
 		QueueValue<String> baseArg = new QueueValue<>("211");
 		IQueueVariable<Integer, Double> argumF = new QueueListVariable<>(new QueueValue<>(1),new QueueTableVariable<>(baseArg, new QueueValue<>(complexTable)));
 		assertEquals("Decorated argument has wrong value for string 211, index 1", -7.9, argumF.evaluate(), 0);
