@@ -31,8 +31,8 @@ public class QueueValue<V> implements IQueueValue<V> {
 	}
 
 	@Override
-	public V evaluate() {
-		if (value == null) throw new QueueModelException("Value was never initialised");
+	public V evaluate() throws QueueModelException {
+		if (value == null) throw new QueueModelException("Value of '"+getName()+"' was never set");
 		return value;
 	}
 	

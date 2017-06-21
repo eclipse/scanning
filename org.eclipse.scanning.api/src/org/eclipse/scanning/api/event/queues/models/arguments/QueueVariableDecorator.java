@@ -1,5 +1,7 @@
 package org.eclipse.scanning.api.event.queues.models.arguments;
 
+import org.eclipse.scanning.api.event.queues.models.QueueModelException;
+
 /**
  * Abstract class for the decorator pattern. It allows {@link IQueueValues} to 
  * be augmented with additional data/tables from which to find their values.
@@ -26,21 +28,26 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 	}
 	
 	/**
-	 * Get the argument of the argument {@link IQueueValue} and use it to 
-	 * determine the value of this QueueVariableDecorator.
+	 * Process the value of this {@link IQueueVariable} and return the result. 
+	 * This method is inherited from {@link IQueueValue} and allows 
+	 * {@link IQueueVariable}s to be processed as {@link IQueueValue}s.
 	 * 
-	 * @return value V of this QueueVariableDecorator, determined by given arg.
+	 * @return value V of this QueueVariableDecorator
+	 * @throws QueueModelException if no value can be returned
 	 */
 	@Override
-	public V evaluate() {
+	public V evaluate() throws QueueModelException {
 		return processArg(arg.evaluate());
 	}
 	
-	/*
-	 * Take the value determined from the child {@link IArg} and use it to 
-	 * determine the value of this ArgDecorator.
+	/**
+	 * Take the value determined from this {@link IQueueVariable} and use it 
+	 * to determine the value of this ArgDecorator.
+	 * 
+	 * @return value V of the child {@link IQueueVariable}
+	 * @throws QueueModelException if no value can be returned 
 	 */
-	protected abstract V processArg(A parameter);
+	protected abstract V processArg(A parameter) throws QueueModelException;
 
 	@Override
 	public String getName() {

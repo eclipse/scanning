@@ -1,5 +1,7 @@
 package org.eclipse.scanning.api.event.queues.models.arguments;
 
+import org.eclipse.scanning.api.event.queues.models.QueueModelException;
+
 /**
  * A model argument. Used as a placeholder for values used within models which 
  * are known at compile time. Value is returned by calling {@see #evaluate()}.
@@ -15,10 +17,11 @@ public interface IQueueValue<V> {
 	public void setName(String name);
 	
 	/**
-	 * Calculate the new value of this IQueueValue and return it.
+	 * Determine the new value of this IQueueValue and return it.
 	 * 
-	 * @return value V of this IQueueValue.
+	 * @return value V of this IQueueValue
+	 * @throws QueueModelException if no value can be returned
 	 */
-	public V evaluate();
+	public V evaluate() throws QueueModelException;
 
 }
