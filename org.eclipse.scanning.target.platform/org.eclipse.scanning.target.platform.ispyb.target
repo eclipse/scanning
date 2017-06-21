@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="Scanning (Fat+ISPyB)" sequenceNumber="130">
+<?pde version="3.8"?><target name="Scanning (Fat+ISPyB)" sequenceNumber="131">
 <locations>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
 <unit id="org.eclipse.jetty.bundles.f.feature.group" version="9.2.13.201508192117"/>
 <repository location="http://download.eclipse.org/jetty/updates/jetty-bundles-9.x/9.2.13.v20150730/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
-<unit id="uk.ac.diamond.scisoft.peema.feature.feature.group" version="1.2.0.v20170516-1514"/>
-<unit id="uk.ac.diamond.dawn.product.feature.feature.group" version="2.5.0.v20170516-1532"/>
+<unit id="uk.ac.diamond.scisoft.peema.feature.feature.group" version="1.2.0.v20170615-1436"/>
+<unit id="uk.ac.diamond.dawn.product.feature.feature.group" version="2.5.0.v20170619-1505"/>
 <unit id="org.eclipse.equinox.executable.feature.group" version="3.6.200.v20150602-1417"/>
-<unit id="org.dawnsci.base.product.feature.feature.group" version="2.5.0.v20170516-1514"/>
+<unit id="org.dawnsci.base.product.feature.feature.group" version="2.5.0.v20170619-1505"/>
 <repository location="http://www.opengda.org/DawnDiamond/master/updates/snapshot/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
@@ -72,7 +72,7 @@
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20160221192158/repository/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
-<unit id="org.mariadb.jdbc" version="1.4.6.0"/>
+<unit id="org.mariadb.jdbc" version="2.0.2"/>
 <repository location="https://alfred.diamond.ac.uk/p2/orbit/continuous/repository/"/>
 </location>
 </locations>
