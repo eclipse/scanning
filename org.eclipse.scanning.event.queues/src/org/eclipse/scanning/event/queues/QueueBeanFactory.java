@@ -7,13 +7,18 @@ import java.util.Map;
 
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.IHasAtomQueue;
+import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
+import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.QueueableModel;
 import org.eclipse.scanning.api.event.queues.models.SubTaskAtomModel;
 import org.eclipse.scanning.api.event.queues.models.TaskBeanModel;
+import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
+import org.eclipse.scanning.event.queues.spooler.IBeanAssembler;
+import org.eclipse.scanning.event.queues.spooler.PositionerAtomAssembler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +32,16 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	private Map<String, SubTaskAtomModel> subTaskModelRegistry;
 	private Map<String, TaskBeanModel> taskBeanModelRegistry;
 	
+	private Map<Class<? extends Queueable>, IBeanAssembler<? extends Queueable>> beanAssemblers;
+	
+	@SuppressWarnings("rawtypes")
+	private Map<String, IQueueValue> globalValueRegistry;
+	/*
+	 * Global value IQueueValues are expected to have a ? type argument.
+	 * Having this registry with rawtype IQueueValue means we don't get a 
+	 * compile error for the {@link #unregisterOperation}
+	 */
+	
 	private String defaultTaskBeanShortName;
 	private boolean explicitDefaultTaskBean = false;
 	
@@ -36,17 +51,48 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		queueAtomRegistry = new HashMap<>();
 		subTaskModelRegistry = new HashMap<>();
 		taskBeanModelRegistry = new HashMap<>();
+		globalValueRegistry = new HashMap<>();
+		
+//		beanAssemblers.put(MonitorAtom.class, new MonitorAtomAssembler());
+		beanAssemblers.put(PositionerAtom.class, new PositionerAtomAssembler());
+//		beanAssemblers.put(ScanAtom.class, new ScanAtomAssembler());
+//		beanAssemblers.put(SubTaskAtom.class, new SubTaskAtomAssembler();
+	}
+	
+	/**
+	 * Generic method to register an element in one of the registries.
+	 * @param key String reference name
+	 * @param value V element to be registered
+	 * @param registry Map registry to add element to
+	 * @throws QueueModelException if the reference is already registered
+	 */
+	private <V> void registerOperation(String key, V value, Map<String, V> registry) throws QueueModelException {
+		if (registry.containsKey(key)) {
+			logger.error("Cannot register "+value.getClass().getSimpleName()+". The reference '"+key+"' is already registered.");
+			throw new QueueModelException("A "+value.getClass().getSimpleName()+" with reference '"+key+"' is already registered.");
+		}
+		registry.put(key, value);
+	}
+	
+	/**
+	 * Generic method to remove an element from one of the registries.
+	 * @param key String reference name
+	 * @param registry Map registry to remove element from
+	 * @param clazz Class type of the element to be removed
+	 * @throws QueueModelException if the reference is not registered 
+	 */
+	private <V> void unregisterOperation(String key, Map<String, V> registry, Class<V> clazz) throws QueueModelException {
+		if (registry.containsKey(key)) {
+			registry.remove(key);
+		}
+		logger.error("Cannot unregister "+clazz.getSimpleName()+". The reference '"+key+"' is not registered.");
+		throw new QueueModelException("No "+clazz.getSimpleName()+" registered for reference '"+key+"'");
 	}
 
 	@Override
 	public <Q extends QueueAtom> void registerAtom(Q atom) throws QueueModelException{
 		String atomShortName = atom.getShortName();
-		if (queueAtomShortNameRegistry.contains(atomShortName)) {
-			logger.error("Cannot register atom. An atom with the reference '"+atomShortName+"' is already registered.");
-			throw new QueueModelException("An atom with the reference '"+atomShortName+"' is already registered.");
-		}
-		
-		queueAtomRegistry.put(atomShortName, atom);
+		registerOperation(atomShortName, atom, queueAtomRegistry);
 		queueAtomShortNameRegistry.add(atomShortName);
 	}
 
@@ -70,22 +116,13 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	@Override
 	public void registerAtom(SubTaskAtomModel subTask) throws QueueModelException {
 		String subTaskShortName = subTask.getShortName();
-		if (queueAtomShortNameRegistry.contains(subTaskShortName)) {
-			logger.error("Cannot register SubTaskAtomModel. An atom with the reference '"+subTaskShortName+"' is already registered.");
-			throw new QueueModelException("An atom with the reference '"+subTaskShortName+"' is already registered.");
-		}
-		subTaskModelRegistry.put(subTaskShortName, subTask);
+		registerOperation(subTaskShortName, subTask, subTaskModelRegistry);
 		queueAtomShortNameRegistry.add(subTaskShortName);
 	}
 
 	@Override
 	public void registerTask(TaskBeanModel task) throws QueueModelException {
-		String taskShortName = task.getShortName();
-		if (taskBeanModelRegistry.containsKey(taskShortName)) {
-			logger.error("Cannot register TaskBeanModel. A TaskBeanModel with reference '"+taskShortName+"' is already registered.");
-			throw new QueueModelException("A TaskBeanModel with reference '"+taskShortName+"' is already registered.");
-		}
-		taskBeanModelRegistry.put(taskShortName, task);
+		registerOperation(task.getShortName(), task, taskBeanModelRegistry);
 		
 		/*
 		 * Decide whether we should set the default TaskbeanModel by 
@@ -105,13 +142,24 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 
 	@Override
 	public void unregisterTask(String reference) throws QueueModelException {
-		if (taskBeanModelRegistry.containsKey(reference)) {
-			taskBeanModelRegistry.remove(reference);
-			if (defaultTaskBeanShortName == reference) defaultTaskBeanShortName = null;
-			return;
-		}
-		logger.error("Cannot unregister TaskBeanModel. No TaskBeanModel registered for reference '"+reference+"'");
-		throw new QueueModelException("No TaskBeanModel registered for reference '"+reference+"'");
+		unregisterOperation(reference, taskBeanModelRegistry, TaskBeanModel.class);
+		//If we got this far, the class was unregistered (otherwise we get an exception
+		if (defaultTaskBeanShortName == reference) defaultTaskBeanShortName = null;
+	}
+
+	@Override
+	public void registerGlobalValue(IQueueValue<?> value) throws QueueModelException {
+		registerOperation(value.getName(), value, globalValueRegistry);
+	}
+
+	@Override
+	public void unregisterGlobalValue(String valueName) throws QueueModelException {
+		unregisterOperation(valueName, globalValueRegistry, IQueueValue.class);
+	}
+	
+	@Override
+	public IQueueValue<?> getGlobalValue(String reference) {
+		return globalValueRegistry.get(reference);
 	}
 
 	@Override
@@ -124,7 +172,9 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	public <Q extends QueueAtom> Q getQueueAtom(String reference) throws QueueModelException {
 		if (queueAtomShortNameRegistry.contains(reference)) {
 			if (queueAtomRegistry.containsKey(reference)) {
-				return (Q)queueAtomRegistry.get(reference);
+				Q protoAtom = (Q)queueAtomRegistry.get(reference);
+				IBeanAssembler<Q> beanAss = (IBeanAssembler<Q>) beanAssemblers.get(protoAtom.getClass());
+				return beanAss.assemble(protoAtom);
 			}
 			if (subTaskModelRegistry.containsKey(reference)) {
 				return (Q)assembleSubTask(reference);

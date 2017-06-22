@@ -123,14 +123,42 @@ public interface IQueueBeanFactory {
 	 */
 	void unregisterTask(String reference) throws QueueModelException;
 	
-	<V> void registerGlobalValue(IQueueValue<V> value);
+	/**
+	 * Add an {@link IQueueValue} to the globalValues registry for inclusion 
+	 * in beans being assembled.
+	 * @param value {@link IQueueValue}
+	 * @throws QueueModelException if a value is already registered with this 
+	 *         reference
+	 */
+	void registerGlobalValue(IQueueValue<?> value) throws QueueModelException;
 	
-	default <V> void replaceGlobalValue(IQueueValue<V> value) {
+	/**
+	 * Exchange the current {@link IQueueValue} associated with the name of 
+	 * the new value for the new value.
+	 * @param value {@link IQueueValue} to replace with name in registry
+	 * @throws QueueModelException if no reference to the name of this value 
+	 *         is recorded
+	 */
+	default void replaceGlobalValue(IQueueValue<?> value) throws QueueModelException{
 		unregisterGlobalValue(value.getName());
 		registerGlobalValue(value);
 	}
 	
-	void unregisterGlobalValue(String valueName);
+	/**
+	 * Remove a given {@link IQueueValue} from the registry by the reference 
+	 * name given.
+	 * @param reference String name of {@link IQueueValue} to remove
+	 * @throws QueueModelException if no {@link IQueueValue is registered to 
+	 *         this reference
+	 */
+	void unregisterGlobalValue(String reference) throws QueueModelException;
+	
+	/**
+	 * Return the {@link IQueueValue} associated with the reference name. 
+	 * @param reference String name of {@link IQueueValue}
+	 * @return {@link IQueueValue}
+	 */
+	IQueueValue<?> getGlobalValue(String reference);
 	
 	/**
 	 * Return a list of all the shortNames of the registered queue atoms (both 
