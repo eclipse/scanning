@@ -169,15 +169,15 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <Q extends QueueAtom> Q getQueueAtom(String reference) throws QueueModelException {
+	public <Q extends QueueAtom> Q assembleQueueAtom(String reference, Map<String, IQueueValue<?>> localValues) throws QueueModelException {
 		if (queueAtomShortNameRegistry.contains(reference)) {
 			if (queueAtomRegistry.containsKey(reference)) {
 				Q protoAtom = (Q)queueAtomRegistry.get(reference);
 				IBeanAssembler<Q> beanAss = (IBeanAssembler<Q>) beanAssemblers.get(protoAtom.getClass());
-				return beanAss.assemble(protoAtom);
+				return beanAss.assemble(protoAtom, localValues);
 			}
 			if (subTaskModelRegistry.containsKey(reference)) {
-				return (Q)assembleSubTask(reference);
+				return (Q)assembleSubTask(reference, localValues);
 			}
 		}
 		logger.error("No QueueAtom with the short name "+reference+" found in QueueAtom registry.");
@@ -185,7 +185,7 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	}
 
 	@Override
-	public SubTaskAtom assembleSubTask(String reference) throws QueueModelException {
+	public SubTaskAtom assembleSubTask(String reference, Map<String, IQueueValue<?>> localValues) throws QueueModelException {
 		SubTaskAtomModel stModel = subTaskModelRegistry.get(reference);
 		if (stModel == null) {
 			logger.error("Failed to assemble SubTaskAtom: No SubTaskAtomModel registered for reference'"+reference+"'");
@@ -193,13 +193,13 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		}
 		
 		SubTaskAtom stAtom = new SubTaskAtom(reference, stModel.getName());
-		populateAtomQueue(stModel, stAtom);
+		populateAtomQueue(stModel, stAtom, localValues);
 		
 		return stAtom;
 	}
 
 	@Override
-	public TaskBean assembleTaskBean(String reference) throws QueueModelException {
+	public TaskBean assembleTaskBean(String reference, Map<String, IQueueValue<?>> localValues) throws QueueModelException {
 		TaskBeanModel tbModel = taskBeanModelRegistry.get(reference);
 		if (tbModel == null) {
 			logger.error("Failed to assemble TaskBean: No TaskBeanModel registered for reference'"+reference+"'");
@@ -207,7 +207,7 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		}
 		
 		TaskBean tBean = new TaskBean(reference, tbModel.getName());
-		populateAtomQueue(tbModel, tBean);
+		populateAtomQueue(tbModel, tBean, localValues);
 		
 		return tBean;
 	}
@@ -222,10 +222,10 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	 *        atoms
 	 * @throws QueueModelException if an atom was not present in the registry
 	 */
-	private <P extends IHasAtomQueue<T>, Q extends QueueableModel, T extends QueueAtom> void populateAtomQueue(Q model, P queueHolder) throws QueueModelException {
+	private <P extends IHasAtomQueue<T>, Q extends QueueableModel, T extends QueueAtom> void populateAtomQueue(Q model, P queueHolder, Map<String, IQueueValue<?>> localValues) throws QueueModelException {
 		for (String stShrtNm : model.getQueueAtomShortNames()) {
 			try {
-				T at = getQueueAtom(stShrtNm);
+				T at = assembleQueueAtom(stShrtNm, localValues);
 				queueHolder.addAtom(at);
 			} catch (QueueModelException qme) {
 				logger.error("Could not assemble SubTaskAtom due to missing child atom: "+qme.getMessage());
@@ -248,5 +248,5 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		}
 		return defaultTaskBeanShortName;
 	}
-
+	
 }

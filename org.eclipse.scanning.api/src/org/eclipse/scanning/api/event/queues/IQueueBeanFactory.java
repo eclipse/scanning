@@ -1,6 +1,7 @@
 package org.eclipse.scanning.api.event.queues;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
@@ -171,45 +172,53 @@ public interface IQueueBeanFactory {
 	List<String> getQueueAtomRegister();
 	
 	/**
-	 * Return an instance of a {@link QueueAtom} stored in the registries by 
-	 * the shortname (reference) given. If the given reference resolves to a 
-	 * {@link SubTaskAtomModel}, the {@link #assembleSubTask(String)} method 
-	 * is called and the result returned.
+	 * Return an instance of a {@link QueueAtom} template stored in the 
+	 * registries by the shortname (reference) given. If the given reference 
+	 * resolves to a {@link SubTaskAtomModel}, the 
+	 * {@link #assembleSubTask(String)} method is called and the result 
+	 * returned.
 	 * @param reference String name of atom to return
+	 * @param localValues Map containing localValues to be used during assembly
+	 *        (can safely be null)
 	 * @return Q extends {@link QueueAtom} associated with reference/shortname
 	 * @throws QueueModelException if no atom is registered with the reference
 	 */
-	<Q extends QueueAtom> Q getQueueAtom(String reference) throws QueueModelException;
+	<Q extends QueueAtom> Q assembleQueueAtom(String reference, Map<String, IQueueValue<?>> localValues) throws QueueModelException;
 	
 	/**
 	 * Construct a {@link SubTaskAtom} based on the {@link SubTaskAtomModel} 
 	 * registered to the given reference.
 	 * @param reference String shortname of {@link SubTaskAtomModel}
+	 * @param localValues Map containing localValues to be used during assembly
+	 *        (can safely be null)
 	 * @return {@link SubTaskAtom} derived from {@link SubTaskAtomModel}
 	 * @throws QueueModelException if no atom is registered with the reference
 	 */
-	SubTaskAtom assembleSubTask(String reference)  throws QueueModelException;
+	SubTaskAtom assembleSubTask(String reference, Map<String, IQueueValue<?>> localValues)  throws QueueModelException;
 	
 	/**
 	 * Construct a {@link TaskBean} based on the {@link TaskBeanModel} 
 	 * registered to the given reference.
 	 * @param reference String shortname of {@link TaskBeanModel}
+	 * @param localValues Map containing localValues to be used during assembly
+	 *        (can safely be null)
 	 * @return {@link TaskBean} derived from {@link TaskBeanModel}
 	 * @throws QueueModelException if no atom is registered with the reference
 	 */
-	TaskBean assembleTaskBean(String reference) throws QueueModelException;
+	TaskBean assembleTaskBean(String reference, Map<String, IQueueValue<?>> localValues) throws QueueModelException;
 	
 	/**
 	 * Constructs a {@link TaskBean} from the current default 
 	 * {@link TaskBeanModel}. 
-	 * 
+	 * @param localValues Map containing localValues to be used during assembly
+	 *        (can safely be null)
 	 * @return {@link TaskBean} derived from default {@link TaskBeanModel}
 	 * @throws QueueModelException if there is no default model or the 
 	 *         currently set default {@link TaskBeanModel} reference could not 
 	 *         be found in the taskBeanModelRegistry. 
 	 */
-	default TaskBean assembleDefaultTaskBean() throws QueueModelException {
-		return assembleTaskBean(getDefaultTaskBeanModelName());
+	default TaskBean assembleDefaultTaskBean(Map<String, IQueueValue<?>> localValues) throws QueueModelException {
+		return assembleTaskBean(getDefaultTaskBeanModelName(), localValues);
 	}
 	
 	/**
