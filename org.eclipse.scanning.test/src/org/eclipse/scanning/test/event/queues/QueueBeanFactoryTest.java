@@ -15,7 +15,10 @@ import org.eclipse.scanning.api.event.queues.beans.TaskBean;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.SubTaskAtomModel;
 import org.eclipse.scanning.api.event.queues.models.TaskBeanModel;
+import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
+import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 import org.eclipse.scanning.event.queues.QueueBeanFactory;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,6 +29,11 @@ public class QueueBeanFactoryTest {
 	@Before
 	public void setUp() {
 		qbf = new QueueBeanFactory();
+	}
+	
+	@After
+	public void tearDown() {
+		qbf = null;
 	}
 	
 	@Test
@@ -44,21 +52,24 @@ public class QueueBeanFactoryTest {
 		PositionerAtom dum = (PositionerAtom)qbf.getQueueAtom(reference);
 		assertFalse("No atom with the expected reference registered", dum == null);
 		
-		
+		//Try adding a second atom...
 		PositionerAtom detXAtom = new PositionerAtom("setDetX", "dummy", 225);
-		detXAtom.setName("Set detX to 10");
+		detXAtom.setName("Set detX to 10");//TODO this should be set automatically
 		qbf.registerAtom(detXAtom);
 		assertEquals("Should be two queue atoms registered in the factory", 2, atomReg.size());
+		//...and now try adding a SubTaskModel to check this can also be accessed in same way as other queue atoms...
 		SubTaskAtomModel simpleSubTask = new SubTaskAtomModel("mvDum", "Move dummy & set detector X position", atomReg);
 		qbf.registerAtom(simpleSubTask);
 		assertEquals("Should be three queue atoms registered in the factory", 3, atomReg.size());
+		//...and test the unregistering method
 		qbf.unregisterAtom("setDetX");
 		assertEquals("Should be two queue atoms registered in the factory", 2, atomReg.size());
 		try {
 			qbf.getQueueAtom("setDetX");
 			fail("Fetching unregistered atom did not throw an exception");
 		} catch (QueueModelException qme) {
-			//expected
+			//Exception is expected - that' what I'm testing for
+			//(we alreayd unregistered this atom once)
 		}
 
 		qbf.unregisterAtom("mvDum");
@@ -83,9 +94,9 @@ public class QueueBeanFactoryTest {
 	public void testSimpleConfigAndBuild() throws QueueModelException {
 		//Add positioner to the queue atom register
 		PositionerAtom positAtom = new PositionerAtom("setDummy","dummy", 10);
-		positAtom.setName("Set dummy to 10");
+		positAtom.setName("Set dummy to 10"); //TODO this should be set automatically
 		PositionerAtom detXAtom = new PositionerAtom("setDetX", "dummy", 225);
-		detXAtom.setName("Set detX to 10");
+		detXAtom.setName("Set detX to 10"); //TODO this should be set automatically
 		qbf.registerAtom(positAtom);
 		qbf.registerAtom(detXAtom);
 		
@@ -117,5 +128,70 @@ public class QueueBeanFactoryTest {
 		TaskBean secondExecDum = qbf.assembleDefaultTaskBean();
 		assertEquals("assembleDefault should return the same model as explicitly requested when one model registered", secondExecDum, execDum);
 	}
+	
+	@Test
+	public void testQueueValueConfigAndBuild() throws QueueModelException {
+		//This is the positioner atom we want...
+		PositionerAtom positAtom = new PositionerAtom("setDummy","dummy", 10);
+		
+		//... and these are the bits that are needed to make the atom
+		PositionerAtom positModel = new PositionerAtom("setDummy", true, "dummy", "dummyValue");
+		IQueueValue<Integer> dumVal = new QueueValue<>("dummyValue", 10);
+		qbf.registerAtom(positModel);
+		qbf.registerGlobalValue(dumVal);
+
+		PositionerAtom dum = (PositionerAtom)qbf.getQueueAtom("setDummy");
+		assertEquals("Simple QueueValue configured atom not the same as positAtom", positAtom, dum);
+		
+//		//This example taken from /dls_sw/i15-1/scripts/m1.py; is for setting the voltages on the I15-1 bimorph mirror
+//		Map<String, Object> sesoVoltages = makeSesoMap();
+//		Map<String, Object> offVoltages = makeOffMap();
+//		
+//		//These are what we are trying to make
+//		PositionerAtom sesoAtom = new PositionerAtom("setMirror", sesoVoltages);
+//		PositionerAtom offAtom = new PositionerAtom("setMirror", offVoltages);
+//		
+//		//The template we're going to populate
+//		PositionerAtom mirrorTempl = new PositionerAtom("setMirror")
+	}
+	
+//	private Map<String, Object> makeSesoMap() {
+//		Map<String, Object> sesoVoltages = new HashMap<>();
+//		sesoVoltages.put("CH1", 1415);
+//		sesoVoltages.put("CH2", 961.5);
+//		sesoVoltages.put("CH3", 499.0);
+//		sesoVoltages.put("CH4", 221.0);
+//		sesoVoltages.put("CH5", 51.5);
+//		sesoVoltages.put("CH6", -85.2);
+//		sesoVoltages.put("CH7", -205.2);
+//		sesoVoltages.put("CH8", -265.6);
+//		sesoVoltages.put("CH9", -200.0);
+//		sesoVoltages.put("CH10", 20.0);
+//		sesoVoltages.put("CH11", 362.0);
+//		sesoVoltages.put("CH12", 734.2);
+//		sesoVoltages.put("CH13", 1032);
+//		sesoVoltages.put("CH14", 1236);
+//		sesoVoltages.put("CH15", 1574);
+//		return sesoVoltages;
+//	}
+//	private Map<String, Object> makeOffMap() {
+//		Map<String, Object> offVoltages = new HashMap<>();
+//		offVoltages.put("CH1", 0);
+//		offVoltages.put("CH2", 0);
+//		offVoltages.put("CH3", 0);
+//		offVoltages.put("CH4", 0);
+//		offVoltages.put("CH5", 0);
+//		offVoltages.put("CH6", 0);
+//		offVoltages.put("CH7", 0);
+//		offVoltages.put("CH8", 0);
+//		offVoltages.put("CH9", 0);
+//		offVoltages.put("CH10", 0);
+//		offVoltages.put("CH11", 0);
+//		offVoltages.put("CH12", 0);
+//		offVoltages.put("CH13", 0);
+//		offVoltages.put("CH14", 0);
+//		offVoltages.put("CH15", 0);
+//		return offVoltages;
+//	}
 	
 }

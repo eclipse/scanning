@@ -56,6 +56,10 @@ public class PositionerAtom extends QueueAtom {
 		positionerConfig.put(positionDev, target);
 	}
 	
+	public PositionerAtom(String posShrtNm, boolean model, String positionDev, Object target) {
+		
+	}
+	
 	/**
 	 * Constructor with required arguments for multiple motor positions.
 	 * 

@@ -9,6 +9,7 @@ import org.eclipse.scanning.api.event.queues.beans.TaskBean;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.SubTaskAtomModel;
 import org.eclipse.scanning.api.event.queues.models.TaskBeanModel;
+import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 
 /**
  * The IQueueBeanFactory stores models for atoms and beans which can be 
@@ -121,6 +122,15 @@ public interface IQueueBeanFactory {
 	 * @throws QueueModelException if no task is registered with the shortname 
 	 */
 	void unregisterTask(String reference) throws QueueModelException;
+	
+	<V> void registerGlobalValue(IQueueValue<V> value);
+	
+	default <V> void replaceGlobalValue(IQueueValue<V> value) {
+		unregisterGlobalValue(value.getName());
+		registerGlobalValue(value);
+	}
+	
+	void unregisterGlobalValue(String valueName);
 	
 	/**
 	 * Return a list of all the shortNames of the registered queue atoms (both 
