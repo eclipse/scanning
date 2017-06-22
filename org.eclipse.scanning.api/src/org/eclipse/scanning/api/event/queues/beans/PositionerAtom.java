@@ -43,33 +43,64 @@ public class PositionerAtom extends QueueAtom {
 	}
 	
 	/**
-	 * Constructor with required arguments to configure one positioner.
+	 * Create an instance which configures one positioner.
 	 * 
-	 * @param posShrtNm String short name used within the QueueBeanFactory
-	 * @param positionDev String name of positioner to set.
-	 * @param target Object representing the target position.
+	 * @param posShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param positionDev String name of positioner to set
+	 * @param target Object representing the target position
 	 */
 	public PositionerAtom(String posShrtNm, String positionDev, Object target) {
-		super();
-		setShortName(posShrtNm);
-		positionerConfig = new LinkedHashMap<String, Object>();
-		positionerConfig.put(positionDev, target);
-	}
-	
-	public PositionerAtom(String posShrtNm, boolean model, String positionDev, Object target) {
+		this(posShrtNm, false, positionDev, target);
 		
 	}
 	
 	/**
-	 * Constructor with required arguments for multiple motor positions.
-	 * 
-	 * @param posShrtNm String short name used within the QueueBeanFactory
-	 * @param positionerConfig Map of form String positionerDev name Object 
-	 *                         target position.
+	 * Create an instance which configures one positioner. This may be a model 
+	 * which can be used by the {@link IQueueBeanFactory} to create a real 
+	 * {@link PositionerAtom} or it may itself be a real 
+	 * {@link PositionerAtom}. 
+	 * @param posShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param model boolean flag indicating whether this is a model
+	 * @param positionDev String name of positioner to set
+	 * @param target Object representing the target position
 	 */
-	public PositionerAtom(String posShrtNm, Map<String, Object> positionerConfig) {
+	public PositionerAtom(String posShrtNm, boolean model, String positionDev, Object target) {
 		super();
 		setShortName(posShrtNm);
+		setModel(model);
+		positionerConfig = new LinkedHashMap<String, Object>();
+		positionerConfig.put(positionDev, target);
+	}
+	
+	/**
+	 * Create an instance which configures multiple positioners.
+	 * 
+	 * @param posShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param positionerConfig Map of form String positionerDev name Object 
+	 *        target position
+	 */
+	public PositionerAtom(String posShrtNm, Map<String, Object> positionerConfig) {
+		this(posShrtNm, false, positionerConfig);
+	}
+	
+	/**
+	 * Create an instance which configures multiple positioners. This may be a 
+	 * model which can be used by the {@link IQueueBeanFactory} to create a 
+	 * real {@link PositionerAtom} or it may itself be a real 
+	 * {@link PositionerAtom}. 
+	 * @param posShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param model boolean flag indicating whether this is a model
+	 * @param positionerConfig Map of form String positionerDev name Object 
+	 *        target position
+	 */
+	public PositionerAtom(String posShrtNm, boolean model, Map<String, Object> positionerConfig) {
+		super();
+		setShortName(posShrtNm);
+		setModel(model);
 		this.positionerConfig = positionerConfig;
 	}
 	
@@ -89,7 +120,7 @@ public class PositionerAtom extends QueueAtom {
 	 * @param positionDev String name of positioner to set.
 	 * @return Object representing the target position.
 	 */
-	public Object getPositioner(String positionDev) {
+	public Object getPositionerTarget(String positionDev) {
 		return positionerConfig.get(positionDev);
 	}
 	
@@ -100,6 +131,9 @@ public class PositionerAtom extends QueueAtom {
 	 * @param target Object representing the target position.
 	 */
 	public void addPositioner(String positionDev, Object target) {
+		if (positionDev == null || target == null) {
+			throw new NullPointerException("Cannot add positioner '"+positionDev+"' with target '"+target+"'");
+		}
 		positionerConfig.put(positionDev, target);
 	}
 	
@@ -168,6 +202,7 @@ public class PositionerAtom extends QueueAtom {
 	@Override
 	public String toString() {
 		String clazzName = this.getClass().getSimpleName();
+		if (model) clazzName = clazzName + " (MODEL)";
 		
 		String positConf = "{";
 		for (Map.Entry<String, Object> poserCfg : positionerConfig.entrySet()) {
