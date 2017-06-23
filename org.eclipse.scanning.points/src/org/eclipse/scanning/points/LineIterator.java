@@ -40,7 +40,7 @@ class LineIterator extends AbstractScanPointIterator {
         String name = model.getName();
         double start = model.getStart();
         double stop = model.getStop();
-        int numPoints = (int) ((stop - start) / model.getStep() + 1);
+        int numPoints = Math.toIntExact(Math.round((int) ((stop - start) / model.getStep() + 1)));
 		this.index = 0;
        
 		ScanPointIterator iterator = lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
