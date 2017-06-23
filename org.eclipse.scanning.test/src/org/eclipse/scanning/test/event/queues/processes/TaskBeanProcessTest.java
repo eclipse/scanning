@@ -101,7 +101,7 @@ public class TaskBeanProcessTest {
 		pti = new ProcessTestInfrastructure();
 		
 		//Create test atom & process
-		tBe = new TaskBean("Test queue sub task bean");
+		tBe = new TaskBean(null, "Test queue sub task bean");
 		tBe.setBeamline("I15-1(test)");
 		tBe.setHostName("afakeserver.diamond.ac.uk");
 		tBe.setUserName(System.getProperty("user.name"));

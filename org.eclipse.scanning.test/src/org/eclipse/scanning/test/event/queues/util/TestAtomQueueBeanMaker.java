@@ -79,7 +79,7 @@ public class TestAtomQueueBeanMaker {
 	}
 	
 	public static TaskBean makeDummyTaskBeanA() {
-		TaskBean tb = new TaskBean("Dummy Task A");
+		TaskBean tb = new TaskBean(null, "Dummy Task A");
 		tb.addAtom(makeDummySubTaskBeanA());
 		tb.addAtom(makeDummySubTaskBeanB());
 		return tb;

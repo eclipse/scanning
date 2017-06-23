@@ -44,8 +44,8 @@ public class TaskBeanTest extends AbstractBeanTest<TaskBean> { //extends Abstrac
 
 	@Before
 	public void buildBeans() throws Exception {
-		beanA = new TaskBean(nameA);
-		beanB = new TaskBean(nameB);
+		beanA = new TaskBean(null, nameA);
+		beanB = new TaskBean(null, nameB);
 
 		//Create atoms to be queued
 		atomA = TestAtomQueueBeanMaker.makeDummySubTaskBeanA();
@@ -81,7 +81,8 @@ public class TaskBeanTest extends AbstractBeanTest<TaskBean> { //extends Abstrac
 		
 		//Check adding nulls/identical atoms throws an expected error
 		try {
-			beanA.addAtom(null);
+			SubTaskAtom nullStA = null;
+			beanA.addAtom(nullStA);
 			fail("Expected NullPointerException not thrown");
 		} catch (NullPointerException ex) {
 			//expected

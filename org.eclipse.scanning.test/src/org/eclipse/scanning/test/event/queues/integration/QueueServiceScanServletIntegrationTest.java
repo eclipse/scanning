@@ -205,7 +205,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		stAt.addAtom(mvAt);
 
 		//... and an enclosing TaskBean
-		TaskBean tBean = new TaskBean("testTask");
+		TaskBean tBean = new TaskBean(null, "testTask");
 		tBean.addAtom(stAt);
 
 		//Submit it and wait!
@@ -236,7 +236,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		stAt.addAtom(scAt);
 		
 		//... and an enclosing TaskBean
-		TaskBean tBean = new TaskBean("testTask");
+		TaskBean tBean = new TaskBean(null, "testTask");
 		tBean.addAtom(stAt);
 		
 		//Create latches to wait for activity

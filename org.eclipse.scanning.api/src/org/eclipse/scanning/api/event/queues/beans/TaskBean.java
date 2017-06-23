@@ -13,8 +13,11 @@ package org.eclipse.scanning.api.event.queues.beans;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.event.queues.IQueueService;
+import org.eclipse.scanning.api.event.queues.models.QueueModelException;
+import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
 /**
  * TaskBean is a type of {@link QueueBean} implementing an 
@@ -39,6 +42,7 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 	private static final long serialVersionUID = 20161021L;
 	
 	private LinkedList<SubTaskAtom> atomQueue;
+	private LinkedList<QueueValue<String>> queueAtomShortNames;
 	private String queueMessage;
 //	private Object nexusMetadata; TODO!!!!
 	
@@ -51,26 +55,54 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 	}
 	
 	/**
-	 * Basic constructor to set String name of bean
-	 * @param name String user-supplied name
-	 */
-	public TaskBean(String name) {
-		super();
-		atomQueue = new LinkedList<>();
-		setName(name);
-	}
-	
-	/**
-	 * Basic constructor to set String short name and name of bean
-	 * 
-	 * @param tbShrtNm String short name used within the QueueBeanFactory
+	 * Create an instance with a shortname (reference) and a more verbose name 
+	 * to be used in UI etc.
+	 * @param tbShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
 	 * @param name String user-supplied name
 	 */
 	public TaskBean(String tbShrtNm, String name) {
-		this(name);
-		setShortName(tbShrtNm);
+		this(tbShrtNm, name, false);
 	}
-
+	
+	/**
+	 * Create an instance with a shortname (reference) and a more verbose name 
+	 * to be used in UI etc. This may be a model which can be used by the 
+	 * {@link IQueueBeanFactory} to create a real {@link TaskBean} or it may 
+	 * itself be a real {@link TaskBean}.
+	 * @param stShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param name String user-supplied name
+	 * @param model boolean flag indicating whether this is a model
+	 */
+	public TaskBean(String tbShrtNm, String name, boolean model) {
+		super();
+		setShortName(tbShrtNm);
+		setName(name);
+		setModel(model);
+		if (model) {
+			queueAtomShortNames = new LinkedList<>();
+		} else {
+			atomQueue = new LinkedList<>();
+		}
+	}
+	
+	/**
+	 * Create a model instance with a shortname (reference), a more verbose 
+	 * name and a list of shortnames (references) of atoms which will be used 
+	 * by the {@link IQueueBeanFactory} during the creation of a real 
+	 * {@link TaskBean} instance.
+	 * @param stShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param name String user-supplied name
+	 * @param queueAtomShortNames List of String references which will be 
+	 *        converted into an atomQueue
+	 */
+	public TaskBean(String tbShrtNm, String name, List<QueueValue<String>> queueAtomShortNames) {
+		this(tbShrtNm, name, true);
+		setQueueAtomShortNames(queueAtomShortNames);
+	}
+	
 	@Override
 	public List<SubTaskAtom> getAtomQueue() {
 		return atomQueue;
@@ -80,6 +112,16 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 	public void setAtomQueue(List<SubTaskAtom> atomQueue) {
 		this.atomQueue = new LinkedList<>(atomQueue);
 		setRunTime(calculateRunTime());
+	}
+	
+	@Override
+	public List<QueueValue<String>> getQueueAtomShortNames() {
+		return queueAtomShortNames;
+	}
+
+	@Override
+	public void setQueueAtomShortNames(List<QueueValue<String>> queueAtomShortNames) {
+		this.queueAtomShortNames = new LinkedList<>(queueAtomShortNames);
 	}
 
 	@Override
@@ -93,17 +135,34 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 
 	@Override
 	public boolean addAtom(SubTaskAtom atom) {
-		//Check that we're adding a real, non-duplicate atom to the queue
-		if(atom == null) {
-			throw new NullPointerException("Attempting to add null atom to AtomQueue");
-		}
-		if(isAtomPresent(atom)) {
-			throw new IllegalArgumentException("SubTaskAtom with identical UID already in queue.");
-		}
-		//Add atom, recalculate the runtime and return
-		boolean result =  atomQueue.add(atom);
+		//Check this SubTaskAtom is real and the atom is not a non-duplicate
+		if (model) throw new IllegalArgumentException("Cannot add non-model atom to a model SubTaskAtom");
+		if(isAtomPresent(atom)) throw new IllegalArgumentException("Atom with identical UID already in queue.");
+		
+		boolean result = addAtom(atom, atomQueue);
 		setRunTime(calculateRunTime());
 		return result;
+	}
+	
+	public boolean addAtom(QueueValue<String> subTaskAtomShortName) {
+		//Check this SubTaskAtom is a model 
+		if (!model) throw new IllegalArgumentException("Cannot add model atom to a non-model TaskBean");
+		
+		return addAtom(subTaskAtomShortName, queueAtomShortNames);
+	}
+	
+	/**
+	 * Generic method to add either an atom or a model name to this 
+	 * {@link TaskBean}.
+	 * @param atom T being added to queue (String or {@link SubTaskAtom})
+	 * @param atomList List describing the queue
+	 * @return true if the atom was added successfully
+	 */
+	private <T> boolean addAtom(T atom, List<T> atomList) {
+		//Check it's not a null we're adding to our list...
+		if(atom == null) throw new NullPointerException("Attempting to add null atom to AtomQueue");
+		return atomList.add(atom);
+
 	}
 
 	@Override
@@ -156,6 +215,7 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 		int result = super.hashCode();
 		result = prime * result + ((atomQueue == null) ? 0 : atomQueue.hashCode());
 		result = prime * result + ((queueMessage == null) ? 0 : queueMessage.hashCode());
+		result = prime * result + ((queueAtomShortNames == null) ? 0 : queueAtomShortNames.hashCode());
 		return result;
 	}
 
@@ -178,23 +238,41 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 				return false;
 		} else if (!queueMessage.equals(other.queueMessage))
 			return false;
+		if (queueAtomShortNames == null) {
+			if (other.queueAtomShortNames != null)
+				return false;
+		} else if (!queueAtomShortNames.equals(other.queueAtomShortNames))
+			return false;
 		return true;
 	}
 	
 	@Override
 	public String toString() {
-		String atomQueueStr = "{";
-		for (QueueAtom qa : atomQueue) {
-			atomQueueStr = atomQueueStr + qa.getShortName() + "('" + qa.getName() + "')";
-			atomQueueStr = atomQueueStr+", ";
-		}
-		atomQueueStr = atomQueueStr.replaceAll(", $", "}"); //Replace trailing ", "
+		String clazzName = this.getClass().getSimpleName();
 		
-		return "TaskBean [name=" + name + ", atomQueue=" + atomQueueStr + ", status=" + status
-				+ ", message=" + message + ", queueMessage=" + queueMessage + ", percentComplete="
-				+ percentComplete + ", previousStatus=" + previousStatus + ", runTime=" + runTime 
-				+ ", userName=" + userName+ ", hostName=" + hostName + ", beamline="+ beamline 
-				+ ", submissionTime=" + submissionTime + "]";
+		StringBuffer atomQueueStrBuff = new StringBuffer("{");
+		if (model) {
+			clazzName = clazzName + " (MODEL)";
+			atomQueueStrBuff.append(queueAtomShortNames.stream().map(qv -> {
+				try {
+					return qv.evaluate();
+				} catch (QueueModelException e) {
+					return "Failed to read queue atom short names";
+				}
+			}).collect(Collectors.joining(", ")));
+		} else {
+			atomQueueStrBuff.append(atomQueue.stream().map(qa -> qa.getShortName() + "('" + qa.getName() + "')")
+					.collect(Collectors.joining(", ")));
+		} 
+		atomQueueStrBuff.append("}");
+		String atomQueueStr = atomQueueStrBuff.toString();
+		atomQueueStr = atomQueueStr.replaceAll(", }$", "}"); //Replace trailing ", "
+		
+		return clazzName + " [name=" + name + " (shortName="+shortName+"), atomQueue=" + atomQueueStr 
+				+ ", status=" + status + ", message=" + message + ", queueMessage=" + queueMessage 
+				+ ", percentComplete=" + percentComplete + ", previousStatus=" + previousStatus 
+				+ ", runTime=" + runTime + ", userName=" + userName+ ", hostName=" + hostName 
+				+ ", beamline="+ beamline + ", submissionTime=" + submissionTime + "]";
 	}
 
 }
