@@ -45,11 +45,11 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		globalValueRegistry = new HashMap<>();
 		
 		beanAssemblers = new HashMap<>();
-		beanAssemblers.put(MonitorAtom.class, new MonitorAtomAssembler());
-		beanAssemblers.put(PositionerAtom.class, new PositionerAtomAssembler());
-		beanAssemblers.put(ScanAtom.class, new ScanAtomAssembler());
-		beanAssemblers.put(SubTaskAtom.class, new SubTaskAtomAssembler());
-		beanAssemblers.put(TaskBean.class, new TaskBeanAssembler());
+		beanAssemblers.put(MonitorAtom.class, new MonitorAtomAssembler(this));
+		beanAssemblers.put(PositionerAtom.class, new PositionerAtomAssembler(this));
+		beanAssemblers.put(ScanAtom.class, new ScanAtomAssembler(this));
+		beanAssemblers.put(SubTaskAtom.class, new SubTaskAtomAssembler(this));
+		beanAssemblers.put(TaskBean.class, new TaskBeanAssembler(this));
 	}
 	
 	/**

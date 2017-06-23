@@ -1,25 +1,27 @@
 package org.eclipse.scanning.event.queues.spooler;
 
-import java.util.Map;
-
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
-import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
-import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
-public final class SubTaskAtomAssembler implements IBeanAssembler<SubTaskAtom> {
+public final class SubTaskAtomAssembler extends AbstractBeanAssembler<SubTaskAtom> {
+	
+	private AtomQueueBuilder<SubTaskAtom, QueueAtom> atomQueueBuider;
+	
+	public SubTaskAtomAssembler(IQueueBeanFactory queueBeanFactory) {
+		super(queueBeanFactory);
+		atomQueueBuider = new AtomQueueBuilder<>(queueBeanFactory, SubTaskAtom.class);
+	}
 
 	@Override
-	public SubTaskAtom buildNewBean(SubTaskAtom model, Map<QueueValue<String>, IQueueValue<?>> localValues)
-			throws QueueModelException {
+	public SubTaskAtom buildNewBean(SubTaskAtom model) throws QueueModelException {
 		SubTaskAtom atom = new SubTaskAtom(model.getShortName(), model.getName());
 		atom.setBeamline(model.getBeamline());
 		atom.setRunTime(model.getRunTime());
 		atom.setModel(false);
 		
-		AtomQueueBuilder<SubTaskAtom, QueueAtom> aqb = new AtomQueueBuilder<>(model, atom, localValues, getQueueBeanFactory());
-		return aqb.populateAtomQueue(SubTaskAtom.class);
+		return atomQueueBuider.populateAtomQueue(model, atom, localValues);
 	}
 
 	@Override

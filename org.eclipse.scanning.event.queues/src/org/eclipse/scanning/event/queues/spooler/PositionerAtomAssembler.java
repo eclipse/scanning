@@ -1,22 +1,21 @@
 package org.eclipse.scanning.event.queues.spooler;
 
-import java.util.Map;
-
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
-import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
-public final class PositionerAtomAssembler implements IBeanAssembler<PositionerAtom> {
+public final class PositionerAtomAssembler extends AbstractBeanAssembler<PositionerAtom> {
+
+	public PositionerAtomAssembler(IQueueBeanFactory queueBeanFactory) {
+		super(queueBeanFactory);
+	}
 
 	@Override
-	public PositionerAtom buildNewBean(PositionerAtom model, Map<QueueValue<String>, IQueueValue<?>> localValues)
-			throws QueueModelException {
-		PositionerAtom atom = new PositionerAtom();
+	public PositionerAtom buildNewBean(PositionerAtom model) throws QueueModelException {
+		PositionerAtom atom = new PositionerAtom(model.getShortName(), false);
 		atom.setBeamline(model.getBeamline());
 		atom.setRunTime(model.getRunTime());
-		atom.setShortName(model.getShortName());
-		atom.setModel(false);
 		
 		/*
 		 * Loop through the positionerConfig in the model replacing any 
@@ -25,19 +24,9 @@ public final class PositionerAtomAssembler implements IBeanAssembler<PositionerA
 		 */
 		for (String dev : model.getPositionerNames()) {
 			Object devTgt = model.getPositionerTarget(dev);
-			if (devTgt instanceof QueueValue) {
-				//It's a value name...
-				@SuppressWarnings("unchecked") //We only use strings in var names
-				QueueValue<String> devVarName= (QueueValue<String>) devTgt;
-				if (localValues.containsKey(devVarName)) {
-					devTgt = localValues.get(devVarName).evaluate();
-				} else {
-					IQueueValue<?> globalValue = getQueueBeanFactory().getGlobalValue(devVarName);
-					if (globalValue != null){
-						devTgt = globalValue.evaluate();
-					}
-					//If globalValue was null, the String must have been a real target
-				}
+			if (devTgt instanceof IQueueValue) {
+				//It's a probably a value name...
+				devTgt = updateIQueueValue((IQueueValue<?>) devTgt).evaluate();
 			}
 			atom.addPositioner(dev, devTgt);
 		}
@@ -50,5 +39,7 @@ public final class PositionerAtomAssembler implements IBeanAssembler<PositionerA
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	
 
 }

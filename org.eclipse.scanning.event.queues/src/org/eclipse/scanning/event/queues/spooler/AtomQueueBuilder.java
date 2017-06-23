@@ -1,6 +1,6 @@
 package org.eclipse.scanning.event.queues.spooler;
 
-import java.util.Map;
+import java.util.List;
 
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.IHasAtomQueue;
@@ -18,8 +18,7 @@ class  AtomQueueBuilder<P extends IHasAtomQueue<T>, T extends QueueAtom> {
 	private static final Logger logger = LoggerFactory.getLogger(AtomQueueBuilder.class);
 	
 	private IQueueBeanFactory qbf;
-	private P modelInstance, realInstance;
-	private Map<QueueValue<String>, IQueueValue<?>> localValues;
+	private Class<P> clazz;
 	
 	/**
 	 * Construct an {@link AtomQueueBuilder} to construct the given model.
@@ -30,11 +29,9 @@ class  AtomQueueBuilder<P extends IHasAtomQueue<T>, T extends QueueAtom> {
 	 *        parameters in the atoms
 	 * @param qbf {@link IQueueBeanFactory} containing the atom registry
 	 */
-	protected AtomQueueBuilder(P modelInstance, P realInstance, Map<QueueValue<String>, IQueueValue<?>> localValues, IQueueBeanFactory qbf) {
-		this.modelInstance = modelInstance;
-		this.realInstance = realInstance;
-		this.localValues = localValues;
+	protected AtomQueueBuilder(IQueueBeanFactory qbf, Class<P> clazz) {
 		this.qbf = qbf;
+		this.clazz = clazz;
 	}
 
 	/**
@@ -45,7 +42,8 @@ class  AtomQueueBuilder<P extends IHasAtomQueue<T>, T extends QueueAtom> {
 	 * @param clazz Class of bean being created (for error reporting)
 	 * @throws QueueModelException if an atom was not present in the registry
 	 */
-	protected P populateAtomQueue(Class<P> clazz) throws QueueModelException {
+	protected P populateAtomQueue(P modelInstance, P realInstance, List<IQueueValue<?>> localValues) 
+			throws QueueModelException {
 		
 		for (QueueValue<String> stShrtNm : modelInstance.getQueueAtomShortNames()) {
 			try {
