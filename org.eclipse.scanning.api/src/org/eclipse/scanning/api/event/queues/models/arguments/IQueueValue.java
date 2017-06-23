@@ -1,5 +1,6 @@
 package org.eclipse.scanning.api.event.queues.models.arguments;
 
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 
 /**
@@ -23,5 +24,12 @@ public interface IQueueValue<V> {
 	 * @throws QueueModelException if no value can be returned
 	 */
 	public V evaluate() throws QueueModelException;
+	
+	/**
+	 * Flag to indicate this {@link IQueueValue} hold a reference to another 
+	 * in the {@link IQueueBeanFactory}.
+	 * @return true if this holds a reference
+	 */
+	public boolean isVariable();
 
 }

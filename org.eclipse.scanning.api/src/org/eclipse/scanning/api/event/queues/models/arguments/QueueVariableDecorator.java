@@ -59,4 +59,12 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 		this.name = name;
 	}
 
+	/**
+	 * {@link QueueVariableDecorator}s should always be variables.
+	 */
+	@Override
+	public boolean isVariable() {
+		return true;
+	}
+
 }
