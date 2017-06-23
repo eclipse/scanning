@@ -9,34 +9,41 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
+import org.eclipse.scanning.api.event.queues.IQueueSpoolerService;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
-import org.eclipse.scanning.api.event.queues.models.SubTaskAtomModel;
-import org.eclipse.scanning.api.event.queues.models.TaskBeanModel;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
-import org.eclipse.scanning.event.queues.QueueBeanFactory;
+import org.eclipse.scanning.event.queues.ServicesHolder;
+import org.eclipse.scanning.event.queues.spooler.QueueSpoolerService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class QueueBeanFactoryTest {
 	
+	private IQueueSpoolerService qss;
 	private IQueueBeanFactory qbf;
 	
 	@Before
 	public void setUp() {
-		qbf = new QueueBeanFactory();
+		qss = new QueueSpoolerService();
+		qbf = qss.getQueueBeanFactory();
+		ServicesHolder.setQueueSpoolerService(qss);
 	}
 	
 	@After
 	public void tearDown() {
-		qbf = null;
+		qss = null;
 	}
 	
+	/**
+	 * Tests basic registration and deregistration of atoms and beans from the QueueBeanFactory
+	 * @throws QueueModelException
+	 */
 	@Test
 	public void testAddRemoveAtoms() throws QueueModelException {
 		//Add positioner to the queue atom register
@@ -91,6 +98,11 @@ public class QueueBeanFactoryTest {
 		}
 	}
 	
+	/**
+	 * Tests the registration of a series of atoms, both subtasks and postioners, and 
+	 * their assembly into a complete taskbean
+	 * @throws QueueModelException
+	 */
 	@Test
 	public void testSimpleConfigAndBuild() throws QueueModelException {
 		//Add positioner to the queue atom register
@@ -133,19 +145,64 @@ public class QueueBeanFactoryTest {
 		assertEquals("assembleDefault should return the same model as explicitly requested when one model registered", secondExecDum, execDum);
 	}
 	
-//	@Test
-	public void testQueueValueConfigAndBuild() throws QueueModelException {
+	/**
+	 * Tests registration methods for values
+	 * @throws QueueModelException 
+	 */
+	@Test
+	public void testRegisterUnRegisterValues() throws QueueModelException {
+		IQueueValue<?> globValA = new QueueValue<Double>("locVal", 80.);
+		IQueueValue<?> globValB = new QueueValue<Double>("homePosition", 1.235);
+		
+		qbf.registerGlobalValue(globValA);
+		assertEquals("Should be only 1 value registered", 1, qbf.getGlobalValuesRegister().size());
+		qbf.registerGlobalValue(globValB);
+		assertEquals("Should be only 2 value registered", 2, qbf.getGlobalValuesRegister().size());
+		try {
+			qbf.registerGlobalValue(globValB);
+			fail("Should not be able to register two values with same name");
+		} catch (Exception ex) {
+			//Expected - see above
+		}
+		
+		assertEquals("Wrong global value returned", globValA, qbf.getGlobalValue(new QueueValue<String>("locVal", true)));
+		
+		qbf.unregisterGlobalValue("locVal");
+		assertEquals("Should be only 1 value registered", 1, qbf.getGlobalValuesRegister().size());
+		try {
+			qbf.getGlobalValue(new QueueValue<String>("locVal", true));
+			fail("Should not be able to return unregistered value");
+		} catch (Exception ex) {
+			//Expected - see above
+		}
+	}
+	
+	/**
+	 * This tests the insertion of one value registered in the global values registry into a created PositionerAtom
+	 * @throws QueueModelException
+	 */
+	@Test
+	public void testSimpleQueueValueConfigAndBuild() throws QueueModelException {
 		//This is the positioner atom we want...
-		PositionerAtom positAtom = new PositionerAtom("setDummy","dummy", 10);
+		PositionerAtom positAtomA = new PositionerAtom("setDummy","dummy", 10);
+		PositionerAtom positAtomB = new PositionerAtom("setYummy","yummy", 80.0);
 		
 		//... and these are the bits that are needed to make the atom
-		PositionerAtom positModel = new PositionerAtom("setDummy", true, "dummy", "dummyValue");
-		IQueueValue<Integer> dumVal = new QueueValue<>("dummyValue", 10);
-		qbf.registerAtom(positModel);
-		qbf.registerGlobalValue(dumVal);
+		PositionerAtom positAModel = new PositionerAtom("setDummy", true, "dummy", new QueueValue<String>("dummyValue", true));
+		PositionerAtom positBModel = new PositionerAtom("setYummy", true, "yummy", new QueueValue<String>("locVal", true));
+		qbf.registerAtom(positAModel);
+		qbf.registerAtom(positBModel);
+		qbf.registerGlobalValue(new QueueValue<>("dummyValue", 10));
 
-		PositionerAtom dum = (PositionerAtom)qbf.getQueueAtom("setDummy");
-		assertEquals("Simple QueueValue configured atom not the same as positAtom", positAtom, dum);
+		//Try to populate from global values
+		PositionerAtom dum = (PositionerAtom)qbf.assembleQueueAtom(new QueueValue<String>("setDummy", true), null); //null since we're after a global value
+		assertEquals("PositionerAtom configured from global values is wrong", positAtomA, dum);
+		
+		//Try to populate from local values
+		List<IQueueValue<?>> localValues = Arrays.asList(new QueueValue<Double>("locVal", 80.));
+		dum = (PositionerAtom)qbf.assembleQueueAtom(new QueueValue<String>("setYummy", true), localValues);
+		assertEquals("PositionerAtom configured from local values is wrong", positAtomB, dum);
+	}
 		
 //		//This example taken from /dls_sw/i15-1/scripts/m1.py; is for setting the voltages on the I15-1 bimorph mirror
 //		Map<String, Object> sesoVoltages = makeSesoMap();
@@ -157,7 +214,7 @@ public class QueueBeanFactoryTest {
 //		
 //		//The template we're going to populate
 //		PositionerAtom mirrorTempl = new PositionerAtom("setMirror")
-	}
+//	}
 	
 //	private Map<String, Object> makeSesoMap() {
 //		Map<String, Object> sesoVoltages = new HashMap<>();

@@ -16,5 +16,6 @@ Import-Package: org.osgi.framework;version="1.7.0",
  org.slf4j;version="[1.7.2,2.0.0)"
 Export-Package: org.eclipse.scanning.event.queues,
  org.eclipse.scanning.event.queues.processes,
- org.eclipse.scanning.event.queues.remote
+ org.eclipse.scanning.event.queues.remote,
+ org.eclipse.scanning.event.queues.spooler
 Bundle-ActivationPolicy: lazy
