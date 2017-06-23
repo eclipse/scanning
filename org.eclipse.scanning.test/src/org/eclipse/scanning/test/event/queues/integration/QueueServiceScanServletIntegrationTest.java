@@ -201,7 +201,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		PositionerAtom mvAt = new PositionerAtom("testMove", null, null); //TODO change me!!
 
 		//... and an enclosing SubTaskAtom...
-		SubTaskAtom stAt = new SubTaskAtom("testSubTask");
+		SubTaskAtom stAt = new SubTaskAtom(null, "testSubTask");
 		stAt.addAtom(mvAt);
 
 		//... and an enclosing TaskBean
@@ -232,7 +232,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		ScanAtom scAt = new ScanAtom("testScan", paths, detectors);
 		
 		//... and an enclosing SubTaskAtom...
-		SubTaskAtom stAt = new SubTaskAtom("testSubTask");
+		SubTaskAtom stAt = new SubTaskAtom(null, "testSubTask");
 		stAt.addAtom(scAt);
 		
 		//... and an enclosing TaskBean
