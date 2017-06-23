@@ -11,6 +11,7 @@ import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.SubTaskAtomModel;
 import org.eclipse.scanning.api.event.queues.models.TaskBeanModel;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
+import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
 /**
  * The IQueueBeanFactory stores models for atoms and beans which can be 
@@ -62,63 +63,63 @@ public interface IQueueBeanFactory {
 		registerAtom(atom);
 	}
 	
-	/**
-	 * Add a new {@link SubTaskAtomMode} to the subTaskAtomRegistry.
-	 * @param subTask {@link SubTaskAtomMode} to be registered
-	 * @throws QueueModelException if an atom with the same 
-	 *         shortname/reference already exists
-	 */
-	void registerAtom(SubTaskAtomModel subTask) throws QueueModelException;
+//	/**
+//	 * Add a new {@link SubTaskAtomMode} to the subTaskAtomRegistry.
+//	 * @param subTask {@link SubTaskAtomMode} to be registered
+//	 * @throws QueueModelException if an atom with the same 
+//	 *         shortname/reference already exists
+//	 */
+//	void registerAtom(SubTaskAtomModel subTask) throws QueueModelException;
+	
+//	/**
+//	 * Change the {@link SubTaskAtomModel} registered with a particular 
+//	 * shortname/reference to a different one.
+//	 * @param atom {@link SubTaskAtomModel} with a shortname set that will 
+//	 *        replace an already registered atom
+//	 * @throws QueueModelException if no atom is registered with the shortname 
+//	 *         set on the given atom
+//	 */
+//	default void replaceAtom(SubTaskAtomModel subTask) throws QueueModelException {
+//		unregisterAtom(subTask.getShortName());
+//		registerAtom(subTask);
+//	}
 	
 	/**
-	 * Change the {@link SubTaskAtomModel} registered with a particular 
-	 * shortname/reference to a different one.
-	 * @param atom {@link SubTaskAtomModel} with a shortname set that will 
-	 *        replace an already registered atom
-	 * @throws QueueModelException if no atom is registered with the shortname 
-	 *         set on the given atom
-	 */
-	default void replaceAtom(SubTaskAtomModel subTask) throws QueueModelException {
-		unregisterAtom(subTask.getShortName());
-		registerAtom(subTask);
-	}
-	
-	/**
-	 * Remove a {@link SubTaskAtomModel} or {@link QueueAtom} by its reference 
-	 * from its respective registry. 
+	 * Remove a {@link QueueAtom} by its reference from the 
+	 * queueAtomModelRegistry. 
 	 * @param reference String shortname/reference
 	 * @throws QueueModelException if no atom is registered with the shortname
 	 */
 	void unregisterAtom(String reference) throws QueueModelException;
 	
 	/**
-	 * Add a new {@link TaskBeanModel} to the taskBeanRegistry. If only one 
-	 * {@link TaskBeanModel} is present, this becomes the default. If more 
+	 * Add a new {@link TaskBean} to the taskBeanModelRegistry. If only one 
+	 * {@link TaskBean} is present, this becomes the default. If more 
 	 * than one is included, unless {@link #setDefaultTaskBeanModel(String)} 
 	 * has been called, the default is unset and the user must explicitly 
-	 * choose which {@link TaskBeanModel} should be assembled by default.
-	 * @param task {@link TaskBeanModel} to add to the registry
+	 * choose which {@link TaskBean} should be assembled by default.
+	 * @param task {@link TaskBean} to add to the registry
 	 * @throws QueueModelException if a task is registered with the shortname 
 	 *         set on the given task
 	 */
-	void registerTask(TaskBeanModel task) throws QueueModelException;
+	void registerTask(TaskBean task) throws QueueModelException;
 	
 	/**
-	 * Change the {@link TaskBeanModel} registered with a particular 
+	 * Change the {@link TaskBean} registered with a particular 
 	 * shortname/reference to a different one.
-	 * @param task {@link TaskBeanModel} with a shortname set that will 
+	 * @param task {@link TaskBean} with a shortname set that will 
 	 *        replace an already registered atom
 	 * @throws QueueModelException if no atom is registered with the shortname 
 	 *         set on the given atom
 	 */
-	default void replaceTask(TaskBeanModel task) throws QueueModelException {
+	default void replaceTask(TaskBean task) throws QueueModelException {
 		unregisterTask(task.getShortName());
 		registerTask(task);
 	}
 	
 	/**
-	 * Remove a {@link TaskBeanModel} by its reference/shortname from the 
-	 * taskBeanRegistry. 
+	 * Remove a {@link TaskBean} by its reference/shortname from the 
+	 * taskBeanModelRegistry. 
 	 * @param reference String shortname/reference
 	 * @throws QueueModelException if no task is registered with the shortname 
 	 */
@@ -159,7 +160,7 @@ public interface IQueueBeanFactory {
 	 * @param reference String name of {@link IQueueValue}
 	 * @return {@link IQueueValue}
 	 */
-	IQueueValue<?> getGlobalValue(String reference);
+	IQueueValue<?> getGlobalValue(QueueValue<String> reference);
 	
 	/**
 	 * Return a list of all the shortNames of the registered queue atoms (both 
@@ -169,7 +170,7 @@ public interface IQueueBeanFactory {
 	 * 
 	 * @return List<String> shortNames of all registered atoms
 	 */
-	List<String> getQueueAtomRegister();
+	List<QueueValue<String>> getQueueAtomRegister();
 	
 	/**
 	 * Return an instance of a {@link QueueAtom} template stored in the 
@@ -183,19 +184,19 @@ public interface IQueueBeanFactory {
 	 * @return Q extends {@link QueueAtom} associated with reference/shortname
 	 * @throws QueueModelException if no atom is registered with the reference
 	 */
-	<Q extends QueueAtom> Q assembleQueueAtom(String reference, Map<String, IQueueValue<?>> localValues) throws QueueModelException;
+	<Q extends QueueAtom> Q assembleQueueAtom(QueueValue<String> reference, Map<QueueValue<String>, IQueueValue<?>> localValues) throws QueueModelException;
 	
-	/**
-	 * Construct a {@link SubTaskAtom} based on the {@link SubTaskAtomModel} 
-	 * registered to the given reference.
-	 * @param reference String shortname of {@link SubTaskAtomModel}
-	 * @param localValues Map containing localValues to be used during assembly
-	 *        (can safely be null)
-	 * @return {@link SubTaskAtom} derived from {@link SubTaskAtomModel}
-	 * @throws QueueModelException if no atom is registered with the reference
-	 */
-	SubTaskAtom assembleSubTask(String reference, Map<String, IQueueValue<?>> localValues)  throws QueueModelException;
-	
+//	/**
+//	 * Construct a {@link SubTaskAtom} based on the {@link SubTaskAtomModel} 
+//	 * registered to the given reference.
+//	 * @param reference String shortname of {@link SubTaskAtomModel}
+//	 * @param localValues Map containing localValues to be used during assembly
+//	 *        (can safely be null)
+//	 * @return {@link SubTaskAtom} derived from {@link SubTaskAtomModel}
+//	 * @throws QueueModelException if no atom is registered with the reference
+//	 */
+//	SubTaskAtom assembleSubTask(QueueValue<String> reference, Map<String, IQueueValue<?>> localValues)  throws QueueModelException;
+//	
 	/**
 	 * Construct a {@link TaskBean} based on the {@link TaskBeanModel} 
 	 * registered to the given reference.
@@ -205,7 +206,7 @@ public interface IQueueBeanFactory {
 	 * @return {@link TaskBean} derived from {@link TaskBeanModel}
 	 * @throws QueueModelException if no atom is registered with the reference
 	 */
-	TaskBean assembleTaskBean(String reference, Map<String, IQueueValue<?>> localValues) throws QueueModelException;
+	TaskBean assembleTaskBean(QueueValue<String> reference, Map<QueueValue<String>, IQueueValue<?>> localValues) throws QueueModelException;
 	
 	/**
 	 * Constructs a {@link TaskBean} from the current default 
@@ -217,7 +218,7 @@ public interface IQueueBeanFactory {
 	 *         currently set default {@link TaskBeanModel} reference could not 
 	 *         be found in the taskBeanModelRegistry. 
 	 */
-	default TaskBean assembleDefaultTaskBean(Map<String, IQueueValue<?>> localValues) throws QueueModelException {
+	default TaskBean assembleDefaultTaskBean(Map<QueueValue<String>, IQueueValue<?>> localValues) throws QueueModelException {
 		return assembleTaskBean(getDefaultTaskBeanModelName(), localValues);
 	}
 	
@@ -227,7 +228,7 @@ public interface IQueueBeanFactory {
 	 * other model is specified.
 	 * @param reference String shortname of model
 	 */
-	void setDefaultTaskBeanModel(String reference);
+	void setDefaultTaskBeanModel(QueueValue<String> reference);
 	
 	/**
 	 * Return the currently set shortname of the default {@link TaskBeanModel}.
@@ -236,6 +237,6 @@ public interface IQueueBeanFactory {
 	 * @throws QueueModelException if there is no value set for the shortname 
 	 *         of the default model
 	 */
-	String getDefaultTaskBeanModelName() throws QueueModelException;
+	QueueValue<String> getDefaultTaskBeanModelName() throws QueueModelException;
 
 }

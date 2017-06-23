@@ -7,11 +7,12 @@ import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
+import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 
 public interface IBeanAssembler<Q extends Queueable> {
 	
-	default Q assemble(Q model, Map<String, IQueueValue<?>> localValues) throws QueueModelException {
+	default Q assemble(Q model, Map<QueueValue<String>, IQueueValue<?>> localValues) throws QueueModelException {
 		Q bean;
 		if (localValues == null) {
 			//Protecting against NPEs
@@ -27,7 +28,7 @@ public interface IBeanAssembler<Q extends Queueable> {
 		return bean;
 	}
 	
-	Q buildNewBean(Q model, Map<String, IQueueValue<?>> localValues) throws QueueModelException;
+	Q buildNewBean(Q model, Map<QueueValue<String>, IQueueValue<?>> localValues) throws QueueModelException;
 	
 	Q setBeanName(Q bean);
 	

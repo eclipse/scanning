@@ -5,11 +5,13 @@ import java.util.Map;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
+import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
-public class PositionerAtomAssembler implements IBeanAssembler<PositionerAtom> {
+public final class PositionerAtomAssembler implements IBeanAssembler<PositionerAtom> {
 
 	@Override
-	public PositionerAtom buildNewBean(PositionerAtom model, Map<String, IQueueValue<?>> localValues) throws QueueModelException {
+	public PositionerAtom buildNewBean(PositionerAtom model, Map<QueueValue<String>, IQueueValue<?>> localValues)
+			throws QueueModelException {
 		PositionerAtom atom = new PositionerAtom();
 		atom.setBeamline(model.getBeamline());
 		atom.setRunTime(model.getRunTime());
@@ -23,9 +25,10 @@ public class PositionerAtomAssembler implements IBeanAssembler<PositionerAtom> {
 		 */
 		for (String dev : model.getPositionerNames()) {
 			Object devTgt = model.getPositionerTarget(dev);
-			if (devTgt instanceof String) {
-				//It might be a value name...
-				String devVarName = (String) devTgt;
+			if (devTgt instanceof QueueValue) {
+				//It's a value name...
+				@SuppressWarnings("unchecked") //We only use strings in var names
+				QueueValue<String> devVarName= (QueueValue<String>) devTgt;
 				if (localValues.containsKey(devVarName)) {
 					devTgt = localValues.get(devVarName).evaluate();
 				} else {
