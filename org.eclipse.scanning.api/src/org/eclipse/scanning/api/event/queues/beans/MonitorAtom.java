@@ -41,15 +41,29 @@ public class MonitorAtom extends QueueAtom {
 	}
 	
 	/**
+	 * Constructor with arguments required to configure a model or real 
+	 * instance of this atom.
+	 * 
+	 * @param monShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param model boolean flag indicating whether this is a model
+	 * @param dev name of monitor
+	 */
+	public MonitorAtom(String monShrtNm, boolean model, String dev) {
+		super();
+		setShortName(monShrtNm);
+		setModel(model);
+		monitor = dev;
+	}
+	
+	/**
 	 * Constructor with arguments required to fully configure this atom
 	 * 
 	 * @param monShrtNm String short name used within the QueueBeanFactory
-	 * @param dev - name of monitor
+	 * @param dev name of monitor
 	 */
 	public MonitorAtom(String monShrtNm, String dev) {
-		super();
-		setShortName(monShrtNm);
-		monitor = dev;
+		this(monShrtNm, false, dev);
 	}
 
 	/**

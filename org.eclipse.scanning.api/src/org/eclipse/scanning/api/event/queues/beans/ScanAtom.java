@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.IQueueService;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.scan.ScanBean;
@@ -40,9 +41,9 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	
 	private ScanRequest<?> scanReq;
 	
-	private Map<String, List<IQueueValue<?>>> dModsModel;
-	private Map<String, List<IQueueValue<?>>> pModsModel;
-	private Collection<IQueueValue<?>> monsModel;
+	private Map<String, List<IQueueValue<?>>> detectorModelsModel;
+	private Map<String, List<IQueueValue<?>>> pathModelsModel;
+	private Collection<IQueueValue<?>> monitorsModel;
 	
 	private String queueMessage;
 	
@@ -58,16 +59,29 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	}
 	
 	/**
+	 * Creates an instance which may be either a real or model atom and can be 
+	 * populated as required with further method calls.
+	 * 
+	 * @param monShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param model boolean flag indicating whether this is a model
+	 */
+	public ScanAtom(String scShrtNm, boolean model) {
+		super();
+		setShortName(scShrtNm);
+		setModel(model);
+	}
+	
+	/**
 	 * Constructor which allows specification of a scan using the full API of 
 	 * the {@link ScanRequest}.
 	 * 
-	 * @param scShrtNm String short name used within the QueueBeanFactory
+	 * @param monShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
 	 * @param scanReq {@link ScanRequest} describing the complete scan
 	 */
 	public ScanAtom(String scShrtNm, ScanRequest<?> scanReq) {
-		super();
-		setShortName(scShrtNm);
-		setModel(false);
+		this(scShrtNm, false);
 		this.scanReq = scanReq;
 	}
 	
@@ -75,21 +89,21 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	 * Constructor with required arguments to configure a scan of positions 
 	 * using both detectors and monitors to collect data.
 	 * 
-	 * @param scShrtNm String short name used within the QueueBeanFactory
-	 * @param pMods List<IScanPathModel> describing the motion during the scan
-	 * @param dMods Map<String,Object> containing the detector configuration 
-	 *        for the scan (get these by calling 
+	 * @param monShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param pathModels List<IScanPathModel> describing the positions visited 
+	 *        during the scan
+	 * @param detectorModels Map<String,Object> containing the detector 
+	 *        configuration for the scan (get these by calling 
 	 *        IRunnableDeviceService.getRunnableDevice(detector_name)
-	 * @param mons List<String> names of monitors to use during scan
+	 * @param monitors List<String> names of monitors to use during scan
 	 */
-	public ScanAtom(String scShrtNm, List<IScanPathModel> pMods, Map<String,Object> dMods, Collection<String> mons) {
-		super();
-		setShortName(scShrtNm);
-		setModel(false);
+	public ScanAtom(String scShrtNm, List<IScanPathModel> pathModels, Map<String,Object> detectorModels, Collection<String> monitors) {
+		this(scShrtNm, false);
 		scanReq = new ScanRequest<>();
-		scanReq.setCompoundModel(new CompoundModel<>(pMods));
-		scanReq.setDetectors(dMods);
-		scanReq.setMonitorNames(mons);
+		scanReq.setCompoundModel(new CompoundModel<>(pathModels));
+		scanReq.setDetectors(detectorModels);
+		scanReq.setMonitorNames(monitors);
 	}
 
 	/**
@@ -97,21 +111,20 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	 * be converted to a real instance by the {@link IQueueBeanFactory}. The 
 	 * final scan has positions, detectors and monitors defined.
 	 * 
-	 * @param scShrtNm String short name used within the QueueBeanFactory
-	 * @param pMods Map of Strings and List of {@link IQueueValue} which 
+	 * @param monShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param pathModels Map of Strings and List of {@link IQueueValue} which 
 	 *        define the positions visited during the scan
-	 * @param dMods Map of Strings and List of {@link IQueueValue} which 
-	 *        define the detectors used during the scan
-	 * @param mons Collection of {@link IQueueValue} defining monitors to be 
-	 *        read
+	 * @param detectorModels Map of Strings and List of {@link IQueueValue} 
+	 *        which define the detectors used during the scan
+	 * @param monitors Collection of {@link IQueueValue} defining monitors to 
+	 *        be read
 	 */
-	public ScanAtom(String scShrtNm, Map<String, List<IQueueValue<?>>> pMods, Map<String,List<IQueueValue<?>>> dMods, Collection<IQueueValue<?>> mons) {
-		super();
-		setShortName(scShrtNm);
-		setModel(true);
-		pModsModel = pMods;
-		dModsModel = dMods;
-		monsModel = mons;
+	public ScanAtom(String scShrtNm, Map<String, List<IQueueValue<?>>> pathModels, Map<String, List<IQueueValue<?>>> detectorModels, Collection<IQueueValue<?>> monitors) {
+		this(scShrtNm, true);
+		pathModelsModel = pathModels;
+		detectorModelsModel = detectorModels;
+		monitorsModel = monitors;
 	}
 	
 	public ScanRequest<?> getScanReq() {
@@ -156,37 +169,37 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		this.scanBrokerURI = scanBrokerURI;
 	}
 
-	public Map<String, List<IQueueValue<?>>> getdModsModel() {
-		return dModsModel;
+	public Map<String, List<IQueueValue<?>>> getDetectorModelsModel() {
+		return detectorModelsModel;
 	}
 
-	public void setdModsModel(Map<String, List<IQueueValue<?>>> dModsModel) {
-		this.dModsModel = dModsModel;
+	public void setDetectorModelsModel(Map<String, List<IQueueValue<?>>> detectorModelsModel) {
+		this.detectorModelsModel = detectorModelsModel;
 	}
 
-	public Map<String, List<IQueueValue<?>>> getpModsModel() {
-		return pModsModel;
+	public Map<String, List<IQueueValue<?>>> getPathModelsModel() {
+		return pathModelsModel;
 	}
 
-	public void setpModsModel(Map<String, List<IQueueValue<?>>> pModsModel) {
-		this.pModsModel = pModsModel;
+	public void setpModsModel(Map<String, List<IQueueValue<?>>> pathModelsModel) {
+		this.pathModelsModel = pathModelsModel;
 	}
 
-	public Collection<IQueueValue<?>> getMonsModel() {
-		return monsModel;
+	public Collection<IQueueValue<?>> getMonitorsModel() {
+		return monitorsModel;
 	}
 
-	public void setMonsModel(Collection<IQueueValue<?>> monsModel) {
-		this.monsModel = monsModel;
+	public void setMonsModel(Collection<IQueueValue<?>> monitorsModel) {
+		this.monitorsModel = monitorsModel;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((dModsModel == null) ? 0 : dModsModel.hashCode());
-		result = prime * result + ((monsModel == null) ? 0 : monsModel.hashCode());
-		result = prime * result + ((pModsModel == null) ? 0 : pModsModel.hashCode());
+		result = prime * result + ((detectorModelsModel == null) ? 0 : detectorModelsModel.hashCode());
+		result = prime * result + ((monitorsModel == null) ? 0 : monitorsModel.hashCode());
+		result = prime * result + ((pathModelsModel == null) ? 0 : pathModelsModel.hashCode());
 		result = prime * result + ((queueMessage == null) ? 0 : queueMessage.hashCode());
 		result = prime * result + ((scanBrokerURI == null) ? 0 : scanBrokerURI.hashCode());
 		result = prime * result + ((scanReq == null) ? 0 : scanReq.hashCode());
@@ -204,20 +217,20 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		if (getClass() != obj.getClass())
 			return false;
 		ScanAtom other = (ScanAtom) obj;
-		if (dModsModel == null) {
-			if (other.dModsModel != null)
+		if (detectorModelsModel == null) {
+			if (other.detectorModelsModel != null)
 				return false;
-		} else if (!dModsModel.equals(other.dModsModel))
+		} else if (!detectorModelsModel.equals(other.detectorModelsModel))
 			return false;
-		if (monsModel == null) {
-			if (other.monsModel != null)
+		if (monitorsModel == null) {
+			if (other.monitorsModel != null)
 				return false;
-		} else if (!monsModel.equals(other.monsModel))
+		} else if (!monitorsModel.equals(other.monitorsModel))
 			return false;
-		if (pModsModel == null) {
-			if (other.pModsModel != null)
+		if (pathModelsModel == null) {
+			if (other.pathModelsModel != null)
 				return false;
-		} else if (!pModsModel.equals(other.pModsModel))
+		} else if (!pathModelsModel.equals(other.pathModelsModel))
 			return false;
 		if (queueMessage == null) {
 			if (other.queueMessage != null)
@@ -254,9 +267,9 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		StringBuffer scanDetailsStrBuff = new StringBuffer();
 		if (model) {
 			clazzName = clazzName + " (MODEL)";
-			scanDetailsStrBuff.append("{paths="+pModsModel);
-			scanDetailsStrBuff.append(", detectors="+dModsModel);
-			scanDetailsStrBuff.append(", monitors="+monsModel+"}");
+			scanDetailsStrBuff.append("{paths="+pathModelsModel);
+			scanDetailsStrBuff.append(", detectors="+detectorModelsModel);
+			scanDetailsStrBuff.append(", monitors="+monitorsModel+"}");
 		} else {
 			scanDetailsStrBuff.append(scanReq);
 		}
