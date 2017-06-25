@@ -28,8 +28,18 @@ public interface IQueueValue<V> {
 	/**
 	 * Flag to indicate this {@link IQueueValue} hold a reference to another 
 	 * in the {@link IQueueBeanFactory}.
+	 * 
 	 * @return true if this holds a reference
 	 */
 	public boolean isVariable();
+	
+	/**
+	 * Tests whether this {@link IQueueValue} refers to the given 
+	 * {@link IQueueValue} and should therefore be replaced by it when 
+	 * processed by the {@link IQueueBeanFactory}.
+	 * @param value {@link IQueueValue} being referred to
+	 * @return true if this {@link IQueueValue is the reference
+	 */
+	public boolean isReference(IQueueValue<?> value);
 
 }

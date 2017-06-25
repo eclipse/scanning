@@ -92,6 +92,11 @@ public class QueueValue<V> implements IQueueValue<V> {
 	public boolean isVariable() {
 		return variable;
 	}
+	
+	@Override
+	public boolean isReference(IQueueValue<?> value) {
+			return this.value == value.getName() && variable;
+	}
 
 	@Override
 	public int hashCode() {

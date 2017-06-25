@@ -27,6 +27,11 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 		this.arg = arg;
 	}
 	
+	@Override
+	public IQueueValue<A> getArg() {
+		return arg;
+	}
+	
 	/**
 	 * Process the value of this {@link IQueueVariable} and return the result. 
 	 * This method is inherited from {@link IQueueValue} and allows 
@@ -65,6 +70,16 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 	@Override
 	public boolean isVariable() {
 		return true;
+	}
+	
+	@Override
+	public boolean isReference(IQueueValue<?> value) {
+		return false;
+		/*
+		 * TODO This is for simplicity. In the future, the evaluated value 
+		 * could be used as the reference to test against (rather than the name 
+		 * as it is in the 
+		 */
 	}
 
 }
