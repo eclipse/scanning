@@ -2,7 +2,7 @@ package org.eclipse.scanning.api.event.queues.models.arguments;
 
 import java.util.Map;
 
-import org.eclipse.scanning.api.event.queues.models.QueueModelException;
+import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 
 /**
  * {@link IQueueValue} which uses a lookup table (Map/dict) to determine its value.
@@ -40,9 +40,9 @@ public class QueueTableVariable<A, V> extends QueueVariableDecorator<A, V> {
 	}
 
 	@Override
-	protected V processArg(A parameter) throws QueueModelException {
+	protected V processArg(A parameter) {
 		V tableValue = table.evaluate().get(parameter);
-		if (tableValue == null) throw new QueueModelException("No value for '"+parameter+"' in table variable '"+getName()+"'");
+		if (tableValue == null) throw new ModelEvaluationException("No value for '"+parameter+"' in table variable '"+getName()+"'");
 		return tableValue;
 	}
 

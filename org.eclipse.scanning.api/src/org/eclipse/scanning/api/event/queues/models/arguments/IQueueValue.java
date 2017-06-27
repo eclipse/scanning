@@ -1,5 +1,7 @@
 package org.eclipse.scanning.api.event.queues.models.arguments;
 
+import java.lang.reflect.Method;
+
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 
@@ -23,7 +25,7 @@ public interface IQueueValue<V> {
 	 * @return value V of this IQueueValue
 	 * @throws QueueModelException if no value can be returned
 	 */
-	public V evaluate() throws QueueModelException;
+	public V evaluate();
 	
 	/**
 	 * Flag to indicate this {@link IQueueValue} hold a reference to another 
@@ -41,5 +43,23 @@ public interface IQueueValue<V> {
 	 * @return true if this {@link IQueueValue is the reference
 	 */
 	public boolean isReference(IQueueValue<?> value);
+	
+	/**
+	 * Tests whether the given method is a setter for a field with the same 
+	 * name as this {@link IQueueValue} and that the argument types match. 
+	 * @param method Method with name to compare
+	 * @return true if the method name is set+{@link #getName()}.
+	 */
+	public default boolean isSetMethodForName(Method method) {
+		return (method.getName().toLowerCase().equals(("set"+getName()).toLowerCase()) && 
+				method.getParameterCount() == 1 &&
+				method.getParameterTypes()[0].equals(getValueType()));
+	}
+	
+	/**
+	 * Get the Class object representing the value type.
+	 * @return Class<?> representing value type
+	 */
+	public Class<?> getValueType();
 
 }

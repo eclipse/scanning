@@ -1,7 +1,7 @@
 package org.eclipse.scanning.api.event.queues.models.arguments;
 
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
-import org.eclipse.scanning.api.event.queues.models.QueueModelException;
+import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 
 /**
  * Basic model argument which holds a single object. Typically this would be a 
@@ -64,8 +64,8 @@ public class QueueValue<V> implements IQueueValue<V> {
 	}
 
 	@Override
-	public V evaluate() throws QueueModelException {
-		if (value == null) throw new QueueModelException("Value of '"+getName()+"' was never set");
+	public V evaluate() {
+		if (value == null) throw new ModelEvaluationException("Value of '"+getName()+"' is not set");
 		return value;
 	}
 	
@@ -97,6 +97,12 @@ public class QueueValue<V> implements IQueueValue<V> {
 	public boolean isReference(IQueueValue<?> value) {
 			return this.value == value.getName() && variable;
 	}
+	
+	@Override
+	public Class<?> getValueType() {
+		return value.getClass();
+	}
+
 
 	@Override
 	public int hashCode() {
@@ -136,5 +142,4 @@ public class QueueValue<V> implements IQueueValue<V> {
 	public String toString() {
 		return "QueueValue [name=" + name + ", value=" + value + ", variable=" + variable + "]";
 	}
-
 }

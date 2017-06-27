@@ -1,5 +1,6 @@
 package org.eclipse.scanning.api.event.queues.models.arguments;
 
+import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 
 /**
@@ -41,7 +42,7 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 	 * @throws QueueModelException if no value can be returned
 	 */
 	@Override
-	public V evaluate() throws QueueModelException {
+	public V evaluate() {
 		return processArg(arg.evaluate());
 	}
 	
@@ -52,7 +53,7 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 	 * @return value V of the child {@link IQueueVariable}
 	 * @throws QueueModelException if no value can be returned 
 	 */
-	protected abstract V processArg(A parameter) throws QueueModelException;
+	protected abstract V processArg(A parameter);
 
 	@Override
 	public String getName() {
@@ -74,12 +75,17 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 	
 	@Override
 	public boolean isReference(IQueueValue<?> value) {
-		return false;
+		throw new ModelEvaluationException("Not implemented: "+this.getClass().getSimpleName()+" "+name+" cannot be used as a reference to another IQueueValue");
 		/*
 		 * TODO This is for simplicity. In the future, the evaluated value 
 		 * could be used as the reference to test against (rather than the name 
 		 * as it is in the 
 		 */
+	}
+	
+	@Override
+	public Class<?> getValueType() {
+		return value.getClass();
 	}
 
 }

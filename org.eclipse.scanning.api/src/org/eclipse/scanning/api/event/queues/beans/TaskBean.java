@@ -15,8 +15,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.IQueueService;
-import org.eclipse.scanning.api.event.queues.models.QueueModelException;
+import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
 /**
@@ -256,7 +257,7 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 			atomQueueStrBuff.append(queueAtomShortNames.stream().map(qv -> {
 				try {
 					return qv.evaluate();
-				} catch (QueueModelException e) {
+				} catch (ModelEvaluationException e) {
 					return "Failed to read queue atom short names";
 				}
 			}).collect(Collectors.joining(", ")));
