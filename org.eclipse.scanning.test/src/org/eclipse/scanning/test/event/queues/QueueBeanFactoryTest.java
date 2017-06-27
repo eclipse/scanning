@@ -251,28 +251,6 @@ public class QueueBeanFactoryTest {
 		assertEquals("PositionerAtom configured from local values is wrong", positAtomB, dum);
 	}
 	
-	/**
-	 * Tests the creation of a fully configured ScanAtom
-	 * @throws Exception
-	 */
-	@Test
-	public void testScanAtomCreation() throws Exception {
-		setUpExtendedInfrastructure();
-		
-		//ScanAtom model
-		Map<String, List<IQueueValue<?>>> pMods = new LinkedHashMap<>();
-		pMods.put("Step", Arrays.asList(new QueueValue<Double>(0.0), new QueueValue<Double>(10.5), new QueueValue<Double>(1.5)));
-		Map<String, List<IQueueValue<?>>> dMods = new LinkedHashMap<>();
-		dMods.put("", Arrays.asList(new QueueValue<String>("exposureTime", true)));
-		Collection<IQueueValue<?>> mons = Arrays.asList(new QueueValue<String>("monitor2"));
-		ScanAtom scAtMod = new ScanAtom("testScan", pMods, dMods, mons);
-		qbf.registerAtom(scAtMod);
-		
-		ExperimentConfiguration config = new ExperimentConfiguration(Arrays.asList(new QueueValue<Double>("exposureTime", 30.0)), null, null);
-		
-		assertEquals("Produced task is not correctly configured", createScanAtom(), qbf.assembleQueueAtom(new QueueValue<>("testScan", true), config));
-	}
-	
 	
 	/**
 	 * A more extended test, which to test the default XBeanAssemblers
@@ -293,7 +271,7 @@ public class QueueBeanFactoryTest {
 		Map<String, List<IQueueValue<?>>> pMods = new LinkedHashMap<>();
 		pMods.put("Step", Arrays.asList(new QueueValue<Double>(0.0), new QueueValue<Double>(10.5), new QueueValue<Double>(1.5)));
 		Map<String, List<IQueueValue<?>>> dMods = new LinkedHashMap<>();
-		dMods.put("", Arrays.asList(new QueueValue<String>("exposureTime", true)));
+		dMods.put("mandelbrotA", Arrays.asList(new QueueValue<String>("exposureTime", true)));
 		Collection<IQueueValue<?>> mons = Arrays.asList(new QueueValue<String>("monitor2"));
 		ScanAtom scAtMod = new ScanAtom("testScan", pMods, dMods, mons);
 		qbf.registerAtom(scAtMod);

@@ -102,9 +102,9 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 			try {
 				detector = ServicesHolder.getDeviceService().getRunnableDevice(detName);
 				detModel = (IDetectorModel) detector.getModel();
-			} catch (ClassCastException ccEx) {
+			} catch (ClassCastException | NullPointerException ex) {
 				logger.error("Device model returned for detector '"+detName+"' was not a detector model");
-				throw new QueueModelException("Failed to cast '"+detName+"' model to IDetectorModel");
+				throw new QueueModelException("Failed to cast '"+detName+"' model to IDetectorModel", ex);
 			} catch (ScanningException ex) {
 				//getRunnableDevice isn't actually able to throw a ScanningException (as of 27.06.2017)
 				logger.error("No detector returned by RunnableDeviceService for the name '"+detName+"'");
