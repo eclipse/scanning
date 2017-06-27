@@ -32,6 +32,7 @@ import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.event.queues.spooler.QueueBeanFactory;
+import org.eclipse.scanning.example.detector.MandelbrotDetector;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;
 import org.eclipse.scanning.sequencer.RunnableDeviceServiceImpl;
@@ -43,8 +44,6 @@ public class QueueBeanFactoryTest {
 	
 	private IQueueBeanFactory qbf;
 	
-	private IScannableDeviceService connector;
-	private IRunnableDeviceService dservice;
 	private boolean extendedTest;
 	
 	@Before
@@ -57,18 +56,18 @@ public class QueueBeanFactoryTest {
 		qbf = null;
 		
 		if (extendedTest) {
-			connector = null;
 			ServicesHolder.setScannableDeviceService(null);
-			dservice = null;
 			ServicesHolder.setDeviceService(null);
 		}
 	}
 	
 	private void setUpExtendedInfrastructure() throws ScanningException {
-		connector = new MockScannableConnector(null);
+		IScannableDeviceService connector = new MockScannableConnector(null);
 		ServicesHolder.setScannableDeviceService(connector);
-		dservice = new RunnableDeviceServiceImpl(connector); // Not testing OSGi so using hard coded service.
+		IRunnableDeviceService dservice = new RunnableDeviceServiceImpl(connector); // Not testing OSGi so using hard coded service.
 		ServicesHolder.setDeviceService(dservice);
+		
+		((RunnableDeviceServiceImpl) dservice)._register(MandelbrotModel.class, MandelbrotDetector.class);
 		
 		//Lifted from org.eclipse.scanning.test.scan.nexus.MandelbrotExampleTest
 		MandelbrotModel modelA = new MandelbrotModel(), modelB = new MandelbrotModel();
@@ -355,9 +354,9 @@ public class QueueBeanFactoryTest {
 		ScanRequest<?> scanReq = new ScanRequest<>();
 		scanReq.setCompoundModel(new CompoundModel<>(Arrays.asList(new StepModel("stage_x", 0.0, 10.5, 1.5))));
 		Map<String, Object> detectors = new HashMap<>();
-		detectors.put("mandelbrotA", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotA"));
+		detectors.put("mandelbrotA", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotA").getModel());
 		((IDetectorModel)detectors.get("mandelbrotA")).setExposureTime(30);
-		detectors.put("mandelbrotB", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotB"));
+		detectors.put("mandelbrotB", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotB").getModel());
 		((IDetectorModel)detectors.get("mandelbrotB")).setExposureTime(30);
 		scanReq.setDetectors(detectors);
 		scanReq.setMonitorNames(Arrays.asList("monitor2"));
