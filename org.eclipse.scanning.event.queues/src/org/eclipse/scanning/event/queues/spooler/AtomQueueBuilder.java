@@ -1,12 +1,11 @@
 package org.eclipse.scanning.event.queues.spooler;
 
-import java.util.List;
-
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.IHasAtomQueue;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
+import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
@@ -25,7 +24,7 @@ class  AtomQueueBuilder<P extends IHasAtomQueue<T>, T extends QueueAtom> {
 	 * @param modelInstance {@link IHasAtomQueue} instance containing atom list
 	 * @param realInstance {@link IHasAtomQueue} instance to be supplied with 
 	 *        atoms
-	 * @param localValues Map containing {@link IQueueValue}s used to set 
+	 * @param config Map containing {@link IQueueValue}s used to set 
 	 *        parameters in the atoms
 	 * @param qbf {@link IQueueBeanFactory} containing the atom registry
 	 */
@@ -42,12 +41,12 @@ class  AtomQueueBuilder<P extends IHasAtomQueue<T>, T extends QueueAtom> {
 	 * @param clazz Class of bean being created (for error reporting)
 	 * @throws QueueModelException if an atom was not present in the registry
 	 */
-	protected P populateAtomQueue(P modelInstance, P realInstance, List<IQueueValue<?>> localValues) 
+	protected P populateAtomQueue(P modelInstance, P realInstance, ExperimentConfiguration config) 
 			throws QueueModelException {
 		
 		for (QueueValue<String> stShrtNm : modelInstance.getQueueAtomShortNames()) {
 			try {
-				T at = qbf.assembleQueueAtom(stShrtNm, localValues);
+				T at = qbf.assembleQueueAtom(stShrtNm, config);
 				realInstance.addAtom(at);
 			} catch (QueueModelException qme) {
 				logger.error("Could not assemble "+clazz.getSimpleName()+" due to missing child atom: "+qme.getMessage());

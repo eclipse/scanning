@@ -1,10 +1,8 @@
 package org.eclipse.scanning.event.queues.spooler;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
+import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
@@ -12,13 +10,9 @@ import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
 public interface IBeanAssembler<Q extends Queueable> {
 	
-	default Q assemble(Q model, List<IQueueValue<?>> localValues) throws QueueModelException {
+	default Q assemble(Q model, ExperimentConfiguration config) throws QueueModelException {
 		Q bean;
-		if (localValues == null) {
-			//Protecting against NPEs
-			localValues = new ArrayList<>();
-		}
-		setLocalValues(localValues);
+		setExperimentConfiguration(config);
 		
 		if (model.isModel()) {
 			bean = buildNewBean(model);
@@ -26,7 +20,7 @@ public interface IBeanAssembler<Q extends Queueable> {
 			bean = model;
 		}
 		setBeanName(bean);
-		setLocalValues(null);
+		setExperimentConfiguration(null);
 		return bean;
 	}
 	
@@ -59,6 +53,6 @@ public interface IBeanAssembler<Q extends Queueable> {
 	
 	IQueueValue<?> getQueueValue(QueueValue<String> valueReference) throws QueueModelException;
 	
-	void setLocalValues(List<IQueueValue<?>> localValues);
+	void setExperimentConfiguration(ExperimentConfiguration config);
 
 }

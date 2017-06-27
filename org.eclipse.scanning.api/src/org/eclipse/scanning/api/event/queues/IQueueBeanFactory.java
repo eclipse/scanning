@@ -6,6 +6,7 @@ import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
+import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
@@ -165,36 +166,36 @@ public interface IQueueBeanFactory {
 	 * {@link #assembleSubTask(String)} method is called and the result 
 	 * returned.
 	 * @param reference String name of atom to return
-	 * @param localValues Map containing localValues to be used during assembly
-	 *        (can safely be null)
+	 * @param config {@link ExperimentConfiguration} containing local values to 
+	 *        be used during assembly (can safely be null)
 	 * @return Q extends {@link QueueAtom} associated with reference/shortname
 	 * @throws QueueModelException if no atom is registered with the reference
 	 */
-	<Q extends QueueAtom> Q assembleQueueAtom(QueueValue<String> reference, List<IQueueValue<?>> localValues) throws QueueModelException;
+	<Q extends QueueAtom> Q assembleQueueAtom(QueueValue<String> reference, ExperimentConfiguration config) throws QueueModelException;
 	
 	/**
 	 * Construct a {@link TaskBean} based on the {@link TaskBeanModel} 
 	 * registered to the given reference.
 	 * @param reference String shortname of {@link TaskBeanModel}
-	 * @param localValues Map containing localValues to be used during assembly
-	 *        (can safely be null)
+	 * @param config {@link ExperimentConfiguration} containing local values to 
+	 *        be used during assembly (can safely be null)
 	 * @return {@link TaskBean} derived from {@link TaskBeanModel}
 	 * @throws QueueModelException if no atom is registered with the reference
 	 */
-	TaskBean assembleTaskBean(QueueValue<String> reference, List<IQueueValue<?>> localValues) throws QueueModelException;
+	TaskBean assembleTaskBean(QueueValue<String> reference, ExperimentConfiguration Config) throws QueueModelException;
 	
 	/**
 	 * Constructs a {@link TaskBean} from the current default 
 	 * {@link TaskBeanModel}. 
-	 * @param localValues Map containing localValues to be used during assembly
-	 *        (can safely be null)
+	 * @param config {@link ExperimentConfiguration} containing local values to 
+	 *        be used during assembly (can safely be null)
 	 * @return {@link TaskBean} derived from default {@link TaskBeanModel}
 	 * @throws QueueModelException if there is no default model or the 
 	 *         currently set default {@link TaskBeanModel} reference could not 
 	 *         be found in the taskBeanModelRegistry. 
 	 */
-	default TaskBean assembleDefaultTaskBean(List<IQueueValue<?>> localValues) throws QueueModelException {
-		return assembleTaskBean(new QueueValue<>(getDefaultTaskBeanModelName(), true), localValues);
+	default TaskBean assembleDefaultTaskBean(ExperimentConfiguration config) throws QueueModelException {
+		return assembleTaskBean(new QueueValue<>(getDefaultTaskBeanModelName(), true), config);
 	}
 	
 	/**

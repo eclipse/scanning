@@ -22,6 +22,7 @@ import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
+import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
@@ -242,12 +243,12 @@ public class QueueBeanFactoryTest {
 		qbf.registerGlobalValue(new QueueValue<>("dummyValue", 10));
 
 		//Try to populate from global values
-		PositionerAtom dum = (PositionerAtom)qbf.assembleQueueAtom(new QueueValue<String>("setDummy", true), null); //null since we're after a global value
+		PositionerAtom dum = (PositionerAtom)qbf.assembleQueueAtom(new QueueValue<String>("setDummy", true), new ExperimentConfiguration(null, null, null)); //null since we're after a global value
 		assertEquals("PositionerAtom configured from global values is wrong", positAtomA, dum);
 		
 		//Try to populate from local values
-		List<IQueueValue<?>> localValues = Arrays.asList(new QueueValue<Double>("locVal", 80.));
-		dum = (PositionerAtom)qbf.assembleQueueAtom(new QueueValue<String>("setYummy", true), localValues);
+		ExperimentConfiguration config = new ExperimentConfiguration(Arrays.asList(new QueueValue<Double>("locVal", 80.)), null, null);
+		dum = (PositionerAtom)qbf.assembleQueueAtom(new QueueValue<String>("setYummy", true), config);
 		assertEquals("PositionerAtom configured from local values is wrong", positAtomB, dum);
 	}
 	
@@ -268,9 +269,9 @@ public class QueueBeanFactoryTest {
 		ScanAtom scAtMod = new ScanAtom("testScan", pMods, dMods, mons);
 		qbf.registerAtom(scAtMod);
 		
-		List<IQueueValue<?>> localValues= Arrays.asList(new QueueValue<Double>("exposureTime", 30.0));
+		ExperimentConfiguration config = new ExperimentConfiguration(Arrays.asList(new QueueValue<Double>("exposureTime", 30.0)), null, null);
 		
-		assertEquals("Produced task is not correctly configured", createScanAtom(), qbf.assembleQueueAtom(new QueueValue<>("testScan", true), localValues));
+		assertEquals("Produced task is not correctly configured", createScanAtom(), qbf.assembleQueueAtom(new QueueValue<>("testScan", true), config));
 	}
 	
 	
@@ -325,8 +326,8 @@ public class QueueBeanFactoryTest {
 		//Register global value
 		qbf.registerGlobalValue(new QueueValue<Double>("homePosition", 1.235));
 		
-		List<IQueueValue<?>> localValues= Arrays.asList(new QueueValue<Double>("exposureTime", 30.0));
-		assertEquals("Produced task is not correctly configured", createCompleteDefaultTask(), qbf.assembleDefaultTaskBean(localValues));
+		ExperimentConfiguration config = new ExperimentConfiguration(Arrays.asList(new QueueValue<Double>("exposureTime", 30.0)), null, null);
+		assertEquals("Produced task is not correctly configured", createCompleteDefaultTask(), qbf.assembleDefaultTaskBean(config));
 	}
 	
 	private TaskBean createCompleteDefaultTask() throws ScanningException {

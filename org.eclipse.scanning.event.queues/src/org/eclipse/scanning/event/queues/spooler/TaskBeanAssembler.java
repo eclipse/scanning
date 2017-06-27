@@ -22,7 +22,7 @@ public final class TaskBeanAssembler extends AbstractBeanAssembler<TaskBean> {
 		atom.setRunTime(model.getRunTime());
 		atom.setModel(false);
 		
-		return atomQueueBuider.populateAtomQueue(model, atom, localValues);
+		return atomQueueBuider.populateAtomQueue(model, atom, config);
 	}
 
 	@Override

@@ -13,6 +13,7 @@ import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
+import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
@@ -159,18 +160,18 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <Q extends QueueAtom> Q assembleQueueAtom(QueueValue<String> reference, List<IQueueValue<?>> localValues) throws QueueModelException {
+	public <Q extends QueueAtom> Q assembleQueueAtom(QueueValue<String> reference, ExperimentConfiguration config) throws QueueModelException {
 		if (queueAtomModelRegistry.containsKey(reference)) {
 			Q protoAtom = (Q)queueAtomModelRegistry.get(reference);
 			IBeanAssembler<Q> beanAss = (IBeanAssembler<Q>) beanAssemblers.get(protoAtom.getClass());
-			return beanAss.assemble(protoAtom, localValues);
+			return beanAss.assemble(protoAtom, config);
 		}
 		logger.error("No QueueAtom with the short name "+reference+" found in registry.");
 		throw new QueueModelException("No QueueAtom with the short name "+reference+" found in registry.");
 	}
 
 	@Override
-	public TaskBean assembleTaskBean(QueueValue<String> reference, List<IQueueValue<?>> localValues) throws QueueModelException {
+	public TaskBean assembleTaskBean(QueueValue<String> reference, ExperimentConfiguration config) throws QueueModelException {
 		TaskBean tbModel = taskBeanModelRegistry.get(reference);
 		if (tbModel == null) {
 			logger.error("Failed to assemble TaskBean: No TaskBeanModel registered for reference'"+reference+"'");
@@ -178,7 +179,7 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		}
 		@SuppressWarnings("unchecked")
 		IBeanAssembler<TaskBean> beanAss = (IBeanAssembler<TaskBean>) beanAssemblers.get(TaskBean.class);
-		return beanAss.assemble(tbModel, localValues);
+		return beanAss.assemble(tbModel, config);
 	}
 	
 	@Override
