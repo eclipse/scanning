@@ -6,38 +6,85 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.eclipse.scanning.api.device.IRunnableDeviceService;
+import org.eclipse.scanning.api.device.IScannableDeviceService;
+import org.eclipse.scanning.api.device.models.IDetectorModel;
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
-import org.eclipse.scanning.api.event.queues.IQueueSpoolerService;
+import org.eclipse.scanning.api.event.queues.beans.MonitorAtom;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
+import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
+import org.eclipse.scanning.api.event.scan.ScanRequest;
+import org.eclipse.scanning.api.points.models.CompoundModel;
+import org.eclipse.scanning.api.points.models.StepModel;
+import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.event.queues.ServicesHolder;
-import org.eclipse.scanning.event.queues.spooler.QueueSpoolerService;
+import org.eclipse.scanning.event.queues.spooler.QueueBeanFactory;
+import org.eclipse.scanning.example.detector.MandelbrotModel;
+import org.eclipse.scanning.example.scannable.MockScannableConnector;
+import org.eclipse.scanning.sequencer.RunnableDeviceServiceImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class QueueBeanFactoryTest {
 	
-	private IQueueSpoolerService qss;
 	private IQueueBeanFactory qbf;
+	
+	private IScannableDeviceService connector;
+	private IRunnableDeviceService dservice;
+	private boolean extendedTest;
 	
 	@Before
 	public void setUp() {
-		qss = new QueueSpoolerService();
-		qbf = qss.getQueueBeanFactory();
-		ServicesHolder.setQueueSpoolerService(qss);
+		qbf = new QueueBeanFactory();
 	}
 	
 	@After
 	public void tearDown() {
-		qss = null;
+		qbf = null;
+		
+		if (extendedTest) {
+			connector = null;
+			ServicesHolder.setScannableDeviceService(null);
+			dservice = null;
+			ServicesHolder.setDeviceService(null);
+		}
+	}
+	
+	private void setUpExtendedInfrastructure() throws ScanningException {
+		connector = new MockScannableConnector(null);
+		ServicesHolder.setScannableDeviceService(connector);
+		dservice = new RunnableDeviceServiceImpl(connector); // Not testing OSGi so using hard coded service.
+		ServicesHolder.setDeviceService(dservice);
+		
+		//Lifted from org.eclipse.scanning.test.scan.nexus.MandelbrotExampleTest
+		MandelbrotModel modelA = new MandelbrotModel(), modelB = new MandelbrotModel();
+		modelA.setName("mandelbrotA");
+		modelA.setRealAxisName("xNex");
+		modelA.setImaginaryAxisName("yNex");
+		modelA.setColumns(64);
+		modelA.setRows(64);
+		dservice.createRunnableDevice(modelA);
+		modelB.setName("mandelbrotB");
+		modelB.setRealAxisName("xNex");
+		modelB.setImaginaryAxisName("yNex");
+		modelB.setColumns(64);
+		modelB.setRows(64);
+		dservice.createRunnableDevice(modelB);
+		
+		extendedTest = true;
 	}
 	
 	/**
@@ -203,6 +250,119 @@ public class QueueBeanFactoryTest {
 		dum = (PositionerAtom)qbf.assembleQueueAtom(new QueueValue<String>("setYummy", true), localValues);
 		assertEquals("PositionerAtom configured from local values is wrong", positAtomB, dum);
 	}
+	
+	/**
+	 * Tests the creation of a fully configured ScanAtom
+	 * @throws Exception
+	 */
+	@Test
+	public void testScanAtomCreation() throws Exception {
+		setUpExtendedInfrastructure();
+		
+		//ScanAtom model
+		Map<String, List<IQueueValue<?>>> pMods = new LinkedHashMap<>();
+		pMods.put("Step", Arrays.asList(new QueueValue<Double>(0.0), new QueueValue<Double>(10.5), new QueueValue<Double>(1.5)));
+		Map<String, List<IQueueValue<?>>> dMods = new LinkedHashMap<>();
+		dMods.put("", Arrays.asList(new QueueValue<String>("exposureTime", true)));
+		Collection<IQueueValue<?>> mons = Arrays.asList(new QueueValue<String>("monitor2"));
+		ScanAtom scAtMod = new ScanAtom("testScan", pMods, dMods, mons);
+		qbf.registerAtom(scAtMod);
+		
+		List<IQueueValue<?>> localValues= Arrays.asList(new QueueValue<Double>("exposureTime", 30.0));
+		
+		assertEquals("Produced task is not correctly configured", createScanAtom(), qbf.assembleQueueAtom(new QueueValue<>("testScan", true), localValues));
+	}
+	
+	
+	/**
+	 * A more extended test, which to test the default XBeanAssemblers
+	 * @throws QueueModelException 
+	 */
+	@Test
+	public void testAllBeansSimpleConfigPseudoIntegrationTest() throws Exception {
+		setUpExtendedInfrastructure();
+		/*
+		 * Build the default TaskBean containing two SubTaskAtoms and with localValues containing exposureTime
+		 * SubTask1 contains: a Positioner(stage_x -> var(homePosition)) and a Monitor(monitor1)
+		 * SubTask2 contains: a Scan(Step[stage_x,0.0,10.5,1.5], Det1["mandelbrotA", var(exposureTime)], Det2["mandelbrotB", var(exposureTime)], Mon[monitor2])
+		 * 					  and a Monitor(monitor2)
+		 * Values: exposureTime = 30s; homePosition = 1.235
+		 */
+		
+		//ScanAtom model
+		Map<String, List<IQueueValue<?>>> pMods = new LinkedHashMap<>();
+		pMods.put("Step", Arrays.asList(new QueueValue<Double>(0.0), new QueueValue<Double>(10.5), new QueueValue<Double>(1.5)));
+		Map<String, List<IQueueValue<?>>> dMods = new LinkedHashMap<>();
+		dMods.put("", Arrays.asList(new QueueValue<String>("exposureTime", true)));
+		Collection<IQueueValue<?>> mons = Arrays.asList(new QueueValue<String>("monitor2"));
+		ScanAtom scAtMod = new ScanAtom("testScan", pMods, dMods, mons);
+		qbf.registerAtom(scAtMod);
+		
+		//MonitorAtom models
+		MonitorAtom monAtMod1 = new MonitorAtom("testMon1", true, "monitor1"), 
+					monAtMod2 = new MonitorAtom("testMon2", true, "monitor2");
+		qbf.registerAtom(monAtMod1);
+		qbf.registerAtom(monAtMod2);
+		
+		//PositionerAtom model
+		PositionerAtom posAtMod = new PositionerAtom("testHomer", true, "stage_x", new QueueValue<String>("homePosition", true));
+		qbf.registerAtom(posAtMod);
+		
+		//SubTaskAtom models
+		SubTaskAtom stAtMod1 = new SubTaskAtom("testSubTask1", "Reset stage x position", true);
+		stAtMod1.addAtom(new QueueValue<String>("testHomer", true));
+		stAtMod1.addAtom(new QueueValue<String>("testMon1", true));
+		SubTaskAtom stAtMod2 = new SubTaskAtom("testSubTask2", "Run MScan then monitor", Arrays.asList(new QueueValue<String>("testScan", true), new QueueValue<String>("testMon2", true)));
+		qbf.registerAtom(stAtMod1);
+		qbf.registerAtom(stAtMod2);
+		
+		//TaskBean model
+		TaskBean tbMod = new TaskBean("testDefaultTask", "Reset stage and measure task", true);
+		tbMod.addAtom(new QueueValue<String>("testSubTask1", true));
+		tbMod.addAtom(new QueueValue<String>("testSubTask2", true));
+		qbf.registerTask(tbMod);
+		
+		//Register global value
+		qbf.registerGlobalValue(new QueueValue<Double>("homePosition", 1.235));
+		
+		List<IQueueValue<?>> localValues= Arrays.asList(new QueueValue<Double>("exposureTime", 30.0));
+		assertEquals("Produced task is not correctly configured", createCompleteDefaultTask(), qbf.assembleDefaultTaskBean(localValues));
+	}
+	
+	private TaskBean createCompleteDefaultTask() throws ScanningException {
+		ScanAtom scAt = createScanAtom();
+		
+		MonitorAtom monAt1 = new MonitorAtom("testMon1", "monitor1"), 
+					monAt2 = new MonitorAtom("testMon2", "monitor2");
+		
+		PositionerAtom posAt = new PositionerAtom("testHomer", "stage_x", 1.235);
+		
+		SubTaskAtom stAt1 = new SubTaskAtom("testSubTask1", "Reset stage x position");
+		stAt1.addAtom(posAt);
+		stAt1.addAtom(monAt1);
+		SubTaskAtom stAt2 = new SubTaskAtom("testSubTask2", "Run MScan then monitor");
+		stAt2.addAtom(scAt);
+		stAt2.addAtom(monAt2);
+		
+		TaskBean defaultTB = new TaskBean("testDefaultTask", "Reset stage and measure task");
+		defaultTB.addAtom(stAt1);
+		defaultTB.addAtom(stAt2);
+		return defaultTB;
+	}
+	
+	private ScanAtom createScanAtom() throws ScanningException {
+		ScanRequest<?> scanReq = new ScanRequest<>();
+		scanReq.setCompoundModel(new CompoundModel<>(Arrays.asList(new StepModel("stage_x", 0.0, 10.5, 1.5))));
+		Map<String, Object> detectors = new HashMap<>();
+		detectors.put("mandelbrotA", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotA"));
+		((IDetectorModel)detectors.get("mandelbrotA")).setExposureTime(30);
+		detectors.put("mandelbrotB", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotB"));
+		((IDetectorModel)detectors.get("mandelbrotB")).setExposureTime(30);
+		scanReq.setDetectors(detectors);
+		scanReq.setMonitorNames(Arrays.asList("monitor2"));
+		return new ScanAtom("testScan", scanReq);
+	}
+		
 		
 //		//This example taken from /dls_sw/i15-1/scripts/m1.py; is for setting the voltages on the I15-1 bimorph mirror
 //		Map<String, Object> sesoVoltages = makeSesoMap();
@@ -215,6 +375,8 @@ public class QueueBeanFactoryTest {
 //		//The template we're going to populate
 //		PositionerAtom mirrorTempl = new PositionerAtom("setMirror")
 //	}
+
+	
 	
 //	private Map<String, Object> makeSesoMap() {
 //		Map<String, Object> sesoVoltages = new HashMap<>();
