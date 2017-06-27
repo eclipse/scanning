@@ -45,7 +45,6 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 
 	private IBeanController<T> controller;
 	private IModelProvider<T>  provider;
-	private Object ui;
 	
 	/**
 	 * 
@@ -66,8 +65,7 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 		
 		deactivate();
 	
-		ui = createUserInterface(model);
-		controller = BeanService.getInstance().createController(ui, model);
+		controller = BeanService.getInstance().createController(createUserInterface(model), model);
 		controller.beanToUI();
 		controller.switchState(true);
 		controller.addValueListener(e-> {
@@ -192,7 +190,7 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 	}
 	
 	public Object getUI() {
-		return ui;
+		return controller.getUI();
 	}
 
 }

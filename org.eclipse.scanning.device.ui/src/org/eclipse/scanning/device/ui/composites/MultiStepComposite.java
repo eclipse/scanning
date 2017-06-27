@@ -132,8 +132,4 @@ public class MultiStepComposite extends Composite {
 	public void setNameComboEnabled(boolean enabled) {
 		name.setEnabled(enabled);
 	}
-	
-	public void setExposureEnabled(boolean enabled) {
-		stepComposite.getExposureTime().setEnabled(enabled);
-	}
 }
