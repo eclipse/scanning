@@ -29,13 +29,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalAccessor;
 import java.util.Iterator;
 import java.util.List;
 
@@ -54,8 +51,6 @@ import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.ILazyDataset;
 import org.eclipse.january.dataset.PositionIterator;
-import org.eclipse.scanning.sequencer.nexus.SolsticeConstants;
-import org.junit.Assert;
 
 /**
  * 
@@ -148,10 +143,16 @@ public class NexusAssert {
 			throw new AssertionError("Could not get data from lazy dataset", e);
 		}
 		assertEquals(Integer.class, shapeDataset.getElementClass());
-		assertEquals(1, shapeDataset.getRank());
-		assertArrayEquals(new int[] { sizes.length }, shapeDataset.getShape());
-		for (int i = 0; i < sizes.length; i++) {
-			assertEquals(sizes[i], shapeDataset.getInt(i));
+		if (sizes.length == 0) {
+			// TODO remove this workaround when january updated
+			assertEquals(0, shapeDataset.getRank()); 
+			assertArrayEquals(new int[0], shapeDataset.getShape());
+		} else {
+			assertEquals(1, shapeDataset.getRank());
+			assertArrayEquals(new int[] { sizes.length }, shapeDataset.getShape());
+			for (int i = 0; i < sizes.length; i++) {
+				assertEquals(sizes[i], shapeDataset.getInt(i));
+			}
 		}
 	}
 	

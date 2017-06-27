@@ -61,7 +61,6 @@ import org.eclipse.scanning.api.points.StaticPosition;
 import org.eclipse.scanning.api.scan.ScanEstimator;
 import org.eclipse.scanning.api.scan.ScanInformation;
 import org.eclipse.scanning.api.scan.models.ScanModel;
-import org.eclipse.scanning.sequencer.nexus.SolsticeConstants;
 import org.eclipse.scanning.sequencer.nexus.SolsticeScanMonitor;
 import org.junit.Assert;
 import org.junit.Test;

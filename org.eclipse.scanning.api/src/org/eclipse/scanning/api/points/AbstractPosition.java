@@ -230,7 +230,9 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	public synchronized List<Collection<String>> getDimensionNames() {
 		if (dimensionNames==null||dimensionNames.isEmpty())  {
 			dimensionNames = new ArrayList<>();
-			dimensionNames.add(new ArrayList<>(getNames())); // List adding a collection, we copy the keys here run SerializationTest to see why
+			if (!getNames().isEmpty()) { 
+				dimensionNames.add(new ArrayList<>(getNames())); // List adding a collection, we copy the keys here run SerializationTest to see why
+			}
 		}
 		return dimensionNames;
 	}

@@ -201,11 +201,19 @@ public class SubscanModeratorTest {
 			
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 
-		IPointGenerator<?> outer = (IPointGenerator<?>)moderator.getOuterIterable();
-		assertEquals(25, outer.size());
-
 		assertEquals(1, moderator.getOuterModels().size());
 		assertEquals(0, moderator.getInnerModels().size());
+		
+		IPointGenerator<?> outer = (IPointGenerator<?>)moderator.getOuterIterable();
+		assertEquals(25, outer.size());
+		
+		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
+		assertEquals(1, inner.size());
+		Iterator<IPosition> innerIter = inner.iterator();
+		IPosition innerPos = innerIter.next();
+		assertTrue(innerPos.getNames().isEmpty());
+		assertTrue(innerPos.getValues().isEmpty());
+		assertFalse(innerIter.hasNext());
 	}
 	
 	@Test
@@ -234,6 +242,51 @@ public class SubscanModeratorTest {
 
 		assertEquals(2, moderator.getOuterModels().size());
 		assertEquals(0, moderator.getInnerModels().size());
+		
+		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
+		assertEquals(1, inner.size());
+		Iterator<IPosition> innerIter = inner.iterator();
+		IPosition innerPos = innerIter.next();
+		assertTrue(innerPos.getNames().isEmpty());
+		assertTrue(innerPos.getValues().isEmpty());
+		assertFalse(innerIter.hasNext());
+	}
+	
+	@Test
+	public void testEmptyAxes() throws Exception {
+		
+		CompoundModel cmodel = new CompoundModel<>();
+		
+		GridModel gmodel = new GridModel("x", "y");
+		gmodel.setSlowAxisPoints(5);
+		gmodel.setFastAxisPoints(5);
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
+		
+		cmodel.setModels(Arrays.asList(new StepModel("T", 290, 300, 2), gmodel));
+		
+		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
+		
+		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
+		final DummyMalcolmDevice det = new DummyMalcolmDevice();
+		det.setModel(tmodel);
+		det.setAttributeValue("axesToMove", new String[0]);
+		
+		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
+
+		IPointGenerator<?> outer = (IPointGenerator<?>)moderator.getOuterIterable();
+		assertEquals(150, outer.size());
+
+		assertEquals(2, moderator.getOuterModels().size());
+		assertEquals(0, moderator.getInnerModels().size());
+
+		// check that the inner iterator has a single static point
+		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
+		assertEquals(1, inner.size());
+		Iterator<IPosition> innerIter = inner.iterator();
+		IPosition innerPos = innerIter.next();
+		assertTrue(innerPos.getNames().isEmpty());
+		assertTrue(innerPos.getValues().isEmpty());
+		assertFalse(innerIter.hasNext());
 	}
 	
 	@Test
@@ -262,6 +315,15 @@ public class SubscanModeratorTest {
 		
 		assertEquals(2, moderator.getOuterModels().size());
 		assertEquals(0, moderator.getInnerModels().size());
+
+		// check that the inner has a single static position
+		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
+		assertEquals(1, inner.size());
+		Iterator<IPosition> innerIter = inner.iterator();
+		IPosition innerPos = innerIter.next();
+		assertTrue(innerPos.getNames().isEmpty());
+		assertTrue(innerPos.getValues().isEmpty());
+		assertFalse(innerIter.hasNext());
 	}
 	
 	@Test
@@ -290,6 +352,13 @@ public class SubscanModeratorTest {
 		
 		assertEquals(0, moderator.getOuterModels().size());
 		assertEquals(2, moderator.getInnerModels().size());
+		
+		// check that the outer iterator has a single static position
+		Iterator<IPosition> outerIter = outer.iterator();
+		IPosition outerPos = outerIter.next();
+		assertTrue(outerPos.getNames().isEmpty());
+		assertTrue(outerPos.getValues().isEmpty());
+		assertFalse(outerIter.hasNext());
 	}
 
 	@Test
@@ -335,6 +404,9 @@ public class SubscanModeratorTest {
 		
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 
+		assertEquals(0, moderator.getOuterModels().size());
+		assertEquals(1, moderator.getInnerModels().size());
+		
 		IPointGenerator<?> outer = (IPointGenerator<?>) moderator.getOuterIterable();
 		assertEquals(1, outer.size());
 		Iterator<IPosition> outerIter = outer.iterator();
@@ -343,6 +415,7 @@ public class SubscanModeratorTest {
 		assertTrue(outerPos.getValues().isEmpty());
 		assertFalse(outerIter.hasNext());
 		
+		// check that the inner iterator has a single static position
 		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
 		assertEquals(1, inner.size());
 		Iterator<IPosition> innerIter = inner.iterator();
@@ -378,6 +451,7 @@ public class SubscanModeratorTest {
 		assertTrue(outerPos.getValues().isEmpty());
 		assertFalse(outerIter.hasNext());
 		
+		// check that the inner iterator has a single static position
 		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
 		assertEquals(1, inner.size());
 		Iterator<IPosition> innerIter = inner.iterator();
@@ -408,6 +482,7 @@ public class SubscanModeratorTest {
 		IPointGenerator<?> outer = (IPointGenerator<?>) moderator.getOuterIterable();
 		assertEquals(6, outer.size());
 		
+		// check that the inner iterator has a single static position
 		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
 		assertEquals(1, inner.size());
 		Iterator<IPosition> innerIter = inner.iterator();

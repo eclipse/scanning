@@ -114,7 +114,7 @@ import org.slf4j.LoggerFactory;
  * @author Matthew Gerring
  *
  */
-public class NexusTest extends TmpTest {
+public abstract class NexusTest extends TmpTest {
 	
 	private static Logger logger = LoggerFactory.getLogger(NexusTest.class);
 	

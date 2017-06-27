@@ -149,22 +149,28 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	 */
 	protected int[] calculateShape() throws GeneratorException {
 		Iterator<IPosition> iterator = iteratorFromValidModel();
+		
+		// if the iterator is an ScanPointIterator we can ask it for the shape
 		if (iterator instanceof ScanPointIterator) {
 			return ((ScanPointIterator) iterator).getShape();
 		}
 		
-		if (iterator.hasNext()) {
+		if (!iterator.hasNext()) {
+			// empty iterator
 			return new int[0];
 		}
 		
 		IPosition first = iterator.next();
 		final int scanRank = first.getScanRank();
+
 		if (scanRank == 0) {
+			// scan of rank 0, e.g. static generator for a single empty point
 			return new int[0];
 		}
-		
-		int pointNum = 1;
 
+		// we fall back on iterating through all the points in the
+		// scan to get the dimensions of the last one 
+		int pointNum = 1;
 		IPosition last = first;
 		int lastInnerIndex = last.getIndex(scanRank - 1);
 		int maxInnerIndex = -1;

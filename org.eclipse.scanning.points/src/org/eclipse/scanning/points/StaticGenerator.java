@@ -44,7 +44,7 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 		@Override
 		public IPosition next() {
 			remaining--;
-			return pos;
+			return STATIC_POSITION;
 		}
 
 		@Override
@@ -54,16 +54,18 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 
 		@Override
 		public int[] getShape() {
-			return new int[] { size };
+			return size == 1 ? EMPTY_SHAPE : new int[] { size };
 		}
 
 		@Override
 		public int getRank() {
-			return 1;
+			return size == 1 ? 0 : 1; 
 		}
 	};
 	
-	private static final IPosition pos = new StaticPosition();
+	private static final int[] EMPTY_SHAPE = new int[0];
+	
+	private static final IPosition STATIC_POSITION = new StaticPosition();
 	
 	StaticGenerator() {
 		setLabel("Empty");
@@ -92,6 +94,6 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 
 	@Override
 	public int[] getShape() throws GeneratorException {
-		return new int[] { model.getSize() };
+		return model.getSize() == 1 ? EMPTY_SHAPE : new int[] { model.getSize() };
 	}
 }
