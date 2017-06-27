@@ -37,11 +37,11 @@ public class QueueListVariable<V> extends QueueVariableDecorator<Integer,V> {
 	}
 
 	@Override
-	protected V processArg(Integer parameter) {
+	protected V processArg(Integer parameter) throws QueueModelException {
 		try {
 			return list.evaluate().get(parameter);
 		} catch (IndexOutOfBoundsException iEOBEx) {
-			throw new QueueModelException("No value at index "+parameter+". ", iEOBEx);
+			throw new QueueModelException("No value at index '"+parameter+"' in list '"+getName()+"'", iEOBEx);
 		}
 	}
 

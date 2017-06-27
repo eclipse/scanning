@@ -59,6 +59,17 @@ public class TaskBean extends QueueBean implements IHasAtomQueue<SubTaskAtom> {
 		atomQueue = new LinkedList<>();
 		setName(name);
 	}
+	
+	/**
+	 * Basic constructor to set String short name and name of bean
+	 * 
+	 * @param tbShrtNm String short name used within the QueueBeanFactory
+	 * @param name String user-supplied name
+	 */
+	public TaskBean(String tbShrtNm, String name) {
+		this(name);
+		setShortName(tbShrtNm);
+	}
 
 	@Override
 	public List<SubTaskAtom> getAtomQueue() {
