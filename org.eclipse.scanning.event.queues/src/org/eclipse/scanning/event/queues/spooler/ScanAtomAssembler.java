@@ -13,14 +13,19 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.models.IDetectorModel;
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
+import org.eclipse.scanning.api.event.queues.models.DeviceModel;
 import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.models.CompoundModel;
+import org.eclipse.scanning.api.points.models.IScanPathModel;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.event.queues.ServicesHolder;
+import org.eclipse.scanning.event.queues.spooler.pathassemblers.ArrayModelAssembler;
+import org.eclipse.scanning.event.queues.spooler.pathassemblers.IScanPathModelAssembler;
+import org.eclipse.scanning.event.queues.spooler.pathassemblers.StepModelAssembler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +35,8 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	
 	//We always want to set this value for the detectors
 	private static final QueueValue<String> EXPOSURETIME = new QueueValue<>("exposureTime", true);
+	
+	private Map<String, IScanPathModelAssembler<? extends IScanPathModel>> pathAssemblerRegister;
 	
 	/*
 	 * 
@@ -51,6 +58,10 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 
 	public ScanAtomAssembler(IQueueBeanFactory queueBeanFactory) {
 		super(queueBeanFactory);
+		
+		pathAssemblerRegister = new HashMap<>();
+		pathAssemblerRegister.put("step", new StepModelAssembler());
+		pathAssemblerRegister.put("array", new ArrayModelAssembler());
 	}
 
 	@Override
@@ -77,9 +88,26 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		return null;
 	}
 	
-	private <R> CompoundModel<R> prepareScanPaths(Map<String, List<IQueueValue<?>>> pathModels) {
+	private <R> CompoundModel<R> prepareScanPaths(Map<String, DeviceModel> pathModels) throws QueueModelException {
 		CompoundModel<R> paths = new CompoundModel<>();
 		
+		pathModels = mergeModelWithConfig(pathModels, config.getPathModelValues());
+		for (String deviceName : pathModels.keySet()) {
+			DeviceModel devModel = pathModels.get(deviceName);
+			
+			//Create the IScanPathModel
+			IScanPathModelAssembler<? extends IScanPathModel> pathAssembler = pathAssemblerRegister.get(devModel.getType().toLowerCase());
+			Object path = pathAssembler.assemble(deviceName, devModel);
+			//TODO Here configure any remaining options (by finding out form the PMA what were the required args)
+			
+			//Create the ROIs, if there 
+			List<R> rois = null;
+			if (devModel.getRoiConfiguration().size() > 0 ) {
+				//TODO
+			}
+			
+			paths.addData(path, rois);
+		}
 		return paths;
 	}
 	
@@ -110,7 +138,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 				logger.error("No detector returned by RunnableDeviceService for the name '"+detName+"'");
 				throw new QueueModelException("No detector for name '"+detName+"'");
 			}
-			detModel.setExposureTime((Double)getQueueValue(EXPOSURETIME).evaluate());
+			detModel.setExposureTime((Double)getLocalValue(EXPOSURETIME).evaluate());
 			detModel = configureObject(detModel, detectorModels.get(detName));
 			detectors.put(detName, detModel);
 		}
@@ -161,6 +189,35 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 			logger.error("Configuring "+obj.getClass().getSimpleName()+" failed. Could not set value of '"+setter.getName()+"' to '"+evaluated+"'");
 			throw new ModelEvaluationException("Failed configuring "+obj.getClass().getSimpleName()+" with "+setter.getName()+" -> "+evaluated);
 		}
+	}
+	
+	private Map<String, DeviceModel> mergeModelWithConfig(Map<String, DeviceModel> model , Map<String, DeviceModel> configModel) throws QueueModelException {
+		for (String axisName : configModel.keySet()) {
+			if (model.containsKey(axisName)) {
+				boolean noReferenceValues = true;
+				
+				if (noReferenceValues) {
+					logger.error("Both stored model and experiment configuration model contain a path for '"+axisName+"'. Cannot specify multiple paths for same device");
+					throw new QueueModelException("Cannot specify multiple paths for same device ('"+axisName+"')");
+				}
+			}
+			model.put(axisName, configModel.get(axisName));
+		}
+		return model;
+	}
+	
+	private boolean updateAllQueueValues(List<IQueueValue<?>> modelValues, List<IQueueValue<?>> configValues) {
+		
+		
+		
+		boolean noReferenceValues = true;
+		for (IQueueValue<?> modVal : modelValues) {
+			if (modVal.isReference()) {
+				updateIQueueValue(modVal);
+				noReferenceValues = false;
+			}
+		}
+		return noReferenceValues;
 	}
 
 }
