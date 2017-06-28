@@ -27,7 +27,7 @@ import org.python.core.PyList;
 
 class LineIterator extends AbstractScanPointIterator {
 
-	StepModel model;
+	private StepModel model;
 	private double value;
 	private int index;
 	
@@ -37,16 +37,16 @@ class LineIterator extends AbstractScanPointIterator {
 
         JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
         
-        String name = model.getName();
-        double start = model.getStart();
-        double stop = model.getStop();
-        int numPoints = (int) ((stop - start) / model.getStep() + 1);
+        String name   = model.getName();
+        double start  = model.getStart();
+        double stop   = model.getStop();
+        int numPoints = model.size();
 		this.index = 0;
        
 		ScanPointIterator iterator = lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
 		pyIterator = iterator;
 	}
-	
+		
 	public LineIterator(OneDEqualSpacingGenerator gen) {
 		OneDEqualSpacingModel model= gen.getModel();
 		BoundingLine line = model.getBoundingLine();
