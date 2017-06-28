@@ -2,10 +2,12 @@ package org.eclipse.scanning.api.event.queues.models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
@@ -21,7 +23,7 @@ import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 public class ExperimentConfiguration {
 	
 	private final List<IQueueValue<?>> localValues;
-	private final Map<String, List<IQueueValue<?>>> detectorModelValues, pathModelValues;
+	private final Map<String, DeviceModel> detectorModelValues, pathModelValues;
 	
 	/**
 	 * Create a new {@link ExperimentConfiguration} object configured with 
@@ -32,7 +34,7 @@ public class ExperimentConfiguration {
 	 * @param pathModelValues Map of path type name String and List of 
 	 *        {@link IQueueValue} to configure each scan path
 	 */
-	public ExperimentConfiguration(List<IQueueValue<?>> localValues, Map<String, List<IQueueValue<?>>> detectorModelValues, Map<String, List<IQueueValue<?>>> pathModelValues) {
+	public ExperimentConfiguration(List<IQueueValue<?>> localValues, Map<String, DeviceModel> detectorModelValues, Map<String, DeviceModel> pathModelValues) {
 		if (localValues == null) this.localValues = new ArrayList<>();
 		else this.localValues = new ArrayList<>(localValues);
 		
@@ -47,11 +49,11 @@ public class ExperimentConfiguration {
 		return localValues;
 	}
 	
-	public Map<String, List<IQueueValue<?>>> getDetectorModelValues() {
+	public Map<String, DeviceModel> getDetectorModelValues() {
 		return detectorModelValues;
 	}
 	
-	public Map<String, List<IQueueValue<?>>> getPathModelValues() {
+	public Map<String, DeviceModel> getPathModelValues() {
 		return pathModelValues;
 	}
 	
@@ -63,19 +65,27 @@ public class ExperimentConfiguration {
 	 * @throws QueueModelException if no value is found in localValues with 
 	 *         the reference
 	 */
-	public IQueueValue<?> getQueueValue(QueueValue<String> valueReference) throws QueueModelException {
-		/*
-		 * Identify whether a value corresponding to valueReference is in the 
-		 * localValues
-		 */
-		Iterator<IQueueValue<?>> valuesIter = localValues.iterator();
-		while (valuesIter.hasNext()) {
-			IQueueValue<?> value = valuesIter.next();
-			if (valueReference.isReference(value)) {
-				return value;
-			}
+	public IQueueValue<?> getLocalValue(QueueValue<String> valueReference) throws QueueModelException {
+//		Optional<IQueueValue<?>> value = localValues.stream().filter(option -> valueReference.isReferenceFor(option)).findFirst();
+//		try {
+//			return value.get();
+//		} catch (NoSuchElementException nseEX) {
+//			throw new QueueModelException("No value in localValues for reference '"+valueReference.evaluate()+"'");
+//		}
+		return getRegistryValue(valueReference, localValues);
+	}
+	
+	public IQueueValue<?> getPathModelValue(QueueValue<String> valueReference, String deviceName) throws QueueModelException {
+		return getRegistryValue(valueReference, pathModelValues.get(deviceName).getDeviceConfiguration());
+	}
+	
+	private IQueueValue<?> getRegistryValue(QueueValue<String> valueReference, List<IQueueValue<?>> registry) throws QueueModelException {
+		Optional<IQueueValue<?>> value = registry.stream().filter(option -> valueReference.isReferenceFor(option)).findFirst();
+		try {
+			return value.get();
+		} catch (NoSuchElementException nseEX) {
+			throw new QueueModelException("No value in localValues for reference '"+valueReference.evaluate()+"'");
 		}
-		throw new QueueModelException("No value in localValues for reference '"+valueReference.evaluate()+"'");
 	}
 
 	@Override

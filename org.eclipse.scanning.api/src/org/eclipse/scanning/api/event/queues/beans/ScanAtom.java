@@ -17,6 +17,7 @@ import java.util.Map;
 
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.IQueueService;
+import org.eclipse.scanning.api.event.queues.models.DeviceModel;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
@@ -41,8 +42,8 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	
 	private ScanRequest<?> scanReq;
 	
-	private Map<String, List<IQueueValue<?>>> detectorModelsModel;
-	private Map<String, List<IQueueValue<?>>> pathModelsModel;
+	private Map<String, DeviceModel> detectorModelsModel;
+	private Map<String, DeviceModel> pathModelsModel;
 	private Collection<IQueueValue<?>> monitorsModel;
 	
 	private String queueMessage;
@@ -120,7 +121,7 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	 * @param monitors Collection of {@link IQueueValue} defining monitors to 
 	 *        be read
 	 */
-	public ScanAtom(String scShrtNm, Map<String, List<IQueueValue<?>>> pathModels, Map<String, List<IQueueValue<?>>> detectorModels, Collection<IQueueValue<?>> monitors) {
+	public ScanAtom(String scShrtNm, Map<String, DeviceModel> pathModels, Map<String, DeviceModel> detectorModels, Collection<IQueueValue<?>> monitors) {
 		this(scShrtNm, true);
 		pathModelsModel = pathModels;
 		detectorModelsModel = detectorModels;
@@ -169,19 +170,19 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		this.scanBrokerURI = scanBrokerURI;
 	}
 
-	public Map<String, List<IQueueValue<?>>> getDetectorModelsModel() {
+	public Map<String, DeviceModel> getDetectorModelsModel() {
 		return detectorModelsModel;
 	}
 
-	public void setDetectorModelsModel(Map<String, List<IQueueValue<?>>> detectorModelsModel) {
+	public void setDetectorModelsModel(Map<String, DeviceModel> detectorModelsModel) {
 		this.detectorModelsModel = detectorModelsModel;
 	}
 
-	public Map<String, List<IQueueValue<?>>> getPathModelsModel() {
+	public Map<String, DeviceModel> getPathModelsModel() {
 		return pathModelsModel;
 	}
 
-	public void setpModsModel(Map<String, List<IQueueValue<?>>> pathModelsModel) {
+	public void setpModsModel(Map<String, DeviceModel> pathModelsModel) {
 		this.pathModelsModel = pathModelsModel;
 	}
 
