@@ -33,7 +33,7 @@ public interface IQueueValue<V> {
 	 * 
 	 * @return true if this holds a reference
 	 */
-	public boolean isVariable();
+	public boolean isReference();
 	
 	/**
 	 * Tests whether this {@link IQueueValue} refers to the given 
@@ -42,7 +42,7 @@ public interface IQueueValue<V> {
 	 * @param value {@link IQueueValue} being referred to
 	 * @return true if this {@link IQueueValue is the reference
 	 */
-	public boolean isReference(IQueueValue<?> value);
+	public boolean isReferenceFor(IQueueValue<?> value);
 	
 	/**
 	 * Tests whether the given method is a setter for a field with the same 

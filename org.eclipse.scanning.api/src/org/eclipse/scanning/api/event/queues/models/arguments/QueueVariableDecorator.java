@@ -66,15 +66,16 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 	}
 
 	/**
-	 * {@link QueueVariableDecorator}s should always be variables.
+	 * For simplicity, {@link QueueVariableDecorator}s should never be variables.
+	 * This could be changed in the future. TODO?
 	 */
 	@Override
-	public boolean isVariable() {
-		return true;
+	public boolean isReference() {
+		return false;
 	}
 	
 	@Override
-	public boolean isReference(IQueueValue<?> value) {
+	public boolean isReferenceFor(IQueueValue<?> value) {
 		throw new ModelEvaluationException("Not implemented: "+this.getClass().getSimpleName()+" "+name+" cannot be used as a reference to another IQueueValue");
 		/*
 		 * TODO This is for simplicity. In the future, the evaluated value 

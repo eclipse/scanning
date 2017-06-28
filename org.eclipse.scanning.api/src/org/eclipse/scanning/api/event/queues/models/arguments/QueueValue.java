@@ -16,7 +16,7 @@ public class QueueValue<V> implements IQueueValue<V> {
 	
 	private String name;
 	private V value;
-	private boolean variable;
+	private boolean reference;
 	
 	/**
 	 * Construct a new {@link QueueValue} with a given value.
@@ -32,11 +32,11 @@ public class QueueValue<V> implements IQueueValue<V> {
 	 * indicates to the {@link IQueueBeanFactory} that it only holds a 
 	 * reference to a real value to be evaluated.
 	 * @param value V to be stored in this argument
-	 * @param variable if true this holds only a reference to another 
+	 * @param reference if true this holds only a reference to another 
 	 *        {@link IQueueValue}
 	 */
-	public QueueValue(V value, boolean variable) {
-		this(null, value, variable);
+	public QueueValue(V value, boolean reference) {
+		this(null, value, reference);
 	}
 	
 	/**
@@ -54,13 +54,13 @@ public class QueueValue<V> implements IQueueValue<V> {
 	 * holds a reference to a real value to be evaluated.
 	 * @param name String name of {@link QueueValue}
 	 * @param value V to be stored in this argument
-	 * @param variable if true this holds only a reference to another 
+	 * @param reference if true this holds only a reference to another 
 	 *        {@link IQueueValue}
 	 */
-	public QueueValue(String name, V value, boolean variable) {
+	public QueueValue(String name, V value, boolean reference) {
 		this.name = name;
 		this.value = value;
-		this.variable = variable;
+		this.reference = reference;
 	}
 
 	@Override
@@ -89,13 +89,13 @@ public class QueueValue<V> implements IQueueValue<V> {
 	}
 
 	@Override
-	public boolean isVariable() {
-		return variable;
+	public boolean isReference() {
+		return reference;
 	}
 	
 	@Override
-	public boolean isReference(IQueueValue<?> value) {
-			return this.value == value.getName() && variable;
+	public boolean isReferenceFor(IQueueValue<?> value) {
+			return this.value == value.getName() && reference;
 	}
 	
 	@Override
@@ -110,7 +110,7 @@ public class QueueValue<V> implements IQueueValue<V> {
 		int result = 1;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((value == null) ? 0 : value.hashCode());
-		result = prime * result + (variable ? 1231 : 1237);
+		result = prime * result + (reference ? 1231 : 1237);
 		return result;
 	}
 
@@ -133,13 +133,13 @@ public class QueueValue<V> implements IQueueValue<V> {
 				return false;
 		} else if (!value.equals(other.value))
 			return false;
-		if (variable != other.variable)
+		if (reference != other.reference)
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "QueueValue [name=" + name + ", value=" + value + ", variable=" + variable + "]";
+		return "QueueValue [name=" + name + ", value=" + value + ", reference=" + reference + "]";
 	}
 }

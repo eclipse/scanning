@@ -27,9 +27,9 @@ public abstract class AbstractBeanAssembler<Q extends Queueable> implements IBea
 	}
 	
 	@Override
-	public IQueueValue<?> getQueueValue(QueueValue<String> valueReference) throws QueueModelException {
+	public IQueueValue<?> getLocalValue(QueueValue<String> valueReference) throws QueueModelException {
 		try {
-			return config.getQueueValue(valueReference);
+			return config.getLocalValue(valueReference);
 		} catch (QueueModelException qmEx) {
 			return queueBeanFactory.getGlobalValue(valueReference);
 		}

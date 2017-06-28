@@ -41,9 +41,9 @@ public interface IBeanAssembler<Q extends Queueable> {
 	 */
 	@SuppressWarnings("unchecked") //Real references should have string type arguments - this is safe
 	public default IQueueValue<?> updateIQueueValue(IQueueValue<?> valueReference) {
-		if (valueReference instanceof QueueValue && valueReference.isVariable()) {
+		if (valueReference instanceof QueueValue && valueReference.isReference()) {
 			try {
-				return getQueueValue((QueueValue<String>) valueReference);
+				return getLocalValue((QueueValue<String>) valueReference);
 			} catch (QueueModelException qmEx) {
 				throw new ModelEvaluationException(qmEx);
 			}
@@ -51,7 +51,7 @@ public interface IBeanAssembler<Q extends Queueable> {
 		return valueReference;
 	}
 	
-	IQueueValue<?> getQueueValue(QueueValue<String> valueReference) throws QueueModelException;
+	IQueueValue<?> getLocalValue(QueueValue<String> valueReference) throws QueueModelException;
 	
 	void setExperimentConfiguration(ExperimentConfiguration config);
 
