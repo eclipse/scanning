@@ -151,7 +151,7 @@ public class StepModel extends AbstractPointsModel {
 		// copied from StepGenerator.sizeOfValidModel
 		double div = ((getStop()-getStart())/getStep());
 		div += 0.01;
-		return (int)Math.floor(div+1);
+		return Math.toIntExact(Math.round(Math.floor(div+1d)));
 	}
 
 	public String getLabel() {
