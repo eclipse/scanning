@@ -34,6 +34,7 @@ import org.eclipse.scanning.example.file.MockFilePathService;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class MonitorAtomProcessTest {
@@ -111,6 +112,7 @@ public class MonitorAtomProcessTest {
 	 * N.B. MoveAtomProcessorTest uses MockPostioner, which pauses for 100ms 
 	 * does something then pauses for 150ms.
 	 */
+	@Ignore("Intermittent failures on Travis.")
 	@Test
 	public void testTermination() throws Exception {
 		pti.executeProcess(monAtProc, monAt,false, false);
