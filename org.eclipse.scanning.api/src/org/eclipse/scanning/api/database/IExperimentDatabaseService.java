@@ -25,7 +25,6 @@ import java.util.concurrent.Future;
  * database recording experimental data could implement this
  * front end.
  * 
- * 
  * This service is designed to be exposed as a microservice
  * operating over activemq. It may either be incorporated directly
  * as an OSGi service or exposed remotely by using the request-respond
@@ -65,17 +64,17 @@ public interface IExperimentDatabaseService extends Closeable, ISampleDescriptio
     /**
      * This action is used to insert a record. Currently only a BeamlineAction may be inserted:
 	 <code><pre>
-		BeamlineAction beamlineAction = new BeamlineAction();
-		beamlineAction.setProposalCode("cm");
-		beamlineAction.setProposalNumber(14451L);
-		beamlineAction.setSessionNumber(55167L);
-		beamlineAction.setStartTime(new Timestamp(System.currentTimeMillis()));
-		beamlineAction.setEndTime(new Timestamp(System.currentTimeMillis()));
-		beamlineAction.setMessage("message");
-		beamlineAction.setParameter("parameter");
-		beamlineAction.setValue("value");
-		beamlineAction.setLogLevel("DEBUG");
-		beamlineAction.setStatus("PAUSED");
+		Bean beamlineAction = new Bean("uk.ac.diamond.ispyb.api.BeamlineAction");
+		beamlineAction.set("ProposalCode", "cm");
+		beamlineAction.set("ProposalNumber", 14451L);
+		beamlineAction.set("SessionNumber", 55167L);
+		beamlineAction.set("StartTime", new Timestamp(System.currentTimeMillis()));
+		beamlineAction.set("EndTime", new Timestamp(System.currentTimeMillis()));
+		beamlineAction.set("Message", "message");
+		beamlineAction.set("Parameter", "parameter");
+		beamlineAction.set("Value", "value");
+		beamlineAction.set("LogLevel", "DEBUG");
+		beamlineAction.set("Status", "PAUSED");
 		long code = service.insert(beamlineAction, true);
 	 </pre></code>
      * 
@@ -92,19 +91,19 @@ public interface IExperimentDatabaseService extends Closeable, ISampleDescriptio
 	 * The method can be used to create new records for instance:
 	 
 	 <code><pre>
-	    DataCollectionGroup grp = new DataCollectionGroup();
-		grp.setProposalCode("cm");
-		grp.setProposalNumber(14451);
-		grp.setSessionNumber(1);
-		grp.setSampleId(11550L);
+	    Bean grp = new Bean("uk.ac.diamond.ispyb.api.DataCollectionGroup");
+		grp.set("ProposalCode", "cm");
+		grp.set("ProposalNumber", 14451);
+		grp.set("SessionNumber", 1);
+		grp.set("SampleId", 11550L);
 		Long dataCollectionGrpId = service.upsert(grp, true);
 	 </pre></code>
 		
 	   This method can be used to update records for instance:
 	 <code><pre>
-	   	DataCollectionGroup grp = new DataCollectionGroup();
-		grp.setId(dataCollectionGrpId); // We know the id which we are upserting
-		grp.setComments("Hello World");
+	    Bean grp = new Bean("uk.ac.diamond.ispyb.api.DataCollectionGroup");
+		grp.set("Id", dataCollectionGrpId); // We know the id which we are upserting
+		grp.set("Comments", "Hello World");
 		long code = service.upsert(grp, false); // Add the job to a queue to be processed later.
 	 </pre></code>
 
@@ -121,9 +120,9 @@ public interface IExperimentDatabaseService extends Closeable, ISampleDescriptio
 	 * The method cannot be used to create new records.		
 	   This method can be used to update records for instance:
 	 <code><pre>
-		DataCollectionExperiment experiment = new DataCollectionExperiment();
-		experiment.setId(eid); // We know the id which we are updating
-		experiment.setSlipGapVertical(0.01);
+	    Bean experiment = new Bean("uk.ac.diamond.ispyb.api.DataCollectionExperiment");
+        experiment.set("Id", eid); // We know the id which we are updating
+		experiment.set("SlipGapVertical", 0.01);
 		long code = service.upsert(grp, false); // Add the job to a queue to be processed later.
 	 </pre></code>
 
