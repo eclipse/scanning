@@ -42,6 +42,7 @@ import org.eclipse.scanning.api.points.models.GridModel;
 import org.eclipse.scanning.api.points.models.IBoundingBoxModel;
 import org.eclipse.scanning.api.points.models.IBoundingLineModel;
 import org.eclipse.scanning.api.points.models.IScanPathModel;
+import org.eclipse.scanning.api.points.models.JythonGeneratorModel;
 import org.eclipse.scanning.api.points.models.LissajousModel;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.OneDEqualSpacingModel;
@@ -83,6 +84,7 @@ public class PointGeneratorService implements IPointGeneratorService {
 		gens.put(RandomOffsetGridModel.class, RandomOffsetGridGenerator.class);
 		gens.put(SpiralModel.class,           SpiralGenerator.class);
 		gens.put(LissajousModel.class,        LissajousGenerator.class);
+		gens.put(JythonGeneratorModel.class,  JythonGenerator.class);
 		
 		Map<String,   GeneratorInfo> tinfo = new TreeMap<>();
 		fillStaticGeneratorInfo(gens, tinfo);
