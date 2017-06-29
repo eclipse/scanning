@@ -77,23 +77,11 @@ public class SubscanModerator {
 		if (detectors==null || detectors.isEmpty()) {
 			return;
 		}
-		boolean malcolmDevicesFound = false;
-		for (IRunnableDevice<?> device : detectors) {
-			if (device.getRole()==DeviceRole.MALCOLM) {
-				malcolmDevicesFound = true;
-				break;
-			}
-		}
-		if (!malcolmDevicesFound) {
+		if (detectors.stream().noneMatch(d -> d.getRole() == DeviceRole.MALCOLM)) {
 			return;
 		}
 		
 		if (!(generator instanceof IPointGenerator<?>)) {
-			return;
-		}
-		
-		List<String> axes = getAxes(detectors);
-		if (axes.isEmpty()) {
 			return;
 		}
 		
@@ -104,6 +92,7 @@ public class SubscanModerator {
 		this.outer = new ArrayList<>();
 		this.inner = new ArrayList<>();
 		
+		List<String> axes = getAxes(detectors);
 		boolean reachedOuterScan = false;
 		for (int i = orig.size()-1; i > -1; i--) {
 			Object model = orig.get(i);
