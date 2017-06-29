@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<?pde version="3.8"?><target name="Scanning (Fat Stable)" sequenceNumber="129">
+<?pde version="3.8"?><target name="Scanning (Fat Stable)" sequenceNumber="130">
 <locations>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
 <unit id="org.eclipse.jetty.bundles.f.feature.group" version="9.2.13.201508192117"/>
@@ -7,9 +7,9 @@
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
 <unit id="uk.ac.diamond.scisoft.peema.feature.feature.group" version="1.2.0.v20170601-1255"/>
-<unit id="uk.ac.diamond.dawn.product.feature.feature.group" version="2.5.0.v20170601-1855"/>
+<unit id="uk.ac.diamond.dawn.product.feature.feature.group" version="2.5.0.v20170612-1332"/>
 <unit id="org.eclipse.equinox.executable.feature.group" version="3.6.200.v20150602-1417"/>
-<unit id="org.dawnsci.base.product.feature.feature.group" version="2.5.0.v20170601-1525"/>
+<unit id="org.dawnsci.base.product.feature.feature.group" version="2.5.0.v20170612-0955"/>
 <repository location="http://www.opengda.org/DawnDiamond/2.5/updates/release/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
