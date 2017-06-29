@@ -1,6 +1,5 @@
 package org.eclipse.scanning.api.database;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -8,6 +7,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+
+import org.eclipse.scanning.api.annotation.ui.FieldUtils;
+import org.eclipse.scanning.api.annotation.ui.FieldValue;
 
 /**
  * 
@@ -43,11 +45,7 @@ public class Bean {
 	 * @throws IllegalArgumentException
 	 * @throws InvocationTargetException
 	 */
-	public Bean(Object theBean) throws NoSuchMethodException, 
-										SecurityException, 
-										IllegalAccessException, 
-										IllegalArgumentException, 
-										InvocationTargetException {
+	public Bean(Object theBean) throws Exception {
 		
 		this.beanClass = theBean.getClass().getName();
 		this.data      = new HashMap<>();
@@ -132,14 +130,20 @@ public class Bean {
      * @throws IllegalArgumentException
      * @throws InvocationTargetException
      */
-	private void init(Object theBean) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		Field[] fields = theBean.getClass().getFields();
-		for (Field field : fields) {
+	private void init(Object theBean) throws Exception {
+		
+		Collection<FieldValue> fields = FieldUtils.getModelFields(theBean);
+		for (FieldValue field : fields) {
 			String fieldName = field.getName();
-			Method getter    = theBean.getClass().getMethod(getGetterName(fieldName));
-			Object value     = getter.invoke(theBean);
-			if (value!=null) {
-				data.put(fieldName, value);
+			try {
+				String getterName = getGetterName(fieldName);
+				Method getter     = theBean.getClass().getMethod(getterName);
+				Object value      = getter.invoke(theBean);
+				if (value!=null) {
+					data.put(fieldName, value);
+				}
+			} catch (NoSuchMethodException nsme) {
+				continue; // It is legal to have a field with no getter value.
 			}
 		}
 	}
