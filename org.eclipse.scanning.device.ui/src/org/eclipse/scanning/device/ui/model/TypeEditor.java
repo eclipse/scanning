@@ -65,8 +65,7 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 		
 		deactivate();
 	
-		Object ui = createUserInterface(model);
-		controller = BeanService.getInstance().createController(ui, model);
+		controller = BeanService.getInstance().createController(createUserInterface(model), model);
 		controller.beanToUI();
 		controller.switchState(true);
 		controller.addValueListener(e-> {
@@ -188,6 +187,10 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 	
 	public boolean isCustomEditor(T model) {
 		return model.getClass().getAnnotation(TypeDescriptor.class)!=null;
+	}
+	
+	public Object getUI() {
+		return controller.getUI();
 	}
 
 }

@@ -128,4 +128,8 @@ public class MultiStepComposite extends Composite {
 	public ComboWrapper getName() {
 		return name;
 	}
+	
+	public void setNameComboEnabled(boolean enabled) {
+		name.setEnabled(enabled);
+	}
 }
