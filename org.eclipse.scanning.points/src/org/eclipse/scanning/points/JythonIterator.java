@@ -17,7 +17,6 @@ class JythonIterator extends AbstractScanPointIterator implements Iterator<IPosi
 	
 	private static final Logger logger = LoggerFactory.getLogger(JythonIterator.class);
 		
-	private ScanPointIterator pyIterator;
 	private int               index;
 	
 	JythonIterator(JythonGeneratorModel model) {
@@ -34,9 +33,9 @@ class JythonIterator extends AbstractScanPointIterator implements Iterator<IPosi
 		Object[] args = getArguments(model);
 		String[] kwds = getKeywords(model);
 		if (args==null) {
-			pyIterator = jythonObject.createObject();
+			this.pyIterator = jythonObject.createObject();
 		} else {
-			pyIterator = jythonObject.createObject(args, kwds);
+			this.pyIterator = jythonObject.createObject(args, kwds);
 		}
 		this.index = 0;
 	}

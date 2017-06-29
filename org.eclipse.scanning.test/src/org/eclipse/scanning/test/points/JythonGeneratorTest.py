@@ -61,17 +61,11 @@ class JavaIteratorWrapper(ScanPointIterator, PySerializable):
             
         return self._has_next
     
-    def toDict(self):
-        return self.generator.to_dict()
-    
     def size(self):
-        return self.generator.size
-    def getShape(self):
-        return self.generator.shape
-    def getRank(self):
-        return len(self.generator.shape)
+        return self._size
 
-
+    
+     
 class FixedValueGenerator(JavaIteratorWrapper):
     """
     Create a fixed series of points
@@ -80,16 +74,16 @@ class FixedValueGenerator(JavaIteratorWrapper):
         super(FixedValueGenerator, self).__init__()
         
         self.scannableName = scannableName
-        self.size = size
+        self._size = size
         self.value = value
         
      
     def _iterator(self):
         
-        for index in xrange(self.size):            
+        for index in xrange(self._size):            
             java_point = Scalar(self.scannableName, index, self.value)
             yield java_point
-            
+          
 class MultipliedValueGenerator(JavaIteratorWrapper):
     """
     Create a fixed series of points
@@ -98,13 +92,13 @@ class MultipliedValueGenerator(JavaIteratorWrapper):
         super(MultipliedValueGenerator, self).__init__()
         
         self.scannableName = scannableName
-        self.size = size
+        self._size = size
         self.value = value
         
      
     def _iterator(self):
         
-        for index in xrange(self.size):            
+        for index in xrange(self._size):            
             java_point = Scalar(self.scannableName, index, self.value*index)
             yield java_point
 
@@ -116,14 +110,14 @@ class MappedPositionGenerator(JavaIteratorWrapper):
         super(MappedPositionGenerator, self).__init__()
         
         self.scannableName = scannableName
-        self.size = size
+        self._size = size
         self.value = value
         self.numberOfScannables = numberOfScannables
         
      
     def _iterator(self):
         
-        for index in xrange(self.size):            
+        for index in xrange(self._size):            
             java_point = MapPosition()
             for iscannable in xrange(self.numberOfScannables):
                 java_point.put(self.scannableName+str(iscannable), index, self.value*index)
@@ -138,7 +132,7 @@ class ExceptionGenerator(JavaIteratorWrapper):
         super(ExceptionGenerator, self).__init__()
         
         self.scannableName = scannableName
-        self.size = size
+        self._size = size
         self.value = value
         
      
