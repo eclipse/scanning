@@ -1,6 +1,5 @@
 package org.eclipse.scanning.api.database;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,12 +55,7 @@ public class CompositeBean {
     private Bean toBean(Object object) {
     	try {
 			return object instanceof Bean ? (Bean)object : new Bean(object);
-		} catch (NoSuchMethodException 
-					| SecurityException 
-					| IllegalAccessException 
-					| IllegalArgumentException
-					| InvocationTargetException e) {
-			
+		} catch (Exception e) {
 			logger.error("Unexpected object tried to be added to "+getClass().getSimpleName(), e);
 			return null;
 		}
