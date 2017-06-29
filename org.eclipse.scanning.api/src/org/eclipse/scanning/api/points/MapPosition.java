@@ -97,6 +97,11 @@ public final class MapPosition extends AbstractPosition {
 	public Object put(String key, Object value) {
 		return values.put(key, value);
 	}
+
+	public Object put(String key, int index, Object value) {
+		indices.put(key, index);
+		return values.put(key, value);
+	}
 	
 	public void putAll(IPosition pos) {
 		final Collection<String> names = pos.getNames();
