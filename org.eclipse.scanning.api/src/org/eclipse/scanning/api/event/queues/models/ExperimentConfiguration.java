@@ -34,7 +34,7 @@ public class ExperimentConfiguration {
 	 * @param pathModelValues Map of path type name String and List of 
 	 *        {@link IQueueValue} to configure each scan path
 	 */
-	public ExperimentConfiguration(List<IQueueValue<?>> localValues, Map<String, DeviceModel> detectorModelValues, Map<String, DeviceModel> pathModelValues) {
+	public ExperimentConfiguration(List<IQueueValue<?>> localValues, Map<String, DeviceModel> pathModelValues, Map<String, DeviceModel> detectorModelValues) {
 		if (localValues == null) this.localValues = new ArrayList<>();
 		else this.localValues = new ArrayList<>(localValues);
 		
@@ -66,12 +66,6 @@ public class ExperimentConfiguration {
 	 *         the reference
 	 */
 	public IQueueValue<?> getLocalValue(QueueValue<String> valueReference) throws QueueModelException {
-//		Optional<IQueueValue<?>> value = localValues.stream().filter(option -> valueReference.isReferenceFor(option)).findFirst();
-//		try {
-//			return value.get();
-//		} catch (NoSuchElementException nseEX) {
-//			throw new QueueModelException("No value in localValues for reference '"+valueReference.evaluate()+"'");
-//		}
 		return getRegistryValue(valueReference, localValues);
 	}
 	

@@ -12,7 +12,9 @@ public interface IBeanAssembler<Q extends Queueable> {
 	
 	default Q assemble(Q model, ExperimentConfiguration config) throws QueueModelException {
 		Q bean;
-		setExperimentConfiguration(config);
+		updateBeanModel(model, config);
+		
+//		setExperimentConfiguration(config);
 		
 		if (model.isModel()) {
 			bean = buildNewBean(model);
@@ -20,7 +22,7 @@ public interface IBeanAssembler<Q extends Queueable> {
 			bean = model;
 		}
 		setBeanName(bean);
-		setExperimentConfiguration(null);
+//		setExperimentConfiguration(null);
 		return bean;
 	}
 	
@@ -29,6 +31,8 @@ public interface IBeanAssembler<Q extends Queueable> {
 	Q setBeanName(Q bean);
 	
 	IQueueBeanFactory getQueueBeanFactory();
+	
+	void updateBeanModel(Q model, ExperimentConfiguration config) throws QueueModelException;
 	
 	/**
 	 * Updates the current {@link IQueueValue} representing a value with the 
@@ -40,10 +44,10 @@ public interface IBeanAssembler<Q extends Queueable> {
 	 * @return {@link IQueueValue} to replace argument
 	 */
 	@SuppressWarnings("unchecked") //Real references should have string type arguments - this is safe
-	public default IQueueValue<?> updateIQueueValue(IQueueValue<?> valueReference) {
+	public default IQueueValue<?> updateIQueueValue(IQueueValue<?> valueReference, ExperimentConfiguration config) {
 		if (valueReference instanceof QueueValue && valueReference.isReference()) {
 			try {
-				return getLocalValue((QueueValue<String>) valueReference);
+				return getRealValue((QueueValue<String>) valueReference, config);
 			} catch (QueueModelException qmEx) {
 				throw new ModelEvaluationException(qmEx);
 			}
@@ -51,8 +55,6 @@ public interface IBeanAssembler<Q extends Queueable> {
 		return valueReference;
 	}
 	
-	IQueueValue<?> getLocalValue(QueueValue<String> valueReference) throws QueueModelException;
+	IQueueValue<?> getRealValue(QueueValue<String> valueReference, ExperimentConfiguration config) throws QueueModelException;
 	
-	void setExperimentConfiguration(ExperimentConfiguration config);
-
 }

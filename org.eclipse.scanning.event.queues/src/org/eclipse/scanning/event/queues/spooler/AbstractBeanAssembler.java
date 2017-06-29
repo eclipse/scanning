@@ -10,7 +10,6 @@ import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 public abstract class AbstractBeanAssembler<Q extends Queueable> implements IBeanAssembler<Q> {
 	
 	private final IQueueBeanFactory queueBeanFactory;
-	protected ExperimentConfiguration config;
 	
 	protected AbstractBeanAssembler(IQueueBeanFactory queueBeanFactory) {
 		this.queueBeanFactory = queueBeanFactory;
@@ -22,16 +21,11 @@ public abstract class AbstractBeanAssembler<Q extends Queueable> implements IBea
 	}
 
 	@Override
-	public void setExperimentConfiguration(ExperimentConfiguration config) {
-		this.config = config;
-	}
-	
-	@Override
-	public IQueueValue<?> getLocalValue(QueueValue<String> valueReference) throws QueueModelException {
+	public IQueueValue<?> getRealValue(QueueValue<String> valueReference, ExperimentConfiguration config) throws QueueModelException {
 		try {
-			return config.getLocalValue(valueReference);
+			return config.getLocalValue((QueueValue<String>) valueReference);
 		} catch (QueueModelException qmEx) {
-			return queueBeanFactory.getGlobalValue(valueReference);
+			return queueBeanFactory.getGlobalValue((QueueValue<String>) valueReference);
 		}
 	}
 

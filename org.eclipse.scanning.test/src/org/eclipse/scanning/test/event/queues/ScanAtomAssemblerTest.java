@@ -18,7 +18,6 @@ import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.event.queues.models.DeviceModel;
 import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
-import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
@@ -52,21 +51,31 @@ public class ScanAtomAssemblerTest {
 		((RunnableDeviceServiceImpl) dservice)._register(MandelbrotModel.class, MandelbrotDetector.class);
 		
 		//Lifted from org.eclipse.scanning.test.scan.nexus.MandelbrotExampleTest
-		MandelbrotModel modelA = new MandelbrotModel(), modelB = new MandelbrotModel();
+		MandelbrotModel modelA = makeMandelbrotModelA(), modelB = makeMandelbrotModelB();
+		dservice.createRunnableDevice(modelA);
+		dservice.createRunnableDevice(modelB);
+		
+		qbf = new QueueBeanFactory();
+	}
+	
+	private MandelbrotModel makeMandelbrotModelA() {
+		MandelbrotModel modelA = new MandelbrotModel();
 		modelA.setName("mandelbrotA");
 		modelA.setRealAxisName("xNex");
 		modelA.setImaginaryAxisName("yNex");
 		modelA.setColumns(64);
 		modelA.setRows(64);
-		dservice.createRunnableDevice(modelA);
+		return modelA;
+	}
+	
+	private MandelbrotModel makeMandelbrotModelB() {
+		MandelbrotModel modelB = new MandelbrotModel();
 		modelB.setName("mandelbrotB");
 		modelB.setRealAxisName("xNex");
 		modelB.setImaginaryAxisName("yNex");
 		modelB.setColumns(64);
 		modelB.setRows(64);
-		dservice.createRunnableDevice(modelB);	
-		
-		qbf = new QueueBeanFactory();
+		return modelB;
 	}
 
 	@After
@@ -93,7 +102,7 @@ public class ScanAtomAssemblerTest {
 		DeviceModel pathModel = new DeviceModel("Step", Arrays.asList(new QueueValue<Double>("start", 0.0),
 				new QueueValue<Double>("stop", 10.5), new QueueValue<Double>("step", 1.5)));
 		pMods.put("stage_x", pathModel);
-		ScanAtom scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, List<IQueueValue<?>>>(), new ArrayList<IQueueValue<?>>());
+		ScanAtom scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, DeviceModel>(), new ArrayList<IQueueValue<?>>());
 		
 		ScanAtom assAt = scAtAss.assemble(scAtMod, new ExperimentConfiguration(null, null, null));
 		assertEquals("Template specified path differs from expected", cMod, assAt.getScanReq().getCompoundModel());
@@ -101,13 +110,13 @@ public class ScanAtomAssemblerTest {
 		/*
 		 * Fully specified by ExperimentConfiguration
 		 */
-		scAtMod = new ScanAtom("testScan", new HashMap<String, DeviceModel>(), new HashMap<String, List<IQueueValue<?>>>(), new ArrayList<IQueueValue<?>>());
-		ExperimentConfiguration config = new ExperimentConfiguration(null, null, pMods);
+		scAtMod = new ScanAtom("testScan", new HashMap<String, DeviceModel>(), new HashMap<String, DeviceModel>(), new ArrayList<IQueueValue<?>>());
+		ExperimentConfiguration config = new ExperimentConfiguration(null, pMods, null);
 		assAt = scAtAss.assemble(scAtMod, config);
 		assertEquals("ExperimentConfiguration specified path differs from expected", cMod, assAt.getScanReq().getCompoundModel());
 		
 		try {
-			scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, List<IQueueValue<?>>>(), new ArrayList<IQueueValue<?>>());
+			scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, DeviceModel>(), new ArrayList<IQueueValue<?>>());
 			assAt = scAtAss.assemble(scAtMod, config);
 			fail("Should not be able to specify path model for same axis twice");
 		} catch (QueueModelException meEx) {
@@ -118,17 +127,43 @@ public class ScanAtomAssemblerTest {
 		 * Part specified by template, part specified by localValues
 		 */
 		pMods = new LinkedHashMap<>();
-		pathModel = new DeviceModel("Step", Arrays.asList(new QueueValue<String>("start", true),
-				new QueueValue<String>("stop", true), new QueueValue<String>("step", true)));
+		pathModel = new DeviceModel("Step", Arrays.asList(new QueueValue<String>("start", "start", true),
+				new QueueValue<String>("stop", "stop", true), new QueueValue<String>("step", "step", true)));
 		pMods.put("stage_x", pathModel);
+		scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, DeviceModel>(), new ArrayList<IQueueValue<?>>());
 		List<IQueueValue<?>> localValues = new ArrayList<>();
 		localValues.add(new QueueValue<Double>("start", 0.0));
 		localValues.add(new QueueValue<Double>("stop", 10.5));
 		localValues.add(new QueueValue<Double>("step", 1.5));
-		config = new ExperimentConfiguration(localValues, null, pMods);
+		config = new ExperimentConfiguration(localValues, null, null);
 		
 		assAt = scAtAss.assemble(scAtMod, config);
 		assertEquals("Mixed template/localValues specified path differs from expected", cMod, assAt.getScanReq().getCompoundModel());
+		
+		/*
+		 * More complicated, one device from template, one device from config, both specified by config
+		 */
+		cMod.addData(new StepModel("stage_y", 15.8, 16.5, 0.1), null);
+		pMods = new LinkedHashMap<>();
+		DeviceModel pathModelX = new DeviceModel("Step", Arrays.asList(new QueueValue<String>("start", "startx", true),
+				new QueueValue<String>("stop", "stopx", true), new QueueValue<String>("step", "stepx", true)));
+		pMods.put("stage_x", pathModelX);
+		scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, DeviceModel>(), new ArrayList<IQueueValue<?>>());
+		
+		Map<String, DeviceModel> pModsConf = new LinkedHashMap<>();
+		DeviceModel pathModelY = new DeviceModel("Step", Arrays.asList(new QueueValue<String>("start", "starty", true),
+					new QueueValue<String>("stop", "stopy", true), new QueueValue<String>("step", "stepy", true)));
+		pModsConf.put("stage_y", pathModelY);
+		localValues = new ArrayList<>();
+		localValues.add(new QueueValue<Double>("startx", 0.0));
+		localValues.add(new QueueValue<Double>("stopx", 10.5));
+		localValues.add(new QueueValue<Double>("stepx", 1.5));
+		localValues.add(new QueueValue<Double>("starty", 15.8));
+		localValues.add(new QueueValue<Double>("stopy", 16.5));
+		localValues.add(new QueueValue<Double>("stepy", 0.1));
+		config = new ExperimentConfiguration(localValues, pModsConf, null);
+		assAt = scAtAss.assemble(scAtMod, config);
+		assertEquals("Complex mixed template/localValues specified multiple paths differ from expected", cMod, assAt.getScanReq().getCompoundModel());
 	}
 	
 	/**
@@ -148,10 +183,34 @@ public class ScanAtomAssemblerTest {
 		Map<String, DeviceModel> pMods = new LinkedHashMap<>();
 		DeviceModel pathModel = new DeviceModel("Array", Arrays.asList(new QueueValue<Double[]>("positions", new Double[]{15.8, 16.5, 15.9, 14.2})));
 		pMods.put("stage_y", pathModel);
-		ScanAtom scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, List<IQueueValue<?>>>(), new ArrayList<IQueueValue<?>>());
+		ScanAtom scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, DeviceModel>(), new ArrayList<IQueueValue<?>>());
 		
 		ScanAtom assAt = scAtAss.assemble(scAtMod, new ExperimentConfiguration(null, null, null));
 		assertEquals("Template specified path differs from expected", cMod, assAt.getScanReq().getCompoundModel());
+	}
+	
+	@Test
+	public void testDetectorConfig() throws QueueModelException {
+		ScanAtomAssembler scAtAss = new ScanAtomAssembler(null);
+		Map<String, Object> detectors = new HashMap<>();
+		MandelbrotModel modA = makeMandelbrotModelA(), modB = makeMandelbrotModelB();
+		modA.setExposureTime(30.0);
+		detectors.put("mandelbrotA", modA);
+		modB.setExposureTime(22.0);
+		detectors.put("mandelbrotB", modB);
+		
+		/*
+		 * Fully specified by template
+		 */
+		Map<String, DeviceModel> dMods = new LinkedHashMap<>();
+		DeviceModel devModelA = new DeviceModel(null, Arrays.asList(new QueueValue<Double>("exposureTime", 30.0)));
+		dMods.put("mandelbrotA", devModelA);
+		DeviceModel devModelB = new DeviceModel(null, Arrays.asList(new QueueValue<Double>("exposureTime", 22.0)));
+		dMods.put("mandelbrotB", devModelB);
+		ScanAtom scAtMod = new ScanAtom("testScan", new HashMap<String, DeviceModel>(), dMods, new ArrayList<IQueueValue<?>>());
+		
+		ScanAtom assAt = scAtAss.assemble(scAtMod, new ExperimentConfiguration(null, null, null));
+		assertEquals("Template specified detectors differ from expected", detectors, assAt.getScanReq().getDetectors());
 	}
 	
 	/**
@@ -161,10 +220,12 @@ public class ScanAtomAssemblerTest {
 //	@Test
 	public void testScanAtomCreation() throws Exception {
 		//ScanAtom model
-		Map<String, List<IQueueValue<?>>> pMods = new LinkedHashMap<>();
-		pMods.put("stage_x", Arrays.asList(new QueueValue<String>("model", "Step"), new QueueValue<Double>("start", 0.0), new QueueValue<Double>("stop", 10.5), new QueueValue<Double>("step", 1.5)));
-		Map<String, List<IQueueValue<?>>> dMods = new LinkedHashMap<>();
-		dMods.put("mandelbrotA", Arrays.asList(new QueueValue<String>("exposureTime", true)));
+		Map<String, DeviceModel> pMods = new LinkedHashMap<>();
+		DeviceModel pathModel = new DeviceModel("Step", Arrays.asList(new QueueValue<Double>("start", 0.0), new QueueValue<Double>("stop", 10.5), new QueueValue<Double>("step", 1.5)));
+		pMods.put("stage_x", pathModel);
+		Map<String, DeviceModel> dMods = new LinkedHashMap<>();
+		DeviceModel detectorModel = new DeviceModel(null, Arrays.asList(new QueueValue<String>("exposureTime", true)));
+		dMods.put("mandelbrotA", detectorModel);
 		Collection<IQueueValue<?>> mons = Arrays.asList(new QueueValue<String>("monitor2"));
 		ScanAtom scAtMod = new ScanAtom("testScan", pMods, dMods, mons);
 		qbf.registerAtom(scAtMod);

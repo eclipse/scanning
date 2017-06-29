@@ -5,8 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
@@ -14,6 +18,7 @@ import org.eclipse.scanning.api.device.models.IDetectorModel;
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.event.queues.models.DeviceModel;
+import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
@@ -63,6 +68,54 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		pathAssemblerRegister.put("step", new StepModelAssembler());
 		pathAssemblerRegister.put("array", new ArrayModelAssembler());
 	}
+	
+	
+
+	@Override
+	public void updateBeanModel(ScanAtom model, ExperimentConfiguration config) throws QueueModelException {
+		//Where do we have values we may want to update?
+		// - detectorModelsModel
+		// - pathModelsModel
+		//0) Check for duplicates
+		//1) We update these against their respective Maps in ExpConfig
+		//2) We search the results for values that need replacing from localValues
+		
+		//Paths
+		Map<String, DeviceModel> modelMap = model.getPathModelsModel();
+		Map<String, DeviceModel> configMap = config.getPathModelValues();
+		
+		Set<String> extraPaths = new HashSet<>(configMap.keySet());
+		extraPaths.removeAll(modelMap.keySet());
+		extraPaths.stream().forEach(pathName -> modelMap.put(pathName, configMap.get(pathName)));
+		//Check for duplicates
+		if (extraPaths.size() != configMap.keySet().size()) {
+			Optional<String> deviceName = configMap.keySet().stream().filter(confName -> modelMap.containsKey(confName)).findFirst();
+			logger.error("Both stored and experiment models configure '"+deviceName.get()+"'. Cannot specify multiple configurations for same device");
+			throw new QueueModelException("Cannot specify multiple configurations for same device ('"+deviceName.get()+"')");
+		}
+		
+		for (Map.Entry<String, DeviceModel> pathModel : modelMap.entrySet()) {
+			List<IQueueValue<?>> modelDevConf = pathModel.getValue().getDeviceConfiguration();
+			modelDevConf = modelDevConf.stream().map(option -> updateValue(option, config)).collect(Collectors.toList());
+			pathModel.getValue().setDeviceConfiguration(modelDevConf);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")//We check value is safe to cast before getting near the cast - this is fine 
+	private IQueueValue<?> updateValue(IQueueValue<?> value, ExperimentConfiguration config) {
+		if (value.isReference() && value instanceof QueueValue && value.getValueType().equals(String.class)) {
+			try {
+				String argName = value.getName();
+				value = getRealValue((QueueValue<String>)value, config);
+				value.setName(argName);
+			} catch (QueueModelException qmEx) {
+				throw new ModelEvaluationException(qmEx);
+			}
+		}
+		return value;
+	}
+
+
 
 	@Override
 	public ScanAtom buildNewBean(ScanAtom model) throws QueueModelException {
@@ -91,7 +144,6 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	private <R> CompoundModel<R> prepareScanPaths(Map<String, DeviceModel> pathModels) throws QueueModelException {
 		CompoundModel<R> paths = new CompoundModel<>();
 		
-		pathModels = mergeModelWithConfig(pathModels, config.getPathModelValues());
 		for (String deviceName : pathModels.keySet()) {
 			DeviceModel devModel = pathModels.get(deviceName);
 			
@@ -122,7 +174,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	 *         detector models
 	 * @throws QueueModelException if the detector could not be configured
 	 */
-	private Map<String, Object> prepareDetectors(Map<String, List<IQueueValue<?>>> detectorModels) throws QueueModelException {
+	private Map<String, Object> prepareDetectors(Map<String, DeviceModel> detectorModels) throws QueueModelException {
 		Map<String, Object> detectors = new HashMap<>();
 		for (String detName : detectorModels.keySet()) {
 			IRunnableDevice<Object> detector;
@@ -138,8 +190,8 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 				logger.error("No detector returned by RunnableDeviceService for the name '"+detName+"'");
 				throw new QueueModelException("No detector for name '"+detName+"'");
 			}
-			detModel.setExposureTime((Double)getLocalValue(EXPOSURETIME).evaluate());
-			detModel = configureObject(detModel, detectorModels.get(detName));
+//			detModel.setExposureTime((Double)getRealValue(EXPOSURETIME).evaluate());
+			detModel = configureObject(detModel, detectorModels.get(detName).getDeviceConfiguration());
 			detectors.put(detName, detModel);
 		}
 		
@@ -191,33 +243,19 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		}
 	}
 	
-	private Map<String, DeviceModel> mergeModelWithConfig(Map<String, DeviceModel> model , Map<String, DeviceModel> configModel) throws QueueModelException {
-		for (String axisName : configModel.keySet()) {
-			if (model.containsKey(axisName)) {
-				boolean noReferenceValues = true;
-				
-				if (noReferenceValues) {
-					logger.error("Both stored model and experiment configuration model contain a path for '"+axisName+"'. Cannot specify multiple paths for same device");
-					throw new QueueModelException("Cannot specify multiple paths for same device ('"+axisName+"')");
-				}
-			}
-			model.put(axisName, configModel.get(axisName));
-		}
-		return model;
-	}
-	
-	private boolean updateAllQueueValues(List<IQueueValue<?>> modelValues, List<IQueueValue<?>> configValues) {
-		
-		
-		
-		boolean noReferenceValues = true;
-		for (IQueueValue<?> modVal : modelValues) {
-			if (modVal.isReference()) {
-				updateIQueueValue(modVal);
-				noReferenceValues = false;
-			}
-		}
-		return noReferenceValues;
-	}
+//TODO	private Map<String, DeviceModel> mergeModelWithConfig(Map<String, DeviceModel> model , Map<String, DeviceModel> configModel) throws QueueModelException {
+//		for (String axisName : configModel.keySet()) {
+//			if (model.containsKey(axisName)) {
+//				boolean noReferenceValues = true;
+//				
+//				if (noReferenceValues) {
+//					logger.error("Both stored model and experiment configuration model contain a path for '"+axisName+"'. Cannot specify multiple paths for same device");
+//					throw new QueueModelException("Cannot specify multiple paths for same device ('"+axisName+"')");
+//				}
+//			}
+//			model.put(axisName, configModel.get(axisName));
+//		}
+//		return model;
+//	}
 
 }
