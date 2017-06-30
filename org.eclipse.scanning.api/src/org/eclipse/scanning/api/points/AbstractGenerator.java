@@ -211,6 +211,12 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 		// doing this loop is *much* faster for large arrays
 		// because memory does not have to be allocated.
 		Iterator<IPosition> it = iterator();
+		
+		// Always ask the iterator for size because it is
+		// much faster than actual iteration.
+		if (it instanceof ScanPointIterator) {
+			return ((ScanPointIterator)it).size();
+		}
 		int index = -1;
 		while(it.hasNext()) {
 			it.next();

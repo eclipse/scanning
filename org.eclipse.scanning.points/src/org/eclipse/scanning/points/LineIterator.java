@@ -41,10 +41,10 @@ class LineIterator extends AbstractScanPointIterator {
         double start  = model.getStart();
         double stop   = model.getStop();
         int numPoints = model.size();
-		this.index = 0;
        
 		ScanPointIterator iterator = lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
 		pyIterator = iterator;
+		this.index = 0;
 	}
 		
 	public LineIterator(OneDEqualSpacingGenerator gen) {
@@ -66,6 +66,7 @@ class LineIterator extends AbstractScanPointIterator {
 		ScanPointIterator iterator = lineGeneratorFactory.createObject(
 				names, units, start, stop, numPoints);
 		pyIterator = iterator;
+		this.index = 0;
 	}
 	
 	public LineIterator(OneDStepGenerator gen) {
@@ -86,6 +87,7 @@ class LineIterator extends AbstractScanPointIterator {
 		ScanPointIterator iterator = lineGeneratorFactory.createObject(
 				names, units, start, stop, numPoints);
 		pyIterator = iterator;
+		this.index = 0;
 	}
 
 	@Override

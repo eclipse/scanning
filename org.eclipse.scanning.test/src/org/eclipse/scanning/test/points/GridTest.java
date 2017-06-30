@@ -31,7 +31,6 @@ import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Point;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.GridModel;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class GridTest extends AbstractGeneratorTest {

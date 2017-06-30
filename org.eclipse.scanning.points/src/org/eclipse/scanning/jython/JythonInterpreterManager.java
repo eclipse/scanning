@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * @author Matthew Gerring
  *
  */
-class JythonInterpreterManager {
+public class JythonInterpreterManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(JythonInterpreterManager.class);
 	
@@ -59,6 +59,23 @@ class JythonInterpreterManager {
 	   	Py.setSystemState(state);
  
 	   	configuredState = state;
+	}
+	
+	public static synchronized void addPath(String directory) throws IOException {
+		
+		// Load one of the standard functions if the state has not been created yet.
+		if (configuredState==null) ScanPointGeneratorFactory.JLineGenerator1DFactory();
+
+		// Do nothing if the directory is on the path
+		if (configuredState.path.contains(directory)) return;
+		
+		// Check the directory
+		final File file = new File(directory);
+		if (!file.exists()) throw new IOException("The module directory '"+directory+"' does not exist!");
+		if (!file.isDirectory()) throw new IOException("The module directory path '"+directory+"' is not a folder!");
+		
+		// Add it to the path.
+		configuredState.path.add(directory);
 	}
 
 	private static final String SCRIPTS = "/scripts/";
