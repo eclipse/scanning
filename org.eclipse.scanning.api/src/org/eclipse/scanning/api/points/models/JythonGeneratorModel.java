@@ -1,7 +1,6 @@
 package org.eclipse.scanning.api.points.models;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
