@@ -32,7 +32,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	ScanShapeTest.class,
 	SpiralTest.class,
 	StaticTest.class,
-	StepTest.class
+	StepTest.class,
+	JythonGeneratorTest.class
 
 	// TODO Smoke tests?
 	//GridTestLarge.class, 
