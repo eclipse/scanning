@@ -1,6 +1,7 @@
 package org.eclipse.scanning.api.points.models;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
@@ -83,41 +84,34 @@ public class JythonGeneratorModel extends AbstractPointsModel {
 
 	@Override
 	public boolean equals(Object obj) {
+		
 		if (this == obj)
 			return true;
 		if (!super.equals(obj))
 			return false;
+		
 		if (getClass() != obj.getClass())
 			return false;
+		
 		JythonGeneratorModel other = (JythonGeneratorModel) obj;
-		if (arguments == null) {
-			if (other.arguments != null)
-				return false;
-		} else if (!arguments.equals(other.arguments))
-			return false;
-		if (className == null) {
-			if (other.className != null)
-				return false;
-		} else if (!className.equals(other.className))
-			return false;
-		if (keywords == null) {
-			if (other.keywords != null)
-				return false;
-		} else if (!keywords.equals(other.keywords))
-			return false;
-		if (moduleName == null) {
-			if (other.moduleName != null)
-				return false;
-		} else if (!moduleName.equals(other.moduleName))
-			return false;
-		if (path == null) {
-			if (other.path != null)
-				return false;
-		} else if (!path.equals(other.path))
-			return false;
+		if (!equals(arguments, other.arguments))    return false;
+		if (!equals(keywords,  other.keywords))     return false;
+		if (!equals(className,  other.className))   return false;
+		if (!equals(moduleName,  other.moduleName)) return false;
+		if (!equals(path,  other.path))             return false;
+		
 		return true;
 	}
 
+
+	private boolean equals(Object a, Object b) {
+		if (a == null) {
+			if (b != null)
+				return false;
+		} else if (!a.equals(b))
+			return false;
+		return true;
+	}
 
 	public List<JythonArgument> getArguments() {
 		return arguments;
