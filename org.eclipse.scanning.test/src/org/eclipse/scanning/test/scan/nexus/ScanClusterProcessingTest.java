@@ -43,6 +43,7 @@ import org.eclipse.scanning.test.BrokerTest;
 import org.eclipse.scanning.test.scan.mock.DummyOperationBean;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class ScanClusterProcessingTest extends NexusTest {
@@ -74,6 +75,7 @@ public class ScanClusterProcessingTest extends NexusTest {
 		BrokerTest.stopBroker();
 	}
 	
+	@Ignore("This test occasionally hangs on travis.")
 	@Test
 	public void testNexusScanWithClusterProcessing() throws Exception {
 		testScan(2, 2);
