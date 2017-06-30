@@ -46,6 +46,7 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("This test occasionally hangs on travis.")
 public class ScanClusterProcessingTest extends NexusTest {
 	
 	private static IConsumer<StatusBean> consumer;
@@ -75,7 +76,6 @@ public class ScanClusterProcessingTest extends NexusTest {
 		BrokerTest.stopBroker();
 	}
 	
-	@Ignore("This test occasionally hangs on travis.")
 	@Test
 	public void testNexusScanWithClusterProcessing() throws Exception {
 		testScan(2, 2);
