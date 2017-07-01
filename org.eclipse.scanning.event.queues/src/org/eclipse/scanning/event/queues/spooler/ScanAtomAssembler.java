@@ -81,9 +81,11 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		//2) We search the results for values that need replacing from localValues
 		
 		//Paths
-		Map<String, DeviceModel> modelMap = model.getPathModelsModel();
-		Map<String, DeviceModel> configMap = config.getPathModelValues();
-		
+		updateModelMap(model.getPathModelsModel(), config.getPathModelValues(), config);
+		updateModelMap(model.getDetectorModelsModel(), config.getDetectorModelValues(), config);
+	}
+	
+	private void updateModelMap(Map<String, DeviceModel> modelMap, Map<String, DeviceModel> configMap, ExperimentConfiguration config) throws QueueModelException {
 		Set<String> extraPaths = new HashSet<>(configMap.keySet());
 		extraPaths.removeAll(modelMap.keySet());
 		extraPaths.stream().forEach(pathName -> modelMap.put(pathName, configMap.get(pathName)));
@@ -150,7 +152,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 			//Create the IScanPathModel
 			IScanPathModelAssembler<? extends IScanPathModel> pathAssembler = pathAssemblerRegister.get(devModel.getType().toLowerCase());
 			Object path = pathAssembler.assemble(deviceName, devModel);
-			//TODO Here configure any remaining options (by finding out form the PMA what were the required args)
+			configureObject(path, devModel, pathAssembler.getRequiredArgReferences());
 			
 			//Create the ROIs, if there 
 			List<R> rois = null;
@@ -172,16 +174,17 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	 *        {@link IQueueValue}s which provides the configuration 
 	 * @return Map of String names of detectors against Object configured 
 	 *         detector models
-	 * @throws QueueModelException if the detector could not be configured
+	 * @throws QueueModelException if the detector could not be configured or 
+	 *         no value for EXPOSURETIME is set
 	 */
 	private Map<String, Object> prepareDetectors(Map<String, DeviceModel> detectorModels) throws QueueModelException {
 		Map<String, Object> detectors = new HashMap<>();
-		for (String detName : detectorModels.keySet()) {
-			IRunnableDevice<Object> detector;
+		for (Map.Entry<String, DeviceModel> detectorEntry : detectorModels.entrySet()) {
+			String detName = detectorEntry.getKey();
+			DeviceModel detConfig = detectorEntry.getValue();
 			IDetectorModel detModel;
 			try {
-				detector = ServicesHolder.getDeviceService().getRunnableDevice(detName);
-				detModel = (IDetectorModel) detector.getModel();
+				detModel = (IDetectorModel) ServicesHolder.getDeviceService().getRunnableDevice(detName).getModel();
 			} catch (ClassCastException | NullPointerException ex) {
 				logger.error("Device model returned for detector '"+detName+"' was not a detector model");
 				throw new QueueModelException("Failed to cast '"+detName+"' model to IDetectorModel", ex);
@@ -190,8 +193,13 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 				logger.error("No detector returned by RunnableDeviceService for the name '"+detName+"'");
 				throw new QueueModelException("No detector for name '"+detName+"'");
 			}
-//			detModel.setExposureTime((Double)getRealValue(EXPOSURETIME).evaluate());
-			detModel = configureObject(detModel, detectorModels.get(detName).getDeviceConfiguration());
+			//We always want to set exposure time, so check it's set, set it and to save time don't set it again
+			if (!detConfig.getDeviceConfiguration().stream().anyMatch(option -> EXPOSURETIME.isReference())) {
+				logger.error("No '"+EXPOSURETIME.evaluate()+"' value in input model of detector '"+detName+"'. "+EXPOSURETIME.evaluate()+" is required to configure each detector");
+				throw new QueueModelException("No '"+EXPOSURETIME.evaluate()+"' value in input model of detector '"+detName+"'");
+			}
+			detModel.setExposureTime((Double)detConfig.getDeviceModelValue(EXPOSURETIME).evaluate());
+			detModel = configureObject(detModel, detConfig, Arrays.asList(EXPOSURETIME));
 			detectors.put(detName, detModel);
 		}
 		
@@ -205,19 +213,26 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	}
 	
 	/**
-	 * For a given object and List of {@link IQueueValues}, determine which items in the list represent values which can be set on the object and set them.
+	 * For a given object and List of {@link IQueueValues}, determine which 
+	 * items in the list represent values which can be set on the object and 
+	 * set them. If an item in the configuration appears in the ignoreArray, it 
+	 * will not be set by this method. The method only considers methods on the 
+	 * target obj with names that start with set.
 	 * @param obj T to be configured
 	 * @param configuration List of {@link IQueueValues} representing 
 	 *        configuration
+	 * @param ignoreArray array of {@link IQueueValue} parameters which should 
+	 *        not be set by this method
 	 * @return T obj which has been fully configured
 	 */
-	private <T> T configureObject(T obj, List<IQueueValue<?>> configuration) throws QueueModelException {
+	private <T> T configureObject(T obj, DeviceModel configuration, List<IQueueValue<String>> ignoreList) throws QueueModelException {
 		List<Method> allMethods = Arrays.asList(obj.getClass().getMethods());
 		
-		configuration.stream().forEach(
-				option -> allMethods.stream().filter(method -> option.isSetMethodForName(method))
-				.forEach(method -> setField(method, obj, option)));//TODO By this point all values need to be current
-
+		configuration.getDeviceConfiguration().stream()
+			.filter(option -> ignoreList.stream().anyMatch(ignore -> !ignore.isReference())) //Is this option in the ignore list?
+				.forEach(option -> allMethods.stream().filter(method -> method.getName().startsWith("set")) //Does this method start with set?
+													  .filter(method -> option.isSetMethodForName(method)) //Is this the set method for this option?
+													  .forEach(method -> setField(method, obj, option)));
 		return obj;
 	}
 	
@@ -242,20 +257,5 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 			throw new ModelEvaluationException("Failed configuring "+obj.getClass().getSimpleName()+" with "+setter.getName()+" -> "+evaluated);
 		}
 	}
-	
-//TODO	private Map<String, DeviceModel> mergeModelWithConfig(Map<String, DeviceModel> model , Map<String, DeviceModel> configModel) throws QueueModelException {
-//		for (String axisName : configModel.keySet()) {
-//			if (model.containsKey(axisName)) {
-//				boolean noReferenceValues = true;
-//				
-//				if (noReferenceValues) {
-//					logger.error("Both stored model and experiment configuration model contain a path for '"+axisName+"'. Cannot specify multiple paths for same device");
-//					throw new QueueModelException("Cannot specify multiple paths for same device ('"+axisName+"')");
-//				}
-//			}
-//			model.put(axisName, configModel.get(axisName));
-//		}
-//		return model;
-//	}
 
 }

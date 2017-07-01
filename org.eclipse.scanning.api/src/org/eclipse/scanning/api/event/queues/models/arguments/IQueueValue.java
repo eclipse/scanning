@@ -49,11 +49,18 @@ public interface IQueueValue<V> {
 	 * name as this {@link IQueueValue} and that the argument types match. 
 	 * @param method Method with name to compare
 	 * @return true if the method name is set+{@link #getName()}.
+	 * @throws IllegalArgumentException if this {@link IQueueValue} has the 
+	 *         wrong type
 	 */
 	public default boolean isSetMethodForName(Method method) {
-		return (method.getName().toLowerCase().equals(("set"+getName()).toLowerCase()) && 
-				method.getParameterCount() == 1 &&
-				method.getParameterTypes()[0].equals(getValueType()));
+		if (method.getName().toLowerCase().equals(("set"+getName()).toLowerCase()) && method.getParameterCount() == 1) {
+			Class<?> parameterType = method.getParameterTypes()[0];	
+			if (parameterType.equals(getValueType()) || parameterType.equals(QueueValue.UNBOXEDTYPES.get(getValueType()))) {
+					return true; //TODO This doesn't handle arrays as I haven't included them in UNBOXEDVALUES
+			}
+			throw new IllegalArgumentException(getName()+" is incorrect type ("+getValueType().getSimpleName()+") for set method (expected: "+parameterType.getSimpleName()+")");
+		}
+		return false;
 	}
 	
 	/**

@@ -1,5 +1,8 @@
 package org.eclipse.scanning.api.event.queues.models.arguments;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 
@@ -13,6 +16,25 @@ import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
  * @param <V> Type of the value held by this argument
  */
 public class QueueValue<V> implements IQueueValue<V> {
+	
+	/**
+	 * Boxed and unboxed equivalents. Used by 
+	 * {@link IQueueValue#isSetMethodForName(java.lang.reflect.Method) to 
+	 * determine whether the boxed type stored in the {@link IQueueValue} is 
+	 * the same as the unboxed type it is trying to replace.
+	 */
+	public static final Map<Class<?>, Class<?>> UNBOXEDTYPES;
+	static {
+		UNBOXEDTYPES = new HashMap<>();
+		UNBOXEDTYPES.put(Boolean.class, boolean.class);
+		UNBOXEDTYPES.put(Byte.class, byte.class);
+		UNBOXEDTYPES.put(Character.class, char.class);
+		UNBOXEDTYPES.put(Double.class, double.class);
+		UNBOXEDTYPES.put(Float.class, float.class);
+		UNBOXEDTYPES.put(Integer.class, int.class);
+		UNBOXEDTYPES.put(Long.class, long.class);
+		UNBOXEDTYPES.put(Short.class, short.class);
+	}
 	
 	private String name;
 	private V value;
