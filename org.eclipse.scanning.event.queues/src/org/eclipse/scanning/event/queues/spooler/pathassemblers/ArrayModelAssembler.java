@@ -9,12 +9,12 @@ public class ArrayModelAssembler extends AbstractPathModelAssembler<ArrayModel> 
 	private double[] positions;
 
 	public ArrayModelAssembler() {
-		super(new CommonArgNames[]{CommonArgNames.POSITIONS});
+		super(new String[]{"positions"});
 	}
 
 	@Override
 	public ArrayModel assemble(String name, DeviceModel model) throws QueueModelException {
-		Double[] storedPositions = (Double[]) model.getDeviceModelValue(required[0].getValue()).evaluate();
+		Double[] storedPositions = (Double[]) model.getDeviceModelValue(required[0]);
 		positions = new double[storedPositions.length];
 		for (int i = 0; i < positions.length; i++) {
 			positions[i] = storedPositions[i];

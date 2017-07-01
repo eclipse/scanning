@@ -1,24 +1,44 @@
 package org.eclipse.scanning.api.event.queues.models;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 
 public class DeviceModel {
 	
+	/**
+	 * Boxed and unboxed equivalents. Used by
+	 * {@link #isSetMethodForName(java.lang.reflect.Method) to determine 
+	 * whether the boxed type stored for a given option in deviceConfig is the 
+	 * same as the unboxed type it is trying to replace.
+	 */
+	public static final Map<Class<?>, Class<?>> UNBOXEDTYPES;
+	static {
+		UNBOXEDTYPES = new HashMap<>();
+		UNBOXEDTYPES.put(Boolean.class, boolean.class);
+		UNBOXEDTYPES.put(Byte.class, byte.class);
+		UNBOXEDTYPES.put(Character.class, char.class);
+		UNBOXEDTYPES.put(Double.class, double.class);
+		UNBOXEDTYPES.put(Float.class, float.class);
+		UNBOXEDTYPES.put(Integer.class, int.class);
+		UNBOXEDTYPES.put(Long.class, long.class);
+		UNBOXEDTYPES.put(Short.class, short.class);
+	}
+	
 	private String type;
-	private List<IQueueValue<?>> deviceConfiguration;
+	private Map<String, Object> deviceConfiguration;
 	private List<DeviceModel> roiConfiguration;
 	
-	public DeviceModel(String type, List<IQueueValue<?>> deviceConfiguration) {
+	public DeviceModel(String type, Map<String, Object> deviceConfiguration) {
 		this(type, deviceConfiguration, new ArrayList<>());
 	}
 	
-	public DeviceModel(String type, List<IQueueValue<?>> deviceConfiguration, List<DeviceModel> roiConfiguration) {
+	public DeviceModel(String type, Map<String, Object> deviceConfiguration, List<DeviceModel> roiConfiguration) {
 		this.type = type;
 		this.deviceConfiguration = deviceConfiguration;
 		this.roiConfiguration = roiConfiguration;
@@ -32,11 +52,11 @@ public class DeviceModel {
 		this.type = type;
 	}
 	
-	public List<IQueueValue<?>> getDeviceConfiguration() {
+	public Map<String, Object> getDeviceConfiguration() {
 		return deviceConfiguration;
 	}
 	
-	public void setDeviceConfiguration(List<IQueueValue<?>> deviceConfiguration) {
+	public void setDeviceConfiguration(Map<String, Object> deviceConfiguration) {
 		this.deviceConfiguration = deviceConfiguration;
 	}
 
@@ -48,13 +68,34 @@ public class DeviceModel {
 		this.roiConfiguration = roiConfiguration;
 	}
 
-	public IQueueValue<?> getDeviceModelValue(IQueueValue<String> valueReference) throws QueueModelException {
-		Optional<IQueueValue<?>> value = deviceConfiguration.stream().filter(option -> valueReference.isReferenceFor(option)).findFirst();
-		try {
-			return value.get();
-		} catch (NoSuchElementException nseEX) {
-			throw new QueueModelException("No value in deviceConfiguration for reference '"+valueReference.evaluate()+"'");
+	public Object getDeviceModelValue(String reference) throws QueueModelException {
+		if (deviceConfiguration.containsKey(reference)) {
+			return deviceConfiguration.get(reference);
 		}
+		throw new QueueModelException("No value in deviceConfiguration for reference '"+reference+"'");
+	}
+	
+	/**
+	 * Tests whether the given method is a setter for a String configOption 
+	 * (which is a key in the deviceConfiguration) and that the argument types 
+	 * match. 
+	 * @param method Method with name to compare
+	 * @param configOption String name of key in deviceConfiguration map
+	 * @return true if the method name is set+{@link #getName()}.
+	 * @throws IllegalArgumentException if this {@link IQueueValue} has the 
+	 *         wrong type
+	 */
+	public boolean isSetMethodForName(Method method, String configOption) {
+		if (method.getName().toLowerCase().equals(("set"+configOption).toLowerCase()) && method.getParameterCount() == 1) {
+			Class<?> parameterType = method.getParameterTypes()[0];
+			Object configValue = deviceConfiguration.get(configOption);
+			
+			if (parameterType.equals(configValue.getClass()) || parameterType.equals(UNBOXEDTYPES.get(configValue.getClass()))) {
+					return true; //TODO This doesn't handle arrays as I haven't included them in UNBOXEDVALUES
+			}
+			throw new IllegalArgumentException(configOption+" is incorrect type ("+configValue.getClass().getSimpleName()+") for set method (expected: "+parameterType.getSimpleName()+")");
+		}
+		return false;
 	}
 	
 	@Override
@@ -94,7 +135,7 @@ public class DeviceModel {
 	}
 	@Override
 	public String toString() {
-		String configString = deviceConfiguration.stream().map(option -> option.getName() + "="+option.evaluate().toString()).collect(Collectors.joining(", "));
+		String configString = deviceConfiguration.entrySet().stream().map(option -> option.getKey()+"="+option.getValue()).collect(Collectors.joining(", "));
 		String fullString = "DeviceModel [" + type + ": deviceConfiguration={" + configString + "}"; 
 		if (roiConfiguration.size() > 0) {
 			String roiConfigString = roiConfiguration.stream().map(DeviceModel::toString).collect(Collectors.joining(", "));

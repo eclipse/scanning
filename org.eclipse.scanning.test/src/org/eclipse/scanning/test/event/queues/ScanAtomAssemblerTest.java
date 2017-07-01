@@ -99,8 +99,11 @@ public class ScanAtomAssemblerTest {
 		 * Fully specified by template
 		 */
 		Map<String, DeviceModel> pMods = new LinkedHashMap<>();
-		DeviceModel pathModel = new DeviceModel("Step", Arrays.asList(new QueueValue<Double>("start", 0.0),
-				new QueueValue<Double>("stop", 10.5), new QueueValue<Double>("step", 1.5)));
+		Map<String, Object> devConf = new HashMap<>();
+		devConf.put("start", 0.0);
+		devConf.put("stop", 10.5);
+		devConf.put("step", 1.5);
+		DeviceModel pathModel = new DeviceModel("Step", devConf);
 		pMods.put("stage_x", pathModel);
 		ScanAtom scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, DeviceModel>(), new ArrayList<IQueueValue<?>>());
 		
@@ -127,8 +130,11 @@ public class ScanAtomAssemblerTest {
 		 * Part specified by template, part specified by localValues
 		 */
 		pMods = new LinkedHashMap<>();
-		pathModel = new DeviceModel("Step", Arrays.asList(new QueueValue<String>("start", "start", true),
-				new QueueValue<String>("stop", "stop", true), new QueueValue<String>("step", "step", true)));
+		devConf = new HashMap<>();
+		devConf.put("start", new QueueValue<String>("start", "start", true));
+		devConf.put("stop", new QueueValue<String>("stop", "stop", true));
+		devConf.put("step", new QueueValue<String>("step", "step", true));
+		pathModel = new DeviceModel("Step", devConf);
 		pMods.put("stage_x", pathModel);
 		scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, DeviceModel>(), new ArrayList<IQueueValue<?>>());
 		List<IQueueValue<?>> localValues = new ArrayList<>();
@@ -145,14 +151,19 @@ public class ScanAtomAssemblerTest {
 		 */
 		cMod.addData(new StepModel("stage_y", 15.8, 16.5, 0.1), null);
 		pMods = new LinkedHashMap<>();
-		DeviceModel pathModelX = new DeviceModel("Step", Arrays.asList(new QueueValue<String>("start", "startx", true),
-				new QueueValue<String>("stop", "stopx", true), new QueueValue<String>("step", "stepx", true)));
+		devConf.put("start", new QueueValue<String>("start", "startx", true));
+		devConf.put("stop", new QueueValue<String>("stop", "stopx", true));
+		devConf.put("step", new QueueValue<String>("step", "stepx", true));
+		DeviceModel pathModelX = new DeviceModel("Step", devConf);
 		pMods.put("stage_x", pathModelX);
 		scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, DeviceModel>(), new ArrayList<IQueueValue<?>>());
 		
 		Map<String, DeviceModel> pModsConf = new LinkedHashMap<>();
-		DeviceModel pathModelY = new DeviceModel("Step", Arrays.asList(new QueueValue<String>("start", "starty", true),
-					new QueueValue<String>("stop", "stopy", true), new QueueValue<String>("step", "stepy", true)));
+		Map<String, Object> devConfY = new HashMap<>();
+		devConfY.put("start", new QueueValue<String>("start", "starty", true));
+		devConfY.put("stop", new QueueValue<String>("stop", "stopy", true));
+		devConfY.put("step", new QueueValue<String>("step", "stepy", true));
+		DeviceModel pathModelY = new DeviceModel("Step", devConfY);
 		pModsConf.put("stage_y", pathModelY);
 		localValues = new ArrayList<>();
 		localValues.add(new QueueValue<Double>("startx", 0.0));
@@ -181,7 +192,9 @@ public class ScanAtomAssemblerTest {
 		 * Fully specified by template
 		 */
 		Map<String, DeviceModel> pMods = new LinkedHashMap<>();
-		DeviceModel pathModel = new DeviceModel("Array", Arrays.asList(new QueueValue<Double[]>("positions", new Double[]{15.8, 16.5, 15.9, 14.2})));
+		Map<String, Object> devConf = new HashMap<>();
+		devConf.put("positions", new Double[]{15.8, 16.5, 15.9, 14.2});
+		DeviceModel pathModel = new DeviceModel("Array", devConf);
 		pMods.put("stage_y", pathModel);
 		ScanAtom scAtMod = new ScanAtom("testScan", pMods, new HashMap<String, DeviceModel>(), new ArrayList<IQueueValue<?>>());
 		
@@ -203,9 +216,13 @@ public class ScanAtomAssemblerTest {
 		 * Fully specified by template
 		 */
 		Map<String, DeviceModel> dMods = new LinkedHashMap<>();
-		DeviceModel devModelA = new DeviceModel(null, Arrays.asList(new QueueValue<Double>("exposureTime", 30.0)));
+		Map<String, Object> devConfA = new HashMap<>();
+		devConfA.put("exposureTime", 30.0);
+		DeviceModel devModelA = new DeviceModel(null, devConfA);
 		dMods.put("mandelbrotA", devModelA);
-		DeviceModel devModelB = new DeviceModel(null, Arrays.asList(new QueueValue<Double>("exposureTime", 22.0)));
+		Map<String, Object> devConfB = new HashMap<>();
+		devConfB.put("exposureTime", 22.0);
+		DeviceModel devModelB = new DeviceModel(null, devConfB);
 		dMods.put("mandelbrotB", devModelB);
 		ScanAtom scAtMod = new ScanAtom("testScan", new HashMap<String, DeviceModel>(), dMods, new ArrayList<IQueueValue<?>>());
 		

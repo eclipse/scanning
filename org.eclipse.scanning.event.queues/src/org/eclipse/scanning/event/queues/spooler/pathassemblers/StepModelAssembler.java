@@ -9,14 +9,14 @@ public class StepModelAssembler extends AbstractPathModelAssembler<StepModel> {
 	private Double start, stop, step;
 	
 	public StepModelAssembler() {
-		super(new CommonArgNames[]{CommonArgNames.START, CommonArgNames.STOP, CommonArgNames.STEP});
+		super(new String[]{"start", "stop", "step"});
 	}
 
 	@Override
 	public StepModel assemble(String name, DeviceModel model) throws QueueModelException {
-		start = (Double) model.getDeviceModelValue(required[0].getValue()).evaluate();
-		stop = (Double) model.getDeviceModelValue(required[1].getValue()).evaluate();
-		step = (Double) model.getDeviceModelValue(required[2].getValue()).evaluate();
+		start = (Double) model.getDeviceModelValue(required[0]);
+		stop = (Double) model.getDeviceModelValue(required[1]);
+		step = (Double) model.getDeviceModelValue(required[2]);
 		
 		return new StepModel(name, start, stop, step);
 	}

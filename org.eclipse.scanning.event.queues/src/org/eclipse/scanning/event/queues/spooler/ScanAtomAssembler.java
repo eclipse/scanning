@@ -10,9 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.models.IDetectorModel;
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
@@ -39,7 +37,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	private static final Logger logger = LoggerFactory.getLogger(ScanAtomAssembler.class);
 	
 	//We always want to set this value for the detectors
-	private static final QueueValue<String> EXPOSURETIME = new QueueValue<>("exposureTime", true);
+	private static final String EXPOSURETIME = "exposureTime";
 	
 	private Map<String, IScanPathModelAssembler<? extends IScanPathModel>> pathAssemblerRegister;
 	
@@ -97,27 +95,26 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		}
 		
 		for (Map.Entry<String, DeviceModel> pathModel : modelMap.entrySet()) {
-			List<IQueueValue<?>> modelDevConf = pathModel.getValue().getDeviceConfiguration();
-			modelDevConf = modelDevConf.stream().map(option -> updateValue(option, config)).collect(Collectors.toList());
+			Map<String, Object> modelDevConf = pathModel.getValue().getDeviceConfiguration();
+			modelDevConf.entrySet().stream().filter(option -> (option.getValue() instanceof IQueueValue))
+				.forEach(option -> modelDevConf.put(option.getKey(), setValue((IQueueValue<?>) option.getValue(), config)));
 			pathModel.getValue().setDeviceConfiguration(modelDevConf);
 		}
 	}
 	
 	@SuppressWarnings("unchecked")//We check value is safe to cast before getting near the cast - this is fine 
-	private IQueueValue<?> updateValue(IQueueValue<?> value, ExperimentConfiguration config) {
-		if (value.isReference() && value instanceof QueueValue && value.getValueType().equals(String.class)) {
+	private Object setValue(IQueueValue<?> queueValue, ExperimentConfiguration config) {
+		if (queueValue.isReference() && queueValue instanceof QueueValue && queueValue.getValueType().equals(String.class)) {
 			try {
-				String argName = value.getName();
-				value = getRealValue((QueueValue<String>)value, config);
-				value.setName(argName);
+				String argName = queueValue.getName();
+				queueValue = getRealValue((QueueValue<String>)queueValue, config);
+				queueValue.setName(argName);
 			} catch (QueueModelException qmEx) {
 				throw new ModelEvaluationException(qmEx);
 			}
-		}
-		return value;
+		}//TODO Add checking of arg type recursively here.
+		return queueValue.evaluate();
 	}
-
-
 
 	@Override
 	public ScanAtom buildNewBean(ScanAtom model) throws QueueModelException {
@@ -194,11 +191,11 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 				throw new QueueModelException("No detector for name '"+detName+"'");
 			}
 			//We always want to set exposure time, so check it's set, set it and to save time don't set it again
-			if (!detConfig.getDeviceConfiguration().stream().anyMatch(option -> EXPOSURETIME.isReference())) {
-				logger.error("No '"+EXPOSURETIME.evaluate()+"' value in input model of detector '"+detName+"'. "+EXPOSURETIME.evaluate()+" is required to configure each detector");
-				throw new QueueModelException("No '"+EXPOSURETIME.evaluate()+"' value in input model of detector '"+detName+"'");
+			if (!detConfig.getDeviceConfiguration().containsKey(EXPOSURETIME)) {
+				logger.error("No '"+EXPOSURETIME+"' value in input model of detector '"+detName+"'. "+EXPOSURETIME+" is required to configure each detector");
+				throw new QueueModelException("No '"+EXPOSURETIME+"' value in input model of detector '"+detName+"'");
 			}
-			detModel.setExposureTime((Double)detConfig.getDeviceModelValue(EXPOSURETIME).evaluate());
+			detModel.setExposureTime((Double)detConfig.getDeviceModelValue(EXPOSURETIME));
 			detModel = configureObject(detModel, detConfig, Arrays.asList(EXPOSURETIME));
 			detectors.put(detName, detModel);
 		}
@@ -208,7 +205,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	
 	private Collection<String> prepareMonitors(Collection<IQueueValue<?>> monitorsModel) {
 		List<String> monitors = new ArrayList<>();
-		
+		//TODO
 		return monitors;
 	}
 	
@@ -225,14 +222,14 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	 *        not be set by this method
 	 * @return T obj which has been fully configured
 	 */
-	private <T> T configureObject(T obj, DeviceModel configuration, List<IQueueValue<String>> ignoreList) throws QueueModelException {
+	private <T> T configureObject(T obj, DeviceModel configuration, List<String> ignoreList) throws QueueModelException {
 		List<Method> allMethods = Arrays.asList(obj.getClass().getMethods());
+		Map<String, Object> devConf = configuration.getDeviceConfiguration();
 		
-		configuration.getDeviceConfiguration().stream()
-			.filter(option -> ignoreList.stream().anyMatch(ignore -> !ignore.isReference())) //Is this option in the ignore list?
-				.forEach(option -> allMethods.stream().filter(method -> method.getName().startsWith("set")) //Does this method start with set?
-													  .filter(method -> option.isSetMethodForName(method)) //Is this the set method for this option?
-													  .forEach(method -> setField(method, obj, option)));
+		devConf.entrySet().stream().filter(option -> !ignoreList.contains(option.getKey())) //Is this option in the ignore list?
+			.forEach(option ->allMethods.stream().filter(method -> method.getName().startsWith("set")) //Does this method start with set?
+					  .filter(method -> configuration.isSetMethodForName(method, option.getKey())) //Is this the set method for this option?
+					  .forEach(method -> setField(method, obj, option)));		
 		return obj;
 	}
 	
@@ -243,18 +240,12 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	 * @param obj T on which the setter method will be called
 	 * @param value {@link IQueueValue} defining setter argument
 	 */
-	private <T> void setField(Method setter, T obj, IQueueValue<?> value) {
+	private <T> void setField(Method setter, T obj, Object value) {
 		try {
-			setter.invoke(obj, value.evaluate());
+			setter.invoke(obj, value);
 		} catch (Exception ex) {
-			Object evaluated = null;
-			try {
-				evaluated = value.evaluate();
-			} catch (ModelEvaluationException meEx) {
-				//If this is the failure, we leave evaluated at null and the problem should be clear in the log...
-			}
-			logger.error("Configuring "+obj.getClass().getSimpleName()+" failed. Could not set value of '"+setter.getName()+"' to '"+evaluated+"'");
-			throw new ModelEvaluationException("Failed configuring "+obj.getClass().getSimpleName()+" with "+setter.getName()+" -> "+evaluated);
+			logger.error("Configuring "+obj.getClass().getSimpleName()+" failed. Could not set value of '"+setter.getName()+"' to '"+value+"'");
+			throw new ModelEvaluationException("Failed configuring "+obj.getClass().getSimpleName()+" with "+setter.getName()+" -> "+value);
 		}
 	}
 
