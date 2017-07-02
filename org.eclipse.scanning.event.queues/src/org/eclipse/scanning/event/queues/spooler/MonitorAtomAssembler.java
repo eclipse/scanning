@@ -2,6 +2,7 @@ package org.eclipse.scanning.event.queues.spooler;
 
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.MonitorAtom;
+import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 
 public final class MonitorAtomAssembler extends AbstractBeanAssembler<MonitorAtom> {
@@ -21,9 +22,13 @@ public final class MonitorAtomAssembler extends AbstractBeanAssembler<MonitorAto
 
 
 	@Override
-	public MonitorAtom setBeanName(MonitorAtom bean) {
-		// TODO Auto-generated method stub
-		return null;
+	public void setBeanName(MonitorAtom bean) {
+		bean.setName("Measure current value of '"+bean.getMonitor()+"'");
+	}
+
+	@Override
+	public void updateBeanModel(MonitorAtom model, ExperimentConfiguration config) throws QueueModelException {
+		//No values to update here
 	}
 
 

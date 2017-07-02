@@ -3,11 +3,13 @@ package org.eclipse.scanning.event.queues.spooler;
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
+import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 
 public final class SubTaskAtomAssembler extends AbstractBeanAssembler<SubTaskAtom> {
 	
 	private AtomQueueBuilder<SubTaskAtom, QueueAtom> atomQueueBuider;
+	private ExperimentConfiguration config;
 	
 	public SubTaskAtomAssembler(IQueueBeanFactory queueBeanFactory) {
 		super(queueBeanFactory);
@@ -21,13 +23,19 @@ public final class SubTaskAtomAssembler extends AbstractBeanAssembler<SubTaskAto
 		atom.setRunTime(model.getRunTime());
 		atom.setModel(false);
 		
-		return atomQueueBuider.populateAtomQueue(model, atom, config);
+		SubTaskAtom subTask = atomQueueBuider.populateAtomQueue(model, atom, config);
+		config = null;
+		return subTask;
 	}
 
 	@Override
-	public SubTaskAtom setBeanName(SubTaskAtom bean) {
-		// TODO Auto-generated method stub
-		return null;
+	public void setBeanName(SubTaskAtom bean) {
+		//Name should already be set on the SubTaskAtom
+	}
+
+	@Override
+	public void updateBeanModel(SubTaskAtom model, ExperimentConfiguration config) throws QueueModelException {
+		this.config = config;
 	}
 
 }
