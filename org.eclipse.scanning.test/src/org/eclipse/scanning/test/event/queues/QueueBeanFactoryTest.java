@@ -2,6 +2,7 @@ package org.eclipse.scanning.test.event.queues;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
+import org.eclipse.scanning.api.event.queues.models.DeviceModel;
 import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
@@ -232,7 +234,9 @@ public class QueueBeanFactoryTest {
 	public void testSimpleQueueValueConfigAndBuild() throws QueueModelException {
 		//This is the positioner atom we want...
 		PositionerAtom positAtomA = new PositionerAtom("setDummy","dummy", 10);
+		positAtomA.setName("Set position of 'dummy'=10");
 		PositionerAtom positAtomB = new PositionerAtom("setYummy","yummy", 80.0);
+		positAtomB.setName("Set position of 'yummy'=80.0");
 		
 		//... and these are the bits that are needed to make the atom
 		PositionerAtom positAModel = new PositionerAtom("setDummy", true, "dummy", new QueueValue<String>("dummyValue", true));
@@ -268,11 +272,19 @@ public class QueueBeanFactoryTest {
 		 */
 		
 		//ScanAtom model
-		Map<String, List<IQueueValue<?>>> pMods = new LinkedHashMap<>();
-		pMods.put("Step", Arrays.asList(new QueueValue<Double>(0.0), new QueueValue<Double>(10.5), new QueueValue<Double>(1.5)));
-		Map<String, List<IQueueValue<?>>> dMods = new LinkedHashMap<>();
-		dMods.put("mandelbrotA", Arrays.asList(new QueueValue<String>("exposureTime", true)));
-		Collection<IQueueValue<?>> mons = Arrays.asList(new QueueValue<String>("monitor2"));
+		Map<String, DeviceModel> pMods = new LinkedHashMap<>();
+		Map<String, Object> pathConf = new HashMap<>();
+		pathConf.put("start", 0.0);
+		pathConf.put("stop", 10.5);
+		pathConf.put("step", 1.5);
+		pMods.put("stage_x", new DeviceModel("step", pathConf));
+		Map<String, DeviceModel> dMods = new LinkedHashMap<>();
+		Map<String, Object> detAConf = new HashMap<>();
+		detAConf.put("exposureTime", new QueueValue<String>("exposureTime", true));
+		DeviceModel detDevMod = new DeviceModel(null, detAConf);
+		dMods.put("mandelbrotA", detDevMod);
+		dMods.put("mandelbrotB", detDevMod);
+		Collection<Object> mons = Arrays.asList(new QueueValue<String>("monitor2"));
 		ScanAtom scAtMod = new ScanAtom("testScan", pMods, dMods, mons);
 		qbf.registerAtom(scAtMod);
 		
@@ -304,7 +316,30 @@ public class QueueBeanFactoryTest {
 		qbf.registerGlobalValue(new QueueValue<Double>("homePosition", 1.235));
 		
 		ExperimentConfiguration config = new ExperimentConfiguration(Arrays.asList(new QueueValue<Double>("exposureTime", 30.0)), null, null);
-		assertEquals("Produced task is not correctly configured", createCompleteDefaultTask(), qbf.assembleDefaultTaskBean(config));
+		
+		TaskBean exemplar = createCompleteDefaultTask(), produced = qbf.assembleDefaultTaskBean(config);
+		
+		if (!exemplar.equals(produced)) {
+			assertTrue("Atom queue of "+produced.getName()+" are different lengths", exemplar.atomQueueSize() == produced.atomQueueSize());
+			for (int i=0; i < produced.getAtomQueue().size(); i++) {
+				SubTaskAtom exemplarSubTask = exemplar.getAtomQueue().get(i);
+				SubTaskAtom producedSubTask = produced.getAtomQueue().get(i);
+				if (!exemplarSubTask.equals(producedSubTask)) {
+					analyseAtomQueues(producedSubTask, exemplarSubTask);
+				}
+			}
+		}
+		
+		assertEquals("Produced task is not correctly configured", exemplar, produced);
+	}
+	
+	private void analyseAtomQueues(SubTaskAtom produced, SubTaskAtom exemplar) {
+		List<QueueAtom> exemplarAtomQueue = exemplar.getAtomQueue();
+		List<QueueAtom> producedAtomQueue = produced.getAtomQueue();
+		assertTrue("Atom queues of "+produced.getName()+" are different lengths", exemplar.atomQueueSize() == produced.atomQueueSize());
+		for (int i=0; i < producedAtomQueue.size(); i++) {
+			assertEquals(exemplarAtomQueue.get(i), producedAtomQueue.get(i));
+		}
 	}
 	
 	private TaskBean createCompleteDefaultTask() throws ScanningException {
@@ -312,8 +347,11 @@ public class QueueBeanFactoryTest {
 		
 		MonitorAtom monAt1 = new MonitorAtom("testMon1", "monitor1"), 
 					monAt2 = new MonitorAtom("testMon2", "monitor2");
+		monAt1.setName("Measure current value of 'monitor1'");
+		monAt2.setName("Measure current value of 'monitor2'");
 		
 		PositionerAtom posAt = new PositionerAtom("testHomer", "stage_x", 1.235);
+		posAt.setName("Set position of 'stage_x'=1.235");
 		
 		SubTaskAtom stAt1 = new SubTaskAtom("testSubTask1", "Reset stage x position");
 		stAt1.addAtom(posAt);
@@ -328,9 +366,11 @@ public class QueueBeanFactoryTest {
 		return defaultTB;
 	}
 	
-	private ScanAtom createScanAtom() throws ScanningException {
-		ScanRequest<?> scanReq = new ScanRequest<>();
-		scanReq.setCompoundModel(new CompoundModel<>(Arrays.asList(new StepModel("stage_x", 0.0, 10.5, 1.5))));
+	private <T> ScanAtom createScanAtom() throws ScanningException {
+		ScanRequest<T> scanReq = new ScanRequest<>();
+		CompoundModel<T> cMod = new CompoundModel<>();
+		cMod.addData(new StepModel("stage_x", 0.0, 10.5, 1.5), null);
+		scanReq.setCompoundModel(cMod);
 		Map<String, Object> detectors = new HashMap<>();
 		detectors.put("mandelbrotA", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotA").getModel());
 		((IDetectorModel)detectors.get("mandelbrotA")).setExposureTime(30);
@@ -338,8 +378,23 @@ public class QueueBeanFactoryTest {
 		((IDetectorModel)detectors.get("mandelbrotB")).setExposureTime(30);
 		scanReq.setDetectors(detectors);
 		scanReq.setMonitorNames(Arrays.asList("monitor2"));
-		return new ScanAtom("testScan", scanReq);
+		ScanAtom scAt = new ScanAtom("testScan", scanReq);
+		scAt.setName("Scan of 'stage_x' (Step) collecting data with 'mandelbrotB', 'mandelbrotA' detector(s)");
+		return scAt;
 	}
+	
+//	TODO OLDprivate ScanAtom createScanAtom() throws ScanningException {
+//		ScanRequest<?> scanReq = new ScanRequest<>();
+//		scanReq.setCompoundModel(new CompoundModel<>(Arrays.asList(new StepModel("stage_x", 0.0, 10.5, 1.5))));
+//		Map<String, Object> detectors = new HashMap<>();
+//		detectors.put("mandelbrotA", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotA").getModel());
+//		((IDetectorModel)detectors.get("mandelbrotA")).setExposureTime(30);
+//		detectors.put("mandelbrotB", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotB").getModel());
+//		((IDetectorModel)detectors.get("mandelbrotB")).setExposureTime(30);
+//		scanReq.setDetectors(detectors);
+//		scanReq.setMonitorNames(Arrays.asList("monitor2"));
+//		return new ScanAtom("testScan", scanReq);
+//	}
 		
 		
 //		//This example taken from /dls_sw/i15-1/scripts/m1.py; is for setting the voltages on the I15-1 bimorph mirror
