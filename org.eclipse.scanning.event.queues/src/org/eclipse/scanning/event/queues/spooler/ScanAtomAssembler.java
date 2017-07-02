@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.StringJoiner;
 import java.util.stream.Collectors;
 
@@ -99,6 +102,26 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		name.add("detector(s)");
 		
 		bean.setName(name.toString());
+	}
+	
+	private void updateModelMap(Map<String, DeviceModel> modelMap, Map<String, DeviceModel> configMap, ExperimentConfiguration config) throws QueueModelException {
+		Set<String> extraPaths = new HashSet<>(configMap.keySet());
+		extraPaths.removeAll(modelMap.keySet());
+		extraPaths.stream().forEach(pathName -> modelMap.put(pathName, configMap.get(pathName)));
+		//Check for duplicates
+		if (extraPaths.size() != configMap.keySet().size()) {
+			Optional<String> deviceName = configMap.keySet().stream().filter(confName -> modelMap.containsKey(confName)).findFirst();
+			logger.error("Both stored and experiment models configure '"+deviceName.get()+"'. Cannot specify multiple configurations for same device");
+			throw new QueueModelException("Cannot specify multiple configurations for same device ('"+deviceName.get()+"')");
+		}
+		
+		for (Map.Entry<String, DeviceModel> pathModel : modelMap.entrySet()) {
+			Map<String, Object> modelDevConf = pathModel.getValue().getDeviceConfiguration();
+			replaceMapIQueueValues(modelDevConf, config);
+//			modelDevConf.entrySet().stream().filter(option -> (option.getValue() instanceof IQueueValue))
+//				.forEach(option -> modelDevConf.put(option.getKey(), setValue((IQueueValue<?>) option.getValue(), config)));
+			pathModel.getValue().setDeviceConfiguration(modelDevConf);
+		}
 	}
 	
 	private <R> CompoundModel<R> prepareScanPaths(Map<String, DeviceModel> pathModels) throws QueueModelException {

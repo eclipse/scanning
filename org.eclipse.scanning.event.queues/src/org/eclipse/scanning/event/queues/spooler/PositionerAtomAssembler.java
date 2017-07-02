@@ -1,9 +1,11 @@
 package org.eclipse.scanning.event.queues.spooler;
 
+import java.util.stream.Collectors;
+
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
+import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
-import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 
 public final class PositionerAtomAssembler extends AbstractBeanAssembler<PositionerAtom> {
 
@@ -22,24 +24,21 @@ public final class PositionerAtomAssembler extends AbstractBeanAssembler<Positio
 		 * targets which have references in the localValues or the 
 		 * globalValues (see {@link QueueBeanFactory})
 		 */
-		for (String dev : model.getPositionerNames()) {
-			Object devTgt = model.getPositionerTarget(dev);
-			if (devTgt instanceof IQueueValue) {
-				//It's a probably a value name...
-				devTgt = updateIQueueValue((IQueueValue<?>) devTgt).evaluate();
-			}
-			atom.addPositioner(dev, devTgt);
-		}
-		
+		model.getPositionerNames().stream().forEach(dev -> atom.addPositioner(dev, model.getPositionerTarget(dev)));
 		return atom;
 	}
 
+
 	@Override
-	public PositionerAtom setBeanName(PositionerAtom bean) {
-		// TODO Auto-generated method stub
-		return null;
+	public void setBeanName(PositionerAtom bean) {
+		StringBuffer name = new StringBuffer("Set position of ");
+		name.append(bean.getPositionerNames().stream().map(devName -> "'"+devName+"'="+bean.getPositionerConfig().get(devName)).collect(Collectors.joining(", ")));
+		bean.setName(name.toString());
 	}
-	
-	
+
+	@Override
+	public void updateBeanModel(PositionerAtom model, ExperimentConfiguration config) throws QueueModelException {
+		replaceMapIQueueValues(model.getPositionerConfig(), config);
+	}
 
 }
