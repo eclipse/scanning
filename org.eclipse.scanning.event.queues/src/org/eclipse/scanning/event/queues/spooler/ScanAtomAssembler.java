@@ -5,11 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.models.IDetectorModel;
@@ -20,7 +19,6 @@ import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
-import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.IScanPathModel;
@@ -40,24 +38,6 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	private static final String EXPOSURETIME = "exposureTime";
 	
 	private Map<String, IScanPathModelAssembler<? extends IScanPathModel>> pathAssemblerRegister;
-	
-	/*
-	 * 
-	 * 
-	 * def mscan(path=None, mon=None, det=None, now=False, block=True,
-     *    allow_preprocess=False, broker_uri=None):
-     *    
-     *    submit(request=scan_request(path=path, mon=mon, det=det, allow_preprocess=allow_preprocess),
-     *     now=now, block=block, broker_uri=broker_uri)
-     * 
-     * def scan_request(path=None, mon=None, det=None, file=None, allow_preprocess=False):
-     *    cmodel = CompoundModel()
-     *    for (model, rois) in scan_paths:
-     *       cmodel.addData(model, rois)
-     *    detector_map = HashMap()
-     *    for (name, model) in detectors:
-     *       detector_map[name] = model
-	 */
 
 	public ScanAtomAssembler(IQueueBeanFactory queueBeanFactory) {
 		super(queueBeanFactory);
@@ -66,8 +46,6 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		pathAssemblerRegister.put("step", new StepModelAssembler());
 		pathAssemblerRegister.put("array", new ArrayModelAssembler());
 	}
-	
-	
 
 	@Override
 	public void updateBeanModel(ScanAtom model, ExperimentConfiguration config) throws QueueModelException {
@@ -81,39 +59,6 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		//Paths
 		updateModelMap(model.getPathModelsModel(), config.getPathModelValues(), config);
 		updateModelMap(model.getDetectorModelsModel(), config.getDetectorModelValues(), config);
-	}
-	
-	private void updateModelMap(Map<String, DeviceModel> modelMap, Map<String, DeviceModel> configMap, ExperimentConfiguration config) throws QueueModelException {
-		Set<String> extraPaths = new HashSet<>(configMap.keySet());
-		extraPaths.removeAll(modelMap.keySet());
-		extraPaths.stream().forEach(pathName -> modelMap.put(pathName, configMap.get(pathName)));
-		//Check for duplicates
-		if (extraPaths.size() != configMap.keySet().size()) {
-			Optional<String> deviceName = configMap.keySet().stream().filter(confName -> modelMap.containsKey(confName)).findFirst();
-			logger.error("Both stored and experiment models configure '"+deviceName.get()+"'. Cannot specify multiple configurations for same device");
-			throw new QueueModelException("Cannot specify multiple configurations for same device ('"+deviceName.get()+"')");
-		}
-		
-		for (Map.Entry<String, DeviceModel> pathModel : modelMap.entrySet()) {
-			Map<String, Object> modelDevConf = pathModel.getValue().getDeviceConfiguration();
-			modelDevConf.entrySet().stream().filter(option -> (option.getValue() instanceof IQueueValue))
-				.forEach(option -> modelDevConf.put(option.getKey(), setValue((IQueueValue<?>) option.getValue(), config)));
-			pathModel.getValue().setDeviceConfiguration(modelDevConf);
-		}
-	}
-	
-	@SuppressWarnings("unchecked")//We check value is safe to cast before getting near the cast - this is fine 
-	private Object setValue(IQueueValue<?> queueValue, ExperimentConfiguration config) {
-		if (queueValue.isReference() && queueValue instanceof QueueValue && queueValue.getValueType().equals(String.class)) {
-			try {
-				String argName = queueValue.getName();
-				queueValue = getRealValue((QueueValue<String>)queueValue, config);
-				queueValue.setName(argName);
-			} catch (QueueModelException qmEx) {
-				throw new ModelEvaluationException(qmEx);
-			}
-		}//TODO Add checking of arg type recursively here.
-		return queueValue.evaluate();
 	}
 
 	@Override
@@ -135,13 +80,29 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	}
 
 	@Override
-	public ScanAtom setBeanName(ScanAtom bean) {
-		// TODO Auto-generated method stub
-		return null;
+	public void setBeanName(ScanAtom bean) {
+		StringJoiner name = new StringJoiner(" ");
+		name.add("Scan of");
+		
+		ScanRequest<?> scanReq = bean.getScanReq();
+		StringJoiner paths = new StringJoiner(", ");
+		for (Object pathModel : scanReq.getCompoundModel().getModels()) {
+			for (String pathName : pathAssemblerRegister.keySet()) {
+				if (pathModel.getClass().getSimpleName().toLowerCase().startsWith(pathName)) {
+					paths.add(pathAssemblerRegister.get(pathName).getString(pathModel));
+				}
+			}
+		}
+		name.add(paths.toString());
+		name.add("collecting data with");
+		name.add(scanReq.getDetectors().keySet().stream().map(detName -> "'"+detName+"'").collect(Collectors.joining(", ")));
+		name.add("detector(s)");
+		
+		bean.setName(name.toString());
 	}
 	
 	private <R> CompoundModel<R> prepareScanPaths(Map<String, DeviceModel> pathModels) throws QueueModelException {
-		CompoundModel<R> paths = new CompoundModel<>();
+		CompoundModel<R> paths = new CompoundModel<>(new ArrayList<Object>(7));//Sets empty model to avoid NPE when building the bean name and there are no paths
 		
 		for (String deviceName : pathModels.keySet()) {
 			DeviceModel devModel = pathModels.get(deviceName);
@@ -156,7 +117,6 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 			if (devModel.getRoiConfiguration().size() > 0 ) {
 				//TODO
 			}
-			
 			paths.addData(path, rois);
 		}
 		return paths;
@@ -203,9 +163,23 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		return detectors;
 	}
 	
-	private Collection<String> prepareMonitors(Collection<IQueueValue<?>> monitorsModel) {
+	private Collection<String> prepareMonitors(Collection<Object> monitorsModel) throws QueueModelException {
 		List<String> monitors = new ArrayList<>();
-		//TODO
+		for (Object monitor : monitorsModel) {
+			if (monitor instanceof String) {
+				monitors.add((String)monitor);
+				continue;
+			} else if (monitor instanceof IQueueValue) {
+				IQueueValue<?> monitorPlaceholder = (IQueueValue<?>)monitor;
+				if (monitorPlaceholder.getValueType().equals(String.class)){
+					monitors.add((String)monitorPlaceholder.evaluate());
+					continue;
+				}
+			}
+			logger.error("Object in monitorsModel is not name of Scannable (it is not a String & cannot be evaluated as one; type: "+monitor.getClass().getSimpleName()+")");
+			throw new QueueModelException("Monitor model object cannot be resolved as a String Scannable name");
+		}
+
 		return monitors;
 	}
 	

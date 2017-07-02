@@ -44,7 +44,7 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	
 	private Map<String, DeviceModel> detectorModelsModel;
 	private Map<String, DeviceModel> pathModelsModel;
-	private Collection<IQueueValue<?>> monitorsModel;
+	private Collection<Object> monitorsModel;
 	
 	private String queueMessage;
 	
@@ -121,7 +121,7 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	 * @param monitors Collection of {@link IQueueValue} defining monitors to 
 	 *        be read
 	 */
-	public ScanAtom(String scShrtNm, Map<String, DeviceModel> pathModels, Map<String, DeviceModel> detectorModels, Collection<IQueueValue<?>> monitors) {
+	public ScanAtom(String scShrtNm, Map<String, DeviceModel> pathModels, Map<String, DeviceModel> detectorModels, Collection<Object> monitors) {
 		this(scShrtNm, true);
 		pathModelsModel = pathModels;
 		detectorModelsModel = detectorModels;
@@ -186,11 +186,11 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		this.pathModelsModel = pathModelsModel;
 	}
 
-	public Collection<IQueueValue<?>> getMonitorsModel() {
+	public Collection<Object> getMonitorsModel() {
 		return monitorsModel;
 	}
 
-	public void setMonsModel(Collection<IQueueValue<?>> monitorsModel) {
+	public void setMonsModel(Collection<Object> monitorsModel) {
 		this.monitorsModel = monitorsModel;
 	}
 

@@ -25,6 +25,11 @@ public class ArrayModelAssembler extends AbstractPathModelAssembler<ArrayModel> 
 		return arrayModel;
 	}
 
+	@Override
+	public String getString(Object model) {
+		return "'"+((ArrayModel) model).getName()+"' (Arrays)";
+	}
+
 
 
 }

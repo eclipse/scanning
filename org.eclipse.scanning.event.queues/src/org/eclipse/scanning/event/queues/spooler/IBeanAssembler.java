@@ -14,21 +14,18 @@ public interface IBeanAssembler<Q extends Queueable> {
 		Q bean;
 		updateBeanModel(model, config);
 		
-//		setExperimentConfiguration(config);
-		
 		if (model.isModel()) {
 			bean = buildNewBean(model);
 		} else {
 			bean = model;
 		}
 		setBeanName(bean);
-//		setExperimentConfiguration(null);
 		return bean;
 	}
 	
 	Q buildNewBean(Q model) throws QueueModelException;
 	
-	Q setBeanName(Q bean);
+	void setBeanName(Q bean);
 	
 	IQueueBeanFactory getQueueBeanFactory();
 	

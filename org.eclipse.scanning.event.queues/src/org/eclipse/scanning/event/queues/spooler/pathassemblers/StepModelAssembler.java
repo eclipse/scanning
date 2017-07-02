@@ -21,6 +21,11 @@ public class StepModelAssembler extends AbstractPathModelAssembler<StepModel> {
 		return new StepModel(name, start, stop, step);
 	}
 
+	@Override
+	public String getString(Object model) {
+		return "'"+((StepModel) model).getName()+"' (Step)";
+	}
+
 	
 
 }

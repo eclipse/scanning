@@ -11,4 +11,5 @@ public interface IScanPathModelAssembler<P> {
 	
 	List<String> getRequiredArgReferences();
 	
+	String getString(Object model);
 }
