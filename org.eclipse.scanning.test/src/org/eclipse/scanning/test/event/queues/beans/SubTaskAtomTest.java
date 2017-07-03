@@ -203,7 +203,8 @@ public class SubTaskAtomTest extends AbstractBeanTest<SubTaskAtom> { //extends A
 	 */
 	@Test
 	public void testAddingSubTaskBean() throws Exception {
-		SubTaskAtom bean = new SubTaskAtom();
+		SubTaskAtom bean = new SubTaskAtom("testST", "A test SubTask")
+				;
 		bean.addAtom(atomC);
 		bean.addAtom(atomD);
 
