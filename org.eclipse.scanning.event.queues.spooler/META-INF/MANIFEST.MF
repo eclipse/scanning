@@ -1,15 +1,16 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Queue Spooler
-Bundle-SymbolicName: org.eclipse.scanning.event.queues.spooler
+Bundle-SymbolicName: org.eclipse.scanning.event.queues.spooler;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Diamond Light Source
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: org.eclipse.scanning.event.queues.spooler,
- org.eclipse.scanning.event.queues.spooler.beanassemblers,
- org.eclipse.scanning.event.queues.spooler.modelassemblers
+Require-Bundle: org.eclipse.scanning.api;bundle-version="1.0.0"
 Import-Package: org.osgi.framework;version="1.8.0",
  org.osgi.service.component;version="1.2.2",
  org.slf4j;version="1.7.22"
-Require-Bundle: org.eclipse.scanning.api;bundle-version="1.0.0",
- ch.qos.logback.classic;bundle-version="1.1.9"
+Service-Component: OSGI-INF/servicesHolder.xml
+Export-Package: org.eclipse.scanning.event.queues.spooler,
+ org.eclipse.scanning.event.queues.spooler.beanassemblers,
+ org.eclipse.scanning.event.queues.spooler.modelassemblers
+Bundle-ActivationPolicy: lazy
