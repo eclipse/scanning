@@ -38,8 +38,35 @@ public final class ServicesHolder {
 	private static IScannableDeviceService scannableDeviceService;
 	private static IFilePathService filePathService;
 	private static INexusFileFactory nexusFileFactory;
+	
+	private static ComponentContext context;
+	private static ServicesHolder   current;
+	
+	private static <T> T getService(Class<T> clazz) {
+		if (context == null) return null;
+		try {
+			ServiceReference<T> ref = context.getBundleContext().getServiceReference(clazz);
+	        return context.getBundleContext().getService(ref);
+		} catch (NullPointerException npe) {
+			return null;
+		}
+	}
+
+	public void start(ComponentContext c) {
+		context = c;
+		current = this;
+	}
+	
+	public void stop() {
+		current = null;
+	}
+
+	public static ServicesHolder getCurrent() {
+		return current;
+	}
 
 	public static IRunnableDeviceService getDeviceService() {
+		if (deviceService==null) deviceService = getService(IRunnableDeviceService.class);
 		return deviceService;
 	}
 
@@ -107,33 +134,6 @@ public final class ServicesHolder {
 		ServicesHolder.scannableDeviceService = scannableDeviceService;
 	}
 	
-	private static ComponentContext context;
-	private static ServicesHolder   current;
-	
-	private static <T> T getService(Class<T> clazz) {
-		if (context == null) return null;
-		try {
-			ServiceReference<T> ref = context.getBundleContext().getServiceReference(clazz);
-	        return context.getBundleContext().getService(ref);
-		} catch (NullPointerException npe) {
-			return null;
-		}
-	}
-
-
-	public void start(ComponentContext c) {
-		context = c;
-		current = this;
-	}
-	
-	public void stop() {
-		current = null;
-	}
-
-	public static ServicesHolder getCurrent() {
-		return current;
-	}
-
 	public static IFilePathService getFilePathService() {
 		if (filePathService==null) filePathService = getService(IFilePathService.class);
 		return filePathService;
