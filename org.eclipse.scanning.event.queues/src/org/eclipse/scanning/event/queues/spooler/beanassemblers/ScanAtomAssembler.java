@@ -1,4 +1,4 @@
-package org.eclipse.scanning.event.queues.spooler;
+package org.eclipse.scanning.event.queues.spooler.beanassemblers;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -27,9 +27,9 @@ import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.IScanPathModel;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.event.queues.ServicesHolder;
-import org.eclipse.scanning.event.queues.spooler.pathassemblers.ArrayModelAssembler;
-import org.eclipse.scanning.event.queues.spooler.pathassemblers.IScanPathModelAssembler;
-import org.eclipse.scanning.event.queues.spooler.pathassemblers.StepModelAssembler;
+import org.eclipse.scanning.event.queues.spooler.modelassemblers.ArrayModelAssembler;
+import org.eclipse.scanning.event.queues.spooler.modelassemblers.IScanObjectModelAssembler;
+import org.eclipse.scanning.event.queues.spooler.modelassemblers.StepModelAssembler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +40,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	//We always want to set this value for the detectors
 	private static final String EXPOSURETIME = "exposureTime";
 	
-	private Map<String, IScanPathModelAssembler<? extends IScanPathModel>> pathAssemblerRegister;
+	private Map<String, IScanObjectModelAssembler<? extends IScanPathModel>> pathAssemblerRegister;
 
 	public ScanAtomAssembler(IQueueBeanFactory queueBeanFactory) {
 		super(queueBeanFactory);
@@ -131,7 +131,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 			DeviceModel devModel = pathModels.get(deviceName);
 			
 			//Create the IScanPathModel
-			IScanPathModelAssembler<? extends IScanPathModel> pathAssembler = pathAssemblerRegister.get(devModel.getType().toLowerCase());
+			IScanObjectModelAssembler<? extends IScanPathModel> pathAssembler = pathAssemblerRegister.get(devModel.getType().toLowerCase());
 			Object path = pathAssembler.assemble(deviceName, devModel);
 			configureObject(path, devModel, pathAssembler.getRequiredArgReferences());
 			

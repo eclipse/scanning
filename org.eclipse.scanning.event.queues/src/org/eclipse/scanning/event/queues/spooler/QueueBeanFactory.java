@@ -17,6 +17,12 @@ import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
+import org.eclipse.scanning.event.queues.spooler.beanassemblers.IBeanAssembler;
+import org.eclipse.scanning.event.queues.spooler.beanassemblers.MonitorAtomAssembler;
+import org.eclipse.scanning.event.queues.spooler.beanassemblers.PositionerAtomAssembler;
+import org.eclipse.scanning.event.queues.spooler.beanassemblers.ScanAtomAssembler;
+import org.eclipse.scanning.event.queues.spooler.beanassemblers.SubTaskAtomAssembler;
+import org.eclipse.scanning.event.queues.spooler.beanassemblers.TaskBeanAssembler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

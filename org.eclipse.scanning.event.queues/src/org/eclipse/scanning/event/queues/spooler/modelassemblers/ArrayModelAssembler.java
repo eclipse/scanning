@@ -1,4 +1,4 @@
-package org.eclipse.scanning.event.queues.spooler.pathassemblers;
+package org.eclipse.scanning.event.queues.spooler.modelassemblers;
 
 import org.eclipse.scanning.api.event.queues.models.DeviceModel;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;

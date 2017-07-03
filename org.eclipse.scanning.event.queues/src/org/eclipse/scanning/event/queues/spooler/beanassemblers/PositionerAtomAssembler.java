@@ -1,4 +1,4 @@
-package org.eclipse.scanning.event.queues.spooler;
+package org.eclipse.scanning.event.queues.spooler.beanassemblers;
 
 import java.util.stream.Collectors;
 

@@ -8,7 +8,7 @@ import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
-import org.eclipse.scanning.event.queues.spooler.PositionerAtomAssembler;
+import org.eclipse.scanning.event.queues.spooler.beanassemblers.PositionerAtomAssembler;
 import org.junit.Test;
 
 public class PositionerAtomAssemblerTest {

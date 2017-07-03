@@ -28,7 +28,7 @@ import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.event.queues.spooler.QueueBeanFactory;
-import org.eclipse.scanning.event.queues.spooler.ScanAtomAssembler;
+import org.eclipse.scanning.event.queues.spooler.beanassemblers.ScanAtomAssembler;
 import org.eclipse.scanning.example.detector.MandelbrotDetector;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;
