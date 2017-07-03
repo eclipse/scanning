@@ -1,4 +1,4 @@
-package org.eclipse.scanning.test.event.queues;
+package org.eclipse.scanning.test.event.queues.spooler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
