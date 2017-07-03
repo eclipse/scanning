@@ -1,12 +1,14 @@
 package org.eclipse.scanning.event.queues.spooler;
 
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
+import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 
 public class ServicesHolder {
 	
-	private static IRunnableDeviceService deviceService;
+	private static IRunnableDeviceService runnableDeviceService;
+	private static IScannableDeviceService scannableDeviceService;
 	
 	private static ComponentContext context;
 	private static ServicesHolder   current;
@@ -35,18 +37,33 @@ public class ServicesHolder {
 		return current;
 	}
 	
-	public static IRunnableDeviceService getDeviceService() {
-		if (deviceService==null) deviceService = getService(IRunnableDeviceService.class);
-		return deviceService;
+	public static IRunnableDeviceService getRunnableDeviceService() {
+		if (runnableDeviceService==null) runnableDeviceService = getService(IRunnableDeviceService.class);
+		return runnableDeviceService;
 	}
 
-	public static void setDeviceService(IRunnableDeviceService deviceService) {
-		ServicesHolder.deviceService = deviceService;
+	public static void setRunnableDeviceService(IRunnableDeviceService deviceService) {
+		ServicesHolder.runnableDeviceService = deviceService;
 	}
 
-	public static void unsetDeviceService(IRunnableDeviceService deviceService) {
-		if (ServicesHolder.deviceService == deviceService) {
-			ServicesHolder.deviceService = null;
+	public static void unsetRunnableDeviceService(IRunnableDeviceService deviceService) {
+		if (ServicesHolder.runnableDeviceService == deviceService) {
+			ServicesHolder.runnableDeviceService = null;
+		}
+	}
+	
+	public static IScannableDeviceService getScannableDeviceService() {
+		if (scannableDeviceService==null) scannableDeviceService = getService(IScannableDeviceService.class);
+		return scannableDeviceService;
+	}
+
+	public static void setScannableDeviceService(IScannableDeviceService scannableDeviceService) {
+		ServicesHolder.scannableDeviceService = scannableDeviceService;
+	}
+	
+	public static void unsetScannableDeviceService(IScannableDeviceService scannableDeviceService) {
+		if (ServicesHolder.scannableDeviceService == scannableDeviceService) {
+			ServicesHolder.scannableDeviceService = null;
 		}
 	}
 
