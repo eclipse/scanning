@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.stream.IntStream;
 
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
@@ -66,20 +68,75 @@ public class ExperimentConfiguration {
 	 *         the reference
 	 */
 	public IQueueValue<?> getLocalValue(QueueValue<String> valueReference) throws QueueModelException {
-		return getRegistryValue(valueReference, localValues);
-	}
-	
-	public IQueueValue<?> getPathModelValue(QueueValue<String> valueReference, String deviceName) throws QueueModelException {
-		return getRegistryValue(valueReference, pathModelValues.get(deviceName).getDeviceConfiguration());
-	}
-	
-	private IQueueValue<?> getRegistryValue(QueueValue<String> valueReference, List<IQueueValue<?>> registry) throws QueueModelException {
-		Optional<IQueueValue<?>> value = registry.stream().filter(option -> valueReference.isReferenceFor(option)).findFirst();
+		Optional<IQueueValue<?>> value = localValues.stream().filter(option -> valueReference.isReferenceFor(option)).findFirst();
 		try {
 			return value.get();
 		} catch (NoSuchElementException nseEX) {
 			throw new QueueModelException("No value in localValues for reference '"+valueReference.evaluate()+"'");
 		}
+	}
+	
+	public void setLocalValue(IQueueValue<?> value) throws QueueModelException {
+		try {
+			int indexInLocalValues = getLocalValueIndex(value);
+			localValues.remove(indexInLocalValues);
+		} catch (QueueModelException qmEx) {
+			//This value isn't already present, so carry on
+		}
+		localValues.add(value);
+	}
+	
+	public int getLocalValueIndex(IQueueValue<?> value) throws QueueModelException {
+		OptionalInt indexOpt = IntStream.range(0, localValues.size()).filter(i -> value.equals(localValues.get(i))).findFirst();
+		try {
+			return indexOpt.getAsInt();
+		} catch (NoSuchElementException nseEx) {
+			throw new QueueModelException(nseEx);
+		}
+	}
+	
+	public Object getDetectorModelValue(QueueValue<String> valueReference, String deviceName)  throws QueueModelException {
+		return getRegistryValue(valueReference.evaluate(), detectorModelValues.get(deviceName).getDeviceConfiguration());
+	}
+	
+	public Object getDetectorModelValue(String valueReference, String deviceName) throws QueueModelException {
+		return getRegistryValue(valueReference, detectorModelValues.get(deviceName).getDeviceConfiguration());
+	}
+	
+	public Object getPathModelValue(QueueValue<String> valueReference, String deviceName) throws QueueModelException {
+		return getRegistryValue(valueReference.evaluate(), pathModelValues.get(deviceName).getDeviceConfiguration());
+	}
+	
+	public Object getPathModelValue(String valueReference, String deviceName) throws QueueModelException {
+		return getRegistryValue(valueReference, pathModelValues.get(deviceName).getDeviceConfiguration());
+	}
+	
+	private Object getRegistryValue(String valueReference, Map<String, Object> registry) throws QueueModelException {
+		if (registry.containsKey(valueReference)) {
+			return registry.get(valueReference);
+		}
+		throw new QueueModelException("No configuration option for name "+valueReference+" is stored");
+	}
+	
+	public void setDetectorModelValue(IQueueValue<?> value, String deviceName) throws QueueModelException {
+		setRegistryValue(value, detectorModelValues.get(deviceName).getDeviceConfiguration());
+	}
+	
+	public void setDetectorModelValue(String optionName, Object value, String deviceName) {
+		detectorModelValues.get(deviceName).getDeviceConfiguration().put(optionName, value);
+	}
+	
+	public void setPathModelValue(IQueueValue<?> value, String deviceName) throws QueueModelException {
+		setRegistryValue(value, pathModelValues.get(deviceName).getDeviceConfiguration());
+	}
+	
+	public void setPathModelValue(String optionName, Object value, String deviceName) {
+		pathModelValues.get(deviceName).getDeviceConfiguration().put(optionName, value);
+	}
+	
+	private void setRegistryValue(IQueueValue<?> value, Map<String, Object> registry) throws QueueModelException {
+		if (value.getName() == null) throw new QueueModelException("Cannot set configuration option with no name");
+		registry.put(value.getName(), value);
 	}
 
 	@Override
