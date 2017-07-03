@@ -32,7 +32,7 @@ import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.scan.ScanningException;
-import org.eclipse.scanning.event.queues.ServicesHolder;
+import org.eclipse.scanning.event.queues.spooler.ServicesHolder;
 import org.eclipse.scanning.event.queues.spooler.QueueBeanFactory;
 import org.eclipse.scanning.example.detector.MandelbrotDetector;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
@@ -59,7 +59,7 @@ public class QueueBeanFactoryTest {
 		
 		if (extendedTest) {
 			ServicesHolder.setScannableDeviceService(null);
-			ServicesHolder.setDeviceService(null);
+			ServicesHolder.setRunnableDeviceService(null);
 		}
 	}
 	
@@ -67,7 +67,7 @@ public class QueueBeanFactoryTest {
 		IScannableDeviceService connector = new MockScannableConnector(null);
 		ServicesHolder.setScannableDeviceService(connector);
 		IRunnableDeviceService dservice = new RunnableDeviceServiceImpl(connector); // Not testing OSGi so using hard coded service.
-		ServicesHolder.setDeviceService(dservice);
+		ServicesHolder.setRunnableDeviceService(dservice);
 		
 		((RunnableDeviceServiceImpl) dservice)._register(MandelbrotModel.class, MandelbrotDetector.class);
 		
@@ -372,9 +372,9 @@ public class QueueBeanFactoryTest {
 		cMod.addData(new StepModel("stage_x", 0.0, 10.5, 1.5), null);
 		scanReq.setCompoundModel(cMod);
 		Map<String, Object> detectors = new HashMap<>();
-		detectors.put("mandelbrotA", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotA").getModel());
+		detectors.put("mandelbrotA", ServicesHolder.getRunnableDeviceService().getRunnableDevice("mandelbrotA").getModel());
 		((IDetectorModel)detectors.get("mandelbrotA")).setExposureTime(30);
-		detectors.put("mandelbrotB", ServicesHolder.getDeviceService().getRunnableDevice("mandelbrotB").getModel());
+		detectors.put("mandelbrotB", ServicesHolder.getRunnableDeviceService().getRunnableDevice("mandelbrotB").getModel());
 		((IDetectorModel)detectors.get("mandelbrotB")).setExposureTime(30);
 		scanReq.setDetectors(detectors);
 		scanReq.setMonitorNames(Arrays.asList("monitor2"));

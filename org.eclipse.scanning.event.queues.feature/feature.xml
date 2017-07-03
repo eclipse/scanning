@@ -22,15 +22,14 @@
          version="0.0.0"/>
 
    <requires>
+      <import plugin="org.eclipse.january" version="1.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.dawnsci.analysis.api" version="1.1.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.dawnsci.nexus" version="1.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.scanning.api" version="1.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.scanning.event" version="1.0.0" match="greaterOrEqual"/>
       <import plugin="org.eclipse.osgi"/>
       <import plugin="org.eclipse.osgi.services"/>
       <import plugin="slf4j.api"/>
-      <import plugin="org.eclipse.january" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.dawnsci.analysis.api" version="1.1.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.dawnsci.nexus" version="1.0.0" match="greaterOrEqual"/>
-      <import plugin="ch.qos.logback.classic" version="1.1.9" match="greaterOrEqual"/>
    </requires>
 
    <plugin
