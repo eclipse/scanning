@@ -112,7 +112,9 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		
 		protected void addDataset(String datasetName, ILazyWriteableDataset dataset, int... datashape) {
 			datasets.put(datasetName, dataset);
-			dataset.setChunking(createChunk(dataset, datashape));
+			if (datashape.length > 0) {
+				dataset.setChunking(createChunk(dataset, datashape));
+			}
 		}
 		
 		public int[] createChunk(ILazyWriteableDataset dataset, int... datashape) {
@@ -682,32 +684,34 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		Iterable<IPosition> innerScanPositions = moderator.getInnerIterable();
 		
 		// get each dummy device to write its position at each inner scan position
-		for (IPosition innerScanPosition : innerScanPositions) {
-			final long pointStartTime = System.nanoTime();
-			final long targetDuration = (long) (model.getExposureTime() * 1000000000.0); // nanoseconds
-			
-			while (paused) {
-				Thread.sleep(100);
-			}
-			final IPosition overallScanPosition = innerScanPosition.compound(outerScanPosition);
-			for (IDummyMalcolmControlledDevice device : devices.values()) {
-				try {
-					device.writePosition(overallScanPosition);
-				} catch (Exception e) {
-					logger.error("Couldn't write data for device " + device.getName(), e);
+		if (innerScanPositions != null) {
+			for (IPosition innerScanPosition : innerScanPositions) {
+				final long pointStartTime = System.nanoTime();
+				final long targetDuration = (long) (model.getExposureTime() * 1000000000.0); // nanoseconds
+				
+				while (paused) {
+					Thread.sleep(100);
 				}
+				final IPosition overallScanPosition = innerScanPosition.compound(outerScanPosition);
+				for (IDummyMalcolmControlledDevice device : devices.values()) {
+					try {
+						device.writePosition(overallScanPosition);
+					} catch (Exception e) {
+						logger.error("Couldn't write data for device " + device.getName(), e);
+					}
+				}
+				
+				// If required, sleep until the requested exposure time is over
+				long currentTime = System.nanoTime();
+				long duration = currentTime - pointStartTime;
+				if (duration < targetDuration) {
+					long millisToWait = (targetDuration - duration) / 1000000;
+					Thread.sleep(millisToWait);
+				}
+				
+				innerScanPosition.setStepIndex(stepIndex++);
+				firePositionComplete(innerScanPosition);
 			}
-			
-			// If required, sleep until the requested exposure time is over
-			long currentTime = System.nanoTime();
-			long duration = currentTime - pointStartTime;
-			if (duration < targetDuration) {
-				long millisToWait = (targetDuration - duration) / 1000000;
-				Thread.sleep(millisToWait);
-			}
-			
-			innerScanPosition.setStepIndex(stepIndex++);
-			firePositionComplete(innerScanPosition);
 		}
 		
 		health.setValue("OK");
