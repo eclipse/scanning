@@ -35,6 +35,10 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 	@FieldDescriptor(visible=false)
 	private int numberOfCores = 1;
 	
+	@FieldDescriptor(visible=false)
+	private boolean monitorForOverwrite = false;
+	
+	
 	public ClusterProcessingModel() {
 		
 	}
@@ -89,23 +93,34 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 		this.numberOfCores = numberOfCores;
 	}
 	
+	public boolean isMonitorForOverwrite() {
+		return monitorForOverwrite;
+	}
+	
+	public void setMonitorForOverwrite(boolean monitorForOverwrite) {
+		this.monitorForOverwrite = monitorForOverwrite;
+	}
+	
 	@Override
 	public String toString() {
 		return "ClusterProcessingModel [name=" + name + ", detectorName=" + detectorName + ", processingFilePath="
 				+ processingFilePath + "]";
 	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((detectorName == null) ? 0 : detectorName.hashCode());
-		result = prime * result + numberOfCores;
+		result = prime * result + (monitorForOverwrite ? 1231 : 1237);
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + numberOfCores;
 		result = prime * result + ((processingFilePath == null) ? 0 : processingFilePath.hashCode());
 		result = prime * result + timeOut;
 		result = prime * result + ((xmx == null) ? 0 : xmx.hashCode());
 		return result;
 	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -120,12 +135,14 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 				return false;
 		} else if (!detectorName.equals(other.detectorName))
 			return false;
-		if (numberOfCores != other.numberOfCores)
+		if (monitorForOverwrite != other.monitorForOverwrite)
 			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
+			return false;
+		if (numberOfCores != other.numberOfCores)
 			return false;
 		if (processingFilePath == null) {
 			if (other.processingFilePath != null)
@@ -141,8 +158,6 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 			return false;
 		return true;
 	}
-
-	
 
 	
 	
