@@ -63,7 +63,10 @@ public class SubscanModerator {
 		if (it instanceof IPointGenerator<?>) {
 			IPointGenerator<?> gen = (IPointGenerator<?>)it;
 			Object model = gen.getModel();
-			return model instanceof CompoundModel ? (CompoundModel<?>)model : null;
+			if (model instanceof CompoundModel) {
+				return (CompoundModel<?>) model;
+			}
+			return new CompoundModel<>(model);
 		}
 		return null;
 	}
@@ -109,11 +112,17 @@ public class SubscanModerator {
 			outer.add(0, model);
 		}
 		
-		if (!inner.isEmpty()) {
+		if (inner.isEmpty()) {
+			// if the inner scan is empty, we need a single empty point for each point of the outer scan
+			this.innerIterable = gservice.createGenerator(new StaticModel(1));
+		} else {
+			// otherwise we create a new compound generator with the inner models and the same
+			// mutators, regions, duration, etc. as the overall scan 
 			this.innerIterable = gservice.createCompoundGenerator(compoundModel.clone(inner));
 		}
 		
 		if (outer.isEmpty()) {
+			// if the outer scan is empty, we need a single empty point so that we perform the inner scan once
 			this.outerIterable = gservice.createGenerator(new StaticModel(1));
 			return;
 		}
@@ -136,21 +145,37 @@ public class SubscanModerator {
 	}
 
 	/**
-	 * The outer iterable will not be null normally. Even if 
+	 * Returns an iterable over the outer points of the scan.
+	 * The outer iterable will not be <code>null</code> normally. Even if 
 	 * all of the scan is deal with by malcolm the outer scan will still
 	 * be a static generator of one point. If there are no subscan devices,
 	 * then the outer scan is the full scan.
-	 * @return
+	 * @return an iterator over the outer scan
 	 */
 	public Iterable<IPosition> getOuterIterable() {
 		return outerIterable;
 	}
+	
+	/**
+	 * Returns an iterable over the inner points of the scan. For any scan
+	 * that contains a malcolm device the inner iterable will not be <code>null</code>.
+	 * Even if all of the scan is dealt with outside the malcolm device.
+	 * 
+	 * Note that this method is only used in <i>dummy</i> mode, for example by
+	 * a <code>DummyMalcolmDevice</code>. The real malcolm device is passed
+	 * the point generator for the whole scan. The malcolm device will itself
+	 * determine what part of the scan it is responsible for (i.e. in python). 
+	 * 
+	 * @return an iterator over the inner scan
+	 */
 	public Iterable<IPosition> getInnerIterable() {
 		return innerIterable;
 	}
+	
 	public List<Object> getOuterModels() {
 		return outer;
 	}
+	
 	public List<Object> getInnerModels() {
 		return inner;
 	}

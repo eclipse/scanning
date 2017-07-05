@@ -26,6 +26,7 @@ import org.eclipse.scanning.api.points.models.GridModel;
 import org.eclipse.scanning.api.points.models.OneDEqualSpacingModel;
 import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.api.points.models.SpiralModel;
+import org.eclipse.scanning.api.points.models.StaticModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.scan.ScanEstimator;
 import org.eclipse.scanning.api.scan.ScanInformation;
@@ -250,6 +251,23 @@ public class ScanShapeTest {
 	@Ignore
 	public void testShapeLine7D() throws Exception {
 		lineTest(6);
+	}
+	
+	@Test
+	public void testShapeStatic() throws Exception {
+		 StaticModel staticModel = new StaticModel();
+		 CompoundModel<Object> compoundModel = new CompoundModel<>(staticModel);
+		 
+		 ScanRequest<Object> req = new ScanRequest<>();
+		 req.setCompoundModel(compoundModel);
+		 
+		 ScanEstimator scanEstimator = new ScanEstimator(service, req);
+		 ScanInformation scanInfo = new ScanInformation(scanEstimator);
+		 
+		 final int expectedRank = 0;
+		 assertEquals(expectedRank, scanInfo.getRank());
+		 int[] shape = scanInfo.getShape();
+		 assertEquals(expectedRank, shape.length);
 	}
 	
 	private void gridTest(int nestCount, boolean snake) throws Exception {

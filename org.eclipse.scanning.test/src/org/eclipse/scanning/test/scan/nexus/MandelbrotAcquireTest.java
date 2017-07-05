@@ -13,6 +13,7 @@ package org.eclipse.scanning.test.scan.nexus;
 
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertAxes;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertSignal;
+import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertSolsticeScanGroup;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertTarget;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -36,6 +37,7 @@ import org.eclipse.dawnsci.nexus.NXdetector;
 import org.eclipse.dawnsci.nexus.NXentry;
 import org.eclipse.dawnsci.nexus.NXinstrument;
 import org.eclipse.dawnsci.nexus.NXroot;
+import org.eclipse.january.dataset.DatasetFactory;
 import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.PositionIterator;
 import org.eclipse.scanning.api.device.AbstractRunnableDevice;
@@ -50,6 +52,7 @@ import org.eclipse.scanning.api.scan.event.IRunListener;
 import org.eclipse.scanning.api.scan.event.RunEvent;
 import org.eclipse.scanning.api.scan.models.ScanModel;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -79,6 +82,8 @@ public class MandelbrotAcquireTest extends NexusTest {
 		NXroot rootNode = getNexusRoot(scanner);
 		NXentry entry = rootNode.getEntry();
 		NXinstrument instrument = entry.getInstrument();
+		
+		assertSolsticeScanGroup(entry, false, false);
 		
 		LinkedHashMap<String, List<String>> signalFieldAxes = new LinkedHashMap<>();
 		// axis for additional dimensions of a datafield, e.g. image

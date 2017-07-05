@@ -85,11 +85,11 @@ public class CompoundModel<R> implements Cloneable {
 	}
 	
 	/**
-	 * Clones the outer object but not the indder collections
+	 * Clones the outer object but not the inner collections
 	 * of models, regions etc.
 	 */
 	public CompoundModel<R> clone() {
-		CompoundModel<R> ret = new CompoundModel();
+		CompoundModel<R> ret = new CompoundModel<>();
 		ret.models = models;
 		ret.regions = regions;
 		ret.mutators = mutators;
@@ -107,11 +107,12 @@ public class CompoundModel<R> implements Cloneable {
 	}
 
 
-	public CompoundModel(Object... ms) {
-		if (ms!=null && ms.length==1 && ms[0] instanceof List) {
-			models = (List<Object>)ms[0];
+	@SuppressWarnings("unchecked")
+	public CompoundModel(Object... models) {
+		if (models !=null && models.length == 1 && models[0] instanceof List<?>) {
+			this.models = (List<Object>) models[0];
 		} else {
-		    models = Arrays.asList(ms);
+		    this.models = Arrays.asList(models);
 		}
 	}
 	public CompoundModel(List<Object> ms) {

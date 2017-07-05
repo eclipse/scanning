@@ -112,7 +112,9 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		
 		protected void addDataset(String datasetName, ILazyWriteableDataset dataset, int... datashape) {
 			datasets.put(datasetName, dataset);
-			dataset.setChunking(createChunk(dataset, datashape));
+			if (datashape.length > 0) {
+				dataset.setChunking(createChunk(dataset, datashape));
+			}
 		}
 		
 		public int[] createChunk(ILazyWriteableDataset dataset, int... datashape) {
@@ -679,7 +681,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		// get an iterator over the inner scan positions
 		final SubscanModerator moderator = new SubscanModerator(pointGenerator,
 				Arrays.asList(this), Services.getPointGeneratorService());
-		Iterable<IPosition> innerScanPositions = moderator.getInnerIterable();
+		Iterable<IPosition> innerScanPositions = moderator.getInnerIterable(); // should never be null
 		
 		// get each dummy device to write its position at each inner scan position
 		for (IPosition innerScanPosition : innerScanPositions) {

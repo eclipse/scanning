@@ -53,6 +53,7 @@ import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.points.AbstractPosition;
 import org.eclipse.scanning.api.points.IDeviceDependentIterable;
 import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.scan.PositionEvent;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
@@ -378,7 +379,12 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 			scanRank = ((IDeviceDependentIterable)gen).getScanRank();
 		}
 		if (scanRank < 0) {
-			scanRank = gen.iterator().next().getScanRank();
+			Iterator<IPosition> iter = gen.iterator();
+			if (iter instanceof ScanPointIterator) {
+				scanRank = ((ScanPointIterator) iter).getRank();
+			} else {
+				scanRank = iter.next().getScanRank();
+			}
 		}
 		if (scanRank < 0) {
 			scanRank = 1;

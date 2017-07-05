@@ -87,7 +87,7 @@ class GridIterator extends AbstractScanPointIterator {
         
         int seed = model.getSeed();
         PyList axes = new PyList(Arrays.asList(new String[] {yName, xName}));
-        double offset = getXStep() * model.getOffset() / 100;
+        double offset = xStep * model.getOffset() / 100;
         
         PyDictionary maxOffset = new PyDictionary();
         maxOffset.put(yName, offset);
@@ -153,7 +153,4 @@ class GridIterator extends AbstractScanPointIterator {
 		throw new UnsupportedOperationException("remove");
 	}
 
-	public double getXStep() {
-		return xStep;
-	}
 }
