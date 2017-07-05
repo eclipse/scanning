@@ -1,5 +1,6 @@
 package org.eclipse.scanning.api.event.queues.models.arguments;
 
+import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 
 /**
@@ -27,6 +28,11 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 		this.arg = arg;
 	}
 	
+	@Override
+	public IQueueValue<A> getArg() {
+		return arg;
+	}
+	
 	/**
 	 * Process the value of this {@link IQueueVariable} and return the result. 
 	 * This method is inherited from {@link IQueueValue} and allows 
@@ -36,7 +42,7 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 	 * @throws QueueModelException if no value can be returned
 	 */
 	@Override
-	public V evaluate() throws QueueModelException {
+	public V evaluate() {
 		return processArg(arg.evaluate());
 	}
 	
@@ -47,7 +53,7 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 	 * @return value V of the child {@link IQueueVariable}
 	 * @throws QueueModelException if no value can be returned 
 	 */
-	protected abstract V processArg(A parameter) throws QueueModelException;
+	protected abstract V processArg(A parameter);
 
 	@Override
 	public String getName() {
@@ -57,6 +63,30 @@ public abstract class QueueVariableDecorator<A, V> implements IQueueVariable<A, 
 	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * For simplicity, {@link QueueVariableDecorator}s should never be variables.
+	 * This could be changed in the future. TODO?
+	 */
+	@Override
+	public boolean isReference() {
+		return false;
+	}
+	
+	@Override
+	public boolean isReferenceFor(IQueueValue<?> value) {
+		throw new ModelEvaluationException("Not implemented: "+this.getClass().getSimpleName()+" "+name+" cannot be used as a reference to another IQueueValue");
+		/*
+		 * TODO This is for simplicity. In the future, the evaluated value 
+		 * could be used as the reference to test against (rather than the name 
+		 * as it is in the 
+		 */
+	}
+	
+	@Override
+	public Class<?> getValueType() {
+		return value.getClass();
 	}
 
 }

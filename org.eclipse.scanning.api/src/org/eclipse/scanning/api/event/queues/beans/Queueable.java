@@ -32,6 +32,7 @@ public abstract class Queueable extends StatusBean {
 	protected long runTime;
 	protected String beamline;
 	protected String shortName;
+	protected boolean model;
 
 	protected Queueable() {
 		super();
@@ -63,11 +64,20 @@ public abstract class Queueable extends StatusBean {
 		this.shortName = shortName;
 	}
 
+	public boolean isModel() {
+		return model;
+	}
+
+	public void setModel(boolean model) {
+		this.model = model;
+	}
+
 	public void merge(Queueable with) {
 		super.merge(with);
 		this.runTime = with.runTime;
 		this.beamline = with.beamline;
 		this.shortName = with.shortName;
+		this.model = with.model;
 	}
 
 	@Override
@@ -75,6 +85,7 @@ public abstract class Queueable extends StatusBean {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((beamline == null) ? 0 : beamline.hashCode());
+		result = prime * result + (model ? 1231 : 1237);
 		result = prime * result + (int) (runTime ^ (runTime >>> 32));
 		result = prime * result + ((shortName == null) ? 0 : shortName.hashCode());
 		return result;
@@ -94,6 +105,8 @@ public abstract class Queueable extends StatusBean {
 				return false;
 		} else if (!beamline.equals(other.beamline))
 			return false;
+		if (model != other.model)
+			return false;
 		if (runTime != other.runTime)
 			return false;
 		if (shortName == null) {
@@ -107,6 +120,7 @@ public abstract class Queueable extends StatusBean {
 	@Override
 	public String toString() {
 		String clazzName = this.getClass().getSimpleName();
+		if (model) clazzName = clazzName + " (MODEL)";
 		return clazzName + " [name=" + name +" (shortname=" + shortName + "), status=" + status 
 				+ ", message=" + message + ", percentComplete=" + percentComplete
 				+ ", previousStatus=" + previousStatus + ", runTime=" + runTime + ", userName="

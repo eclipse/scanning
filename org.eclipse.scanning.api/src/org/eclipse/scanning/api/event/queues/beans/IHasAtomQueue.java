@@ -14,6 +14,10 @@ package org.eclipse.scanning.api.event.queues.beans;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
+import org.eclipse.scanning.api.event.queues.IQueueService;
+import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
+
 /**
  * Interface describing a queue of {@link QueueAtoms} which will be spooled 
  * into an {@link IQueueService} queue and sequentially processed.
@@ -39,6 +43,25 @@ public interface IHasAtomQueue<T extends QueueAtom> extends IHasChildQueue {
 	 * @param List of beans describing a queue.
 	 */
 	public void setAtomQueue(List<T> atomQueue);
+	
+	/**
+	 * When the current instance is a model, get the list of {@link QueueAtom} 
+	 * references which will be used to build the real atomQueue by the 
+	 * {@link IQueueBeanFactory}.
+	 * 
+	 * @return List of {@link QueueValue}s containing references to 
+	 *         {@link QueueAtom}s
+	 */
+	public List<QueueValue<String>> getQueueAtomShortNames();
+	
+	/**
+	 * When the current instance is a model, set the list of of {@link QueueAtom} 
+	 * references which will be used to build the real atomQueue by the 
+	 * {@link IQueueBeanFactory}.
+	 * @param queueAtomShortNames List of {@link QueueValue}s containing references to 
+	 *        {@link QueueAtom}s
+	 */
+	public void setQueueAtomShortNames(List<QueueValue<String>> queueAtomShortNames);
 	
 	/**
 	 * From the {@link QueueAtom}s present in the queue, calculate the 

@@ -51,8 +51,8 @@ public class SubTaskAtomTest extends AbstractBeanTest<SubTaskAtom> { //extends A
 
 	@Before
 	public void buildBeans() throws Exception {
-		beanA = new SubTaskAtom(nameA);
-		beanB = new SubTaskAtom(nameB);
+		beanA = new SubTaskAtom(null, nameA);
+		beanB = new SubTaskAtom(null, nameB);
 
 		//Create the atoms to be queued
 		atomA = new DummyAtom("Hildebrand", timeA);
@@ -87,7 +87,8 @@ public class SubTaskAtomTest extends AbstractBeanTest<SubTaskAtom> { //extends A
 		
 		//Check adding nulls/identical atoms throws an expected error
 		try {
-			beanA.addAtom(null);
+			QueueAtom nullAtom = null;
+			beanA.addAtom(nullAtom);
 			fail("Expected NullPointerException not thrown");
 		} catch (NullPointerException ex) {
 			//expected
@@ -202,7 +203,8 @@ public class SubTaskAtomTest extends AbstractBeanTest<SubTaskAtom> { //extends A
 	 */
 	@Test
 	public void testAddingSubTaskBean() throws Exception {
-		SubTaskAtom bean = new SubTaskAtom();
+		SubTaskAtom bean = new SubTaskAtom("testST", "A test SubTask")
+				;
 		bean.addAtom(atomC);
 		bean.addAtom(atomD);
 

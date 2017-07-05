@@ -74,7 +74,7 @@ public class PositionerAtomProcess<T extends Queueable> extends QueueProcess<Pos
 	public PositionerAtomProcess(T bean, IPublisher<T> publisher, Boolean blocking) throws EventException {
 		super(bean, publisher, blocking);
 		//Get the deviceService from the OSGi configured holder.
-		deviceService = ServicesHolder.getDeviceService();
+		deviceService = ServicesHolder.getRunnableDeviceService();
 		
 		//We make direct calls to scanning infrastructure which block -> need to happen in separate thread
 		runInThread = true;

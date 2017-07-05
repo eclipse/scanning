@@ -15,6 +15,11 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
+import org.eclipse.scanning.api.event.queues.IQueueService;
+import org.eclipse.scanning.api.scan.event.IPositioner;
 
 /**
  * PositionerAtom is a type of {@link QueueAtom} which may be processed within 
@@ -40,32 +45,83 @@ public class PositionerAtom extends QueueAtom {
 	 */
 	public PositionerAtom() {
 		super();
+		//Needed for the Bean assemblers
+		positionerConfig = new LinkedHashMap<String, Object>();
 	}
 	
 	/**
-	 * Constructor with required arguments to configure one positioner.
+	 * Create an instance which configures one positioner.
 	 * 
-	 * @param posShrtNm String short name used within the QueueBeanFactory
-	 * @param positionDev String name of positioner to set.
-	 * @param target Object representing the target position.
+	 * @param posShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param positionDev String name of positioner to set
+	 * @param target Object representing the target position
 	 */
 	public PositionerAtom(String posShrtNm, String positionDev, Object target) {
+		this(posShrtNm, false, positionDev, target);
+		
+	}
+	
+	/**
+	 * Create an instance with an empty positioner config. Useful for creating 
+	 * real {@link PositionerAtom}s in the {@link PositionAtomAssembler}. This 
+	 * may be a model which can be used by the {@link IQueueBeanFactory} to 
+	 * create a real {@link PositionerAtom} or it may itself be a real 
+	 * {@link PositionerAtom}.  
+	 * @param posShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param model boolean flag indicating whether this is a model
+	 */
+	public PositionerAtom(String posShrtNm, boolean model) {
 		super();
 		setShortName(posShrtNm);
+		setModel(model);
 		positionerConfig = new LinkedHashMap<String, Object>();
+	}
+	
+	/**
+	 * Create an instance which configures one positioner. This may be a model 
+	 * which can be used by the {@link IQueueBeanFactory} to create a real 
+	 * {@link PositionerAtom} or it may itself be a real 
+	 * {@link PositionerAtom}. 
+	 * @param posShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param model boolean flag indicating whether this is a model
+	 * @param positionDev String name of positioner to set
+	 * @param target Object representing the target position
+	 */
+	public PositionerAtom(String posShrtNm, boolean model, String positionDev, Object target) {
+		this(posShrtNm, model);
 		positionerConfig.put(positionDev, target);
 	}
 	
 	/**
-	 * Constructor with required arguments for multiple motor positions.
+	 * Create an instance which configures multiple positioners.
 	 * 
-	 * @param posShrtNm String short name used within the QueueBeanFactory
+	 * @param posShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
 	 * @param positionerConfig Map of form String positionerDev name Object 
-	 *                         target position.
+	 *        target position
 	 */
 	public PositionerAtom(String posShrtNm, Map<String, Object> positionerConfig) {
+		this(posShrtNm, false, positionerConfig);
+	}
+	
+	/**
+	 * Create an instance which configures multiple positioners. This may be a 
+	 * model which can be used by the {@link IQueueBeanFactory} to create a 
+	 * real {@link PositionerAtom} or it may itself be a real 
+	 * {@link PositionerAtom}. 
+	 * @param posShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param model boolean flag indicating whether this is a model
+	 * @param positionerConfig Map of form String positionerDev name Object 
+	 *        target position
+	 */
+	public PositionerAtom(String posShrtNm, boolean model, Map<String, Object> positionerConfig) {
 		super();
 		setShortName(posShrtNm);
+		setModel(model);
 		this.positionerConfig = positionerConfig;
 	}
 	
@@ -85,7 +141,7 @@ public class PositionerAtom extends QueueAtom {
 	 * @param positionDev String name of positioner to set.
 	 * @return Object representing the target position.
 	 */
-	public Object getPositioner(String positionDev) {
+	public Object getPositionerTarget(String positionDev) {
 		return positionerConfig.get(positionDev);
 	}
 	
@@ -96,6 +152,9 @@ public class PositionerAtom extends QueueAtom {
 	 * @param target Object representing the target position.
 	 */
 	public void addPositioner(String positionDev, Object target) {
+		if (positionDev == null || target == null) {
+			throw new NullPointerException("Cannot add positioner '"+positionDev+"' with target '"+target+"'");
+		}
 		positionerConfig.put(positionDev, target);
 	}
 	
@@ -164,13 +223,21 @@ public class PositionerAtom extends QueueAtom {
 	@Override
 	public String toString() {
 		String clazzName = this.getClass().getSimpleName();
+		if (model) clazzName = clazzName + " (MODEL)";
+
 		
-		String positConf = "{";
-		for (Map.Entry<String, Object> poserCfg : positionerConfig.entrySet()) {
-			positConf = positConf+poserCfg.getKey()+" : "+poserCfg.getValue()+", ";
+		String positConf = "";
+		if (positionerConfig == null) {
+			positConf = "null";
+		} else {
+			StringBuffer positConfStrBuff = new StringBuffer("{");
+			positConfStrBuff.append(positionerConfig.entrySet().stream().map(entry -> entry.getKey()+" : "+entry.getValue().toString())
+					.collect(Collectors.joining(", ")));
+			positConfStrBuff.append("}");
+			positConf = positConfStrBuff.toString();
+			positConf = positConf.replaceAll(", }$", "}"); //Replace trailing ", "
 		}
-		positConf = positConf.replaceAll(", $", "}"); //Replace trailing ", "
-		
+
 		return clazzName + " [name=" + name + " (shortName="+shortName+"), positionerConfig=" + positConf 
 				+ ", status=" + status + ", message=" + message + ", percentComplete=" + percentComplete 
 				+ ", previousStatus=" + previousStatus + ", runTime=" + runTime + ", userName=" + userName 

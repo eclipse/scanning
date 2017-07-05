@@ -37,7 +37,7 @@ public class TestAtomQueueBeanMaker {
 	 */
 	
 	public static SubTaskAtom makeDummySubTaskBeanA() {
-		SubTaskAtom sta = new SubTaskAtom("Dummy SubTask A");
+		SubTaskAtom sta = new SubTaskAtom(null, "Dummy SubTask A");
 		sta.addAtom(new DummyAtom("Arnold", 10));
 		sta.addAtom(new DummyAtom("Beatrice", 465));
 		sta.addAtom(new DummyAtom("Carlos", 1245));
@@ -47,14 +47,14 @@ public class TestAtomQueueBeanMaker {
 	}
 	
 	public static SubTaskAtom makeDummySubTaskBeanB() {
-		SubTaskAtom sta = new SubTaskAtom("Dummy SubTask B");
+		SubTaskAtom sta = new SubTaskAtom(null, "Dummy SubTask B");
 		sta.addAtom(new DummyAtom("Edmund", 10));
 		sta.addAtom(new DummyAtom("Francis", 20));
 		return sta;
 	}
 	
 	public static SubTaskAtom makeDummySubTaskBeanC() {
-		SubTaskAtom sta = new SubTaskAtom("Dummy SubTask C");
+		SubTaskAtom sta = new SubTaskAtom(null, "Dummy SubTask C");
 		sta.addAtom(new DummyAtom("Heinrich", 479));
 		sta.addAtom(new DummyAtom("Imhotep", 236));
 		sta.addAtom(new DummyAtom("Jane", 387));
@@ -62,7 +62,7 @@ public class TestAtomQueueBeanMaker {
 	}
 	
 	public static SubTaskAtom makeDummySubTaskBeanD() {
-		SubTaskAtom sta = new SubTaskAtom("Dummy SubTask D");
+		SubTaskAtom sta = new SubTaskAtom(null, "Dummy SubTask D");
 		sta.addAtom(new DummyAtom("Linda", 7444));
 		sta.addAtom(new DummyAtom("Manuel", 125));
 		sta.addAtom(new DummyAtom("Nicola", 4756));
@@ -72,14 +72,14 @@ public class TestAtomQueueBeanMaker {
 	}
 	
 	public static SubTaskAtom makeDummySubTaskBeanE() {
-		SubTaskAtom sta = new SubTaskAtom("Dummy SubTask E");
+		SubTaskAtom sta = new SubTaskAtom(null, "Dummy SubTask E");
 		sta.addAtom(new DummyAtom("Quentin", 986));
 		sta.addAtom(new DummyAtom("Reginald", 5886));
 		return sta;
 	}
 	
 	public static TaskBean makeDummyTaskBeanA() {
-		TaskBean tb = new TaskBean("Dummy Task A");
+		TaskBean tb = new TaskBean(null, "Dummy Task A");
 		tb.addAtom(makeDummySubTaskBeanA());
 		tb.addAtom(makeDummySubTaskBeanB());
 		return tb;

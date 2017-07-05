@@ -13,8 +13,12 @@ package org.eclipse.scanning.api.event.queues.beans;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.IQueueService;
+import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
+import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
 /**
  * SubTaskAtom is a type of {@link QueueAtom} implementing an 
@@ -39,6 +43,7 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 	private static final long serialVersionUID = 20170503L;
 
 	private LinkedList<QueueAtom> atomQueue;
+	private LinkedList<QueueValue<String>> queueAtomShortNames;
 	private String queueMessage;
 
 	/**
@@ -46,29 +51,55 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 	 */
 	public SubTaskAtom() {
 		super();
-		atomQueue = new LinkedList<>();
-	}
-
-	/**
-	 * Basic constructor to set String name of atom
-	 * 
-	 * @param name String user-supplied name
-	 */
-	public SubTaskAtom(String name) {
-		super();
-		atomQueue = new LinkedList<>();
-		setName(name);
 	}
 	
 	/**
-	 * Basic constructor to set String short name and name of atom
-	 * 
-	 * @param stShrtNm String short name used within the QueueBeanFactory
+	 * Create an instance with a shortname (reference) and a more verbose name 
+	 * to be used in UI etc.
+	 * @param stShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
 	 * @param name String user-supplied name
 	 */
 	public SubTaskAtom(String stShrtNm, String name) {
-		this(name);
+		this(stShrtNm, name, false);
+	}
+	
+	/**
+	 * Create an instance with a shortname (reference) and a more verbose name 
+	 * to be used in UI etc. This may be a model which can be used by the 
+	 * {@link IQueueBeanFactory} to create a real {@link SubTaskAtom} or it 
+	 * may itself be a real {@link SubTaskAtom}.
+	 * @param stShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param name String user-supplied name
+	 * @param model boolean flag indicating whether this is a model
+	 */
+	public SubTaskAtom(String stShrtNm, String name, boolean model) {
+		super();
 		setShortName(stShrtNm);
+		setName(name);
+		setModel(model);
+		if (model) {
+			queueAtomShortNames = new LinkedList<>();
+		} else {
+			atomQueue = new LinkedList<>();
+		}
+	}
+	
+	/**
+	 * Create a model instance with a shortname (reference), a more verbose 
+	 * name and a list of shortnames (references) of atoms which will be used 
+	 * by the {@link IQueueBeanFactory} during the creation of a real 
+	 * {@link SubTaskAtom} instance.
+	 * @param stShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param name String user-supplied name
+	 * @param queueAtomShortNames List of String references which will be 
+	 *        converted into an atomQueue
+	 */
+	public SubTaskAtom(String stShrtNm, String name, List<QueueValue<String>> queueAtomShortNames) {
+		this(stShrtNm, name, true);
+		setQueueAtomShortNames(queueAtomShortNames);
 	}
 
 	@Override
@@ -80,6 +111,16 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 	public void setAtomQueue(List<QueueAtom> atomQueue) {
 		this.atomQueue = new LinkedList<>(atomQueue);
 		setRunTime(calculateRunTime());
+	}
+	
+	@Override
+	public List<QueueValue<String>> getQueueAtomShortNames() {
+		return queueAtomShortNames;
+	}
+
+	@Override
+	public void setQueueAtomShortNames(List<QueueValue<String>> queueAtomShortNames) {
+		this.queueAtomShortNames = new LinkedList<>(queueAtomShortNames);
 	}
 
 	@Override
@@ -93,17 +134,39 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 
 	@Override
 	public boolean addAtom(QueueAtom atom) {
-		//Check that we're adding a real, non-duplicate atom to the queue
-		if(atom == null) {
-			throw new NullPointerException("Attempting to add null atom to AtomQueue");
-		}
-		if(isAtomPresent(atom)) {
-			throw new IllegalArgumentException("Atom with identical UID already in queue.");
-		}
-		//Add atom, recalculate the runtime and return
-		boolean result =  atomQueue.add(atom);
+		//Check this SubTaskAtom is real and the atom is not a non-duplicate
+		if (model) throw new IllegalArgumentException("Cannot add non-model atom to a model SubTaskAtom");
+		if(isAtomPresent(atom)) throw new IllegalArgumentException("Atom with identical UID already in queue.");
+		
+		boolean result = addAtom(atom, atomQueue);
 		setRunTime(calculateRunTime());
 		return result;
+	}
+	
+	/**
+	 * When the {@link SubTaskAtom} is a model, add the String name of an atom 
+	 * to the queue model list.
+	 * @param atomShortName String name of atom model
+	 * @return true if the atom was added successfully
+	 */
+	public boolean addAtom(QueueValue<String> atomShortName) {
+		//Check this SubTaskAtom is a model 
+		if (!model) throw new IllegalArgumentException("Cannot add model atom to a non-model SubTaskAtom");
+		return addAtom(atomShortName, queueAtomShortNames);
+	}
+	
+	/**
+	 * Generic method to add either an atom or a model name to this 
+	 * {@link SubTaskAtom}.
+	 * @param atom T being added to queue (String or {@link QueueAtom})
+	 * @param atomList List describing the queue
+	 * @return true if the atom was added successfully
+	 */
+	private <T> boolean addAtom(T atom, List<T> atomList) {
+		//Check it's not a null we're adding to our list...
+		if(atom == null) throw new NullPointerException("Attempting to add null atom to AtomQueue");
+		return atomList.add(atom);
+
 	}
 
 	@Override
@@ -155,6 +218,7 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 		final int prime = 31;
 		int result = super.hashCode();
 		result = prime * result + ((atomQueue == null) ? 0 : atomQueue.hashCode());
+		result = prime * result + ((queueAtomShortNames == null) ? 0 : queueAtomShortNames.hashCode());
 		result = prime * result + ((queueMessage == null) ? 0 : queueMessage.hashCode());
 		return result;
 	}
@@ -173,6 +237,11 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 				return false;
 		} else if (!atomQueue.equals(other.atomQueue))
 			return false;
+		if (queueAtomShortNames == null) {
+			if (other.queueAtomShortNames != null)
+				return false;
+		} else if (!queueAtomShortNames.equals(other.queueAtomShortNames))
+			return false;
 		if (queueMessage == null) {
 			if (other.queueMessage != null)
 				return false;
@@ -184,18 +253,30 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 	@Override
 	public String toString() {
 		String clazzName = this.getClass().getSimpleName();
-		String atomQueueStr = "{";
-		for (QueueAtom qa : atomQueue) {
-			atomQueueStr = atomQueueStr + qa.getShortName() + "('" + qa.getName() + "')";
-			atomQueueStr = atomQueueStr+", ";
-		}
-		atomQueueStr = atomQueueStr.replaceAll(", $", "}"); //Replace trailing ", "
 		
-		return clazzName + " [name=" + name + ", atomQueue=" + atomQueueStr + ", status=" + status
-				+ ", message=" + message + ", queueMessage=" + queueMessage + ", percentComplete=" 
-				+ percentComplete + ", previousStatus=" + previousStatus + ", runTime=" + runTime 
-				+ ", userName=" + userName+ ", hostName=" + hostName + ", beamline="+ beamline 
-				+ ", submissionTime=" + submissionTime + "]";
+		StringBuffer atomQueueStrBuff = new StringBuffer("{");
+		if (model) {
+			clazzName = clazzName + " (MODEL)";
+				atomQueueStrBuff.append(queueAtomShortNames.stream().map(qv -> {
+					try {
+						return qv.evaluate();
+					} catch (ModelEvaluationException e) {
+						return "Failed to read queue atom short names";
+					}
+				}).collect(Collectors.joining(", ")));
+		} else {
+			atomQueueStrBuff.append(atomQueue.stream().map(qa -> qa.getShortName() + "('" + qa.getName() + "')")
+					.collect(Collectors.joining(", ")));
+		} 
+		atomQueueStrBuff.append("}");
+		String atomQueueStr = atomQueueStrBuff.toString();
+		atomQueueStr = atomQueueStr.replaceAll(", }$", "}"); //Replace trailing ", "
+		
+		return clazzName + " [name=" + name + " (shortName="+shortName+"), atomQueue=" + atomQueueStr 
+				+ ", status=" + status + ", message=" + message + ", queueMessage=" + queueMessage 
+				+ ", percentComplete=" + percentComplete + ", previousStatus=" + previousStatus 
+				+ ", runTime=" + runTime + ", userName=" + userName+ ", hostName=" + hostName 
+				+ ", beamline="+ beamline + ", submissionTime=" + submissionTime + "]";
 	}
 
 }

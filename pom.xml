@@ -19,6 +19,7 @@
 		<module>org.eclipse.scanning.connector.epics</module>
 		<module>org.eclipse.scanning.event</module>
 		<module>org.eclipse.scanning.event.queues</module>
+		<module>org.eclipse.scanning.event.queues.spooler</module>
 		<module>org.eclipse.scanning.event.ui</module>
 		<module>org.eclipse.scanning.device</module>
 		<module>org.eclipse.scanning.device.ui</module>

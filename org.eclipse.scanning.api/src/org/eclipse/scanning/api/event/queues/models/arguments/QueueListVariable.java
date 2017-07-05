@@ -2,7 +2,7 @@ package org.eclipse.scanning.api.event.queues.models.arguments;
 
 import java.util.List;
 
-import org.eclipse.scanning.api.event.queues.models.QueueModelException;
+import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 
 /**
  * {@link IQueueValue} which holds an array/List. The value is selected from 
@@ -37,11 +37,11 @@ public class QueueListVariable<V> extends QueueVariableDecorator<Integer,V> {
 	}
 
 	@Override
-	protected V processArg(Integer parameter) throws QueueModelException {
+	protected V processArg(Integer parameter) {
 		try {
 			return list.evaluate().get(parameter);
 		} catch (IndexOutOfBoundsException iEOBEx) {
-			throw new QueueModelException("No value at index '"+parameter+"' in list '"+getName()+"'", iEOBEx);
+			throw new ModelEvaluationException("No value at index '"+parameter+"' in list '"+getName()+"'", iEOBEx);
 		}
 	}
 

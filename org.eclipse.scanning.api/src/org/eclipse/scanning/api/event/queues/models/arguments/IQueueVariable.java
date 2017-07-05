@@ -17,9 +17,15 @@ public interface IQueueVariable<A,V> extends IQueueValue<V> {
 	/**
 	 * Set the {@link IQueueValue} containing the argument needed to evaluate 
 	 * this variable.
-	 * 
 	 * @param arg {@link IQueueValue} defining argument for variable.
 	 */
 	public void setArg(IQueueValue<A> arg);
+	
+	/**
+	 * Return the current value of the argument for this object.
+	 * 
+	 * @return {@link IQueueValue} argument for this variable.
+	 */
+	public IQueueValue<A> getArg();
 
 }

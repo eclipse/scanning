@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0" activate="start" deactivate="stop" immediate="true" name="Queue Service and subsystems Service Holder">
    <implementation class="org.eclipse.scanning.event.queues.ServicesHolder"/>
-   <reference bind="setDeviceService" cardinality="0..1" interface="org.eclipse.scanning.api.device.IRunnableDeviceService" name="IRunnableDeviceService" policy="dynamic" unbind="unsetDeviceService"/>
+   <reference bind="setRunnableDeviceService" cardinality="0..1" interface="org.eclipse.scanning.api.device.IRunnableDeviceService" name="IRunnableDeviceService" policy="dynamic" unbind="unsetRunnableDeviceService"/>
    <reference bind="setEventService" cardinality="0..1" interface="org.eclipse.scanning.api.event.IEventService" name="IEventService" policy="dynamic" unbind="unsetEventService"/>
    <reference bind="setQueueService" cardinality="0..1" interface="org.eclipse.scanning.api.event.queues.IQueueService" name="IQueueService" policy="dynamic" unbind="unsetQueueService"/>
    <reference bind="setQueueControllerService" cardinality="0..1" interface="org.eclipse.scanning.api.event.queues.IQueueControllerService" name="IQueueControllerService" policy="dynamic" unbind="unsetQueueControllerService"/>
-   <reference bind="setScannableDeviceService" cardinality="0..1" interface="org.eclipse.scanning.api.device.IScannableDeviceService" name="IScannableDeviceService" policy="dynamic"/>
+   <reference bind="setScannableDeviceService" cardinality="0..1" interface="org.eclipse.scanning.api.device.IScannableDeviceService" name="IScannableDeviceService" policy="dynamic" unbind="unsetScannableDeviceService"/>
    <reference bind="setFilePathService" cardinality="0..1" interface="org.eclipse.scanning.api.scan.IFilePathService" name="IFilePathService" policy="dynamic"/>
    <reference bind="setNexusFileFactory" cardinality="0..1" interface="org.eclipse.dawnsci.nexus.INexusFileFactory" name="INexusFileFactory" policy="dynamic"/>
 </scr:component>

@@ -91,7 +91,7 @@ public class SubTaskAtomProcessTest {
 		pti = new ProcessTestInfrastructure();
 		
 		//Create test atom & process
-		stAt = new SubTaskAtom("Test queue sub task bean");
+		stAt = new SubTaskAtom(null, "Test queue sub task bean");
 		stAt.setBeamline("I15-1(test)");
 		stAt.setHostName("afakeserver.diamond.ac.uk");
 		stAt.setUserName(System.getProperty("user.name"));

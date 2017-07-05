@@ -1,5 +1,6 @@
 package org.eclipse.scanning.api.event.queues.models.arguments;
 
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 
 /**
@@ -22,6 +23,29 @@ public interface IQueueValue<V> {
 	 * @return value V of this IQueueValue
 	 * @throws QueueModelException if no value can be returned
 	 */
-	public V evaluate() throws QueueModelException;
+	public V evaluate();
+	
+	/**
+	 * Flag to indicate this {@link IQueueValue} hold a reference to another 
+	 * in the {@link IQueueBeanFactory}.
+	 * 
+	 * @return true if this holds a reference
+	 */
+	public boolean isReference();
+	
+	/**
+	 * Tests whether this {@link IQueueValue} refers to the given 
+	 * {@link IQueueValue} and should therefore be replaced by it when 
+	 * processed by the {@link IQueueBeanFactory}.
+	 * @param value {@link IQueueValue} being referred to
+	 * @return true if this {@link IQueueValue is the reference
+	 */
+	public boolean isReferenceFor(IQueueValue<?> value);
+	
+	/**
+	 * Get the Class object representing the value type.
+	 * @return Class<?> representing value type
+	 */
+	public Class<?> getValueType();
 
 }

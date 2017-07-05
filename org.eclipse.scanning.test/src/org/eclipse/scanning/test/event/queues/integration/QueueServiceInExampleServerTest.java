@@ -78,8 +78,8 @@ public class QueueServiceInExampleServerTest {
 	@Test
 	public void testPositioner() throws Exception {
 		PositionerAtom posAt = new PositionerAtom("setT", "T", 290);//Starts at 295 with rate of change 1/s
-		SubTaskAtom stAt = new SubTaskAtom("testSubTask");
-		TaskBean tBean = new TaskBean("testTask");
+		SubTaskAtom stAt = new SubTaskAtom(null, "testSubTask");
+		TaskBean tBean = new TaskBean(null, "testTask");
 		stAt.addAtom(posAt);
 		tBean.addAtom(stAt);
 

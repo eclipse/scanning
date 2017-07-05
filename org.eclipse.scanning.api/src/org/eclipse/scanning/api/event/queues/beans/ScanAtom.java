@@ -15,7 +15,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.IQueueService;
+import org.eclipse.scanning.api.event.queues.models.DeviceModel;
+import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.models.CompoundModel;
@@ -39,6 +42,10 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	
 	private ScanRequest<?> scanReq;
 	
+	private Map<String, DeviceModel> detectorModelsModel;
+	private Map<String, DeviceModel> pathModelsModel;
+	private Collection<Object> monitorsModel;
+	
 	private String queueMessage;
 	
 	private String scanSubmitQueueName;
@@ -53,50 +60,72 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	}
 	
 	/**
-	 * Constructor which allows specification of a scan using the full API of 
-	 * the {@link ScanRequest}.
+	 * Creates an instance which may be either a real or model atom and can be 
+	 * populated as required with further method calls.
 	 * 
-	 * @param scShrtNm String short name used within the QueueBeanFactory
-	 * @param scanReq {@link ScanRequest} describing the complete scan
+	 * @param monShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param model boolean flag indicating whether this is a model
 	 */
-	public ScanAtom(String scShrtNm, ScanRequest<?> scanReq) {
+	public ScanAtom(String scShrtNm, boolean model) {
 		super();
 		setShortName(scShrtNm);
-		setScanReq(scanReq);
+		setModel(model);
 	}
 	
 	/**
-	 * Constructor with required arguments to configure a scan of positions 
-	 * using only detectors to collect data.
+	 * Constructor which allows specification of a scan using the full API of 
+	 * the {@link ScanRequest}.
 	 * 
-	 * @param scShrtNm String short name used within the QueueBeanFactory
-	 * @param pMods List<IScanPathModel> describing the motion during the scan
-	 * @param dMods Map<String,Object> containing the detector configuration 
-	 *        for the scan (get these by calling 
-	 *        IRunnableDeviceService.getRunnableDevice(detector_name)
+	 * @param monShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param scanReq {@link ScanRequest} describing the complete scan
 	 */
-	public ScanAtom(String scShrtNm, List<IScanPathModel> pMods, Map<String,Object> dMods) {
-		super();
-		setShortName(scShrtNm);
-		scanReq = new ScanRequest<>();
-		scanReq.setCompoundModel(new CompoundModel<>(pMods));
-		scanReq.setDetectors(dMods);
+	public ScanAtom(String scShrtNm, ScanRequest<?> scanReq) {
+		this(scShrtNm, false);
+		this.scanReq = scanReq;
 	}
 	
 	/**
 	 * Constructor with required arguments to configure a scan of positions 
 	 * using both detectors and monitors to collect data.
 	 * 
-	 * @param scShrtNm String short name used within the QueueBeanFactory
-	 * @param pMods List<IScanPathModel> describing the motion during the scan
-	 * @param dMods Map<String,Object> containing the detector configuration 
-	 *        for the scan (get these by calling 
+	 * @param monShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param pathModels List<IScanPathModel> describing the positions visited 
+	 *        during the scan
+	 * @param detectorModels Map<String,Object> containing the detector 
+	 *        configuration for the scan (get these by calling 
 	 *        IRunnableDeviceService.getRunnableDevice(detector_name)
-	 * @param mons List<String> names of monitors to use during scan
+	 * @param monitors List<String> names of monitors to use during scan
 	 */
-	public ScanAtom(String scShrtNm, List<IScanPathModel> pMods, Map<String,Object> dMods, Collection<String> mons) {
-		this(scShrtNm, pMods, dMods);
-		scanReq.setMonitorNames(mons);
+	public ScanAtom(String scShrtNm, List<IScanPathModel> pathModels, Map<String,Object> detectorModels, Collection<String> monitors) {
+		this(scShrtNm, false);
+		scanReq = new ScanRequest<>();
+		scanReq.setCompoundModel(new CompoundModel<>(pathModels));
+		scanReq.setDetectors(detectorModels);
+		scanReq.setMonitorNames(monitors);
+	}
+
+	/**
+	 * Constructor to create a model instance of a {@link ScanAtom} which will 
+	 * be converted to a real instance by the {@link IQueueBeanFactory}. The 
+	 * final scan has positions, detectors and monitors defined.
+	 * 
+	 * @param monShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param pathModels Map of Strings and List of {@link IQueueValue} which 
+	 *        define the positions visited during the scan
+	 * @param detectorModels Map of Strings and List of {@link IQueueValue} 
+	 *        which define the detectors used during the scan
+	 * @param monitors Collection of {@link IQueueValue} defining monitors to 
+	 *        be read
+	 */
+	public ScanAtom(String scShrtNm, Map<String, DeviceModel> pathModels, Map<String, DeviceModel> detectorModels, Collection<Object> monitors) {
+		this(scShrtNm, true);
+		pathModelsModel = pathModels;
+		detectorModelsModel = detectorModels;
+		monitorsModel = monitors;
 	}
 	
 	public ScanRequest<?> getScanReq() {
@@ -141,10 +170,37 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		this.scanBrokerURI = scanBrokerURI;
 	}
 
+	public Map<String, DeviceModel> getDetectorModelsModel() {
+		return detectorModelsModel;
+	}
+
+	public void setDetectorModelsModel(Map<String, DeviceModel> detectorModelsModel) {
+		this.detectorModelsModel = detectorModelsModel;
+	}
+
+	public Map<String, DeviceModel> getPathModelsModel() {
+		return pathModelsModel;
+	}
+
+	public void setpModsModel(Map<String, DeviceModel> pathModelsModel) {
+		this.pathModelsModel = pathModelsModel;
+	}
+
+	public Collection<Object> getMonitorsModel() {
+		return monitorsModel;
+	}
+
+	public void setMonsModel(Collection<Object> monitorsModel) {
+		this.monitorsModel = monitorsModel;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + ((detectorModelsModel == null) ? 0 : detectorModelsModel.hashCode());
+		result = prime * result + ((monitorsModel == null) ? 0 : monitorsModel.hashCode());
+		result = prime * result + ((pathModelsModel == null) ? 0 : pathModelsModel.hashCode());
 		result = prime * result + ((queueMessage == null) ? 0 : queueMessage.hashCode());
 		result = prime * result + ((scanBrokerURI == null) ? 0 : scanBrokerURI.hashCode());
 		result = prime * result + ((scanReq == null) ? 0 : scanReq.hashCode());
@@ -162,6 +218,21 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		if (getClass() != obj.getClass())
 			return false;
 		ScanAtom other = (ScanAtom) obj;
+		if (detectorModelsModel == null) {
+			if (other.detectorModelsModel != null)
+				return false;
+		} else if (!detectorModelsModel.equals(other.detectorModelsModel))
+			return false;
+		if (monitorsModel == null) {
+			if (other.monitorsModel != null)
+				return false;
+		} else if (!monitorsModel.equals(other.monitorsModel))
+			return false;
+		if (pathModelsModel == null) {
+			if (other.pathModelsModel != null)
+				return false;
+		} else if (!pathModelsModel.equals(other.pathModelsModel))
+			return false;
 		if (queueMessage == null) {
 			if (other.queueMessage != null)
 				return false;
@@ -188,6 +259,27 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		} else if (!scanSubmitQueueName.equals(other.scanSubmitQueueName))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		String clazzName = this.getClass().getSimpleName();
+		
+		StringBuffer scanDetailsStrBuff = new StringBuffer();
+		if (model) {
+			clazzName = clazzName + " (MODEL)";
+			scanDetailsStrBuff.append("{paths="+pathModelsModel);
+			scanDetailsStrBuff.append(", detectors="+detectorModelsModel);
+			scanDetailsStrBuff.append(", monitors="+monitorsModel+"}");
+		} else {
+			scanDetailsStrBuff.append(scanReq);
+		}
+		return clazzName + " [name=" + name + " (shortName="+shortName+"), scanReq=" + scanDetailsStrBuff 
+				+ ", scanSubmitQueueName=" + scanSubmitQueueName + ", scanStatusTopicName=" + scanStatusTopicName 
+				+ ", scanBrokerURI=" + scanBrokerURI + ", status=" + status + ", message=" + message 
+				+ ", queueMessage=" + queueMessage + ", percentComplete=" + percentComplete + ", previousStatus=" 
+				+ previousStatus + ", runTime=" + runTime+ ", userName=" + userName+ ", hostName=" 
+				+ hostName + ", beamline="+ beamline + ", submissionTime=" + submissionTime + "]";
 	}
 
 }

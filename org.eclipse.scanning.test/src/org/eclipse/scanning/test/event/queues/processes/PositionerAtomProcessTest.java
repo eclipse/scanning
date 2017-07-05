@@ -56,13 +56,13 @@ public class PositionerAtomProcessTest {
 		robotArm = fakeRobotArm;
 		
 		dService  = new RunnableDeviceServiceImpl(connector);
-		ServicesHolder.setDeviceService(dService);
+		ServicesHolder.setRunnableDeviceService(dService);
 		ServicesHolder.setScannableDeviceService(connector);
 	}
 	
 	@AfterClass
 	public static void tearDownClass() {
-		ServicesHolder.unsetDeviceService(dService);
+		ServicesHolder.unsetRunnableDeviceService(dService);
 		dService = null;
 		
 		connector = null;

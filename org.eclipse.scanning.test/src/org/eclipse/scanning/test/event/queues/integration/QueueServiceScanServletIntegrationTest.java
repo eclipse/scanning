@@ -201,11 +201,11 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		PositionerAtom mvAt = new PositionerAtom("testMove", null, null); //TODO change me!!
 
 		//... and an enclosing SubTaskAtom...
-		SubTaskAtom stAt = new SubTaskAtom("testSubTask");
+		SubTaskAtom stAt = new SubTaskAtom(null, "testSubTask");
 		stAt.addAtom(mvAt);
 
 		//... and an enclosing TaskBean
-		TaskBean tBean = new TaskBean("testTask");
+		TaskBean tBean = new TaskBean(null, "testTask");
 		tBean.addAtom(stAt);
 
 		//Submit it and wait!
@@ -229,14 +229,14 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		dmodel.setExposureTime(0.001);
 		Map<String, Object> detectors = new HashMap<>();
 		detectors.put("detector", dmodel);
-		ScanAtom scAt = new ScanAtom("testScan", paths, detectors);
+		ScanAtom scAt = new ScanAtom("testScan", paths, detectors, null);
 		
 		//... and an enclosing SubTaskAtom...
-		SubTaskAtom stAt = new SubTaskAtom("testSubTask");
+		SubTaskAtom stAt = new SubTaskAtom(null, "testSubTask");
 		stAt.addAtom(scAt);
 		
 		//... and an enclosing TaskBean
-		TaskBean tBean = new TaskBean("testTask");
+		TaskBean tBean = new TaskBean(null, "testTask");
 		tBean.addAtom(stAt);
 		
 		//Create latches to wait for activity

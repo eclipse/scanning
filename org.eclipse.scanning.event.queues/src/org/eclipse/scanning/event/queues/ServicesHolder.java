@@ -31,7 +31,7 @@ import org.osgi.service.component.ComponentContext;
  */
 public final class ServicesHolder {
 
-	private static IRunnableDeviceService deviceService;
+	private static IRunnableDeviceService runnableDeviceService;
 	private static IEventService eventService;
 	private static IQueueService queueService;
 	private static IQueueControllerService controllerService;
@@ -39,17 +39,44 @@ public final class ServicesHolder {
 	private static IFilePathService filePathService;
 	private static INexusFileFactory nexusFileFactory;
 
-	public static IRunnableDeviceService getDeviceService() {
-		return deviceService;
+	private static ComponentContext context;
+	private static ServicesHolder   current;
+
+	private static <T> T getService(Class<T> clazz) {
+		if (context == null) return null;
+		try {
+			ServiceReference<T> ref = context.getBundleContext().getServiceReference(clazz);
+			return context.getBundleContext().getService(ref);
+		} catch (NullPointerException npe) {
+			return null;
+		}
 	}
 
-	public static void setDeviceService(IRunnableDeviceService deviceService) {
-		ServicesHolder.deviceService = deviceService;
+	public void start(ComponentContext c) {
+		context = c;
+		current = this;
 	}
 
-	public static void unsetDeviceService(IRunnableDeviceService deviceService) {
-		if (ServicesHolder.deviceService == deviceService) {
-			ServicesHolder.deviceService = null;
+	public void stop() {
+		current = null;
+	}
+
+	public static ServicesHolder getCurrent() {
+		return current;
+	}
+
+	public static IRunnableDeviceService getRunnableDeviceService() {
+		if (runnableDeviceService==null) runnableDeviceService = getService(IRunnableDeviceService.class);
+		return runnableDeviceService;
+	}
+
+	public static void setRunnableDeviceService(IRunnableDeviceService deviceService) {
+		ServicesHolder.runnableDeviceService = deviceService;
+	}
+
+	public static void unsetRunnableDeviceService(IRunnableDeviceService deviceService) {
+		if (ServicesHolder.runnableDeviceService == deviceService) {
+			ServicesHolder.runnableDeviceService = null;
 		}
 	}
 
@@ -82,16 +109,16 @@ public final class ServicesHolder {
 			ServicesHolder.queueService = null;
 		}
 	}
-	
+
 	public static IQueueControllerService getQueueControllerService() {
 		if (controllerService==null) controllerService = getService(IQueueControllerService.class);
 		return controllerService;
 	}
-	
+
 	public static void setQueueControllerService(IQueueControllerService controllerService) {
 		ServicesHolder.controllerService = controllerService;
 	}
-	
+
 	public static void unsetQueueControllerService(IQueueControllerService controllerService) {
 		if (ServicesHolder.controllerService == controllerService) {
 			ServicesHolder.controllerService = null;
@@ -106,32 +133,11 @@ public final class ServicesHolder {
 	public static void setScannableDeviceService(IScannableDeviceService scannableDeviceService) {
 		ServicesHolder.scannableDeviceService = scannableDeviceService;
 	}
-	
-	private static ComponentContext context;
-	private static ServicesHolder   current;
-	
-	private static <T> T getService(Class<T> clazz) {
-		if (context == null) return null;
-		try {
-			ServiceReference<T> ref = context.getBundleContext().getServiceReference(clazz);
-	        return context.getBundleContext().getService(ref);
-		} catch (NullPointerException npe) {
-			return null;
+
+	public static void unsetScannableDeviceService(IScannableDeviceService scannableDeviceService) {
+		if (ServicesHolder.scannableDeviceService == scannableDeviceService) {
+			ServicesHolder.scannableDeviceService = null;
 		}
-	}
-
-
-	public void start(ComponentContext c) {
-		context = c;
-		current = this;
-	}
-	
-	public void stop() {
-		current = null;
-	}
-
-	public static ServicesHolder getCurrent() {
-		return current;
 	}
 
 	public static IFilePathService getFilePathService() {
