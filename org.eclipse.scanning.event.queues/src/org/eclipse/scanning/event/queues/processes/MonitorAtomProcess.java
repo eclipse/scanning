@@ -118,6 +118,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			logger.debug("Getting scannable'"+queueBean.getMonitor()+"' and reading current value");
 			broadcast(Status.RUNNING, 40.0, "Reading value of monitor '"+queueBean.getMonitor()+"'");
 			writeDataset(datasetWriter, slice);
+			if (isTerminated()) throw new InterruptedException("Termination requested");
 			
 			//Record the full dataset path in the MonitorAtom
 			logger.debug("Data successfully written to file");
@@ -220,12 +221,13 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 	}
 	
 	protected void terminateCleanupAction() {
-		File nxsFSObj = new File(queueBean.getFilePath());
+		if (queueBean.getFilePath() == null) return;
+		File nxsFSObj = new File(queueBean.getFilePath()).getAbsoluteFile();
 		if (nxsFSObj.exists()) {
 			//By deleting the object when terminate is called, we (should!) ensure that it really gets deleted
 			boolean deletedNexusFile = nxsFSObj.delete();
 			if (!deletedNexusFile) {
-				logger.warn("Failed to delete NeXus file{} during cleanup", nxsFSObj.getAbsolutePath());
+				logger.warn("Failed to delete NeXus file {} during cleanup", nxsFSObj.getAbsolutePath());
 			}
 		}
 	}

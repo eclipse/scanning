@@ -11,13 +11,11 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.event.queues.processes;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 
@@ -151,8 +149,15 @@ public class MonitorAtomProcessTest {
 		pti.checkLastBroadcastBeanStatuses(Status.FAILED, false);
 		
 		StatusBean lastBean = pti.getLastBroadcastBean();
-		assertThat("Fail message is wrong", lastBean.getMessage(), anyOf(equalTo("Processing MonitorAtom 'Error Causer' failed with: 'Failed to get monitor with the name 'null''"),
-				equalTo("Failed to get monitor with the name 'null'")));
+		
+//TODO Tried to do this elegantly. If doesn't work - throws a SecurityException due to incorrect signing of hamcrest matcher classes. Works fine locally; fails on travis
+//		assertThat("Fail message is wrong", lastBean.getMessage(), anyOf(equalTo("Processing MonitorAtom 'Error Causer' failed with: 'Failed to get monitor with the name 'null''"),
+//				equalTo("Failed to get monitor with the name 'null'")));
+		if (!(lastBean.getMessage().equals("Processing MonitorAtom 'Error Causer' failed with: 'Failed to get monitor with the name 'null''") || 
+				lastBean.getMessage().equals("Failed to get monitor with the name 'null'"))) {
+			fail("Fail message is wrong");
+		}
+		
 	}
 
 }
