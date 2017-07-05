@@ -51,9 +51,8 @@ import org.slf4j.LoggerFactory;
  * 2. Write to a file visit/tmp 
  * 3. Set file path written to MonitorAtom
  * 4. Set the Status to RUNNING, set %-complete at 99.6% 
- * 5. Unit test similar to MoveAtomProcessTest
+ * 5. Unit test similar to PositionerAtomProcessTest
  * 
- * Michael will take this class forwards once Matt has completed a basic version.
  * 
  * @author Michael Wharmby
  * @author Matthew Gerring
@@ -103,7 +102,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			nxsFileObject = createFilePath();
 			
 			//Create a LazyDataset ready to receive the monitor value
-			shape = new int[]{1}; // Not sure about this, what about vector-data from the scannable? //TODO
+			shape = queueBean.getDataShape(); // This is int[]: not sure about this, what about vector-data from the scannable?
 			logger.debug("Creating lazy dataset with shape "+shape);
 			broadcast(Status.RUNNING, 10.0, "Creating dataset with shape "+shape);
 			datasetName = UniqueUtils.getSafeName(queueBean.getName());
@@ -145,6 +144,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 		final String fileName = UniqueUtils.getSafeName(queueBean.getName());
 		final File visitFile = UniqueUtils.getUnique(visitTmpDir, fileName, "nxs");
 		queueBean.setRunDirectory(visitTmpDir.getAbsolutePath());
+		
 		// Tell downstream which file to read
 		String filePath = visitFile.getAbsolutePath();
 		queueBean.setFilePath(filePath);
@@ -222,7 +222,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 	protected void terminateCleanupAction() {
 		File nxsFSObj = new File(queueBean.getFilePath());
 		if (nxsFSObj.exists()) {
-			//By deleting the object when terminate is called, we ensure that it really gets deleted
+			//By deleting the object when terminate is called, we (should!) ensure that it really gets deleted
 			boolean deletedNexusFile = nxsFSObj.delete();
 			if (!deletedNexusFile) {
 				logger.warn("Failed to delete NeXus file{} during cleanup", nxsFSObj.getAbsolutePath());
