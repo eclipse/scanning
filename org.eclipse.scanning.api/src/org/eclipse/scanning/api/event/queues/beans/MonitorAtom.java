@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.api.event.queues.beans;
 
+import java.util.Arrays;
+
 import org.eclipse.scanning.api.event.queues.IQueueService;
 
 /**
@@ -30,6 +32,7 @@ public class MonitorAtom extends QueueAtom {
 	private static final long serialVersionUID = 20161021L;
 	
 	private String monitor;
+	private int[] dataShape;
 	private String filePath;
 	private String dataset;
 	
@@ -41,29 +44,47 @@ public class MonitorAtom extends QueueAtom {
 	}
 	
 	/**
+	 * Constructor with arguments required to fully configure this atom to 
+	 * read from a monitor providing data with shape 1.
+	 * 
+	 * @param monShrtNm String short name used within the QueueBeanFactory
+	 * @param dev String name of monitor
+	 */
+	public MonitorAtom(String monShrtNm, String dev) {
+		this(monShrtNm, false, dev, new int[]{1});
+	}
+	
+	/**
 	 * Constructor with arguments required to configure a model or real 
-	 * instance of this atom.
+	 * instance of this atom. Resulting atom will read from a monitor 
+	 * providing data with shape 1.
 	 * 
 	 * @param monShrtNm String short name used within the 
 	 *        {@link IQueueBeanFactory}
 	 * @param model boolean flag indicating whether this is a model
-	 * @param dev name of monitor
+	 * @param dev String name of monitor
 	 */
 	public MonitorAtom(String monShrtNm, boolean model, String dev) {
+		this(monShrtNm, model, dev, new int[]{1});
+	}
+	
+	/**
+	 * Constructor with arguments required to configure a model or real 
+	 * instance of this atom. 
+	 * 
+	 * @param monShrtNm String short name used within the 
+	 *        {@link IQueueBeanFactory}
+	 * @param model boolean flag indicating whether this is a model
+	 * @param dev String name of monitor
+	 * @param dataShape int[] describing shape of expected data (e.g. pixels)
+	 */
+	public MonitorAtom(String monShrtNm, boolean model, String dev, int[] dataShape) {
 		super();
 		setShortName(monShrtNm);
 		setModel(model);
 		monitor = dev;
-	}
-	
-	/**
-	 * Constructor with arguments required to fully configure this atom
-	 * 
-	 * @param monShrtNm String short name used within the QueueBeanFactory
-	 * @param dev name of monitor
-	 */
-	public MonitorAtom(String monShrtNm, String dev) {
-		this(monShrtNm, false, dev);
+		this.dataShape = dataShape;
+		
 	}
 
 	/**
@@ -81,42 +102,13 @@ public class MonitorAtom extends QueueAtom {
 	public void setMonitor(String monitor) {
 		this.monitor = monitor;
 	}
-	
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = super.hashCode();
-		result = prime * result + ((dataset == null) ? 0 : dataset.hashCode());
-		result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
-		result = prime * result + ((monitor == null) ? 0 : monitor.hashCode());
-		return result;
+
+	public int[] getDataShape() {
+		return dataShape;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (!super.equals(obj))
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		MonitorAtom other = (MonitorAtom) obj;
-		if (dataset == null) {
-			if (other.dataset != null)
-				return false;
-		} else if (!dataset.equals(other.dataset))
-			return false;
-		if (filePath == null) {
-			if (other.filePath != null)
-				return false;
-		} else if (!filePath.equals(other.filePath))
-			return false;
-		if (monitor == null) {
-			if (other.monitor != null)
-				return false;
-		} else if (!monitor.equals(other.monitor))
-			return false;
-		return true;
+	public void setDataShape(int[] dataShape) {
+		this.dataShape = dataShape;
 	}
 
 	public String getFilePath() {
@@ -135,6 +127,46 @@ public class MonitorAtom extends QueueAtom {
 		this.dataset = dataset;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + Arrays.hashCode(dataShape);
+		result = prime * result + ((dataset == null) ? 0 : dataset.hashCode());
+		result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
+		result = prime * result + ((monitor == null) ? 0 : monitor.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MonitorAtom other = (MonitorAtom) obj;
+		if (!Arrays.equals(dataShape, other.dataShape))
+			return false;
+		if (dataset == null) {
+			if (other.dataset != null)
+				return false;
+		} else if (!dataset.equals(other.dataset))
+			return false;
+		if (filePath == null) {
+			if (other.filePath != null)
+				return false;
+		} else if (!filePath.equals(other.filePath))
+			return false;
+		if (monitor == null) {
+			if (other.monitor != null)
+				return false;
+		} else if (!monitor.equals(other.monitor))
+			return false;
+		return true;
+	}
+	
 	@Override
 	public String toString() {
 		String clazzName = this.getClass().getSimpleName();
