@@ -444,7 +444,7 @@ public class ModelFieldEditorFactory {
 				}
 				
 				if (object == null) return Status.CANCEL_STATUS;
-				final Map<String, int[]> datasetInfo = DatasetNameUtils.getDatasetInfo(object.toString(), null);
+				final Map<String, int[]> datasetInfo = DatasetNameUtils.getDatasetInfo(object.toString());
 				datasetInfo.toString();
 				
 				final IContentProposalProvider cpp = new IContentProposalProvider() {
