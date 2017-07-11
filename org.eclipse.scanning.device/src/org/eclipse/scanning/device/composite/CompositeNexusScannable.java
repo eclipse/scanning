@@ -33,6 +33,10 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 	private NexusBaseClass nexusCategory;
 	private List<ChildNode> childNodes;
 	
+	public CompositeNexusScannable() {
+		super(Services.getScannableDeviceService());
+	}
+
 	@Override
 	public T getPosition() throws Exception {
 		throw new UnsupportedOperationException("A CompositeNexusScannable should only be used as a per-scan monitor");
