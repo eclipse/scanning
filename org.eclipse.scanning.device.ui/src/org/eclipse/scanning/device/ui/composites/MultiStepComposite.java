@@ -83,7 +83,7 @@ public class MultiStepComposite extends Composite {
 
 	}
 	
-	protected boolean updateUnits(Object value) {
+	public boolean updateUnits(Object value) {
 		if (value==null) return false;
 		if (scannableConnectorService==null) return false;
 		try {
