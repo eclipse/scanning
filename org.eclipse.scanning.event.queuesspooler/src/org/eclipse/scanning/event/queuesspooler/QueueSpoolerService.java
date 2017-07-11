@@ -1,4 +1,4 @@
-package org.eclipse.scanning.event.queues.spooler;
+package org.eclipse.scanning.event.queuesspooler;
 
 import java.util.List;
 

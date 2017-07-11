@@ -40,7 +40,7 @@
          unpack="false"/>
 
    <plugin
-         id="org.eclipse.scanning.event.queues.spooler"
+         id="org.eclipse.scanning.event.queuesspooler"
          download-size="0"
          install-size="0"
          version="0.0.0"

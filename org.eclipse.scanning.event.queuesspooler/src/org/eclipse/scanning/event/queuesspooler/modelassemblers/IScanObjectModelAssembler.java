@@ -1,4 +1,4 @@
-package org.eclipse.scanning.event.queues.spooler.modelassemblers;
+package org.eclipse.scanning.event.queuesspooler.modelassemblers;
 
 import java.util.List;
 

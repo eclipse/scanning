@@ -10,7 +10,7 @@
 		<relativePath>../</relativePath>
 	</parent>
 	<groupId>org.eclipse</groupId>
-	<artifactId>org.eclipse.scanning.event.queues.spooler</artifactId>
+	<artifactId>org.eclipse.scanning.event.queuesspooler</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 	

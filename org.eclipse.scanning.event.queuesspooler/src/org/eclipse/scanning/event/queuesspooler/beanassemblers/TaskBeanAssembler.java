@@ -1,4 +1,4 @@
-package org.eclipse.scanning.event.queues.spooler.beanassemblers;
+package org.eclipse.scanning.event.queuesspooler.beanassemblers;
 
 import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.beans.SubTaskAtom;

@@ -1,4 +1,4 @@
-package org.eclipse.scanning.event.queues.spooler;
+package org.eclipse.scanning.event.queuesspooler;
 
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
