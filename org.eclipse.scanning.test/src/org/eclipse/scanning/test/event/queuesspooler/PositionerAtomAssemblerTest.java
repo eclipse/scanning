@@ -1,4 +1,4 @@
-package org.eclipse.scanning.test.event.queues.spooler;
+package org.eclipse.scanning.test.event.queuesspooler;
 
 import static org.junit.Assert.assertEquals;
 
@@ -8,7 +8,7 @@ import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
-import org.eclipse.scanning.event.queues.spooler.beanassemblers.PositionerAtomAssembler;
+import org.eclipse.scanning.event.queuesspooler.beanassemblers.PositionerAtomAssembler;
 import org.junit.Test;
 
 public class PositionerAtomAssemblerTest {

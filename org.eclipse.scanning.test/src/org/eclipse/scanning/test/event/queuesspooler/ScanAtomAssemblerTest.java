@@ -1,4 +1,4 @@
-package org.eclipse.scanning.test.event.queues.spooler;
+package org.eclipse.scanning.test.event.queuesspooler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -26,9 +26,9 @@ import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.scan.ScanningException;
-import org.eclipse.scanning.event.queues.spooler.ServicesHolder;
-import org.eclipse.scanning.event.queues.spooler.QueueBeanFactory;
-import org.eclipse.scanning.event.queues.spooler.beanassemblers.ScanAtomAssembler;
+import org.eclipse.scanning.event.queuesspooler.ServicesHolder;
+import org.eclipse.scanning.event.queuesspooler.QueueBeanFactory;
+import org.eclipse.scanning.event.queuesspooler.beanassemblers.ScanAtomAssembler;
 import org.eclipse.scanning.example.detector.MandelbrotDetector;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;

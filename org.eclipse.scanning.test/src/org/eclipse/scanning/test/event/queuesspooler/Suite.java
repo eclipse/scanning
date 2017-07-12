@@ -1,4 +1,4 @@
-package org.eclipse.scanning.test.event.queues.spooler;
+package org.eclipse.scanning.test.event.queuesspooler;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
