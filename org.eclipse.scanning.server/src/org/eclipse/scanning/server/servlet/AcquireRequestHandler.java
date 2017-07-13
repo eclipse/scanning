@@ -11,11 +11,14 @@
  *******************************************************************************/
 package org.eclipse.scanning.server.servlet;
 
+import java.util.Collections;
+
 import org.eclipse.scanning.api.annotation.scan.AnnotationManager;
 import org.eclipse.scanning.api.annotation.scan.PostConfigure;
 import org.eclipse.scanning.api.annotation.scan.PreConfigure;
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
+import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.core.IResponseProcess;
@@ -75,17 +78,20 @@ public class AcquireRequestHandler implements IResponseProcess<AcquireRequest> {
 	}
 	
 	private IRunnableDevice<?> createRunnableDevice(AcquireRequest request) throws ScanningException, EventException {
+		// get the services we need
+		final IRunnableDeviceService deviceService = Services.getRunnableDeviceService();
+		final IPointGeneratorService pointGenService = Services.getGeneratorService();
+		
 		final ScanModel scanModel = new ScanModel();
 
 		try {
-			IPointGeneratorService pointGenService = Services.getGeneratorService();
 			IPointGenerator<?> gen = pointGenService.createGenerator(new StaticModel());
 			scanModel.setPositionIterable(gen);
 			
 			scanModel.setFilePath(getOutputFilePath(request));
-			IRunnableDeviceService deviceService = Services.getRunnableDeviceService();
 			IRunnableDevice<?> detector = deviceService.getRunnableDevice(bean.getDetectorName());
 			scanModel.setDetectors(detector);
+			scanModel.setScannables(Collections.emptyList());
 			
 			configureDetector(detector, request.getDetectorModel(), scanModel);
 			return deviceService.createRunnableDevice(scanModel, null);

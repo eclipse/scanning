@@ -15,11 +15,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.scanning.api.AbstractScannable;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
+import org.eclipse.scanning.api.points.IDeviceDependentIterable;
+import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
@@ -72,7 +75,50 @@ public interface IScannableDeviceService {
 	 * @throws ScanningException if no scannable with the given name could be found
 	 */
 	<T> IScannable<T> getScannable(String name) throws ScanningException;
-
+	
+	/**
+	 * Returns a list of the scannables for the given {@link Iterable} over {@link IPosition}s.
+	 * @param positionIterable an iterator over positions
+	 * @return list of scannables for the given position iterable
+	 * @throws ScanningException if one or more of the scannables cannot be found
+	 */
+	default List<IScannable<?>> getScannables(Iterable<IPosition> positionIterable) throws ScanningException {
+		List<String> names = null;
+		if (positionIterable instanceof IDeviceDependentIterable) {
+			names = ((IDeviceDependentIterable) positionIterable).getScannableNames();
+		}
+		if (names == null) {
+			names = positionIterable.iterator().next().getNames();
+		}
+		
+		return getScannables(names);
+	}
+	
+	/**
+	 * Returns a list of the scannables for the given {@link IPosition}s.
+	 * @param position an {@link IPosition}
+	 * @return list of scannables for the given position
+	 * @throws ScanningException if one or more of the scannables cannot be found
+	 */
+	default List<IScannable<?>> getScannables(IPosition position) throws ScanningException {
+		return getScannables(position.getNames());
+	}
+	
+	/**
+	 * Returns a list of the scannables with the given names
+	 * @param scannableNames a list of scannable names
+	 * @return list of scannables for the given names
+	 * @throws ScanningException if one or more of the scannables cannot be found
+	 */
+	default List<IScannable<?>> getScannables(List<String> scannableNames) throws ScanningException {
+		final List<IScannable<?>> scannables = new ArrayList<>(scannableNames.size());
+		for (String scannableName : scannableNames) {
+			scannables.add(getScannable(scannableName));
+		}
+		
+		return scannables;
+	}
+	
 	/**
 	 * Returns the set of global per-scan monitors that should be added to all scans.
 	 * This is used to support legacy (GDA8) spring configurations. Should not be called

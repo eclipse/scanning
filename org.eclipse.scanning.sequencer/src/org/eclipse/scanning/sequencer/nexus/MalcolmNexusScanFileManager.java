@@ -14,17 +14,14 @@ package org.eclipse.scanning.sequencer.nexus;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.dawnsci.nexus.IMultipleNexusDevice;
-import org.eclipse.dawnsci.nexus.INexusDevice;
 import org.eclipse.dawnsci.nexus.NexusBaseClass;
 import org.eclipse.dawnsci.nexus.NexusException;
 import org.eclipse.dawnsci.nexus.NexusScanInfo.ScanRole;
 import org.eclipse.dawnsci.nexus.builder.NexusObjectProvider;
 import org.eclipse.scanning.api.device.AbstractRunnableDevice;
-import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.models.ScanModel;
@@ -38,8 +35,6 @@ import org.eclipse.scanning.sequencer.SubscanModerator;
 public class MalcolmNexusScanFileManager extends NexusScanFileManager {
 
 	private static final Map<NexusBaseClass, ScanRole> DEFAULT_SCAN_ROLES;
-	
-	private final Set<String> malcolmControlledAxes;
 	
 	private List<IMalcolmDevice<?>> malcolmDevices = null;
 	
@@ -56,7 +51,6 @@ public class MalcolmNexusScanFileManager extends NexusScanFileManager {
 		malcolmDevices = scanDevice.getModel().getDetectors().stream().
 				filter(IMalcolmDevice.class::isInstance).map(IMalcolmDevice.class::cast).
 				collect(Collectors.toList());
-		malcolmControlledAxes = getMalcolmControlledAxes();
 	}
 	
 	@Override
@@ -75,17 +69,6 @@ public class MalcolmNexusScanFileManager extends NexusScanFileManager {
 		return nexusProviders;
 	}
 
-	@Override
-	protected INexusDevice<?> getNexusScannable(String scannableName) {
-		// for axes controlled by a malcolm device, the malcolm device creates the nexus object
-		// so we don't need to get one from the scannable
-		if (malcolmControlledAxes.contains(scannableName)) {
-			return null;
-		}
-	
-		return super.getNexusScannable(scannableName);
-	}
-	
 	protected SolsticeScanMonitor createSolsticeScanMonitor(ScanModel scanModel) {
 		SolsticeScanMonitor scanPointsWriter = super.createSolsticeScanMonitor(scanModel);
 		scanPointsWriter.setMalcolmScan(true);
@@ -98,23 +81,6 @@ public class MalcolmNexusScanFileManager extends NexusScanFileManager {
 		return getScanRank(moderator.getOuterIterable());
 	}
 
-	private Set<String> getMalcolmControlledAxes() throws ScanningException {
-		try {
-			return malcolmDevices.stream().flatMap(d -> getAxesToMove(d).stream()).collect(Collectors.toSet());
-		} catch (Exception e) {
-			handleException(e);
-			return null; // not possible, above always throws exception
-		}
-	}
-	
-	private Set<String> getAxesToMove(IRunnableDevice<?> device) {
-		try {
-			return ((IMalcolmDevice<?>) device).getAxesToMove();
-		} catch (ScanningException e) {
-			throw new RuntimeException(e);
-		}
-	}
-	
 	private ScanRole getScanRole(NexusObjectProvider<?> nexusProvider) throws ScanningException {
 		// Malcolm devices should only return NXdetectors, NXmonitors and NXpositions
 		// based on the type of device.

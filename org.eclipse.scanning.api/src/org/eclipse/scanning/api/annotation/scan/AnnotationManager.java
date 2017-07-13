@@ -165,16 +165,17 @@ public class AnnotationManager {
 	 * 
 	 * If a device does not implement ILevel its level is assumed to be ILevel.MAXIMUM 
 	 * 
-	 * @param ds
+	 * @param devices the devices to add
 	 */
-	public void addDevices(Collection<?> ds) {
-		
-		if (ds == null)  throw new IllegalArgumentException("No devices specified!");
-		// Make a copy of it and sort it
-		List<Object> devices = new ArrayList<>(ds);
-		Collections.sort(devices, new LevelComparitor());
-		addOrderedDevices(devices);
+	public void addDevices(Collection<?> devices) {
+		if (devices != null && !devices.isEmpty()) {
+			// Make a copy of the list and sort it
+			List<Object> sortedDevices = new ArrayList<>(devices);
+			Collections.sort(sortedDevices, new LevelComparitor());
+			addOrderedDevices(sortedDevices);
+		}
 	}
+	
 	private void addOrderedDevices(Collection<Object> ds) {
 		for (Object object : ds) processAnnotations(object);
 	}
