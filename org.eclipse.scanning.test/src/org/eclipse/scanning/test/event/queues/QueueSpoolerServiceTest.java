@@ -11,7 +11,7 @@ import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.queues.IQueueSpoolerService;
 import org.eclipse.scanning.api.event.queues.beans.TaskBean;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
-import org.eclipse.scanning.event.queues.spooler.QueueSpoolerService;
+import org.eclipse.scanning.event.queuesspooler.QueueSpoolerService;
 import org.eclipse.scanning.test.event.queues.mocks.MockSampleDescriptionService;
 import org.junit.Before;
 import org.junit.Test;
