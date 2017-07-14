@@ -68,7 +68,7 @@ abstract class LevelRunner<L extends ILevel> {
 	}
 
 	/**
-	 * Get a list of the objects which we would like to order by level.
+	 * Get a list of the objects which we would like to order by level
 	 * @return
 	 */
 	protected abstract Collection<L> getDevices() throws ScanningException ;
@@ -122,7 +122,7 @@ abstract class LevelRunner<L extends ILevel> {
 		boolean ok = pDelegate.firePositionWillPerform(loc);
         if (!ok) return false;
 		
-		Map<Integer, List<L>> positionMap = getLevelOrderedDevices(getDevices());
+		Map<Integer, List<L>> positionMap = getLevelOrderedDevices();
 		Map<Integer, AnnotationManager> managerMap = getLevelOrderedManagerMap(positionMap);
 		
 		try {
@@ -295,22 +295,23 @@ abstract class LevelRunner<L extends ILevel> {
 	 * @return
 	 * @throws ScanningException 
 	 */
-	protected Map<Integer, List<L>> getLevelOrderedDevices(final Collection<L> objects) throws ScanningException {
-		
-		if (objects==null) return Collections.emptyMap();
-		
+	protected Map<Integer, List<L>> getLevelOrderedDevices() throws ScanningException {
 		if (sortedObjects!=null && sortedObjects.get()!=null) return sortedObjects.get();
+
+		final Collection<L> devices = getDevices();
 		
-		final Map<Integer, List<L>> ret = new TreeMap<>();
-		for (L object : objects) {
+		if (devices == null) return Collections.emptyMap();
+		
+		final Map<Integer, List<L>> devicesByLevel = new TreeMap<>();
+		for (L object : devices) {
 			final int level = object.getLevel();
 		
-			if (!ret.containsKey(level)) ret.put(level, new ArrayList<L>(7));
-			ret.get(level).add(object);
+			if (!devicesByLevel.containsKey(level)) devicesByLevel.put(level, new ArrayList<L>(7));
+			devicesByLevel.get(level).add(object);
 		}
-		if (isLevelCachingAllowed()) sortedObjects = new SoftReference<Map>(ret);
+		if (isLevelCachingAllowed()) sortedObjects = new SoftReference<Map>(devicesByLevel);
 		
-		return ret;
+		return devicesByLevel;
 	}
 	
 	private SoftReference<Map> sortedManagers;

@@ -50,6 +50,7 @@ import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.event.status.Status;
+import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IDeviceDependentIterable;
 import org.eclipse.scanning.api.points.IPosition;
@@ -149,26 +150,17 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		
 		setDeviceState(DeviceState.CONFIGURING);
 		setModel(model);
-		setBean(model.getBean()!=null?model.getBean():new ScanBean());
+		setBean(model.getBean() != null ? model.getBean() : new ScanBean());
 		getBean().setPreviousStatus(getBean().getStatus());
 		getBean().setStatus(Status.QUEUED);
+
+		initializeDetectorsWithScanBean(model);
 		
-		positioner = runnableDeviceService.createPositioner();
-		if (model.getDetectors()!=null) {
-			// Make sure all devices report the same scan id
-			for (IRunnableDevice<?> device : model.getDetectors()) {
-				if (device instanceof AbstractRunnableDevice<?>) {
-					// TODO the same bean should not be shared between detectors
-					AbstractRunnableDevice<?> adevice = (AbstractRunnableDevice<?>)device;
-					DeviceState deviceState = adevice.getDeviceState();
-					ScanBean bean = getBean();
-					bean.setDeviceState(deviceState);
-					adevice.setBean(bean);
-					adevice.setPrimaryScanDevice(false);
-				}
-			}
-		}
+		// set the scannables on the scan model if not already set
+		setScannables(model);
 		
+		positioner = createPositioner(model);
+
 		// Create the manager and populate it
 		if (annotationManager!=null) annotationManager.dispose(); // It is allowed to configure more than once.
 		annotationManager = createAnnotationManager(model);
@@ -208,14 +200,79 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		setConfigureTime(after-before);
 	}
 
+	private void setScannables(ScanModel model) throws ScanningException {
+		List<IScannable<?>> scannables = model.getScannables();
+		if (scannables == null) {
+			scannables = connectorService.getScannables(model.getPositionIterable());
+		}
+		
+		// calculate the names of the axes controlled by malcolm device(s)
+		try {
+			final Set<String> malcolmControlledAxes = model.getDetectors().stream().
+					filter(IMalcolmDevice.class::isInstance).
+					map(IMalcolmDevice.class::cast).
+					flatMap(m -> getAxesToMove(m).stream()).
+					collect(Collectors.toSet());
+			
+			scannables = scannables.stream().
+					filter(s -> !malcolmControlledAxes.contains(s.getName())).
+					collect(Collectors.toList());
+			
+			model.setScannables(scannables);
+		} catch (RuntimeException e) {
+			if (e.getCause() instanceof ScanningException) throw (ScanningException) e.getCause();
+			throw e;
+		}
+	}
+	
+	private Set<String> getAxesToMove(IMalcolmDevice<?> malcolmDevice) {
+		try {
+			return ((IMalcolmDevice<?>) malcolmDevice).getAxesToMove();
+		} catch (ScanningException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private IPositioner createPositioner(ScanModel model) throws ScanningException {
+		IPositioner poser = runnableDeviceService.createPositioner();
+
+		// We allow monitors which can block a position until a setpoint is
+		// reached or add an extra record to the NeXus file.
+		if (model.getMonitors() != null) {
+			List<IScannable<?>> perPoint = model.getMonitors().stream().filter(
+					scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT).collect(Collectors.toList());
+			poser.setMonitors(perPoint);
+		}
+		poser.setScannables(model.getScannables());
+		
+		return poser;
+	}
+
+	private void initializeDetectorsWithScanBean(ScanModel model) throws ScanningException {
+		if (model.getDetectors()!=null) {
+			// Make sure all devices report the same scan id
+			for (IRunnableDevice<?> device : model.getDetectors()) {
+				if (device instanceof AbstractRunnableDevice<?>) {
+					// TODO the same bean should not be shared between detectors
+					AbstractRunnableDevice<?> adevice = (AbstractRunnableDevice<?>)device;
+					DeviceState deviceState = adevice.getDeviceState();
+					ScanBean bean = getBean();
+					bean.setDeviceState(deviceState);
+					adevice.setBean(bean);
+					adevice.setPrimaryScanDevice(false);
+				}
+			}
+		}
+	}
+
 	private AnnotationManager createAnnotationManager(ScanModel model) throws ScanningException {
 		Collection<Object> globalParticipants = ((IScanService)runnableDeviceService).getScanParticipants();
 		AnnotationManager manager = new AnnotationManager(SequencerActivator.getInstance());
-		manager.addDevices(getScannables(model));
-		if (model.getMonitors()!=null)               manager.addDevices(model.getMonitors());
-		if (model.getAnnotationParticipants()!=null) manager.addDevices(model.getAnnotationParticipants());
-		if (globalParticipants!=null)                manager.addDevices(globalParticipants);
-		if (model.getDetectors()!=null)              manager.addDevices(model.getDetectors());
+		manager.addDevices(model.getScannables());
+		manager.addDevices(model.getMonitors());
+		manager.addDevices(model.getAnnotationParticipants());
+		manager.addDevices(globalParticipants);
+		manager.addDevices(model.getDetectors());
 		
 		return manager;
 	}
@@ -252,13 +309,6 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 			
     		// Set the size and declare a count
     		fireStart(location.getTotalSize());
-    		
-    		// We allow monitors which can block a position until a setpoint is
-    		// reached or add an extra record to the NeXus file.
-    		if (model.getMonitors()!=null) {
-    			List<IScannable<?>> perPoint = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT).collect(Collectors.toList());
-    			positioner.setMonitors(perPoint);
-    		}
     		
     		// Add the malcolm listners so that progress on inner malcolm scans can be reported
     		addMalcolmListeners();
@@ -721,13 +771,6 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		}
 	}	
 
-	private Collection<IScannable<?>> getScannables(ScanModel model) throws ScanningException {
-		final Collection<String>   names = getScannableNames(model.getPositionIterable());
-		final Collection<IScannable<?>> ret = new ArrayList<>();
-		for (String name : names) ret.add(runnableDeviceService.getDeviceConnectorService().getScannable(name));
-		return ret;
-	}
-	
 	private Collection<String> getScannableNames(Iterable<IPosition> gen) {
 		
 		Collection<String> names = null;

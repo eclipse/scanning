@@ -36,6 +36,7 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 		
 	private IScannableDeviceService     connectorService;
 	private List<IScannable<?>>         monitors;
+	private List<IScannable<?>>         scannables;
 
 	ScannablePositioner(IScannableDeviceService service) {	
 		
@@ -100,12 +101,21 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 
 	@Override
 	protected Collection<IScannable<?>> getDevices() throws ScanningException {
-		Collection<String> names = position.getNames();
-		if (names==null) return null;
-		final List<IScannable<?>> ret = new ArrayList<>(names.size());
-		for (String name : position.getNames()) ret.add(connectorService.getScannable(name));
-		if (monitors!=null) for(IScannable<?> mon : monitors) ret.add(mon);
-		return ret;
+		final List<IScannable<?>> devices = new ArrayList<>();
+		
+		if (scannables == null) {
+			for (String name : position.getNames()) {
+				devices.add(connectorService.getScannable(name));
+			}
+		} else {
+			devices.addAll(scannables);
+		}
+		
+		if (monitors != null) {
+			devices.addAll(monitors);
+		}
+		
+		return devices;
 	}
 
 	@Override
@@ -181,6 +191,11 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 	
 	public void setMonitors(IScannable<?>... monitors) {
 		this.monitors = Arrays.asList(monitors);
+	}
+
+	@Override
+	public void setScannables(List<IScannable<?>> scannables) {
+		this.scannables = scannables;
 	}
 
 	@Override

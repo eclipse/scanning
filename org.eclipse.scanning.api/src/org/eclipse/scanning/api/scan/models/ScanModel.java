@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IRunnableDevice;
+import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanInformation;
@@ -61,10 +62,23 @@ public class ScanModel {
 	private ScanBean bean;
 	
 	/**
+	 * A list of scannables that may be set to a position
+	 * during the scan. They have {@code setPostition(pos, IPosition)}
+	 * called, where {@code pos} is non {@code null}, and should move
+	 * to this position and readout their new position.
+	 * Note that setting this field is optional, if {@code null} the
+	 * scan scannables will be retrieved from by {@link IScannableDeviceService}
+	 * by calling {@link IScannableDeviceService#getScannable(String)} for
+	 * each scannable name as returned by calling
+	 * {@code getPositionIterable().iterator().next().getNames()}.
+	 */
+	private List<IScannable<?>> scannables;
+	
+	/**
 	 * A set of scannables may optionally be 'readout' during
 	 * the scan without being told a value for their location.
-	 * They have setPosition(null, IPosition) called and should 
-	 * ensure that if their value is null, they do not move but
+	 * They have {@code setPosition(null, IPosition)} called and should 
+	 * ensure that if their value is {@code null}, they do not move but
 	 * still readout position
 	 */
 	private List<IScannable<?>> monitors;
@@ -175,7 +189,15 @@ public class ScanModel {
 	public void setPositionIterable(Iterable<IPosition> positionIterator) {
 		this.positionIterable = positionIterator;
 	}
-
+	
+	public List<IScannable<?>> getScannables() {
+		return scannables;
+	}
+	
+	public void setScannables(List<IScannable<?>> scannables) {
+		this.scannables = scannables;
+	}
+	
 	public List<IRunnableDevice<?>> getDetectors() {
 		if (detectors == null) {
 			return Collections.emptyList();
@@ -236,6 +258,9 @@ public class ScanModel {
 	}
 
 	public List<?> getAnnotationParticipants() {
+		if (annotationParticipants == null) {
+			return Collections.emptyList();
+		}
 		return annotationParticipants;
 	}
 

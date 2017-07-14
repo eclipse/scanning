@@ -88,9 +88,8 @@ public interface IPositioner extends IPositionListenable {
 	 * to the NeXus file. Monitors are sorted into level with the scannbles of the current position.
      *
 	 * @param monitors
-	 * @throws ScanningException
 	 */
-	void setMonitors(List<IScannable<?>> monitors) throws ScanningException;
+	void setMonitors(List<IScannable<?>> monitors);
 
 	/**
 	 * Monitors are a set of scannables which will have setPosition(null, IPosition) called and
@@ -100,9 +99,10 @@ public interface IPositioner extends IPositionListenable {
 	 * to the NeXus file. Monitors are sorted into level with the scannbles of the current position.
      *
 	 * @param monitors
-	 * @throws ScanningException
 	 */
-	void setMonitors(IScannable<?>... monitors) throws ScanningException;
+	void setMonitors(IScannable<?>... monitors);
+
+	void setScannables(List<IScannable<?>> scannables);
 
 	/**
 	 * Calling this method instructs the ExecutorService running the levels to shutdownNow().

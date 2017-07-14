@@ -98,14 +98,20 @@ class _Positioner extends AbstractRemoteService implements IPositioner {
 	}
 
 	@Override
-	public void setMonitors(List<IScannable<?>> monitors) throws ScanningException {
+	public void setMonitors(List<IScannable<?>> monitors) {
 		// TODO Use the _Scannable which is a remote scannable connection.
-		throw new ScanningException("Monitors may not be set on a remote positioner!");
+		throw new UnsupportedOperationException("Monitors may not be set on a remote positioner!");
 	}
 
 	@Override
-	public void setMonitors(IScannable<?>... monitors) throws ScanningException {
+	public void setMonitors(IScannable<?>... monitors) {
 		setMonitors(Arrays.asList(monitors));
+	}
+
+	@Override
+	public void setScannables(List<IScannable<?>> scannables) {
+		// TODO Use the _Scannable which is a remote scannable connection.
+		throw new UnsupportedOperationException("Scannables may not be set on a remote positioner!");
 	}
 
 	@Override
