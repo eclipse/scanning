@@ -39,7 +39,10 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 
 	@Override
 	public T getPosition() throws Exception {
+		/* Throwing an exception here causes the Scanning GUI to show no scannables.
 		throw new UnsupportedOperationException("A CompositeNexusScannable should only be used as a per-scan monitor");
+		 */
+		return null;
 	}
 
 	@Override
@@ -93,7 +96,7 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 						nexusObject.addGroupNode(groupName, nexusObj);
 					} else if (childNode instanceof ChildFieldNode) {
 						final ChildFieldNode fieldNode = (ChildFieldNode) childNode;
-						DataNode dataNode = nexusObj.getDataNode(fieldNode.getSourceFieldName());
+						DataNode dataNode = nexusObj.getDataNode("value");
 						if (dataNode == null) {
 							throw new NullPointerException("No such dataset: " + fieldNode.getSourceFieldName());
 						}
