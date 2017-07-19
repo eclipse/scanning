@@ -16,6 +16,7 @@ import org.eclipse.dawnsci.nexus.builder.NexusObjectWrapper;
 import org.eclipse.scanning.api.AbstractScannable;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
+import org.eclipse.scanning.api.event.scan.DeviceValueMultiPosition;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * @param <T> the type of object returned by {@link #getPosition()}. Not normally used by this class
  * @param <N> the type of nexus object created for this scannable.
  */
-public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScannable<T> implements INexusDevice<N> {
+public class CompositeNexusScannable<N extends NXobject> extends AbstractScannable<DeviceValueMultiPosition> implements INexusDevice<N> {
 
 	private static Logger logger = LoggerFactory.getLogger(CompositeNexusScannable.class);
 
@@ -44,13 +45,28 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 	}
 
 	@Override
-	public T getPosition() throws Exception {
-		// Throwing an exception here causes the Scanning GUI to show no scannables.
-		return null;
+	public DeviceValueMultiPosition getPosition() throws Exception {
+		DeviceValueMultiPosition position = new DeviceValueMultiPosition();
+
+		IScannableDeviceService scannableDeviceService = getScannableDeviceService();
+		for (ChildNode childNode : getChildNodes()) {
+			final String scannableName = childNode.getScannableName();
+			try {
+				final IScannable<?> scannable = scannableDeviceService.getScannable(scannableName);
+				if (scannable instanceof CompositeNexusScannable) {
+					((CompositeNexusScannable<?>) scannable).getPosition().getValues().forEach((k,v) -> position.put(scannableName+"."+k, v));
+				} else {
+					position.put(scannableName, (double)scannable.getPosition());
+				}
+			} catch (ScanningException e) {
+				throw new NexusException(e);
+			}
+		}
+		return position;
 	}
 
 	@Override
-	public T setPosition(T value, IPosition position) throws Exception {
+	public DeviceValueMultiPosition setPosition(DeviceValueMultiPosition value, IPosition position) throws Exception {
 		logger.warn("setPosition({}, {}) called on {}", value, position, this);
 		throw new UnsupportedOperationException("A CompositeNexusScannable should only be used as a per-scan monitor");
 	}
