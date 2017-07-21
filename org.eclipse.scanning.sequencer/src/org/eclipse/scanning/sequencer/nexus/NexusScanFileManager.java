@@ -336,9 +336,12 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 		}
 		
 		try {
+			if (scannable.getMonitorRole() != MonitorRole.PER_SCAN) {
+				logger.warn("Setting {} DefaultMonitorRole to {}, currently {}", scannable.getName(), MonitorRole.PER_SCAN, scannable.getMonitorRole());
+			}
 			scannable.setMonitorRole(MonitorRole.PER_SCAN);
 		} catch (IllegalArgumentException | ScanningException e) {
-			logger.error("Could not set scannable ''{}'' as per scan");
+			logger.error("Could not set scannable ''{}'' as per scan", scannable.getName(), e);
 			return null;
 		}
 

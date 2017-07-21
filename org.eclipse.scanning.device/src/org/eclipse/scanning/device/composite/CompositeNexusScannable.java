@@ -18,6 +18,8 @@ import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanningException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A scannable that returns a nexus object created by combining the nexus objects of other scannables.
@@ -28,6 +30,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
  * @param <N> the type of nexus object created for this scannable.
  */
 public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScannable<T> implements INexusDevice<N> {
+	private static Logger logger = LoggerFactory.getLogger(CompositeNexusScannable.class);
 	
 	private NexusBaseClass nexusClass = NexusBaseClass.NX_COLLECTION;
 	private NexusBaseClass nexusCategory;
@@ -47,6 +50,7 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 
 	@Override
 	public T setPosition(T value, IPosition position) throws Exception {
+		logger.warn("setPosition({}, {}) called on {}", value, position, this);
 		throw new UnsupportedOperationException("A CompositeNexusScannable should only be used as a per-scan monitor");
 	}
 	

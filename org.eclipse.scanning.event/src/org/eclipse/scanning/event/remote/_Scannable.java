@@ -239,6 +239,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 	public boolean setActivated(boolean activated) throws ScanningException {
 		if (info==null) update();
 		boolean wasactivated = info.isActivated();
+		logger.info("setActivated({}) was {} ({})", activated, wasactivated, this);
 		method(new DeviceRequest(info.getName(), DeviceType.SCANNABLE, DeviceAction.ACTIVATE, activated));
 		return wasactivated;
 	}
@@ -253,6 +254,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 	public MonitorRole setMonitorRole(MonitorRole role) throws ScanningException {
 		if (info==null) update();
 		MonitorRole oldRole = info.getMonitorRole();
+		logger.info("setMonitorRole({}) was {} ({})", role, oldRole, this);
 		method(new DeviceRequest(info.getName(), DeviceType.SCANNABLE, DeviceAction.SET, role));
 		return oldRole;
 	}

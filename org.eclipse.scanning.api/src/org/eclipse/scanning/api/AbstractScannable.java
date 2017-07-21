@@ -23,6 +23,8 @@ import org.eclipse.scanning.api.scan.event.IPositionListenable;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
 import org.eclipse.scanning.api.scan.event.Location;
 import org.eclipse.scanning.api.scan.event.PositionDelegate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -41,6 +43,7 @@ import org.eclipse.scanning.api.scan.event.PositionDelegate;
  * @param <T>
  */
 public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttributeContainer, IPositionListenable {
+	private static Logger logger = LoggerFactory.getLogger(AbstractScannable.class);
 
 	private T                   max;
 	private T                   min;
@@ -223,6 +226,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	}
     @Override
 	public boolean setActivated(boolean activated) {
+    	logger.info("setActivated({}) was {} ({})", activated, this.activated, this);
     	boolean was = this.activated;
 		this.activated = activated;
 		return was;
@@ -259,6 +263,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 		return monitorRole;
 	}
 	public MonitorRole setMonitorRole(MonitorRole monitorRole) {
+		logger.info("setMonitorRole({}) was {} ({})", monitorRole, this.monitorRole, this);
 		MonitorRole orig = this.monitorRole;
 		this.monitorRole = monitorRole;
 		return orig;
