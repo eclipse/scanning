@@ -64,10 +64,22 @@ public interface IFilePathService {
 	String getMostRecentPath() throws IllegalStateException;
 	
 	/**
-	 * Returns the location of the directory to use for temporary files
-	 * @return location of temp directory
+	 * Returns the location of the directory to use for temporary files for the current visit.
+	 * In GDA this is mapped to the {@code tmp} subdirectory of the current visit directory, the
+	 * contents of which are deleted every 2 days.
+	 * 
+	 * @return location of temp directory for the current visit
 	 */
 	String getTempDir();
+	
+	/**
+	 * Returns the location of the directory to use for files such configuration files of
+	 * any type, saved scan files, etc. In GDA this is mapped to the {@code xml} subdirectory
+	 * of the current visit directory, the contents of which live for the lifetime of the visit.
+	 * 
+	 * @return location of the configuration directory for the current visit 
+	 */
+	String getVisitConfigDir();
 	
 	/**
 	 * Returns the location of the directory in which to place processed files.
