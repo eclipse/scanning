@@ -123,4 +123,9 @@ public class MockFilePathService implements IFilePathService {
 		return "test-mock0";
 	}
 
+	@Override
+	public String getVisitConfigDir() {
+		return new File(dir, "xml").toString();
+	}
+
 }
