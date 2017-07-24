@@ -11,11 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.api.points.models;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.eclipse.scanning.api.annotation.UiHidden;
-import org.eclipse.scanning.api.annotation.ui.DeviceType;
 import org.eclipse.scanning.api.annotation.ui.EditType;
 import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 
@@ -50,11 +46,7 @@ public abstract class AbstractBoundingBoxModel extends AbstractMapModel implemen
 	
 	@Override
 	public void setBoundingBox(BoundingBox newValue) {
-		BoundingBox oldValue = this.boundingBox;
 		this.boundingBox = newValue;
-		boundingBox.setFastAxisName(getFastAxisName());
-		boundingBox.setSlowAxisName(getSlowAxisName());
-		this.pcs.firePropertyChange("boundingBox", oldValue, newValue);
 	}
 
 	public void setFastAxisName(String newValue) {
