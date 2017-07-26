@@ -174,7 +174,7 @@ public class AbstractScanTest extends BrokerTest {
 	@Test
 	public void testSimpleScan() throws Exception {
 
-		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, null, null);
+		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, null, null, null);
 		scanner.run(null);
 		checkRun(scanner);
 	}
@@ -182,7 +182,7 @@ public class AbstractScanTest extends BrokerTest {
 	//@Test
 	public void testAbortSimpleScan() throws Exception {
 
-		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, null, null);
+		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, null, null, null);
 		scanner.start(null);
 		Thread.sleep(100);
 		scanner.abort();
@@ -193,7 +193,7 @@ public class AbstractScanTest extends BrokerTest {
 	@Test
 	public void testThreadCount() throws Exception {
 
-		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, null, null);
+		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, null, null, null);
 		int before = Thread.activeCount();
 		scanner.run(null);
 		if (connector instanceof IDisconnectable) ((IDisconnectable)connector).disconnect();
@@ -216,7 +216,7 @@ public class AbstractScanTest extends BrokerTest {
 		model.setStep(1);
 		model.setName("myScannable");
 
-		IRunnableDevice<ScanModel> scanner = createTestScanner(model, null, null, null, null);
+		IRunnableDevice<ScanModel> scanner = createTestScanner(model, null, null, null, null, null);
 		scanner.run(null);
 		checkRun(scanner);
 	}
@@ -231,7 +231,7 @@ public class AbstractScanTest extends BrokerTest {
 		model.setName("myScannable");
 
 		try {
-			IRunnableDevice<ScanModel> scanner = createTestScanner(model, null, null, null, null);
+			IRunnableDevice<ScanModel> scanner = createTestScanner(model, null, null, null, null, null);
 
 			// Cast to AbstractRunnableDevice gives us non-blocking .start() method.
 			((AbstractRunnableDevice<ScanModel>) scanner).start(null);
@@ -258,7 +258,7 @@ public class AbstractScanTest extends BrokerTest {
 		model.setName("myScannable");
 
 		try {
-			IRunnableDevice<ScanModel> scanner = createTestScanner(model, null, null, null, null);
+			IRunnableDevice<ScanModel> scanner = createTestScanner(model, null, null, null, null, null);
 
 			// Cast to AbstractRunnableDevice gives us non-blocking .start() method.
 			((AbstractRunnableDevice<ScanModel>) scanner).start(null);
@@ -287,7 +287,7 @@ public class AbstractScanTest extends BrokerTest {
 
 		// 2. Check run fails and check exception is that which the detector provided
 		// Not some horrible reflection one.
-		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, null, detector);
+		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, null, null, detector);
 		boolean ok=false;
 		try {
 		    scanner.run(null);
@@ -364,7 +364,7 @@ public class AbstractScanTest extends BrokerTest {
 		try {
 
 			// Create a scan and run it without publishing events
-			IRunnableDevice<ScanModel> scanner = createTestScanner(null, bean, publisher, null, null);
+			IRunnableDevice<ScanModel> scanner = createTestScanner(null, bean, publisher, null, null, null);
 			scanner.run(null);
 
 			Thread.sleep(100); // Wait for all events to make it over from ActiveMQ
@@ -387,7 +387,7 @@ public class AbstractScanTest extends BrokerTest {
 	public void testSimpleScanSetPositionCalls() throws Exception {
 
 		IScannable<Number> p = connector.getScannable("p");
-		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, null, null, new String[]{"p","q"});
+		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, null, null, null, new String[]{"p","q"});
 
 		scanner.run(null);
 
@@ -405,7 +405,7 @@ public class AbstractScanTest extends BrokerTest {
 	public void testSimpleScanWithMonitor() throws Exception {
 
 		IScannable<Number> monitor = connector.getScannable("monitor");
-		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, monitor, null);
+		IRunnableDevice<ScanModel> scanner = createTestScanner(null, null, null, monitor, null, null);
 
 		scanner.run(null);
 
@@ -432,15 +432,17 @@ public class AbstractScanTest extends BrokerTest {
 	private IRunnableDevice<ScanModel> createTestScanner(AbstractPointsModel pmodel,
 			final ScanBean bean,
 			final IPublisher<ScanBean> publisher,
-			IScannable<?> monitor,
+			IScannable<?> monitorsPerPoint,
+			IScannable<?> monitorsPerScan,
 			IRunnableDevice<MockDetectorModel> detector) throws Exception {
-		return createTestScanner(pmodel, bean, publisher, monitor, detector, null);
+		return createTestScanner(pmodel, bean, publisher, monitorsPerPoint, monitorsPerScan, detector, null);
 	}
 
 	private IRunnableDevice<ScanModel> createTestScanner(AbstractPointsModel pmodel,
 														final ScanBean bean,
 														final IPublisher<ScanBean> publisher,
-														IScannable<?> monitor,
+														IScannable<?> monitorsPerPoint,
+														IScannable<?> monitorsPerScan,
 														IRunnableDevice<MockDetectorModel> detector,
 														String[] axes) throws Exception {
 
@@ -473,7 +475,8 @@ public class AbstractScanTest extends BrokerTest {
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector);
 		smodel.setBean(bean);
-		if (monitor!=null) smodel.setMonitors(monitor);
+		if (monitorsPerPoint!=null) smodel.setMonitorsPerPoint(monitorsPerPoint);
+		if (monitorsPerScan!=null) smodel.setMonitorsPerScan(monitorsPerScan);
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, publisher);

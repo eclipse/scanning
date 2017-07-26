@@ -63,7 +63,7 @@ from org.eclipse.scanning.command.Services import (
 
 # Grepping for 'mscan' in a GDA workspace shows up nothing, so it seems that
 # mscan is a free name.
-def mscan(path=None, mon=None, det=None, now=False, block=True,
+def mscan(path=None, monitorsPerPoint=None, monitorsPerScan=None, det=None, now=False, block=True,
           allow_preprocess=False, broker_uri=None):
     """Create a ScanRequest and submit it to the GDA server.
 
@@ -77,9 +77,11 @@ def mscan(path=None, mon=None, det=None, now=False, block=True,
     You can specify detector and arbitrary fields in their model with keyword arguments
     >>> mscan(..., det=[detector('mandelbrot', 0.1), detector('another_detector', 0.4, param1='foo', param2='bar')])
 
-    You can specify a scannable or list of scannables to monitor:
-    >>> mscan(..., mon=my_scannable, ...)  # or:
-    >>> mscan(..., mon=[my_scannable, another_scannable], ...)
+    You can specify a scannable or list of scannables to monitor per point and/or per scan:
+    >>> mscan(..., monitorsPerPoint=my_scannable, ...)  # or:
+    >>> mscan(..., monitorsPerPoint=[my_scannable, another_scannable], ...)
+    >>> mscan(..., monitorsPerScan=my_scannable, ...)  # or:
+    >>> mscan(..., monitorsPerScan=[my_scannable, another_scannable], ...)
 
     You can embed one scan path inside another to create a compound scan path:
     >>> mscan([step(s, 0, 10, 1), step(f, 1, 5, 1)], ...)
@@ -104,7 +106,7 @@ def mscan(path=None, mon=None, det=None, now=False, block=True,
     if (broker_uri is None):
         broker_uri = getScanningBrokerUri()
 
-    submit(request=scan_request(path=path, mon=mon, det=det, allow_preprocess=allow_preprocess),
+    submit(request=scan_request(path=path, monitorsPerPoint=monitorsPerPoint, monitorsPerScan=monitorsPerScan, det=det, allow_preprocess=allow_preprocess),
            now=now, block=block, broker_uri=broker_uri)
 
 def getScannable(name):
@@ -152,7 +154,7 @@ def getScanningBrokerUri():
     return uri;
 
 
-def scan_request(path=None, mon=None, det=None, file=None, allow_preprocess=False):
+def scan_request(path=None, monitorsPerPoint=None, monitorsPerScan=None, det=None, file=None, allow_preprocess=False):
     """Create a ScanRequest object with the given configuration.
 
     See the mscan() docstring for usage.
@@ -168,7 +170,8 @@ def scan_request(path=None, mon=None, det=None, file=None, allow_preprocess=Fals
     # the monitors so users can pass either a monitor name in quotes or a
     # scannable object from the Jython namespace.
     scan_paths = _listify(path)
-    monitors = ArrayList(map(_stringify, _listify(mon)))
+    monitorNamesPerPoint = ArrayList(map(_stringify, _listify(monitorsPerPoint)))
+    monitorNamesPerScan = ArrayList(map(_stringify, _listify(monitorsPerScan)))
     detectors = _listify(det)
 
     (scan_path_models, _) = zip(*scan_paths)  # zip(* == unzip(
@@ -186,7 +189,8 @@ def scan_request(path=None, mon=None, det=None, file=None, allow_preprocess=Fals
     return _instantiate(ScanRequest,
                         {'compoundModel': cmodel,
                          'filePath' : file,
-                         'monitorNames': monitors,
+                         'monitorNamesPerPoint': monitorNamesPerPoint,
+                         'monitorNamesPerScan': monitorNamesPerScan,
                          'detectors': detector_map,
                          'ignorePreprocess': not allow_preprocess})
 

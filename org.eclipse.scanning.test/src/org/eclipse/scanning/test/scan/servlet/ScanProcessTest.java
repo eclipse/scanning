@@ -261,7 +261,7 @@ public class ScanProcessTest {
 		model.setExposureTime(0.001);
 		dmodels.put("mandelbrot", model);
 		scanRequest.setDetectors(dmodels);
-		scanRequest.setMonitorNames(Arrays.asList("T"));
+		scanRequest.setMonitorNamesPerPoint(Arrays.asList("T"));
 
 		final File tmp = File.createTempFile("scan_nested_test", ".nxs");
 		tmp.deleteOnExit();

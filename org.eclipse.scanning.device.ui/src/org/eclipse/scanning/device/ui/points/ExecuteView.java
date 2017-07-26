@@ -43,6 +43,7 @@ import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.IValidatorService;
 import org.eclipse.scanning.api.ModelValidationException;
+import org.eclipse.scanning.api.MonitorRole;
 import org.eclipse.scanning.api.annotation.ui.FieldValue;
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
@@ -374,7 +375,8 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		ret.setBefore(req[0]);
 		ret.setAfter(req[1]);
 
-		ret.setMonitorNames(getMonitors());
+		ret.setMonitorNamesPerPoint(getMonitors(MonitorRole.PER_POINT));
+		ret.setMonitorNamesPerScan(getMonitors(MonitorRole.PER_SCAN));
 		ret.setDetectors(getDetectors());
 		ret.setSampleData(sampleData);
         vservice.validate(ret);
@@ -495,8 +497,12 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 				styledString.append(getScanRegions(cm.getRegions()), StyledString.QUALIFIER_STYLER);
 
 					if (monitor.isCanceled()) return;
-				styledString.append("\nMonitors: ");
-				styledString.append(getMonitorNames(), StyledString.DECORATIONS_STYLER);
+					styledString.append("\nPer point monitors: ");
+					styledString.append(getMonitorNames(MonitorRole.PER_POINT), StyledString.DECORATIONS_STYLER);
+
+					if (monitor.isCanceled()) return;
+					styledString.append("\nPer scan monitors: ");
+					styledString.append(getMonitorNames(MonitorRole.PER_SCAN), StyledString.DECORATIONS_STYLER);
 
 					if (monitor.isCanceled()) return;
 				if (sampleData!=null && sampleData.getName()!=null && sampleData.getName().length()>0) {
@@ -649,19 +655,19 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	return detectors;
 	}
 
-	private List<String> getMonitors() throws Exception {
+	private List<String> getMonitors(MonitorRole monitorRole) throws Exception {
 
 		final Collection<DeviceInformation<?>> scannables = cservice.getDeviceInformation();
 		final List<String> ret = new ArrayList<String>();
 		for (DeviceInformation<?> info : scannables) {
-			if (info.isActivated()) ret.add(info.getName());
+			if (info.isActivated() && info.getMonitorRole() == monitorRole) ret.add(info.getName());
 		}
 		return ret;
 	}
 
-	private String getMonitorNames() throws Exception {
+	private String getMonitorNames(MonitorRole monitorRole) throws Exception {
 
-		List<String> mons = getMonitors();
+		List<String> mons = getMonitors(monitorRole);
 		if (mons==null || mons.isEmpty()) return "None";
 
 		final StringBuilder buf = new StringBuilder();

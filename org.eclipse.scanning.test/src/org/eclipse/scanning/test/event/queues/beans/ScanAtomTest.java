@@ -62,7 +62,7 @@ public class ScanAtomTest extends AbstractBeanTest<ScanAtom> {
 		monitors.add("Fake monitor");
 
 		beanA = new ScanAtom(shrtNmA, scanReq);
-		beanB = new ScanAtom(shrtNmB, modelsB, detectorsB, monitors);
+		beanB = new ScanAtom(shrtNmB, modelsB, detectorsB, monitors, null);
 	}
 
 }

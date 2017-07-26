@@ -49,22 +49,41 @@ class ScanRequestExpresser extends PyModelExpresser<ScanRequest<?>> {
 			scanRequestPartiallyWritten |= true;
 		}
 
-		if (request.getMonitorNames() != null
-				&& request.getMonitorNames().size() > 0) {
+		if (request.getMonitorNamesPerPoint() != null
+				&& request.getMonitorNamesPerPoint().size() > 0) {
 
 			if (scanRequestPartiallyWritten) fragment += ", ";
-			if (verbose || !scanRequestPartiallyWritten) { fragment += "mon="; }
+			if (verbose || !scanRequestPartiallyWritten) { fragment += "monitorsPerPoint="; }
 
-			if (verbose || request.getMonitorNames().size() > 1) fragment += "[";
+			if (verbose || request.getMonitorNamesPerPoint().size() > 1) fragment += "[";
 			boolean listPartiallyWritten = false;
 
-			for (String monitorName : request.getMonitorNames()) {
+			for (String monitorName : request.getMonitorNamesPerPoint()) {
 				if (listPartiallyWritten) fragment += ", ";
 				fragment += "'"+monitorName+"'";
 				listPartiallyWritten |= true;
 			}
 
-			if (verbose || request.getMonitorNames().size() > 1) fragment += "]";
+			if (verbose || request.getMonitorNamesPerPoint().size() > 1) fragment += "]";
+			scanRequestPartiallyWritten |= true;
+		}
+
+		if (request.getMonitorNamesPerScan() != null
+				&& request.getMonitorNamesPerScan().size() > 0) {
+
+			if (scanRequestPartiallyWritten) fragment += ", ";
+			if (verbose || !scanRequestPartiallyWritten) { fragment += "monitorsPerScan="; }
+
+			if (verbose || request.getMonitorNamesPerScan().size() > 1) fragment += "[";
+			boolean listPartiallyWritten = false;
+
+			for (String monitorName : request.getMonitorNamesPerScan()) {
+				if (listPartiallyWritten) fragment += ", ";
+				fragment += "'"+monitorName+"'";
+				listPartiallyWritten |= true;
+			}
+
+			if (verbose || request.getMonitorNamesPerScan().size() > 1) fragment += "]";
 			scanRequestPartiallyWritten |= true;
 		}
 

@@ -377,7 +377,7 @@ public class QueueBeanFactoryTest {
 		detectors.put("mandelbrotB", ServicesHolder.getRunnableDeviceService().getRunnableDevice("mandelbrotB").getModel());
 		((IDetectorModel)detectors.get("mandelbrotB")).setExposureTime(30);
 		scanReq.setDetectors(detectors);
-		scanReq.setMonitorNames(Arrays.asList("monitor2"));
+		scanReq.setMonitorNamesPerPoint(Arrays.asList("monitor2"));
 		ScanAtom scAt = new ScanAtom("testScan", scanReq);
 		scAt.setName("Scan of 'stage_x' (Step) collecting data with 'mandelbrotB', 'mandelbrotA' detector(s)");
 		return scAt;

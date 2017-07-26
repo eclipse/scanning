@@ -92,7 +92,7 @@ public class PreprocessTest {
 
 		final ScanRequest<?> req = new ScanRequest<IROI>();
 		req.setCompoundModel(new CompoundModel(new StepModel("fred", 0, 9, 1)));
-		req.setMonitorNames(Arrays.asList("monitor"));
+		req.setMonitorNamesPerPoint(Arrays.asList("monitor"));
 
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
@@ -127,7 +127,7 @@ public class PreprocessTest {
 		}
 		models.add(gmodel);
 		req.setCompoundModel(new CompoundModel(models));
-		req.setMonitorNames(Arrays.asList("monitor"));
+		req.setMonitorNamesPerPoint(Arrays.asList("monitor"));
 
 		final File tmp = File.createTempFile("scan_servlet_test", ".nxs");
 		tmp.deleteOnExit();
@@ -167,7 +167,7 @@ public class PreprocessTest {
 		gmodel.setSlowAxisName("yNex");
 
 		req.setCompoundModel(new CompoundModel(gmodel));
-		req.setMonitorNames(Arrays.asList("monitor"));
+		req.setMonitorNamesPerPoint(Arrays.asList("monitor"));
 
 		final File tmp = File.createTempFile("scan_servlet_test", ".nxs");
 		tmp.deleteOnExit();
@@ -186,7 +186,7 @@ public class PreprocessTest {
 
 		final ScanRequest<?> req = new ScanRequest<IROI>();
 		req.setCompoundModel(new CompoundModel(new StepModel("temperature", 0, 9, 1)));
-		req.setMonitorNames(Arrays.asList("monitor"));
+		req.setMonitorNamesPerPoint(Arrays.asList("monitor"));
 
 		final File tmp = File.createTempFile("scan_servlet_test_malc", ".nxs");
 		tmp.deleteOnExit();

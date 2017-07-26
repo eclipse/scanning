@@ -77,7 +77,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		ScanRequest<?> scanReq = new ScanRequest<>();
 		scanReq.setCompoundModel(prepareScanPaths(model.getPathModelsModel()));
 		scanReq.setDetectors(prepareDetectors(model.getDetectorModelsModel()));
-		scanReq.setMonitorNames(prepareMonitors(model.getMonitorsModel()));
+		scanReq.setMonitorNamesPerPoint(prepareMonitors(model.getMonitorsModel()));
 		atom.setScanReq(scanReq);
 
 		return atom;

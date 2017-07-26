@@ -238,11 +238,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 		// We allow monitors which can block a position until a setpoint is
 		// reached or add an extra record to the NeXus file.
-		if (model.getMonitors() != null) {
-			List<IScannable<?>> perPoint = model.getMonitors().stream().filter(
-					scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT).collect(Collectors.toList());
-			poser.setMonitors(perPoint);
-		}
+		poser.setMonitorsPerPoint(model.getMonitorsPerPoint());
 		poser.setScannables(model.getScannables());
 
 		return poser;
@@ -269,7 +265,8 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		Collection<Object> globalParticipants = ((IScanService)runnableDeviceService).getScanParticipants();
 		AnnotationManager manager = new AnnotationManager(SequencerActivator.getInstance());
 		manager.addDevices(model.getScannables());
-		manager.addDevices(model.getMonitors());
+		manager.addDevices(model.getMonitorsPerPoint());
+		manager.addDevices(model.getMonitorsPerScan());
 		manager.addDevices(model.getAnnotationParticipants());
 		manager.addDevices(globalParticipants);
 		manager.addDevices(model.getDetectors());

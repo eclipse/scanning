@@ -352,7 +352,7 @@ public class CompositeNexusScannableTest extends NexusTest {
 		}
 		smodel.setDetectors(detector);
 
-		smodel.setMonitors(perScanMonitor);
+		smodel.setMonitorsPerScan(perScanMonitor);
 
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());

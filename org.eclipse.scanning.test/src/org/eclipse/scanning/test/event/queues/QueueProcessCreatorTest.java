@@ -159,7 +159,7 @@ public class QueueProcessCreatorTest {
 		monitors.add("bpm3");
 		monitors.add("i0");
 
-		ScanAtom scAt = new ScanAtom("VT scan across sample", scanAxes, detectors, monitors);
+		ScanAtom scAt = new ScanAtom("VT scan across sample", scanAxes, detectors, monitors, null);
 
 		scAt.setScanBrokerURI("tcp://localhost:8624");
 		scAt.setScanSubmitQueueName(IEventService.SUBMISSION_QUEUE);

@@ -109,11 +109,11 @@ public class BasicScanTest extends NexusTest {
 		test(monitor, null, 5, 8, 5);
 	}
 
-	private void test(IScannable<?> monitor, IScannable<?> metadataScannable, int... shape) throws Exception {
+	private void test(IScannable<?> monitorPerPoint, IScannable<?> monitorPerScan, int... shape) throws Exception {
 
 		long before = System.currentTimeMillis();
 		// Tell configure detector to write 1 image into a 2D scan
-		IRunnableDevice<ScanModel> scanner = createStepScan(monitor, metadataScannable, shape);
+		IRunnableDevice<ScanModel> scanner = createStepScan(monitorPerPoint, monitorPerScan, shape);
 		assertScanNotFinished(getNexusRoot(scanner).getEntry());
 		scanner.run(null);
 		long after = System.currentTimeMillis();
@@ -144,15 +144,13 @@ public class BasicScanTest extends NexusTest {
 		int[] shape = null;
 
 		// check metadata scannables
-		if (scanModel.getMonitors() != null) {
-			checkMetadataScannables(scanModel, instrument);
-		}
+		checkMetadataScannables(scanModel, instrument);
 
 		final IPosition pos = scanModel.getPositionIterable().iterator().next();
 		final Collection<String> scannableNames = pos.getNames();
 
-		List<IScannable<?>> perPoint  = scanModel.getMonitors() != null
-                ? scanModel.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT)
+		List<IScannable<?>> perPoint  = scanModel.getMonitorsPerPoint() != null
+                ? scanModel.getMonitorsPerPoint().stream()
 				.filter(scannable -> !scannable.getName().equals(SCANNABLE_NAME_SOLSTICE_SCAN_MONITOR)).collect(Collectors.toList())
                 : null;
         final boolean hasMonitor = perPoint != null && !perPoint.isEmpty();
@@ -204,8 +202,9 @@ public class BasicScanTest extends NexusTest {
 		DataNode dataNode;
 		Dataset dataset;
 
-		Collection<IScannable<?>> perScan  = scanModel.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN).collect(Collectors.toList());
-        for (IScannable<?> metadataScannable : perScan) {
+		if (scanModel.getMonitorsPerScan() == null) return;
+
+        for (IScannable<?> metadataScannable : scanModel.getMonitorsPerScan()) {
 			NXpositioner positioner = instrument.getPositioner(metadataScannable.getName());
 			assertNotNull(positioner);
 			assertEquals(metadataScannable.getName(), positioner.getNameScalar());
@@ -226,8 +225,8 @@ public class BasicScanTest extends NexusTest {
 		}
 	}
 
-	private IRunnableDevice<ScanModel> createStepScan(IScannable<?> monitor,
-			                                          IScannable<?> metadataScannable,
+	private IRunnableDevice<ScanModel> createStepScan(IScannable<?> monitorPerPoint,
+			                                          IScannable<?> monitorPerScan,
 			                                          int... size) throws Exception {
 
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length];
@@ -248,11 +247,12 @@ public class BasicScanTest extends NexusTest {
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
-		if (metadataScannable != null) {
-			metadataScannable.setMonitorRole(MonitorRole.PER_SCAN);
-			metadataScannable.setActivated(true);
+		if (monitorPerScan != null) {
+			monitorPerScan.setMonitorRole(MonitorRole.PER_SCAN);
+			monitorPerScan.setActivated(true);
 		}
-		smodel.setMonitors(monitor, metadataScannable);
+		smodel.setMonitorsPerPoint(monitorPerPoint);
+		smodel.setMonitorsPerScan(monitorPerScan);
 
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());
