@@ -62,17 +62,17 @@ public class MockPositioner implements IPositioner {
 	}
 
 	@Override
-	public List<IScannable<?>> getMonitors() throws ScanningException {
+	public List<IScannable<?>> getMonitorsPerPoint() throws ScanningException {
 		return null;
 	}
 
 	@Override
-	public void setMonitors(List<IScannable<?>> monitors) {
+	public void setMonitorsPerPoint(List<IScannable<?>> monitors) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void setMonitors(IScannable<?>... monitors) {
+	public void setMonitorsPerPoint(IScannable<?>... monitors) {
 		throw new UnsupportedOperationException();
 	}
 
