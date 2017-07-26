@@ -285,6 +285,9 @@ abstract class LevelRunner<L extends ILevel> {
 	}
 
 	public void reset() {
+		if (abortException != null) {
+			logger.trace("Resetting abortException to null, was ", abortException);
+		}
 		abortException = null;
 	}
 
