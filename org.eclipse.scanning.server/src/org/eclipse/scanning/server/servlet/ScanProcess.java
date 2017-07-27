@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.ValidationException;
@@ -138,7 +139,7 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 			IPointGenerator<?> gen = getGenerator(bean.getScanRequest());
 			initializeMalcolmDevice(bean, gen);
 			
-			checkMonitors();
+			checkMonitors(gen);
 			validateRequest(bean);
 
 			// Move to a position if they set one
@@ -216,16 +217,32 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 		}
 	}
 
-	private void checkMonitors() throws Exception {
+	/**
+	 * Checks the monitors in the scan request. This removes from the
+	 * collection of monitor names the name of any monitor that is a scannable in the scan.
+	 * Also, if the property {@code org.eclipse.scanning.server.useDefaultActivatedMonitors }
+	 * is <code>true</code>, and the monitor list is empty, the default monitors are added. 
+	 * @param gen point generator
+	 * @throws Exception
+	 */
+	private void checkMonitors(IPointGenerator<?> gen) throws Exception {
+		Collection<String> monitorNames = bean.getScanRequest().getMonitorNames();
 		
 		// We set any activated monitors in the request if none have been specified.
 		if (Boolean.getBoolean("org.eclipse.scanning.server.useDefaultActivatedMonitors")) {
 			if (bean.getScanRequest().getMonitorNames()==null) {
-				Collection<String> dMonNames = getMonitors();
-				bean.getScanRequest().setMonitorNames(dMonNames);
-				logger.debug("Default monitors {}", dMonNames);
+				monitorNames = getMonitors();
+				logger.debug("Using default monitors: {}", monitorNames);
 			}
-		}	
+		}
+		
+		if (monitorNames != null) {
+			// remove any monitors
+			Collection<String> scannableNames = getScannableNames(gen);
+			monitorNames = monitorNames.stream().filter(mon -> !scannableNames.contains(mon)).collect(Collectors.toList());
+					
+			bean.getScanRequest().setMonitorNames(monitorNames);
+		}
 	}
 
 	private Collection<String> getMonitors() throws Exception {
