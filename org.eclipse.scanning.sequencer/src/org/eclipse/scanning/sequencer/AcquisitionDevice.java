@@ -333,6 +333,8 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	        	// Run to the position
         		annotationManager.invoke(PointStart.class, pos);
 	        	positioner.setPosition(pos);          // moveTo in GDA8
+	        	firePositionMoveComplete(pos);        // notify listers that the move is complete
+	        	
 	        	exposureManager.setExposureTime(pos); // most of the time this does nothing.
 	        	
 	        	IPosition written = writers.await();  // Wait for the previous write out to return, if any

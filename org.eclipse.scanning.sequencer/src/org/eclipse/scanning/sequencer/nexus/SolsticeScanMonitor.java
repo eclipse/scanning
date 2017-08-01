@@ -103,7 +103,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 	private final ScanModel model;
 	private Instant scanStartTime = null;
 	private int[] scanShape = null;
-
+	private boolean writeAfterMovePerformed = false;
 	
 	public SolsticeScanMonitor(ScanModel model) {
 		this.model = model;
@@ -118,6 +118,13 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 			.collect(Collectors.toList());  // collect in a list
 
 		this.nexusObjectProviders = nexusObjectProviderList;
+		
+		final List<NexusObjectProvider<?>> detectors = nexusObjectProviderMap.get(ScanRole.DETECTOR);
+		// we can write the unique key for each position on move if all detectors write their own unique key
+		// TODO what about monitors?
+		if (detectors != null) {
+			writeAfterMovePerformed = detectors.stream().allMatch(n -> n.getPropertyValue(PROPERTY_NAME_UNIQUE_KEYS_PATH) != null);
+		}
 	}
 	
 	public void setNexusObjectProviders(List<NexusObjectProvider<?>> nexusObjectProviders) {
@@ -363,6 +370,10 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 			return newActualPosition;
 		}
 		return null;
+	}
+
+	public boolean writeAfterMovePerformed() {
+		return writeAfterMovePerformed;
 	}
 
 }

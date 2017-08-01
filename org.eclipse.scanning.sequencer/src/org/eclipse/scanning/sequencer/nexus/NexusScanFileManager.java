@@ -210,10 +210,17 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 	}
 	
 	@Override
-	public void positionPerformed(PositionEvent evt) throws ScanningException {
-		solsticeScanMonitor.setPosition(null, evt.getPosition());
+	public void positionPerformed(PositionEvent event) throws ScanningException {
+		solsticeScanMonitor.setPosition(null, event.getPosition());
 	}
-
+	
+	@Override
+	public void positionMovePerformed(PositionEvent event) throws ScanningException {
+		if (solsticeScanMonitor.writeAfterMovePerformed()) {
+			solsticeScanMonitor.setPosition(null, event.getPosition());
+		}
+	}
+	
 	protected SolsticeScanMonitor createSolsticeScanMonitor(ScanModel model) {
 		SolsticeScanMonitor solsticeScanMonitor = new SolsticeScanMonitor(model);
 		scanDevice.addPositionListener(this);
@@ -360,9 +367,10 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 
 		Collection<IScannable<?>> perPoint = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT).collect(Collectors.toList());
 		Collection<IScannable<?>> perScan  = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN).collect(Collectors.toList());
-        nexusScanInfo.setMonitorNames(getDeviceNames(perPoint));
-		nexusScanInfo.setMetadataScannableNames(getDeviceNames(perScan));
+        nexusScanInfo.setPerPointMonitorNames(getDeviceNames(perPoint));
+		nexusScanInfo.setPerScanMonitorNames(getDeviceNames(perScan));
 		
+		nexusScanInfo.setFilePath(scanModel.getFilePath());
 		
 		return nexusScanInfo;
 	}
