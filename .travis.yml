@@ -2,10 +2,10 @@ dist: trusty
 sudo: required
 group: deprecated-2017Q2
 
-# SonarQube
-# See https://docs.travis-ci.com/user/sonarqube/
+# SonarCloud
+# See https://docs.travis-ci.com/user/sonarcloud/
 addons:
-  sonarqube:
+  sonarcloud:
     token:
       # See https://travis-ci.org/eclipse/scanning/settings, here be variables
       # SONAR_TOKEN = SONAR_GITHUB_TOKEN = The sonar token at https://sonarqube.com/account/security/
@@ -73,10 +73,11 @@ install:
 # Set LD_LIBRARY_PATH for the tests. Also set a variable that attempts to clear /tmp on the travis node to avoid it getting large
 env:
   - CLEAR_TMP=true LD_LIBRARY_PATH=/home/travis/build/dawn-hdf/hdf.hdf5lib/lib/linux-x86_64
- 
+
 # compile and test
 script: 
- - mvn -q clean install surefire:test -Dtest.includes=org/eclipse/scanning/**/Suite.java 
+ - mvn -T 4 -q clean install
+ - mvn -q surefire:test -Dtest.includes=org/eclipse/scanning/**/Suite.java
  - mvn -q surefire:test -Dtest.includes=org/eclipse/scanning/**/UISuite.java -Dlog4j.configuration=log4j.properties
- - sonar-scanner
- 
+ - mvn -q sonar:sonar
+
