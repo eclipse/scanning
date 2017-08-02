@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.device.ui.composites;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.eclipse.richbeans.widgets.scalebox.ScaleBox;
@@ -98,6 +99,7 @@ public class StepModelComposite extends Composite {
 	}
 
 	private void setBounds(Number minimum, Number maximum) {
+		if (Objects.isNull(minimum) || Objects.isNull(maximum)) return;
 		start.setMinimum(minimum.doubleValue());
 		start.setMaximum(maximum.doubleValue());
 		stop.setMinimum(start);
