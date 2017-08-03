@@ -157,6 +157,7 @@ public class ScanRequest<T> implements Serializable {
 		this.filePath = filePath;
 	}
 
+	@SuppressWarnings("squid:S00115")
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -176,6 +177,7 @@ public class ScanRequest<T> implements Serializable {
 		return result;
 	}
 
+	@SuppressWarnings("squid:S3776")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

@@ -43,10 +43,10 @@ import org.slf4j.LoggerFactory;
 
 class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, IPositionListenable, ITerminatable, ILocationListener {
 
-	private final static Logger logger = LoggerFactory.getLogger(_Scannable.class);
+	private static final Logger logger = LoggerFactory.getLogger(_Scannable.class);
 
 	private final ISubscriber<ILocationListener> subscriber;
-	
+
 	_Scannable(DeviceRequest req, URI uri, ISubscriber<ILocationListener> positionListener, IEventService eservice) throws EventException, InterruptedException {
 		super(req, 
 			  Long.getLong("org.eclipse.scanning.event.remote.scannableTimeout", 250),
@@ -110,7 +110,6 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		}
 	}
 
-
 	@SuppressWarnings("unchecked")
 	@Override
 	protected DeviceRequest update() {
@@ -128,8 +127,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		if (info==null) update();  // We assume that they do not change unit.
 		return info.getUnit();
 	}
-	
-	
+
 	/**
 	 * Gets the current upper limit.
 	 * @return upper limit
@@ -160,7 +158,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 	}
 
 	private Collection<IPositionListener> listeners;
-	
+
 	@Override
 	public void addPositionListener(IPositionListener listener) {
 		addListener();
@@ -173,7 +171,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		if (listeners==null) return;
 		listeners.remove(listener);
 	}
-	
+
 	private boolean listenerAdded = false;
 	/**
 	 * A subscriber that notifies position and also resets
@@ -216,7 +214,6 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		} catch (Exception ne) {
 			logger.error("Cannot diseminate event "+loc, ne);
 		}
-
 	}
 
 	private ResponseWaiter createResponseWaiter() {
@@ -258,5 +255,4 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		method(new DeviceRequest(info.getName(), DeviceType.SCANNABLE, DeviceAction.SET, role));
 		return oldRole;
 	}
-
 }
