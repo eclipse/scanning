@@ -116,6 +116,7 @@ public class ClusterProcessingRunnableDevice extends AbstractRunnableDevice<Clus
 		operationBean.setXmx(model.getXmx());
 		operationBean.setNumberOfCores(model.getNumberOfCores());
 		operationBean.setTimeOut(model.getTimeOut());
+		operationBean.setMonitorForOverwrite(model.isMonitorForOverwrite());
 		
 		return operationBean;
 	}
