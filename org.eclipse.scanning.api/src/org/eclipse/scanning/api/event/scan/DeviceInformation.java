@@ -19,6 +19,8 @@ import org.eclipse.scanning.api.IModelProvider;
 import org.eclipse.scanning.api.MonitorRole;
 import org.eclipse.scanning.api.device.models.DeviceRole;
 import org.eclipse.scanning.api.device.models.ScanMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -30,6 +32,7 @@ import org.eclipse.scanning.api.device.models.ScanMode;
  *
  */
 public class DeviceInformation<T> implements IModelProvider<T> {
+	private static Logger logger = LoggerFactory.getLogger(DeviceInformation.class);
 	
 	/**
 	 * The device state, for instance, IDLE, READY, PAUSED, FAULT etc.
@@ -224,6 +227,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 		this.supportedScanModes = supportedScanModes;
 	}
 
+	@SuppressWarnings({"squid:S3776", "squid:S00115"})
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -249,6 +253,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 		return result;
 	}
 
+	@SuppressWarnings("squid:S3776")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -396,6 +401,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	}
 	
 	public boolean setActivated(boolean activated) {
+		logger.info("setActivated({}) was {} ({})", activated, this.activated, this);
 		boolean wasactivated = this.activated;
 		this.activated = activated;
 		return wasactivated;
@@ -430,6 +436,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	}
 
 	public void setMonitorRole(MonitorRole monitorRole) {
+		logger.info("setMonitorRole({}) was {} ({})", monitorRole, this.monitorRole, this);
 		this.monitorRole = monitorRole;
 	}
 

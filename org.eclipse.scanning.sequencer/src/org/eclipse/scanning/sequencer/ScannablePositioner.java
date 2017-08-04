@@ -24,6 +24,8 @@ import org.eclipse.scanning.api.points.MapPosition;
 import org.eclipse.scanning.api.scan.LevelRole;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositioner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Positions several scannables by level, returning after all the blocking IScannable.setPosition(...)
@@ -33,7 +35,8 @@ import org.eclipse.scanning.api.scan.event.IPositioner;
  *
  */
 final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IPositioner {
-		
+	private static Logger logger = LoggerFactory.getLogger(ScannablePositioner.class);
+
 	private IScannableDeviceService     connectorService;
 	private List<IScannable<?>>         monitors;
 	private List<IScannable<?>>         scannables;
@@ -186,10 +189,12 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 	}
 
 	public void setMonitors(List<IScannable<?>> monitors) {
+		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = monitors;
 	}
 	
 	public void setMonitors(IScannable<?>... monitors) {
+		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = Arrays.asList(monitors);
 	}
 

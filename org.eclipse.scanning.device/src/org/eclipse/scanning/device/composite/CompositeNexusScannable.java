@@ -18,47 +18,55 @@ import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanningException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A scannable that returns a nexus object created by combining the nexus objects of other scannables.
- * 
+ *
+ * This scannable should only be used as a per scan monitor, attempts to use it as a per point monitor will fail.
+ *
  * @author Matthew Dickie
  *
  * @param <T> the type of object returned by {@link #getPosition()}. Not normally used by this class
  * @param <N> the type of nexus object created for this scannable.
  */
 public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScannable<T> implements INexusDevice<N> {
-	
+
+	private static Logger logger = LoggerFactory.getLogger(CompositeNexusScannable.class);
+
 	private NexusBaseClass nexusClass = NexusBaseClass.NX_COLLECTION;
 	private NexusBaseClass nexusCategory;
 	private List<ChildNode> childNodes;
-	
+
 	public CompositeNexusScannable() {
 		super(Services.getScannableDeviceService());
 	}
 
 	@Override
 	public T getPosition() throws Exception {
-		throw new UnsupportedOperationException("A CompositeNexusScannable should only be used as a per-scan monitor");
+		// Throwing an exception here causes the Scanning GUI to show no scannables.
+		return null;
 	}
 
 	@Override
 	public T setPosition(T value, IPosition position) throws Exception {
+		logger.warn("setPosition({}, {}) called on {}", value, position, this);
 		throw new UnsupportedOperationException("A CompositeNexusScannable should only be used as a per-scan monitor");
 	}
-	
+
 	public NexusBaseClass getNexusClass() {
 		return nexusClass;
 	}
-	
+
 	public void setNexusClass(NexusBaseClass nexusClass) {
 		this.nexusClass = nexusClass;
 	}
-	
+
 	public NexusBaseClass getNexusCategory() {
 		return nexusCategory;
 	}
-	
+
 	public void setNexusCategory(NexusBaseClass nexusCategory) {
 		this.nexusCategory = nexusCategory;
 	}
@@ -74,7 +82,7 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 	private N buildNexusObject(NexusScanInfo info) throws NexusException {
 		@SuppressWarnings("unchecked")
 		N nexusObject = (N) NexusNodeFactory.createNXobjectForClass(nexusClass);
-		
+
 		IScannableDeviceService scannableDeviceService = getScannableDeviceService();
 		for (ChildNode childNode : getChildNodes()) {
 			final String scannableName = childNode.getScannableName();
@@ -84,7 +92,6 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 					// Cannot include scannables that are already in the scan - this would mean the nexus object is duplicated.
 					throw new NexusException("The scannable " + scannable.getName() + " is already in the scan.");
 				}
-				
 				if (scannable instanceof INexusDevice<?>) {
 					final NexusObjectProvider<?> nexusProvider = ((INexusDevice<?>) scannable).getNexusProvider(info);
 					final NXobject nexusObj = nexusProvider.getNexusObject();
@@ -93,7 +100,7 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 						nexusObject.addGroupNode(groupName, nexusObj);
 					} else if (childNode instanceof ChildFieldNode) {
 						final ChildFieldNode fieldNode = (ChildFieldNode) childNode;
-						DataNode dataNode = nexusObj.getDataNode(fieldNode.getSourceFieldName());
+						DataNode dataNode = nexusObj.getDataNode("value");
 						if (dataNode == null) {
 							throw new NullPointerException("No such dataset: " + fieldNode.getSourceFieldName());
 						}
@@ -104,7 +111,6 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 				throw new NexusException(e);
 			}
 		}
-		
 		return nexusObject;
 	}
 
@@ -115,5 +121,4 @@ public class CompositeNexusScannable<T, N extends NXobject> extends AbstractScan
 	public void setChildNodes(List<ChildNode> childNodes) {
 		this.childNodes = childNodes;
 	}
-
 }

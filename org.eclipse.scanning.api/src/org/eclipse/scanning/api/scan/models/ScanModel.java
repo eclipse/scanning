@@ -24,11 +24,14 @@ import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Model describing a scan to be performed.
  */
 public class ScanModel {
+	private static Logger logger = LoggerFactory.getLogger(ScanModel.class);
 
 	/**
 	 * If you want the scan to attempt to write to a given
@@ -221,10 +224,12 @@ public class ScanModel {
 	}
 	
 	public void setMonitors(List<IScannable<?>> monitors) {
+		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = monitors;
 	}
 	
 	public void setMonitors(IScannable<?>... monitors) {
+		logger.info("setMonitors({}) was {} ({})", this, monitors, this.monitors, this);
 		this.monitors = new ArrayList<>(Arrays.asList(monitors));
 		for (Iterator<IScannable<?>> iterator = this.monitors.iterator(); iterator.hasNext();) {
 			if (iterator.next()==null) iterator.remove();

@@ -128,6 +128,8 @@ public class QueueRequest extends IdBean {
 				+ ", commandTopicName=" + commandTopicName + ", heartbeatTopicName=" + heartbeatTopicName
 				+ ", beanStatus=" + beanStatus + "]";
 	}
+
+	@SuppressWarnings({"squid:S3776", "squid:S00115"})
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -150,7 +152,8 @@ public class QueueRequest extends IdBean {
 		result = prime * result + ((submissionQueueName == null) ? 0 : submissionQueueName.hashCode());
 		return result;
 	}
-	
+
+	@SuppressWarnings("squid:S3776")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
