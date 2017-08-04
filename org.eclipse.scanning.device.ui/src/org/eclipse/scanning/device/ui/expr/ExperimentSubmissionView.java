@@ -12,55 +12,67 @@
 package org.eclipse.scanning.device.ui.expr;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.MenuManager;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.inject.Inject;
+
+import org.eclipse.e4.ui.di.Focus;
 import org.eclipse.richbeans.widgets.shuffle.ShuffleConfiguration;
 import org.eclipse.richbeans.widgets.shuffle.ShuffleViewer;
+import org.eclipse.scanning.api.database.ISampleDescriptionService;
+import org.eclipse.scanning.api.event.EventException;
+import org.eclipse.scanning.api.event.queues.IQueueSpoolerService;
+import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.device.ui.Activator;
-import org.eclipse.scanning.device.ui.util.ViewUtil;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.part.ViewPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ExperimentSubmissionView extends ViewPart {
+import gda.configuration.properties.LocalProperties;
+
+public class ExperimentSubmissionView {
 
 	public static final String ID = "org.eclipse.scanning.device.ui.expr.experimentSubmissionView"; //$NON-NLS-1$
-
-	private ShuffleConfiguration conf;
-	private ShuffleViewer        viewer;
+	private static final Logger logger = LoggerFactory.getLogger(ExperimentSubmissionView.class);
 	
-	public ExperimentSubmissionView() {
-		
-		conf = new ShuffleConfiguration();
-		conf.setFromLabel("Available Experiments");
-		conf.setToLabel("Submission List");
-		conf.setFromReorder(true);
-		conf.setToReorder(true);
-		
-		conf.setFromList(Arrays.asList("Experiment1", "Experiment2", "Experiment3", "Experiment4"));
-	}
+	private ShuffleConfiguration<SampleEntry> conf;
+	private ShuffleViewer<SampleEntry>        viewer;
+	private String proposalCode;
+	private long proposalNumber;
+	private Map <Long, String> sampleIdNames;
+	private ISampleDescriptionService sampleDescriptionService = new MockSampleDescriptionService();
+	private @Inject IQueueSpoolerService queueSpoolerService;	
 
 	/**
 	 * Create contents of the view part.
 	 * @param parent
 	 */
-	@Override
-	public void createPartControl(Composite parent) {
+	@PostConstruct
+	public void createView(Composite parent) {
+		
+		conf = new ShuffleConfiguration<>();
+		conf.setFromLabel("Available Experiments");
+		conf.setToLabel("Submission List");
+		conf.setFromReorder(true);
+		conf.setToReorder(true);
 		
 		Composite container = new Composite(parent, SWT.NONE);
 		container.setLayout(new GridLayout(1, false));
 
-		this.viewer = new ShuffleViewer(conf);
+		viewer = new ShuffleViewer<>(conf);
 		viewer.createPartControl(container);
 		viewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		
@@ -75,57 +87,112 @@ public class ExperimentSubmissionView extends ViewPart {
 		refresh.setText("Refresh");
 		refresh.setBackground(white);
 		refresh.setImage(Activator.getImageDescriptor("icons/recycle.png").createImage());
+		refresh.addSelectionListener(				
+				new SelectionAdapter() { 
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						refresh();
+					}
+				});
 		
 		Button submit = new Button(buttons, SWT.PUSH|SWT.FLAT);
 		submit.setText("Submit");
 		submit.setBackground(white);
 		submit.setImage(Activator.getImageDescriptor("icons/shoe--arrow.png").createImage());
-
-		createActions();
-	}
-
-	/**
-	 * Create the actions.
-	 */
-	private void createActions() {
+		submit.addSelectionListener(				
+				new SelectionAdapter() { 
+					@Override
+					public void widgetSelected(SelectionEvent e) {
+						submit();
+					}
+				});
 		
-		List<IContributionManager> mans = new ArrayList<>(Arrays.asList(getViewSite().getActionBars().getToolBarManager(), getViewSite().getActionBars().getMenuManager()));
-		MenuManager     rightClick     = new MenuManager();
-		mans.add(rightClick);
-
-		IAction refresh = new Action("Refresh", Activator.getImageDescriptor("icons/recycle.png")) {
-			public void run() {
-				refresh();
-			}
-		};
-		
-		IAction submit = new Action("Submit", Activator.getImageDescriptor("icons/shoe--arrow.png")) {
-			public void run() {
-				submit();
-			}
-		};
-
-		ViewUtil.addGroups("main", mans, refresh, submit);
-		viewer.setMenu(rightClick);
-
+		processVisitID();
+		refresh();
 	}
 
 	private void submit() {
-		System.out.println("TODO Implement send right data to queue!");
+		if (proposalCode == null) {
+			logger.error("Absent or invalid visit ID");
+			return;
+		}
+		try {
+			submitExperiments();
+			conf.setToList(new ArrayList<SampleEntry>());
+			refresh();
+		}
+	    catch (QueueModelException e) {
+		    logger.error("Error while queueing the experiment", e);
+	    } 
+		catch (EventException e) {
+		    logger.error("Error detected in the event system", e);
+	    }
 	}
 
 	private void refresh() {
-		System.out.println("TODO Implement stored procedure call...");
+		getSampleIdNamesForView();
 	}
 
-	@Override
+	@Focus
 	public void setFocus() {
 		viewer.setFocus();
 	}
 	
-	@Override
+	@PreDestroy
 	public void dispose() {
 		viewer.dispose();
 	}
+	
+	public void processVisitID() {
+		String visitID = LocalProperties.get(LocalProperties.RCP_APP_VISIT);
+		Scanner scanner = new Scanner(visitID);
+		try {
+			proposalCode = scanner.findInLine("\\D+");
+			if (proposalCode == null) {
+				logger.error("Error while parsing visit id");
+				scanner.close();
+				return;
+			}
+			String lineProposalNumber = scanner.findInLine("\\d+");
+			if (lineProposalNumber == null) {
+				proposalCode = null;
+				logger.error("Error while parsing visit id");
+				scanner.close();
+				return;
+			}
+			proposalNumber = Long.parseLong(lineProposalNumber);
+		}
+		finally {
+			scanner.close();
+		}
+	}
+	
+	/**
+	 * Get the samples information and show it in the UI
+	 */
+	private void getSampleIdNamesForView() {
+		if (proposalCode == null) {
+			logger.error("Absent or invalid visit ID");
+			return;
+		}
+		sampleIdNames = sampleDescriptionService.getSampleIdNames(proposalCode, proposalNumber);
+		ArrayList <SampleEntry> fromList = new ArrayList<>();
+		HashSet <SampleEntry> shuffleToList = new HashSet<>(conf.getToList());
+		sampleIdNames.forEach((k, v) -> {
+			SampleEntry sampleEntry = new SampleEntry(k, v);
+			if (!shuffleToList.contains(sampleEntry)) {
+				fromList.add(sampleEntry);
+			}
+		}); 
+		conf.setFromList(fromList);
+	}
 
+	private void submitExperiments() throws QueueModelException, EventException {
+		List<Long> sampleIdsList = new ArrayList<>();
+		for (Object sample : conf.getToList()) {
+			sampleIdsList.add(((SampleEntry) sample).getSampleId());
+		}
+		queueSpoolerService.submitExperiments(proposalCode, proposalNumber, sampleIdsList);
+	}
+	
 }
