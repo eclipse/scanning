@@ -103,7 +103,7 @@ public class ClusterProcessingRunnableDevice extends AbstractRunnableDevice<Clus
 		operationBean.setRunDirectory(filePathService.getTempDir()); // temp dir in visit
 		String scanFilePath = scanInfo.getFilePath();
 		operationBean.setFilePath(scanFilePath); // name of nexus file produced by scan
-		operationBean.setProcessingPath(model.getProcessingFilePath()); // The name of the processing file
+		operationBean.setProcessingPath(model.getProcessingFilePath()); // The name of the processing file.
 		operationBean.setDeleteProcessingFile(false);
 		operationBean.setOutputFilePath(getOutputFilePath(scanFilePath));
 
