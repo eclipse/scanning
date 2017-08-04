@@ -18,8 +18,7 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.107.0",
  org.eclipse.scanning.api;bundle-version="1.0.0",
  org.eclipse.richbeans.annot;bundle-version="1.0.0",
  org.eclipse.scanning.event.ui;bundle-version="1.0.0",
- org.eclipse.richbeans.binding;bundle-version="1.0.0",
- uk.ac.gda.core;bundle-version="9.5.0"
+ org.eclipse.richbeans.binding;bundle-version="1.0.0"
 Import-Package: gda.configuration.properties,
  org.eclipse.e4.ui.di,
  org.eclipse.e4.ui.model.application,
