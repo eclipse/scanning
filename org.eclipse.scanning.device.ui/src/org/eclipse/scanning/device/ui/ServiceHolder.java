@@ -22,6 +22,7 @@ import org.eclipse.scanning.api.ISpringParser;
 import org.eclipse.scanning.api.IValidatorService;
 import org.eclipse.scanning.api.event.IEventConnectorService;
 import org.eclipse.scanning.api.event.IEventService;
+import org.eclipse.scanning.api.event.queues.IQueueSpoolerService;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.scan.IFilePathService;
 import org.eclipse.scanning.api.scan.IParserService;
@@ -204,6 +205,17 @@ public class ServiceHolder {
 
 	public static void setFilePathService(IFilePathService filePathService) {
 		ServiceHolder.filePathService = filePathService;
+	}
+	
+	private static IQueueSpoolerService queueSpoolerService;
+	
+	public static IQueueSpoolerService getQueueSpoolerService() {
+		if (queueSpoolerService == null) queueSpoolerService = getService(IQueueSpoolerService.class);
+		return queueSpoolerService;
+	}
+	
+	public static void setQueueSpoolerService(IQueueSpoolerService queueSpoolerService) {
+		ServiceHolder.queueSpoolerService = queueSpoolerService;
 	}
 	
 	public static BundleContext getContext() {

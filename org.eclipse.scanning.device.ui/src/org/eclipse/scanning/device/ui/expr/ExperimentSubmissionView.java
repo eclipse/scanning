@@ -53,7 +53,6 @@ public class ExperimentSubmissionView {
 	private long proposalNumber;
 	private Map <Long, String> sampleIdNames;
 	private ISampleDescriptionService sampleDescriptionService = new MockSampleDescriptionService();
-	private @Inject IQueueSpoolerService queueSpoolerService;	
 
 	/**
 	 * Create contents of the view part.
@@ -195,6 +194,7 @@ public class ExperimentSubmissionView {
 		for (Object sample : conf.getToList()) {
 			sampleIdsList.add(((SampleEntry) sample).getSampleId());
 		}
+		IQueueSpoolerService queueSpoolerService = ServiceHolder.getQueueSpoolerService();
 		queueSpoolerService.submitExperiments(proposalCode, proposalNumber, sampleIdsList);
 	}
 	
