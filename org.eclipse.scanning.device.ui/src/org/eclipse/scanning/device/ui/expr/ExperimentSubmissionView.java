@@ -148,25 +148,25 @@ public class ExperimentSubmissionView {
 			visitID = ServiceHolder.getFilePathService().getVisit();
 		}
 		catch (Exception e) {
-			logger.error("Cannot get visitID", e);
+			logger.error("Cannot get visit ID", e);
 			return;
 		}
 		try(Scanner scanner = new Scanner(visitID)) {
 			proposalCode = scanner.findInLine("\\D+");
 			if (proposalCode == null) {
-				logger.error("Error while parsing visit id");
+				logger.error("Error while parsing visit ID: invalid proposal code");
 				return;
 			}
 			String lineProposalNumber = scanner.findInLine("\\d+");
 			if (lineProposalNumber == null) {
 				proposalCode = null;
-				logger.error("Error while parsing visit id");
+				logger.error("Error while parsing visit ID: invalid proposal number");
 				return;
 			}
 			proposalNumber = Long.parseLong(lineProposalNumber);
 		}
 		catch (Exception e) {
-			logger.error("Cannot parse visitID", e);
+			logger.error("Cannot parse visit ID", e);
 		}
 		}
 	
