@@ -23,6 +23,7 @@ import org.eclipse.scanning.api.IValidatorService;
 import org.eclipse.scanning.api.event.IEventConnectorService;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
+import org.eclipse.scanning.api.scan.IFilePathService;
 import org.eclipse.scanning.api.scan.IParserService;
 import org.eclipse.scanning.api.stashing.IStashingService;
 import org.eclipse.scanning.api.ui.CommandConstants;
@@ -192,6 +193,17 @@ public class ServiceHolder {
 
 	public static void setStashingService(IStashingService stashingService) {
 		ServiceHolder.stashingService = stashingService;
+	}
+	
+	private static IFilePathService filePathService;
+	
+	public static IFilePathService getFilePathService() {
+		if (filePathService==null) filePathService = getService(IFilePathService.class);
+		return filePathService;
+	}
+
+	public static void setFilePathService(IFilePathService filePathService) {
+		ServiceHolder.filePathService = filePathService;
 	}
 	
 	public static BundleContext getContext() {

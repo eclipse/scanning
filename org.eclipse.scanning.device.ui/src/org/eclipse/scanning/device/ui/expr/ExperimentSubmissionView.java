@@ -29,6 +29,7 @@ import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.queues.IQueueSpoolerService;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.device.ui.Activator;
+import org.eclipse.scanning.device.ui.ServiceHolder;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -40,8 +41,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import gda.configuration.properties.LocalProperties;
 
 public class ExperimentSubmissionView {
 
@@ -144,28 +143,32 @@ public class ExperimentSubmissionView {
 	}
 	
 	public void processVisitID() {
-		String visitID = LocalProperties.get(LocalProperties.RCP_APP_VISIT);
-		Scanner scanner = new Scanner(visitID);
+		String visitID;
 		try {
+			visitID = ServiceHolder.getFilePathService().getVisit();
+		}
+		catch (Exception e) {
+			logger.error("Cannot get visitID", e);
+			return;
+		}
+		try(Scanner scanner = new Scanner(visitID)) {
 			proposalCode = scanner.findInLine("\\D+");
 			if (proposalCode == null) {
 				logger.error("Error while parsing visit id");
-				scanner.close();
 				return;
 			}
 			String lineProposalNumber = scanner.findInLine("\\d+");
 			if (lineProposalNumber == null) {
 				proposalCode = null;
 				logger.error("Error while parsing visit id");
-				scanner.close();
 				return;
 			}
 			proposalNumber = Long.parseLong(lineProposalNumber);
 		}
-		finally {
-			scanner.close();
+		catch (Exception e) {
+			logger.error("Cannot parse visitID", e);
 		}
-	}
+		}
 	
 	/**
 	 * Get the samples information and show it in the UI
