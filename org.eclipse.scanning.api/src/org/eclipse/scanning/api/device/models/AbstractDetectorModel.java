@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.api.device.models;
 
+import org.eclipse.scanning.api.annotation.UiReadOnly;
 import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 
 public abstract class AbstractDetectorModel implements IDetectorModel, IReflectedModel {
@@ -71,6 +72,7 @@ public abstract class AbstractDetectorModel implements IDetectorModel, IReflecte
 		return true;
 	}
 
+	@UiReadOnly
 	public String getName() {
 		return name;
 	}
@@ -79,10 +81,12 @@ public abstract class AbstractDetectorModel implements IDetectorModel, IReflecte
 		this.name = name;
 	}
 
+	@Override
 	public long getTimeout() {
 		return timeout;
 	}
-
+	
+	@Override
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
 	}
