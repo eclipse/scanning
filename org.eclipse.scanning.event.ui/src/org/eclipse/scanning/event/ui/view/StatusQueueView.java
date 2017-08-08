@@ -14,6 +14,7 @@ import java.net.URI;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EventListener;
@@ -158,7 +159,7 @@ public class StatusQueueView extends EventConnectionView {
 		content.setLayout(new GridLayout(1, false));
 		Util.removeMargins(content);
 
-		this.viewer   = new TableViewer(content, SWT.FULL_SELECTION | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
+		this.viewer   = new TableViewer(content, SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
 		viewer.setUseHashlookup(true);
 		viewer.getTable().setHeaderVisible(true);
 		viewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
@@ -195,19 +196,19 @@ public class StatusQueueView extends EventConnectionView {
 	}
 	
 	protected void updateSelected() {
-		StatusBean bean = getSelection();
-		if (bean == null) bean = new StatusBean();
 		
-		remove.setEnabled(bean.getStatus()!=null);
-		rerun.setEnabled(true);
-		
-		boolean isSubmitted = bean.getStatus()==org.eclipse.scanning.api.event.status.Status.SUBMITTED;
-		up.setEnabled(isSubmitted);
-		edit.setEnabled(isSubmitted);
-		down.setEnabled(isSubmitted);
-		pause.setEnabled(bean.getStatus().isRunning()||bean.getStatus().isPaused());
-		pause.setChecked(bean.getStatus().isPaused());
-		pause.setText(bean.getStatus().isPaused()?"Resume job":"Pause job");
+		for(StatusBean bean : getSelection()) {
+			remove.setEnabled(bean.getStatus()!=null);
+			rerun.setEnabled(true);
+			
+			boolean isSubmitted = bean.getStatus()==org.eclipse.scanning.api.event.status.Status.SUBMITTED;
+			up.setEnabled(isSubmitted);
+			edit.setEnabled(isSubmitted);
+			down.setEnabled(isSubmitted);
+			pause.setEnabled(bean.getStatus().isRunning()||bean.getStatus().isPaused());
+			pause.setChecked(bean.getStatus().isPaused());
+			pause.setText(bean.getStatus().isPaused()?"Resume job":"Pause job");
+		}
 	}
 
 	/**
@@ -309,7 +310,9 @@ public class StatusQueueView extends EventConnectionView {
 	
 		final Action openResults = new Action("Open results for selected run", Activator.getImageDescriptor("icons/results.png")) {
 			public void run() {
-				openResults(getSelection());
+				for (StatusBean bean : getSelection()) {
+					openResults(bean);
+				}
 			}
 		};
 		
@@ -322,12 +325,13 @@ public class StatusQueueView extends EventConnectionView {
 		
 		this.up = new Action("Less urgent (-1)", Activator.getImageDescriptor("icons/arrow-090.png")) {
 			public void run() {
-				final StatusBean bean = getSelection();
-				try {
-					queueConnection.reorder(bean, -1);
-				} catch (EventException e) {
-					ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName(), "'"+bean.getName()+"' cannot be moved in the submission queue.",
-							new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+				for(StatusBean bean : getSelection()) {
+					try {
+						queueConnection.reorder(bean, -1);
+					} catch (EventException e) {
+						ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName(), "'"+bean.getName()+"' cannot be moved in the submission queue.",
+								new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+					}
 				}
 				refresh();
 			}
@@ -339,12 +343,13 @@ public class StatusQueueView extends EventConnectionView {
 		
 		this.down = new Action("More urgent (+1)", Activator.getImageDescriptor("icons/arrow-270.png")) {
 			public void run() {
-				final StatusBean bean = getSelection();
-				try {
-					queueConnection.reorder(getSelection(), +1);
-				} catch (EventException e) {
-					ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName(), e.getMessage(),
-							new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+				for (StatusBean bean : getSelection()) {
+					try {
+						queueConnection.reorder(bean, +1);
+					} catch (EventException e) {
+						ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName(), e.getMessage(),
+								new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+					}
 				}
 				refresh();
 			}
@@ -516,80 +521,78 @@ public class StatusQueueView extends EventConnectionView {
 
 	protected void pauseJob() {
 		
-		final StatusBean bean = getSelection();
-		if (bean==null) return;
-		
-		if (bean.getStatus().isFinal()) {
-			MessageDialog.openInformation(getViewSite().getShell(), "Run '"+bean.getName()+"' inactive", "Run '"+bean.getName()+"' is inactive and cannot be paused.");
-			return;
-		}
-
-		try {
-			if (bean.getStatus().isPaused()) {
-				bean.setStatus(org.eclipse.scanning.api.event.status.Status.REQUEST_RESUME);
-				bean.setMessage("Resume of "+bean.getName());
-			} else {
-				bean.setStatus(org.eclipse.scanning.api.event.status.Status.REQUEST_PAUSE);
-				bean.setMessage("Pause of "+bean.getName());
+		for(StatusBean bean : getSelection()) {
+			
+			if (bean.getStatus().isFinal()) {
+				MessageDialog.openInformation(getViewSite().getShell(), "Run '"+bean.getName()+"' inactive", "Run '"+bean.getName()+"' is inactive and cannot be paused.");
+				continue;
 			}
-			
-			IPublisher<StatusBean> terminate = service.createPublisher(getUri(), getTopicName());
-			terminate.broadcast(bean);
-			
-		} catch (Exception e) {
-			ErrorDialog.openError(getViewSite().getShell(), "Cannot pause "+bean.getName(), "Cannot pause "+bean.getName()+"\n\nPlease contact your support representative.",
-					new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+	
+			try {
+				if (bean.getStatus().isPaused()) {
+					bean.setStatus(org.eclipse.scanning.api.event.status.Status.REQUEST_RESUME);
+					bean.setMessage("Resume of "+bean.getName());
+				} else {
+					bean.setStatus(org.eclipse.scanning.api.event.status.Status.REQUEST_PAUSE);
+					bean.setMessage("Pause of "+bean.getName());
+				}
+				
+				IPublisher<StatusBean> terminate = service.createPublisher(getUri(), getTopicName());
+				terminate.broadcast(bean);
+				
+			} catch (Exception e) {
+				ErrorDialog.openError(getViewSite().getShell(), "Cannot pause "+bean.getName(), "Cannot pause "+bean.getName()+"\n\nPlease contact your support representative.",
+						new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+			}
 		}
-
 	}
 	
 	protected void stopJob() {
 		
-		final StatusBean bean = getSelection();
-		if (bean==null) return;
-		
-		
-		if (!bean.getStatus().isActive()) {
+		for(StatusBean bean : getSelection()) {
 			
-			String queueName = null;
-			
-			if (bean.getStatus()!=org.eclipse.scanning.api.event.status.Status.SUBMITTED) {
-				queueName = getQueueName();
-				boolean ok = MessageDialog.openQuestion(getSite().getShell(), "Confirm Remove '"+bean.getName()+"'", "Are you sure you would like to remove '"+bean.getName()+"'?");
-				if (!ok) return;
-			} else {
-				// Submitted delete it right away without asking or the consumer will run it!
-				queueName = getSubmissionQueueName();
+			if (!bean.getStatus().isActive()) {
+				
+				String queueName = null;
+				
+				if (bean.getStatus()!=org.eclipse.scanning.api.event.status.Status.SUBMITTED) {
+					queueName = getQueueName();
+					boolean ok = MessageDialog.openQuestion(getSite().getShell(), "Confirm Remove '"+bean.getName()+"'", "Are you sure you would like to remove '"+bean.getName()+"'?");
+					if (!ok) continue;
+				} else {
+					// Submitted delete it right away without asking or the consumer will run it!
+					queueName = getSubmissionQueueName();
+				}
+				
+			    // It is submitted and not running. We can probably delete it.
+				try {
+					queueConnection.remove(bean, queueName);
+					refresh();
+				} catch (EventException e) {
+					ErrorDialog.openError(getViewSite().getShell(), "Cannot delete "+bean.getName(), "Cannot delete "+bean.getName()+"\n\nIt might have changed state at the same time and being remoted.",
+							new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+				}
+				continue;
 			}
 			
-		    // It is submitted and not running. We can probably delete it.
 			try {
-				queueConnection.remove(bean, queueName);
-				refresh();
-			} catch (EventException e) {
-				ErrorDialog.openError(getViewSite().getShell(), "Cannot delete "+bean.getName(), "Cannot delete "+bean.getName()+"\n\nIt might have changed state at the same time and being remoted.",
+				
+				final DateFormat format = DateFormat.getDateTimeInstance();
+				boolean ok = MessageDialog.openQuestion(getViewSite().getShell(), "Confirm terminate "+bean.getName(), 
+						  "Are you sure you want to terminate "+bean.getName()+" submitted on "+format.format(new Date(bean.getSubmissionTime()))+"?");
+				
+				if (!ok) continue;
+				
+				bean.setStatus(org.eclipse.scanning.api.event.status.Status.REQUEST_TERMINATE);
+				bean.setMessage("Termination of "+bean.getName());
+				
+				IPublisher<StatusBean> terminate = service.createPublisher(getUri(), getTopicName());
+				terminate.broadcast(bean);
+				
+			} catch (Exception e) {
+				ErrorDialog.openError(getViewSite().getShell(), "Cannot terminate "+bean.getName(), "Cannot terminate "+bean.getName()+"\n\nPlease contact your support representative.",
 						new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
 			}
-			return;
-		}
-		
-		try {
-			
-			final DateFormat format = DateFormat.getDateTimeInstance();
-			boolean ok = MessageDialog.openQuestion(getViewSite().getShell(), "Confirm terminate "+bean.getName(), 
-					  "Are you sure you want to terminate "+bean.getName()+" submitted on "+format.format(new Date(bean.getSubmissionTime()))+"?");
-			
-			if (!ok) return;
-			
-			bean.setStatus(org.eclipse.scanning.api.event.status.Status.REQUEST_TERMINATE);
-			bean.setMessage("Termination of "+bean.getName());
-			
-			IPublisher<StatusBean> terminate = service.createPublisher(getUri(), getTopicName());
-			terminate.broadcast(bean);
-			
-		} catch (Exception e) {
-			ErrorDialog.openError(getViewSite().getShell(), "Cannot terminate "+bean.getName(), "Cannot terminate "+bean.getName()+"\n\nPlease contact your support representative.",
-					new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
 		}
 	}
 
@@ -658,8 +661,8 @@ public class StatusQueueView extends EventConnectionView {
 	 */
 	protected void openSelection() {
 		
-		final StatusBean bean = getSelection();
-		if (bean==null) {
+		final StatusBean [] beans = getSelection();
+		if (beans.length == 0) {
 			MessageDialog.openInformation(getViewSite().getShell(), "Please select a run", "Please select a run to open.");
             return;
 		}
@@ -668,7 +671,9 @@ public class StatusQueueView extends EventConnectionView {
 		// We fire a special object into the selection mechanism with the data for this run.
 		// It is then up to parts to respond to this selection and update their contents.
 		// We call fireSelection as the openRequest isn't in the table. This sets the workb
-		selectionProvider.fireSelection(new StructuredSelection(new OpenRequest(bean)));
+		for (StatusBean bean : beans) {
+			selectionProvider.fireSelection(new StructuredSelection(new OpenRequest(bean)));
+		}
 	}
 
 	/**
@@ -676,69 +681,66 @@ public class StatusQueueView extends EventConnectionView {
 	 */
 	protected void editSelection() {
 		
-		final StatusBean bean = getSelection();
-		if (bean==null) return;
-
-		if (bean.getStatus()!=org.eclipse.scanning.api.event.status.Status.SUBMITTED) {
-			MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'", "The run '"+bean.getName()+"' cannot be edited because it is not waiting to run.");
-		    return;
-		}
-		
-		try {
-			final IConfigurationElement[] c = Platform.getExtensionRegistry().getConfigurationElementsFor(MODIFY_HANDLER_EXTENSION_POINT_ID);
-			if (c!=null) {
-				for (IConfigurationElement i : c) {
-					final IModifyHandler handler = (IModifyHandler)i.createExecutableExtension("class");
-					handler.init(service, createConsumerConfiguration());
-					if (handler.isHandled(bean)) {
-						boolean ok = handler.modify(bean);
-						if (ok) return;
+		for (StatusBean bean : getSelection()) {
+			if (bean.getStatus()!=org.eclipse.scanning.api.event.status.Status.SUBMITTED) {
+				MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'", "The run '"+bean.getName()+"' cannot be edited because it is not waiting to run.");
+			    continue;
+			}
+			
+			try {
+				final IConfigurationElement[] c = Platform.getExtensionRegistry().getConfigurationElementsFor(MODIFY_HANDLER_EXTENSION_POINT_ID);
+				if (c!=null) {
+					for (IConfigurationElement i : c) {
+						final IModifyHandler handler = (IModifyHandler)i.createExecutableExtension("class");
+						handler.init(service, createConsumerConfiguration());
+						if (handler.isHandled(bean)) {
+							boolean ok = handler.modify(bean);
+							if (ok) continue;
+						}
 					}
 				}
+			} catch (Exception ne) {
+				ne.printStackTrace();
+				ErrorDialog.openError(getSite().getShell(), "Internal Error", "Cannot modify "+bean.getRunDirectory()+" normally.\n\nPlease contact your support representative.", 
+						new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage()));
+				continue;
 			}
-		} catch (Exception ne) {
-			ne.printStackTrace();
-			ErrorDialog.openError(getSite().getShell(), "Internal Error", "Cannot modify "+bean.getRunDirectory()+" normally.\n\nPlease contact your support representative.", 
-					new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage()));
-			return;
+	    
+			MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'", "There are no editers registered for '"+bean.getName()+"'\n\nPlease contact your support representative.");
+	
 		}
-    
-		MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'", "There are no editers registered for '"+bean.getName()+"'\n\nPlease contact your support representative.");
-
 	}
-
 
 	protected void rerunSelection() {
 		
-		final StatusBean bean = getSelection();
-		if (bean==null) return;
-
-		try {
-			final IConfigurationElement[] c = Platform.getExtensionRegistry().getConfigurationElementsFor(RERUN_HANDLER_EXTENSION_POINT_ID);
-			if (c!=null) {
-				for (IConfigurationElement i : c) {
-					final IRerunHandler handler = (IRerunHandler)i.createExecutableExtension("class");
-					handler.init(service, createConsumerConfiguration());
-					if (handler.isHandled(bean)) {
-						final StatusBean copy = bean.getClass().newInstance();
-						copy.merge(bean);
-						copy.setUniqueId(UUID.randomUUID().toString());
-						copy.setStatus(org.eclipse.scanning.api.event.status.Status.SUBMITTED);
-						copy.setSubmissionTime(System.currentTimeMillis());
-						boolean ok = handler.run(copy);
-						if (ok) return;
+		for (StatusBean bean : getSelection()) {
+			try {
+				final IConfigurationElement[] c = Platform.getExtensionRegistry().getConfigurationElementsFor(RERUN_HANDLER_EXTENSION_POINT_ID);
+				if (c!=null) {
+					for (IConfigurationElement i : c) {
+						final IRerunHandler handler = (IRerunHandler)i.createExecutableExtension("class");
+						handler.init(service, createConsumerConfiguration());
+						if (handler.isHandled(bean)) {
+							final StatusBean copy = bean.getClass().newInstance();
+							copy.merge(bean);
+							copy.setUniqueId(UUID.randomUUID().toString());
+							copy.setStatus(org.eclipse.scanning.api.event.status.Status.SUBMITTED);
+							copy.setSubmissionTime(System.currentTimeMillis());
+							boolean ok = handler.run(copy);
+							if (ok) continue;
+						}
 					}
 				}
+			} catch (Exception ne) {
+				ne.printStackTrace();
+				ErrorDialog.openError(getSite().getShell(), "Internal Error", "Cannot rerun "+bean.getRunDirectory()+" normally.\n\nPlease contact your support representative.", 
+						new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage()));
+				continue;
 			}
-		} catch (Exception ne) {
-			ne.printStackTrace();
-			ErrorDialog.openError(getSite().getShell(), "Internal Error", "Cannot rerun "+bean.getRunDirectory()+" normally.\n\nPlease contact your support representative.", 
-					new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage()));
-			return;
+	    
+			// If we have not already handled this rerun, it is possible to call a generic one.
+			rerun(bean);
 		}
-    
-		// If we have not already handled this rerun, it is possible to call a generic one.
-		rerun(bean);
 	}
 
 	private ConsumerConfiguration createConsumerConfiguration() throws Exception {
@@ -824,13 +826,10 @@ public class StatusQueueView extends EventConnectionView {
 		};
 	}
 	
-	protected StatusBean getSelection() {
+	protected StatusBean [] getSelection() {
 		final ISelection sel = viewer.getSelection();
-		if (sel instanceof IStructuredSelection) {
-			IStructuredSelection ss = (IStructuredSelection)sel;
-			if (ss.size()>0) return (StatusBean)ss.getFirstElement();
-		}
-		return null;
+		IStructuredSelection ss = (IStructuredSelection)sel;
+		return Arrays.stream(ss.toArray()).toArray(StatusBean[]::new);
 	}
 
 	/**
