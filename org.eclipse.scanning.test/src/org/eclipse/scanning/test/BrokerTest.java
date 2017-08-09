@@ -15,16 +15,14 @@ import java.net.URI;
 import java.util.Arrays;
 
 import org.eclipse.dawnsci.json.MarshallerService;
+import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.example.classregistry.ScanningExampleClassRegistry;
 import org.eclipse.scanning.example.xcen.classregistry.XcenBeanClassRegistry;
 import org.eclipse.scanning.points.classregistry.ScanningAPIClassRegistry;
 import org.eclipse.scanning.points.serialization.PointsModelMarshaller;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-
-import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 /**
  * Doing this works better than using vm:// uris.

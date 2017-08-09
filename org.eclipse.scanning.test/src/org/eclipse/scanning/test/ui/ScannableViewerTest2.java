@@ -12,16 +12,8 @@
 package org.eclipse.scanning.test.ui;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import org.eclipse.richbeans.test.ui.ShellTest;
-import org.eclipse.scanning.api.IScannable;
-import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.device.ui.device.ScannableViewer;
 import org.eclipse.scanning.server.servlet.Services;
 import org.eclipse.swt.layout.GridLayout;

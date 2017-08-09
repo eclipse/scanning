@@ -11,8 +11,6 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.event;
 
-import java.net.URI;
-
 import org.eclipse.scanning.api.event.IEventService;
 import org.junit.Before;
 

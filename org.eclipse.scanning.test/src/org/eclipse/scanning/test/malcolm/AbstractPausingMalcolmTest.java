@@ -16,12 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.Connection;
-
 import org.eclipse.scanning.api.event.scan.DeviceState;
-import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
-import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
-import org.eclipse.scanning.api.malcolm.MalcolmDeviceOperationCancelledException;
 import org.eclipse.scanning.api.malcolm.event.MalcolmEventBean;
 import org.junit.Test;
 import org.junit.runner.RunWith;
