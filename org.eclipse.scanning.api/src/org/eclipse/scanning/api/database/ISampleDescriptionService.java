@@ -53,6 +53,18 @@ public interface ISampleDescriptionService {
 	default <T> T getSampleInformation(String proposalCode, long proposalNumber, long sampleId) {
 		throw new IllegalArgumentException("Method getSampleInformation(...) not implemented!");
 	}
+	
+	/**
+	 * 
+	 * @param proposalCode
+	 * @param proposalNumber
+	 * @param sampleIds
+	 * @return Map{sampleId->SampleInformation}
+	 */
+	default <T> Map<Long,T> getSampleInformation(String proposalCode, long proposalNumber, long... sampleIds) {
+		throw new IllegalArgumentException("Method getSampleInformation(...) not implemented!");
+	}
+	
 	/**
 	 * For a sample in a particular session (proposal code + proposal number) 
 	 * produce the configuration necessary to configure the experiment. This 
@@ -67,31 +79,7 @@ public interface ISampleDescriptionService {
 	default ExperimentConfiguration generateExperimentConfiguration(String proposalCode, long proposalNumber, long sampleId) {
 		throw new IllegalArgumentException("Method getSampleInformation(...) not implemented!");
 	}
-	
-	/**
-	 * For a sample in a particular session (proposal code + proposal number) 
-	 * produce the metadata which should be passed into the NeXus file during 
-	 * the scan, which the user provided to the database. 
-	 * @param proposalCode
-	 * @param proposalNumber
-	 * @param sampleIds
-	 * @return List<{@link ScanMetadata}> to be passed into the NeXus file 
-	 */
-	default List<ScanMetadata> generateSampleScanMetadata(String proposalCode, long proposalNumber, long sampleIds) {
-		throw new IllegalArgumentException("Method getSampleInformation(...) not implemented!");
-	}
-	
-	/**
-	 * 
-	 * @param proposalCode
-	 * @param proposalNumber
-	 * @param sampleIds
-	 * @return Map{sampleId->SampleInformation}
-	 */
-	default <T> Map<Long,T> getSampleInformation(String proposalCode, long proposalNumber, long... sampleIds) {
-		throw new IllegalArgumentException("Method getSampleInformation(...) not implemented!");
-	}
-	
+
 	/**
 	 * For a series of samples in a particular session (proposal code + 
 	 * proposal number) produce the configuration necessary to configure the 
@@ -104,6 +92,19 @@ public interface ISampleDescriptionService {
 	 *         object types rather than a generic.
 	 */
 	default Map<Long, ExperimentConfiguration> generateAllExperimentConfiguration(String proposalCode, long proposalNumber, long... sampleIds) {
+		throw new IllegalArgumentException("Method getSampleInformation(...) not implemented!");
+	}
+	
+	/**
+	 * For a sample in a particular session (proposal code + proposal number) 
+	 * produce the metadata which should be passed into the NeXus file during 
+	 * the scan, which the user provided to the database. 
+	 * @param proposalCode
+	 * @param proposalNumber
+	 * @param sampleIds
+	 * @return List<{@link ScanMetadata}> to be passed into the NeXus file 
+	 */
+	default List<ScanMetadata> generateSampleScanMetadata(String proposalCode, long proposalNumber, long sampleIds) {
 		throw new IllegalArgumentException("Method getSampleInformation(...) not implemented!");
 	}
 	
