@@ -79,5 +79,7 @@ script:
  - mvn -T 4 -q clean install
  - mvn -q surefire:test -Dtest.includes=org/eclipse/scanning/**/Suite.java
  - mvn -q surefire:test -Dtest.includes=org/eclipse/scanning/**/UISuite.java -Dlog4j.configuration=log4j.properties
- - mvn -q sonar:sonar
-
+# Add never fail to the sonar scan job so that the failure when processing a pull request from a forked repository
+# doesn't block those pull requests from ever being merged. This also prevents pull requests which touch lots of files
+# from being blocked due to there being too many existing critical or blocker sonar issues.
+ - mvn -q --fail-never sonar:sonar
