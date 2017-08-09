@@ -241,7 +241,7 @@ public class ThreadScanTest extends BrokerTest {
 
 		device.resume();  // start it going again, non-blocking
 
-		Thread.sleep(10);
+		device.wait(10);
 	}
 
 }

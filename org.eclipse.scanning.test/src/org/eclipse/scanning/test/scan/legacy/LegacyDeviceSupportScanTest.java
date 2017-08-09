@@ -75,26 +75,27 @@ public class LegacyDeviceSupportScanTest {
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 		
 		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		NXroot rootNode = (NXroot) nexusTree.getGroupNode();
-		NXentry entry = rootNode.getEntry();
-		NXinstrument instrument = entry.getInstrument();
-		
-		// check the expected metadata scannables have been included in the scan
-		// global metadata scannables: a, b, c, requires d, e, f
-		// required by nexusScannable1: x, requires y, z
-		// required by nexusScannable2: p, requires q, r
-		String[] expectedPositionerNames = new String[] {
-				"a", "b", "c", "d", "e", "f",
-				"neXusScannable1", "neXusScannable2",
-				"p", "q", "r", "x", "y", "z"
-		};
-		String[] actualPositionerNames = instrument.getAllPositioner().keySet().stream().
-				sorted().toArray(String[]::new);
-		assertArrayEquals(expectedPositionerNames, actualPositionerNames);
+		try (NexusFile nf = fileFactory.newNexusFile(filePath)) {
+			nf.openToRead();
+			
+			TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
+			NXroot rootNode = (NXroot) nexusTree.getGroupNode();
+			NXentry entry = rootNode.getEntry();
+			NXinstrument instrument = entry.getInstrument();
+			
+			// check the expected metadata scannables have been included in the scan
+			// global metadata scannables: a, b, c, requires d, e, f
+			// required by nexusScannable1: x, requires y, z
+			// required by nexusScannable2: p, requires q, r
+			String[] expectedPositionerNames = new String[] {
+					"a", "b", "c", "d", "e", "f",
+					"neXusScannable1", "neXusScannable2",
+					"p", "q", "r", "x", "y", "z"
+			};
+			String[] actualPositionerNames = instrument.getAllPositioner().keySet().stream().
+					sorted().toArray(String[]::new);
+			assertArrayEquals(expectedPositionerNames, actualPositionerNames);
+		}
 	}
 	
 	private IRunnableDevice<ScanModel> createStepScan(int... size) throws Exception {

@@ -274,22 +274,23 @@ public class ScanProcessTest {
 		process.execute();
 
 		// Assert
-		NexusFile nf = fileFactory.newNexusFile(tmp.getAbsolutePath());
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		nf.close();
-		NXroot root = (NXroot) nexusTree.getGroupNode();
-		NXentry entry = root.getEntry();
-		NXinstrument instrument = entry.getInstrument();
-		NXpositioner tPos = instrument.getPositioner("T");
-		IDataset tempDataset = tPos.getValue();
-		assertThat(tempDataset, is(notNullValue()));
-		assertThat(tempDataset.getShape(), is(equalTo(new int[] { 6, 2, 2 })));
-		
-		NXdata mandelbrot = entry.getData("mandelbrot");
-		assertThat(mandelbrot, is(notNullValue()));
-		assertThat(mandelbrot.getDataNode("T"), is(nullValue()));
+		try (NexusFile nf = fileFactory.newNexusFile(tmp.getAbsolutePath())) {
+			nf.openToRead();
+			
+			TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
+			nf.close();
+			NXroot root = (NXroot) nexusTree.getGroupNode();
+			NXentry entry = root.getEntry();
+			NXinstrument instrument = entry.getInstrument();
+			NXpositioner tPos = instrument.getPositioner("T");
+			IDataset tempDataset = tPos.getValue();
+			assertThat(tempDataset, is(notNullValue()));
+			assertThat(tempDataset.getShape(), is(equalTo(new int[] { 6, 2, 2 })));
+			
+			NXdata mandelbrot = entry.getData("mandelbrot");
+			assertThat(mandelbrot, is(notNullValue()));
+			assertThat(mandelbrot.getDataNode("T"), is(nullValue()));
+		}
 	}
 	
 	@Test
