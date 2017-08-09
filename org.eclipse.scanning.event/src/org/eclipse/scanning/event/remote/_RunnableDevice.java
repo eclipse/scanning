@@ -32,15 +32,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class _RunnableDevice<M> extends _AbstractRemoteDevice<M> implements IRunnableDevice<M>, IActivatable {
-	
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(_RunnableDevice.class);
 
 	_RunnableDevice(DeviceRequest req, URI uri, IEventService eservice) throws EventException, InterruptedException {
 		super(req, 
-              Long.getLong("org.eclipse.scanning.event.remote.runnableDeviceTimeout", 1000),
-              uri, 
-              eservice);
+			  Long.getLong("org.eclipse.scanning.event.remote.runnableDeviceTimeout", 1000),
+			  uri, 
+			  eservice);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -59,7 +58,7 @@ class _RunnableDevice<M> extends _AbstractRemoteDevice<M> implements IRunnableDe
 		update();
 		return info.getModel();
 	}
-	
+
 	@Override
 	public String getDeviceHealth() throws ScanningException {
 		update();
@@ -71,7 +70,7 @@ class _RunnableDevice<M> extends _AbstractRemoteDevice<M> implements IRunnableDe
 		update();
 		return info.isBusy();
 	}
-	
+
 	@Override
 	public DeviceRole getRole() {
 		update();
@@ -97,10 +96,10 @@ class _RunnableDevice<M> extends _AbstractRemoteDevice<M> implements IRunnableDe
 		} catch (ValidationException ve) {
 			throw ve;
 		} catch (Exception ne) {
-            throw new ValidationException(ne);
+			throw new ValidationException(ne);
 		}
 	}
-	
+
 	@Override
 	public Object validateWithReturn(M model) throws ValidationException {
 		try {
@@ -110,10 +109,10 @@ class _RunnableDevice<M> extends _AbstractRemoteDevice<M> implements IRunnableDe
 		} catch (ValidationException ve) {
 			throw ve;
 		} catch (Exception ne) {
-            throw new ValidationException(ne);
+			throw new ValidationException(ne);
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public DeviceState getDeviceState() throws ScanningException {
@@ -161,14 +160,17 @@ class _RunnableDevice<M> extends _AbstractRemoteDevice<M> implements IRunnableDe
 		method(new DeviceRequest(info.getName(), DeviceAction.DISABLE));
 	}
 
+	@Override
 	public boolean isActivated() {
 		update();
 		return info.isActivated();
 	}
-	
+
+	@Override
 	public boolean setActivated(boolean activated) throws ScanningException {
 		if (info==null) update();
 		boolean wasactivated = info.isActivated();
+		logger.info("setActivated({}) was {} ({})", activated, wasactivated, this);
 		method(new DeviceRequest(info.getName(), DeviceType.RUNNABLE, DeviceAction.ACTIVATE, activated));
 		return wasactivated;
 	}
@@ -182,5 +184,4 @@ class _RunnableDevice<M> extends _AbstractRemoteDevice<M> implements IRunnableDe
 	public void setAlive(boolean alive) {
 		info.setAlive(alive);
 	}
-
 }

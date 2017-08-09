@@ -458,18 +458,18 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 			}
 		}
 		
-		// validate field: fileDir
-		if (model.getFileDir() == null) {
-			throw new ModelValidationException("Output dir for malcolm not set", model, "fileDir");
-		}
-		final File fileDir = new File(model.getFileDir());
-		if (!fileDir.exists()) {
-			throw new ModelValidationException("The output dir for malcolm does not exist: " + model.getFileDir(),
-					model, "fileDir");
-		}
-		if (!fileDir.isDirectory()) {
-			throw new ModelValidationException("The output dir for malcolm is not a directory: " + model.getFileDir(),
-					model, "fileDir");
+		// validate file dir if set
+		if (model.getFileDir() != null) {
+
+			final File fileDir = new File(model.getFileDir());
+			if (!fileDir.exists()) {
+				throw new ModelValidationException("The output dir for malcolm does not exist: " + model.getFileDir(),
+						model, "fileDir");
+			}
+			if (!fileDir.isDirectory()) {
+				throw new ModelValidationException("The output dir for malcolm is not a directory: " + model.getFileDir(),
+						model, "fileDir");
+			}
 		}
 	}
 

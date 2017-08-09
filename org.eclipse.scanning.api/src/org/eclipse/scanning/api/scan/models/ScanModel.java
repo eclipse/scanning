@@ -20,14 +20,18 @@ import java.util.List;
 
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IRunnableDevice;
+import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A Model describing a scan to be performed.
  */
 public class ScanModel {
+	private static Logger logger = LoggerFactory.getLogger(ScanModel.class);
 
 	/**
 	 * If you want the scan to attempt to write to a given
@@ -61,10 +65,23 @@ public class ScanModel {
 	private ScanBean bean;
 	
 	/**
+	 * A list of scannables that may be set to a position
+	 * during the scan. They have {@code setPostition(pos, IPosition)}
+	 * called, where {@code pos} is non {@code null}, and should move
+	 * to this position and readout their new position.
+	 * Note that setting this field is optional, if {@code null} the
+	 * scan scannables will be retrieved from by {@link IScannableDeviceService}
+	 * by calling {@link IScannableDeviceService#getScannable(String)} for
+	 * each scannable name as returned by calling
+	 * {@code getPositionIterable().iterator().next().getNames()}.
+	 */
+	private List<IScannable<?>> scannables;
+	
+	/**
 	 * A set of scannables may optionally be 'readout' during
 	 * the scan without being told a value for their location.
-	 * They have setPosition(null, IPosition) called and should 
-	 * ensure that if their value is null, they do not move but
+	 * They have {@code setPosition(null, IPosition)} called and should 
+	 * ensure that if their value is {@code null}, they do not move but
 	 * still readout position
 	 */
 	private List<IScannable<?>> monitors;
@@ -175,7 +192,15 @@ public class ScanModel {
 	public void setPositionIterable(Iterable<IPosition> positionIterator) {
 		this.positionIterable = positionIterator;
 	}
-
+	
+	public List<IScannable<?>> getScannables() {
+		return scannables;
+	}
+	
+	public void setScannables(List<IScannable<?>> scannables) {
+		this.scannables = scannables;
+	}
+	
 	public List<IRunnableDevice<?>> getDetectors() {
 		if (detectors == null) {
 			return Collections.emptyList();
@@ -199,10 +224,12 @@ public class ScanModel {
 	}
 	
 	public void setMonitors(List<IScannable<?>> monitors) {
+		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = monitors;
 	}
 	
 	public void setMonitors(IScannable<?>... monitors) {
+		logger.info("setMonitors({}) was {} ({})", this, monitors, this.monitors, this);
 		this.monitors = new ArrayList<>(Arrays.asList(monitors));
 		for (Iterator<IScannable<?>> iterator = this.monitors.iterator(); iterator.hasNext();) {
 			if (iterator.next()==null) iterator.remove();
@@ -236,6 +263,9 @@ public class ScanModel {
 	}
 
 	public List<?> getAnnotationParticipants() {
+		if (annotationParticipants == null) {
+			return Collections.emptyList();
+		}
 		return annotationParticipants;
 	}
 

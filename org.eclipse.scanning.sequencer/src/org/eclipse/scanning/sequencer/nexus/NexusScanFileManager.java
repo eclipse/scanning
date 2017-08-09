@@ -75,7 +75,6 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 	private static final Logger logger = LoggerFactory.getLogger(NexusScanFileManager.class);
 
 	private final AbstractRunnableDevice<ScanModel> scanDevice;
-	private final IScannableDeviceService scannableDeviceService;
 	private ScanModel model;
 	private NexusScanInfo scanInfo;
 	private NexusFileBuilder fileBuilder;
@@ -108,7 +107,6 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 	
 	public NexusScanFileManager(AbstractRunnableDevice<ScanModel> scanDevice) {
 		this.scanDevice = scanDevice;
-		this.scannableDeviceService = scanDevice.getConnectorService();
 	}
 	
 	/**
@@ -212,10 +210,17 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 	}
 	
 	@Override
-	public void positionPerformed(PositionEvent evt) throws ScanningException {
-		solsticeScanMonitor.setPosition(null, evt.getPosition());
+	public void positionPerformed(PositionEvent event) throws ScanningException {
+		solsticeScanMonitor.setPosition(null, event.getPosition());
 	}
-
+	
+	@Override
+	public void positionMovePerformed(PositionEvent event) throws ScanningException {
+		if (solsticeScanMonitor.writeAfterMovePerformed()) {
+			solsticeScanMonitor.setPosition(null, event.getPosition());
+		}
+	}
+	
 	protected SolsticeScanMonitor createSolsticeScanMonitor(ScanModel model) {
 		SolsticeScanMonitor solsticeScanMonitor = new SolsticeScanMonitor(model);
 		scanDevice.addPositionListener(this);
@@ -223,12 +228,10 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 	}
 
 	protected Map<ScanRole, Collection<INexusDevice<?>>> extractNexusDevices(ScanModel model) throws ScanningException {
-		final IPosition firstPosition = model.getPositionIterable().iterator().next();
-		final Collection<String> scannableNames = firstPosition.getNames();
 		
 		Map<ScanRole, Collection<INexusDevice<?>>> nexusDevices = new EnumMap<>(ScanRole.class);
 		nexusDevices.put(ScanRole.DETECTOR,  getNexusDevices(model.getDetectors()));
-		nexusDevices.put(ScanRole.SCANNABLE, getNexusScannables(scannableNames));
+		nexusDevices.put(ScanRole.SCANNABLE, getNexusDevices(model.getScannables()));
 		
 		if (model.getMonitors()!=null) {
 			Collection<IScannable<?>> perPoint = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT).collect(Collectors.toList());
@@ -274,6 +277,8 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 	 */
 	@SuppressWarnings("deprecation")
 	private void addLegacyPerScanMonitors(ScanModel model, Collection<String> scannableNames) throws ScanningException {
+		IScannableDeviceService scannableDeviceService = scanDevice.getConnectorService();
+		
 		// build up the set of all metadata scannables
 		final Set<String> perScanMonitorNames = new HashSet<>();
 		
@@ -324,16 +329,19 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 	private IScannable<?> getPerScanMonitor(String monitorName) {
 		IScannable<?> scannable = null;
 		try {
-			scannable = scannableDeviceService.getScannable(monitorName);
+			scannable = scanDevice.getConnectorService().getScannable(monitorName);
 		} catch (ScanningException e) {
 			logger.error("No such scannable ''{}''", monitorName);
 			return null;
 		}
 		
 		try {
+			if (scannable.getMonitorRole() != MonitorRole.PER_SCAN) {
+				logger.warn("Setting {} DefaultMonitorRole to {}, currently {}", scannable.getName(), MonitorRole.PER_SCAN, scannable.getMonitorRole());
+			}
 			scannable.setMonitorRole(MonitorRole.PER_SCAN);
 		} catch (IllegalArgumentException | ScanningException e) {
-			logger.error("Could not set scannable ''{}'' as per scan");
+			logger.error("Could not set scannable ''{}'' as per scan", scannable.getName(), e);
 			return null;
 		}
 
@@ -362,9 +370,10 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 
 		Collection<IScannable<?>> perPoint = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT).collect(Collectors.toList());
 		Collection<IScannable<?>> perScan  = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN).collect(Collectors.toList());
-        nexusScanInfo.setMonitorNames(getDeviceNames(perPoint));
-		nexusScanInfo.setMetadataScannableNames(getDeviceNames(perScan));
+        nexusScanInfo.setPerPointMonitorNames(getDeviceNames(perPoint));
+		nexusScanInfo.setPerScanMonitorNames(getDeviceNames(perScan));
 		
+		nexusScanInfo.setFilePath(scanModel.getFilePath());
 		
 		return nexusScanInfo;
 	}
@@ -469,35 +478,6 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 	private List<INexusDevice<?>> getNexusDevices(Collection<?> devices) {
 		return devices.stream().filter(d -> d instanceof INexusDevice<?>).map(
 				d -> (INexusDevice<?>) d).collect(Collectors.toList());
-	}
-	
-	protected Collection<INexusDevice<?>> getNexusScannables(Collection<String> scannableNames) throws ScanningException {
-		try {
-			return scannableNames.stream().map(name -> getNexusScannable(name)).
-					filter(s -> s != null).collect(Collectors.toList());
-		} catch (Exception e) {
-			if (e.getCause() instanceof ScanningException) {
-				throw (ScanningException) e.getCause();
-			} else {
-				throw e;
-			}
-		}
-	}
-	
-	protected INexusDevice<?> getNexusScannable(String scannableName) {
-		try {
-			IScannable<?> scannable = scanDevice.getConnectorService().getScannable(scannableName);
-			if (scannable == null) {
-				throw new IllegalArgumentException("No such scannable: " + scannableName);
-			}
-			if (scannable instanceof INexusDevice<?>) {
-				return (INexusDevice<?>) scannable;
-			}
-			
-			return null;
-		} catch (ScanningException e) {
-			throw new RuntimeException("Error getting scannable with name: " + scannableName, e);
-		}
 	}
 	
 	/**

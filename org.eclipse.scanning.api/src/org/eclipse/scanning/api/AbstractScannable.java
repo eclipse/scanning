@@ -23,6 +23,8 @@ import org.eclipse.scanning.api.scan.event.IPositionListenable;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
 import org.eclipse.scanning.api.scan.event.Location;
 import org.eclipse.scanning.api.scan.event.PositionDelegate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -42,6 +44,8 @@ import org.eclipse.scanning.api.scan.event.PositionDelegate;
  */
 public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttributeContainer, IPositionListenable {
 
+	private static Logger logger = LoggerFactory.getLogger(AbstractScannable.class);
+
 	private T                   max;
 	private T                   min;
 	private T                   tolerance;
@@ -51,7 +55,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	private boolean             activated;
 	private MonitorRole         monitorRole=MonitorRole.PER_POINT;
 	private long                timeout=-1;
-	
+
 	/**
 	 * Model is used for some scannables for instance those writing NeXus 
 	 * in a complex way to configure the scannable such that it can write
@@ -60,20 +64,21 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	 * one.
 	 */
 	private Object              model;
-	
+
 	/**
 	 * The service used to register this device.
 	 */
 	private IScannableDeviceService scannableDeviceService;
-	
+
 	/**
 	 * Implementors should use the delegate to notify of position.
 	 */
 	protected PositionDelegate  delegate;
-	
+
 	protected AbstractScannable() {
 		this(null, null);
 	}
+
 	/**
 	 * 
 	 * @param publisher used to notify of positions externally.
@@ -81,7 +86,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	protected AbstractScannable(IPublisher<Location> publisher) {
 		this(publisher, null);
 	}
-	
+
 	/**
 	 * 
 	 * @param sservice
@@ -89,7 +94,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	protected AbstractScannable(IScannableDeviceService sservice) {
 		this(null, sservice);
 	}
-	
+
 	/**
 	 * 
 	 * @param publisher
@@ -98,9 +103,9 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	protected AbstractScannable(IPublisher<Location> publisher, IScannableDeviceService sservice) {
 		this.attributes = new HashMap<>(7);
 		this.delegate   = new PositionDelegate(publisher, this);
-	    setScannableDeviceService(sservice);
+		setScannableDeviceService(sservice);
 	}
-	
+
 	/**
 	 * Used by spring to register the detector with the Runnable device service
 	 * *WARNING* Before calling register the detector must be given a service to 
@@ -116,15 +121,16 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	public void addPositionListener(IPositionListener listener) {
 		delegate.addPositionListener(listener);
 	}
+
 	@Override
 	public void removePositionListener(IPositionListener listener) {
 		delegate.removePositionListener(listener);
 	}
-	
+
 	public void setPublisher(IPublisher<Location> publisher) {
 		delegate.setPublisher(publisher);
 	}
-	
+
 	/**
 	 * 
 	 * @return null if no attributes, otherwise collection of the names of the attributes set
@@ -163,7 +169,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	public <A> A getScanAttribute(String attributeName) throws Exception {
 		return (A)attributes.get(attributeName);
 	}
-	
+
 	public DeviceInformation<T> getDeviceInformation() {
 		DeviceInformation<T> deviceInfo = new DeviceInformation<>();
 		deviceInfo.setName(getName());
@@ -176,29 +182,27 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 		
 		return deviceInfo;
 	}
-	
+
 	public int getLevel() {
 		return level;
 	}
-	
+
 	public void setLevel(int level) {
 		this.level = level;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	public void setName(String name) {
 		this.name = name;
 	}
-
 
 	@Override
 	public T getMaximum() {
 		return max;
 	}
-
 
 	public T setMaximum(T upper) {
 		T ret = this.max;
@@ -206,28 +210,30 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 		return ret;
 	}
 
-    @Override
+	@Override
 	public T getMinimum() {
 		return min;
 	}
-
 
 	public T setMinimum(T lower) {
 		T ret = this.min;
 		this.min = lower;
 		return ret;
 	}
-    @Override
+
+	@Override
 	public boolean isActivated() {
 		return activated;
 	}
-    @Override
+
+	@Override
 	public boolean setActivated(boolean activated) {
-    	boolean was = this.activated;
+		logger.info("setActivated({}) was {} ({})", activated, this.activated, this);
+		boolean was = this.activated;
 		this.activated = activated;
 		return was;
 	}
- 
+
 	public static final <T> IScannable<T> empty() {
 		return new AbstractScannable<T>() {
 			@Override
@@ -241,45 +247,56 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 			}
 		};
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <M> M getModel() {
 		return (M)model;
 	}
+
 	public <M> void setModel(M model) {
 		this.model = model;
 	}
+
 	public IScannableDeviceService getScannableDeviceService() {
 		return scannableDeviceService;
 	}
+
 	public void setScannableDeviceService(IScannableDeviceService scannableDeviceService) {
 		this.scannableDeviceService = scannableDeviceService;
 	}
+
+	@Override
 	public MonitorRole getMonitorRole() {
 		return monitorRole;
 	}
+
+	@Override
 	public MonitorRole setMonitorRole(MonitorRole monitorRole) {
+		logger.info("setMonitorRole({}) was {} ({})", monitorRole, this.monitorRole, this);
 		MonitorRole orig = this.monitorRole;
 		this.monitorRole = monitorRole;
 		return orig;
 	}
+
 	@Override
 	public long getTimeout() {
 		return timeout;
 	}
+
 	@Override
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
 	}
+
 	@Override
 	public T getTolerance() {
 		return tolerance;
 	}
+
 	@Override
 	public T setTolerance(T tolerance) {
 		T orig = this.tolerance;
 		this.tolerance = tolerance;
 		return orig;
 	}
-
 }

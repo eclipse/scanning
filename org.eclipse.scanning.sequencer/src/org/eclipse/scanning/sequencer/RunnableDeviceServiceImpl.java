@@ -425,7 +425,10 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 
 	@Override
 	public Collection<Object> getScanParticipants() {
-		return participants; // May be null
+		if (participants == null) {
+			return Collections.emptyList();
+		}
+		return participants;
 	}
 	
 	@SuppressWarnings("unchecked")

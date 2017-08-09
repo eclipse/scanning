@@ -27,7 +27,7 @@ public interface IScanService extends IRunnableDeviceService {
 
 	/**
 	 * Used to register a scan participant. Once registered any scan
-	 * created will use the particpant.
+	 * created will use the participant.
 	 * 
 	 * @param device
 	 */
@@ -36,14 +36,14 @@ public interface IScanService extends IRunnableDeviceService {
 	
 	/**
 	 * Used to remove a scan participant. Once registered any scan
-	 * created will use the particpant it must be removed to stop this.
+	 * created will use the participant it must be removed to stop this.
 	 * 
 	 * @param device
 	 */
 	void removeScanParticipant(Object device);
 
 	/**
-	 * The list of objects to be run as particpants with the scan.
+	 * The list of objects to be run as participants with the scan.
 	 * @return
 	 */
 	Collection<Object> getScanParticipants();

@@ -11,10 +11,14 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.scan.servlet;
 
+import static org.eclipse.dawnsci.nexus.NXpositioner.NX_VALUE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -26,11 +30,22 @@ import java.util.Map;
 
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
+import org.eclipse.dawnsci.analysis.api.tree.DataNode;
+import org.eclipse.dawnsci.analysis.api.tree.TreeFile;
 import org.eclipse.dawnsci.analysis.dataset.roi.RectangularROI;
 import org.eclipse.dawnsci.hdf5.nexus.NexusFileFactoryHDF5;
 import org.eclipse.dawnsci.json.MarshallerService;
+import org.eclipse.dawnsci.nexus.INexusFileFactory;
+import org.eclipse.dawnsci.nexus.NXdata;
+import org.eclipse.dawnsci.nexus.NXentry;
+import org.eclipse.dawnsci.nexus.NXinstrument;
+import org.eclipse.dawnsci.nexus.NXpositioner;
+import org.eclipse.dawnsci.nexus.NXroot;
+import org.eclipse.dawnsci.nexus.NexusFile;
+import org.eclipse.dawnsci.nexus.NexusUtils;
 import org.eclipse.dawnsci.nexus.builder.impl.DefaultNexusBuilderFactory;
 import org.eclipse.dawnsci.remotedataset.test.mock.LoaderServiceMock;
+import org.eclipse.january.dataset.IDataset;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IDeviceWatchdogService;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
@@ -75,6 +90,9 @@ import org.eclipse.scanning.test.scan.mock.MockDetectorModel;
 import org.eclipse.scanning.test.scan.mock.MockWritableDetector;
 import org.eclipse.scanning.test.scan.mock.MockWritingMandelbrotDetector;
 import org.eclipse.scanning.test.scan.mock.MockWritingMandlebrotModel;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -101,6 +119,7 @@ public class ScanProcessTest {
 	private MarshallerService           marshaller;
 	private ValidatorService            validator;
 	private IFilePathService            fpservice;
+	private INexusFileFactory           fileFactory;
 
 	@Before
 	public void setUp() throws ScanningException {
@@ -133,6 +152,7 @@ public class ScanProcessTest {
 		lservice = new LoaderServiceMock();
 		sservice = new MockScriptService();
 		fpservice = new MockFilePathService();
+		fileFactory = new NexusFileFactoryHDF5();
 		
 		// Provide lots of services that OSGi would normally.
 		Services.setEventService(eservice);
@@ -145,7 +165,7 @@ public class ScanProcessTest {
 
 		ServiceHolder.setTestServices(lservice, new DefaultNexusBuilderFactory(), null, null, gservice);
 		org.eclipse.scanning.example.Services.setPointGeneratorService(gservice);
-		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(new NexusFileFactoryHDF5());
+		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(fileFactory);
 		
 		validator = new ValidatorService();
 		validator.setPointGeneratorService(gservice);
@@ -230,6 +250,53 @@ public class ScanProcessTest {
 
 		// Assert
 		
+	}
+	
+	@Test
+	public void testScannableAndMonitor() throws Exception {
+		// Arrange
+		ScanBean scanBean = new ScanBean();
+		ScanRequest<?> scanRequest = new ScanRequest<>();
+		
+		CompoundModel cmodel = new CompoundModel<>(Arrays.asList(new StepModel("T", 290, 300, 2), new GridModel("xNex", "yNex",2,2)));
+		cmodel.setRegions(Arrays.asList(new ScanRegion<IROI>(new RectangularROI(0, 0, 3, 3, 0), "xNex", "yNex")));
+		scanRequest.setCompoundModel(cmodel);
+		
+		final Map<String, Object> dmodels = new HashMap<String, Object>(3);
+		MandelbrotModel model = new MandelbrotModel("xNex", "yNex");
+		model.setName("mandelbrot");
+		model.setExposureTime(0.001);
+		dmodels.put("mandelbrot", model);
+		scanRequest.setDetectors(dmodels);
+		scanRequest.setMonitorNames(Arrays.asList("T"));
+		
+		final File tmp = File.createTempFile("scan_nested_test", ".nxs");
+		tmp.deleteOnExit();
+		scanRequest.setFilePath(tmp.getAbsolutePath()); // TODO This will really come from the scan file service which is not written.
+		
+		scanBean.setScanRequest(scanRequest);
+		ScanProcess process = new ScanProcess(scanBean, null, true);
+		
+		// Act
+		process.execute();
+
+		// Assert
+		NexusFile nf = fileFactory.newNexusFile(tmp.getAbsolutePath());
+		nf.openToRead();
+		
+		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
+		nf.close();
+		NXroot root = (NXroot) nexusTree.getGroupNode();
+		NXentry entry = root.getEntry();
+		NXinstrument instrument = entry.getInstrument();
+		NXpositioner tPos = instrument.getPositioner("T");
+		IDataset tempDataset = tPos.getValue();
+		assertThat(tempDataset, is(notNullValue()));
+		assertThat(tempDataset.getShape(), is(equalTo(new int[] { 6, 2, 2 })));
+		
+		NXdata mandelbrot = entry.getData("mandelbrot");
+		assertThat(mandelbrot, is(notNullValue()));
+		assertThat(mandelbrot.getDataNode("T"), is(nullValue()));
 	}
 	
 	@Test

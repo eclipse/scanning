@@ -26,6 +26,8 @@ import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.api.scan.models.ScanMetadata;
 import org.eclipse.scanning.api.script.ScriptRequest;
 import org.eclipse.scanning.api.script.ScriptResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A class to encapsulate minimal information required to run a scan.
@@ -39,6 +41,7 @@ import org.eclipse.scanning.api.script.ScriptResponse;
  *
  */
 public class ScanRequest<T> implements Serializable {
+	private static Logger logger = LoggerFactory.getLogger(ScanRequest.class);
 
 	/**
 	 * 
@@ -142,6 +145,7 @@ public class ScanRequest<T> implements Serializable {
 	}
 
 	public void setMonitorNames(Collection<String> monitorNames) {
+		logger.info("setMonitorNames({}) was {} ({})", monitorNames, this.monitorNames, this);
 		this.monitorNames = monitorNames;
 	}
 	
@@ -153,6 +157,7 @@ public class ScanRequest<T> implements Serializable {
 		this.filePath = filePath;
 	}
 
+	@SuppressWarnings("squid:S00115")
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -172,6 +177,7 @@ public class ScanRequest<T> implements Serializable {
 		return result;
 	}
 
+	@SuppressWarnings("squid:S3776")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

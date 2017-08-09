@@ -30,20 +30,29 @@ public class DeviceModel {
 		UNBOXEDTYPES.put(Short.class, short.class);
 	}
 	
-	private String type;
+	private String name, type;
 	private Map<String, Object> deviceConfiguration;
 	private List<DeviceModel> roiConfiguration;
 	
 	public DeviceModel(String type, Map<String, Object> deviceConfiguration) {
-		this(type, deviceConfiguration, new ArrayList<>());
+		this(type, deviceConfiguration, null);
 	}
 	
 	public DeviceModel(String type, Map<String, Object> deviceConfiguration, List<DeviceModel> roiConfiguration) {
 		this.type = type;
 		this.deviceConfiguration = deviceConfiguration;
+		if (roiConfiguration == null) roiConfiguration = new ArrayList<>();//NPE protection
 		this.roiConfiguration = roiConfiguration;
 	}
 	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public String getType() {
 		return type;
 	}
@@ -103,6 +112,7 @@ public class DeviceModel {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((deviceConfiguration == null) ? 0 : deviceConfiguration.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((roiConfiguration == null) ? 0 : roiConfiguration.hashCode());
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
@@ -121,6 +131,11 @@ public class DeviceModel {
 				return false;
 		} else if (!deviceConfiguration.equals(other.deviceConfiguration))
 			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
 		if (roiConfiguration == null) {
 			if (other.roiConfiguration != null)
 				return false;
@@ -136,7 +151,11 @@ public class DeviceModel {
 	@Override
 	public String toString() {
 		String configString = deviceConfiguration.entrySet().stream().map(option -> option.getKey()+"="+option.getValue()).collect(Collectors.joining(", "));
-		String fullString = "DeviceModel [" + type + ": deviceConfiguration={" + configString + "}"; 
+		String fullString = "DeviceModel ";
+		if (name != null) {
+			fullString = fullString+"("+name+") "; 
+		}
+		fullString = fullString+"[" + type + ": deviceConfiguration={" + configString + "}"; 
 		if (roiConfiguration.size() > 0) {
 			String roiConfigString = roiConfiguration.stream().map(DeviceModel::toString).collect(Collectors.joining(", "));
 			fullString = fullString + "; roiConfiguration={" + roiConfigString + "}";

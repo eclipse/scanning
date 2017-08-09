@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.dawnsci.analysis.api.conversion.IConversionContext.ConversionScheme;
 import org.eclipse.dawnsci.analysis.api.io.IDataHolder;
 import org.eclipse.january.metadata.IMetadata;
 import org.eclipse.scanning.device.ui.ServiceHolder;
@@ -29,7 +28,7 @@ import org.eclipse.scanning.device.ui.ServiceHolder;
 class DatasetNameUtils {
 
 	
-	public static Map<String, int[]> getDatasetInfo(String path, ConversionScheme scheme) {
+	public static Map<String, int[]> getDatasetInfo(String path) {
 		IMetadata meta;
 		final Map<String, int[]>     names  = new HashMap<String, int[]>();
 		try {
@@ -44,9 +43,7 @@ class DatasetNameUtils {
         		if (shape != null) {
         			//squeeze to get usable rank
         			int[] ss = squeezeShape(shape, false);
-        			if (scheme==null || scheme.isRankSupported(ss.length)) {
-        				names.put(name, shape);
-        			} 
+					names.put(name, shape);
         		} else {
         			//null shape is a bad sign
         			names.clear();
@@ -68,10 +65,7 @@ class DatasetNameUtils {
 
         			int[] shape = dataHolder.getLazyDataset(name).getShape();
         			int[] ss = squeezeShape(shape, false);
-        			if (scheme==null || scheme.isRankSupported(ss.length)) {
-        				names.put(name, shape);
-        			} 
-
+					names.put(name, shape);
         		}
         	}
         }

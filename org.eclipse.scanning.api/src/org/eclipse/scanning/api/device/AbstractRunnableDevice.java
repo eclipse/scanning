@@ -42,6 +42,8 @@ import org.eclipse.scanning.api.scan.event.IPositionListenable;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
 import org.eclipse.scanning.api.scan.event.IRunListener;
 import org.eclipse.scanning.api.scan.event.RunEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A device should create its own model when its constructor is called. This
@@ -62,6 +64,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
                                                            IScanAttributeContainer, 
                                                            IPositionListenable,
                                                            IActivatable{
+	private static Logger logger = LoggerFactory.getLogger(AbstractRunnableDevice.class);
 
 	// Data
 	protected T                          model;
@@ -311,7 +314,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		posListeners.remove(l);
 	}
 
-	public void firePositionComplete(IPosition position) throws ScanningException {
+	protected void firePositionComplete(IPosition position) throws ScanningException {
 		if (posListeners == null) return;
 		
 		final PositionEvent evt = new PositionEvent(position, this);
@@ -321,7 +324,17 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		for (IPositionListener l : la) l.positionPerformed(evt);
 	}
 	
-	public void fireStateChanged(DeviceState oldState, DeviceState newState) throws ScanningException {
+	protected void firePositionMoveComplete(IPosition position) throws ScanningException {
+		if (posListeners == null) return;
+		
+		final PositionEvent evt = new PositionEvent(position, this);
+		
+		// Make array, avoid multi-threadign issues
+		final IPositionListener[] la = posListeners.toArray(new IPositionListener[posListeners.size()]);
+		for (IPositionListener l : la) l.positionMovePerformed(evt);
+	}
+	
+	protected void fireStateChanged(DeviceState oldState, DeviceState newState) throws ScanningException {
 		
 		if (rlisteners==null || rlisteners.isEmpty()) return;
 		
@@ -571,6 +584,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	
 	@Override
 	public boolean setActivated(boolean activated) {
+		logger.info("setActivated({}) was {} ({})", activated, this.activated, this);
 		boolean wasactivated = this.activated;
 		this.activated = activated;
 		return wasactivated;

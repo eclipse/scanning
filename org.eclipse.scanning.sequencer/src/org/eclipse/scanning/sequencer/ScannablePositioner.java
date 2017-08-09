@@ -24,6 +24,8 @@ import org.eclipse.scanning.api.points.MapPosition;
 import org.eclipse.scanning.api.scan.LevelRole;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositioner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Positions several scannables by level, returning after all the blocking IScannable.setPosition(...)
@@ -33,9 +35,11 @@ import org.eclipse.scanning.api.scan.event.IPositioner;
  *
  */
 final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IPositioner {
-		
+	private static Logger logger = LoggerFactory.getLogger(ScannablePositioner.class);
+
 	private IScannableDeviceService     connectorService;
 	private List<IScannable<?>>         monitors;
+	private List<IScannable<?>>         scannables;
 
 	ScannablePositioner(IScannableDeviceService service) {	
 		
@@ -100,12 +104,21 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 
 	@Override
 	protected Collection<IScannable<?>> getDevices() throws ScanningException {
-		Collection<String> names = position.getNames();
-		if (names==null) return null;
-		final List<IScannable<?>> ret = new ArrayList<>(names.size());
-		for (String name : position.getNames()) ret.add(connectorService.getScannable(name));
-		if (monitors!=null) for(IScannable<?> mon : monitors) ret.add(mon);
-		return ret;
+		final List<IScannable<?>> devices = new ArrayList<>();
+		
+		if (scannables == null) {
+			for (String name : position.getNames()) {
+				devices.add(connectorService.getScannable(name));
+			}
+		} else {
+			devices.addAll(scannables);
+		}
+		
+		if (monitors != null) {
+			devices.addAll(monitors);
+		}
+		
+		return devices;
 	}
 
 	@Override
@@ -176,11 +189,18 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 	}
 
 	public void setMonitors(List<IScannable<?>> monitors) {
+		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = monitors;
 	}
 	
 	public void setMonitors(IScannable<?>... monitors) {
+		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = Arrays.asList(monitors);
+	}
+
+	@Override
+	public void setScannables(List<IScannable<?>> scannables) {
+		this.scannables = scannables;
 	}
 
 	@Override

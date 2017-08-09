@@ -63,21 +63,22 @@ public class MockPositioner implements IPositioner {
 
 	@Override
 	public List<IScannable<?>> getMonitors() throws ScanningException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void setMonitors(List<IScannable<?>> monitors)
-			throws ScanningException {
-		// TODO Auto-generated method stub
-
+	public void setMonitors(List<IScannable<?>> monitors) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void setMonitors(IScannable<?>... monitors) throws ScanningException {
-		// TODO Auto-generated method stub
+	public void setMonitors(IScannable<?>... monitors) {
+		throw new UnsupportedOperationException();
+	}
 
+	@Override
+	public void setScannables(List<IScannable<?>> scannables) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

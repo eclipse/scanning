@@ -81,6 +81,8 @@ import org.eclipse.scanning.example.detector.DarkImageDetector;
 import org.eclipse.scanning.example.detector.DarkImageModel;
 import org.eclipse.scanning.example.detector.MandelbrotDetector;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
+import org.eclipse.scanning.example.detector.PosDetector;
+import org.eclipse.scanning.example.detector.PosDetectorModel;
 import org.eclipse.scanning.example.detector.RandomLineDevice;
 import org.eclipse.scanning.example.detector.RandomLineModel;
 import org.eclipse.scanning.example.file.MockFilePathService;
@@ -147,6 +149,7 @@ public abstract class NexusTest extends TmpTest {
 		impl._register(ClusterProcessingModel.class, ClusterProcessingRunnableDevice.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
 		impl._register(RandomLineModel.class, RandomLineDevice.class);
+		impl._register(PosDetectorModel.class, PosDetector.class);
 		impl._register(JythonModel.class, JythonDevice.class);
 		
 		// TODO Perhaps put service setting in super class or utility
@@ -179,7 +182,7 @@ public abstract class NexusTest extends TmpTest {
 	@After
 	public void deleteFile() {
 		try {
-			output.delete(); 
+			output.delete();
 		} catch (Exception ne) {
 			logger.trace("Cannot delete file!", ne);
 		}
@@ -200,15 +203,15 @@ public abstract class NexusTest extends TmpTest {
 	protected NXroot getNexusRoot(IRunnableDevice<ScanModel> scanner) throws Exception {
 		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
 
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		nf.close();
-		return (NXroot) nexusTree.getGroupNode();
+		try (NexusFile nf =  fileFactory.newNexusFile(filePath)) {
+			nf.openToRead();
+			
+			TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
+			return (NXroot) nexusTree.getGroupNode();
+		}
 	}
 	
-	protected NXentry checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake, int[] sizes) throws Exception {
+	protected NXentry checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake, int... sizes) throws Exception {
 		return checkNexusFile(scanner, snake, false, sizes);
 	}
 	

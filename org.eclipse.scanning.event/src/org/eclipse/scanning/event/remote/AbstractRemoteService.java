@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 abstract class AbstractRemoteService implements IDisconnectable, Closeable {
 
-	protected final static Logger logger = LoggerFactory.getLogger(AbstractRemoteService.class);
+	protected static final Logger logger = LoggerFactory.getLogger(AbstractRemoteService.class);
 	
 	protected IEventService eservice;
 	protected URI uri;
