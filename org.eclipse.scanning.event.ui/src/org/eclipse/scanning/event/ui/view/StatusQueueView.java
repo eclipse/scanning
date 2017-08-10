@@ -1033,7 +1033,7 @@ public class StatusQueueView extends EventConnectionView {
 				Cursor cursor = null;
 				if (item != null && item.getBounds(5).contains(pt)) {
 					StatusBean statusBean = (StatusBean) item.getData();
-					if (statusBean != null && getLocation(statusBean) != null) {
+					if (statusBean != null && getLocation(statusBean) != null && statusBean.getStatus() != org.eclipse.scanning.api.event.status.Status.RUNNING) {
 						cursor = Display.getDefault().getSystemCursor(SWT.CURSOR_HAND);
 					}
 				}
@@ -1052,7 +1052,8 @@ public class StatusQueueView extends EventConnectionView {
 				Rectangle rect = item.getBounds(5);
 				if (rect.contains(pt)) {
 					final StatusBean bean = (StatusBean)item.getData();
-					openResults(bean);
+					if (bean.getStatus() != org.eclipse.scanning.api.event.status.Status.RUNNING)
+						openResults(bean);
 				}
 			}
 		};
