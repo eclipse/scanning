@@ -1023,7 +1023,37 @@ public class StatusQueueView extends EventConnectionView {
 				}
 			}
 		});
-
+		
+		final TableViewerColumn startTime = new TableViewerColumn(viewer, SWT.CENTER);
+		startTime.getColumn().setText("Start Time");
+		startTime.getColumn().setWidth(120);
+		startTime.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				try {
+					long statusStartTime = ((StatusBean)element).getStartTime();
+					if (statusStartTime == 0) return "";
+					return DateFormat.getTimeInstance().format(new Date(statusStartTime));
+				} catch (Exception e) {
+					return e.getMessage();
+				}
+			}
+		});
+		
+		final TableViewerColumn estimatedEndTime = new TableViewerColumn(viewer, SWT.CENTER);
+		estimatedEndTime.getColumn().setText("E. End Time");
+		estimatedEndTime.getColumn().setWidth(120);
+		estimatedEndTime.setLabelProvider(new ColumnLabelProvider() {
+			public String getText(Object element) {
+				try {
+					long statusEstimatedEndTime = ((StatusBean)element).getStartTime() + ((StatusBean)element).getEstimatedTime();
+					if (statusEstimatedEndTime == 0) return "";
+					return DateFormat.getTimeInstance().format(new Date(statusEstimatedEndTime));
+				} catch (Exception e) {
+					return e.getMessage();
+				}
+			}
+		});
+		
 		MouseMoveListener cursorListener = new MouseMoveListener() {		
 			@Override
 			public void mouseMove(MouseEvent e) {
