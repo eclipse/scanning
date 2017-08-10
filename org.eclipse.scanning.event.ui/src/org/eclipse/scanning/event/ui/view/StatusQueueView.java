@@ -994,7 +994,8 @@ public class StatusQueueView extends EventConnectionView {
 				}
 			}
 			public Color getForeground(Object element) {
-				return getSite().getShell().getDisplay().getSystemColor(SWT.COLOR_BLUE);
+				boolean isFinal = ((StatusBean) element).getStatus().isFinal();
+				return getSite().getShell().getDisplay().getSystemColor(isFinal ? SWT.COLOR_BLUE : SWT.COLOR_BLACK);
 			}
 		});
 		
@@ -1033,7 +1034,7 @@ public class StatusQueueView extends EventConnectionView {
 				Cursor cursor = null;
 				if (item != null && item.getBounds(5).contains(pt)) {
 					StatusBean statusBean = (StatusBean) item.getData();
-					if (statusBean != null && getLocation(statusBean) != null && statusBean.getStatus() != org.eclipse.scanning.api.event.status.Status.RUNNING) {
+					if (statusBean != null && getLocation(statusBean) != null && statusBean.getStatus().isFinal()) {
 						cursor = Display.getDefault().getSystemCursor(SWT.CURSOR_HAND);
 					}
 				}
@@ -1052,7 +1053,7 @@ public class StatusQueueView extends EventConnectionView {
 				Rectangle rect = item.getBounds(5);
 				if (rect.contains(pt)) {
 					final StatusBean bean = (StatusBean)item.getData();
-					if (bean.getStatus() != org.eclipse.scanning.api.event.status.Status.RUNNING)
+					if (bean.getStatus().isFinal())
 						openResults(bean);
 				}
 			}
