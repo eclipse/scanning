@@ -51,6 +51,8 @@ public class ClusterProcessingRunnableDevice extends AbstractRunnableDevice<Clus
 	
 	private static ISubmitter<StatusBean> submitter = null;
 	
+	private IOperationBean operationBean;
+	
 	public ClusterProcessingRunnableDevice() {
 		super(ServiceHolder.getRunnableDeviceService());
 		setRole(DeviceRole.PROCESSING);
@@ -59,12 +61,7 @@ public class ClusterProcessingRunnableDevice extends AbstractRunnableDevice<Clus
 	
 	@ScanStart
 	public void submitProcessingOperation(ScanInformation scanInfo) {
-		final IOperationBean operationBean = createOperationBean(scanInfo);
-		try {
-			getSubmitter().submit((StatusBean) operationBean);
-		} catch (Exception e) {
-			logger.error("Could not submit processing bean for processing step" + getName());
-		}
+		 operationBean = createOperationBean(scanInfo);
 	}
 	
 	@Override
@@ -153,7 +150,14 @@ public class ClusterProcessingRunnableDevice extends AbstractRunnableDevice<Clus
 	
 	@Override
 	public void run(IPosition position) throws ScanningException, InterruptedException {
-		// Do nothing here
+		if (operationBean != null) {
+			try {
+				getSubmitter().submit((StatusBean) operationBean);
+			} catch (Exception e) {
+				logger.error("Could not submit processing bean for processing step" + getName());
+			}
+			operationBean = null;
+		}
 	}
 
 	@Override
