@@ -11,14 +11,12 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.scan.servlet;
 
-import static org.eclipse.dawnsci.nexus.NXpositioner.NX_VALUE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -30,7 +28,6 @@ import java.util.Map;
 
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
-import org.eclipse.dawnsci.analysis.api.tree.DataNode;
 import org.eclipse.dawnsci.analysis.api.tree.TreeFile;
 import org.eclipse.dawnsci.analysis.dataset.roi.RectangularROI;
 import org.eclipse.dawnsci.hdf5.nexus.NexusFileFactoryHDF5;
@@ -65,6 +62,7 @@ import org.eclipse.scanning.api.scan.IFilePathService;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.script.ScriptLanguage;
 import org.eclipse.scanning.api.script.ScriptRequest;
+import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.event.EventServiceImpl;
 import org.eclipse.scanning.example.classregistry.ScanningExampleClassRegistry;
 import org.eclipse.scanning.example.detector.MandelbrotDetector;
@@ -90,16 +88,11 @@ import org.eclipse.scanning.test.scan.mock.MockDetectorModel;
 import org.eclipse.scanning.test.scan.mock.MockWritableDetector;
 import org.eclipse.scanning.test.scan.mock.MockWritingMandelbrotDetector;
 import org.eclipse.scanning.test.scan.mock.MockWritingMandlebrotModel;
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 public class ScanProcessTest {
 	
@@ -281,22 +274,23 @@ public class ScanProcessTest {
 		process.execute();
 
 		// Assert
-		NexusFile nf = fileFactory.newNexusFile(tmp.getAbsolutePath());
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		nf.close();
-		NXroot root = (NXroot) nexusTree.getGroupNode();
-		NXentry entry = root.getEntry();
-		NXinstrument instrument = entry.getInstrument();
-		NXpositioner tPos = instrument.getPositioner("T");
-		IDataset tempDataset = tPos.getValue();
-		assertThat(tempDataset, is(notNullValue()));
-		assertThat(tempDataset.getShape(), is(equalTo(new int[] { 6, 2, 2 })));
-		
-		NXdata mandelbrot = entry.getData("mandelbrot");
-		assertThat(mandelbrot, is(notNullValue()));
-		assertThat(mandelbrot.getDataNode("T"), is(nullValue()));
+		try (NexusFile nf = fileFactory.newNexusFile(tmp.getAbsolutePath())) {
+			nf.openToRead();
+			
+			TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
+			nf.close();
+			NXroot root = (NXroot) nexusTree.getGroupNode();
+			NXentry entry = root.getEntry();
+			NXinstrument instrument = entry.getInstrument();
+			NXpositioner tPos = instrument.getPositioner("T");
+			IDataset tempDataset = tPos.getValue();
+			assertThat(tempDataset, is(notNullValue()));
+			assertThat(tempDataset.getShape(), is(equalTo(new int[] { 6, 2, 2 })));
+			
+			NXdata mandelbrot = entry.getData("mandelbrot");
+			assertThat(mandelbrot, is(notNullValue()));
+			assertThat(mandelbrot.getDataNode("T"), is(nullValue()));
+		}
 	}
 	
 	@Test

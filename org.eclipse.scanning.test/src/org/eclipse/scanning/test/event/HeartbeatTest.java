@@ -12,13 +12,9 @@
 package org.eclipse.scanning.test.event;
 
 import java.net.URI;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
-import org.eclipse.dawnsci.json.MarshallerService;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.alive.HeartbeatBean;
@@ -26,18 +22,13 @@ import org.eclipse.scanning.api.event.alive.HeartbeatEvent;
 import org.eclipse.scanning.api.event.alive.IHeartbeatListener;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.core.ISubscriber;
+import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.event.Constants;
 import org.eclipse.scanning.event.EventServiceImpl;
-import org.eclipse.scanning.example.classregistry.ScanningExampleClassRegistry;
-import org.eclipse.scanning.points.classregistry.ScanningAPIClassRegistry;
-import org.eclipse.scanning.points.serialization.PointsModelMarshaller;
 import org.eclipse.scanning.test.BrokerTest;
-import org.eclipse.scanning.test.ScanningTestClassRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 public class HeartbeatTest extends BrokerTest {
 

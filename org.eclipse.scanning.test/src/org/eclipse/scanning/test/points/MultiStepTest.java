@@ -23,7 +23,6 @@ import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Scalar;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
-import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.junit.Before;
 import org.junit.Test;

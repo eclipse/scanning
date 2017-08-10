@@ -11,7 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.event;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -33,7 +34,6 @@ import org.eclipse.scanning.api.event.core.ISubscriber;
 import org.eclipse.scanning.api.event.dry.FastRunCreator;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.event.status.StatusBean;
-import org.eclipse.scanning.event.AbstractQueueConnection;
 import org.eclipse.scanning.test.BrokerTest;
 import org.junit.After;
 import org.junit.Ignore;

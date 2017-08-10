@@ -52,7 +52,6 @@ import org.eclipse.scanning.test.scan.mock.MockWritingMandlebrotModel;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class ThreadScanTest extends BrokerTest {
@@ -242,7 +241,7 @@ public class ThreadScanTest extends BrokerTest {
 
 		device.resume();  // start it going again, non-blocking
 
-		Thread.sleep(10);
+		device.wait(10);
 	}
 
 }

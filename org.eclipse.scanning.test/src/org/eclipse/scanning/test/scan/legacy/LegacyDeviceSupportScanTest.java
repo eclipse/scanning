@@ -27,15 +27,14 @@ import org.eclipse.dawnsci.nexus.NexusUtils;
 import org.eclipse.dawnsci.nexus.ServiceHolder;
 import org.eclipse.dawnsci.nexus.builder.impl.DefaultNexusBuilderFactory;
 import org.eclipse.scanning.api.device.AbstractRunnableDevice;
-import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.IRunnableEventDevice;
+import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
-import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IRunListener;
@@ -76,26 +75,27 @@ public class LegacyDeviceSupportScanTest {
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 		
 		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
-		NexusFile nf = fileFactory.newNexusFile(filePath);
-		nf.openToRead();
-		
-		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
-		NXroot rootNode = (NXroot) nexusTree.getGroupNode();
-		NXentry entry = rootNode.getEntry();
-		NXinstrument instrument = entry.getInstrument();
-		
-		// check the expected metadata scannables have been included in the scan
-		// global metadata scannables: a, b, c, requires d, e, f
-		// required by nexusScannable1: x, requires y, z
-		// required by nexusScannable2: p, requires q, r
-		String[] expectedPositionerNames = new String[] {
-				"a", "b", "c", "d", "e", "f",
-				"neXusScannable1", "neXusScannable2",
-				"p", "q", "r", "x", "y", "z"
-		};
-		String[] actualPositionerNames = instrument.getAllPositioner().keySet().stream().
-				sorted().toArray(String[]::new);
-		assertArrayEquals(expectedPositionerNames, actualPositionerNames);
+		try (NexusFile nf = fileFactory.newNexusFile(filePath)) {
+			nf.openToRead();
+			
+			TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
+			NXroot rootNode = (NXroot) nexusTree.getGroupNode();
+			NXentry entry = rootNode.getEntry();
+			NXinstrument instrument = entry.getInstrument();
+			
+			// check the expected metadata scannables have been included in the scan
+			// global metadata scannables: a, b, c, requires d, e, f
+			// required by nexusScannable1: x, requires y, z
+			// required by nexusScannable2: p, requires q, r
+			String[] expectedPositionerNames = new String[] {
+					"a", "b", "c", "d", "e", "f",
+					"neXusScannable1", "neXusScannable2",
+					"p", "q", "r", "x", "y", "z"
+			};
+			String[] actualPositionerNames = instrument.getAllPositioner().keySet().stream().
+					sorted().toArray(String[]::new);
+			assertArrayEquals(expectedPositionerNames, actualPositionerNames);
+		}
 	}
 	
 	private IRunnableDevice<ScanModel> createStepScan(int... size) throws Exception {

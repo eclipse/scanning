@@ -30,7 +30,6 @@ import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.remote.QueueRequest;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.event.queues.Queue;
-import org.eclipse.scanning.event.remote._Queue;
 
 public class MockRequester<T extends IdBean> implements IRequester<T> {
 	

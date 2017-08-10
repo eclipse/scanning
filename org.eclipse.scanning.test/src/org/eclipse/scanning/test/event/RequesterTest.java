@@ -14,7 +14,6 @@ package org.eclipse.scanning.test.event;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -26,7 +25,6 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.Session;
 import javax.jms.Topic;
 
-import org.eclipse.dawnsci.json.MarshallerService;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.event.EventConstants;
 import org.eclipse.scanning.api.event.EventException;
@@ -42,24 +40,19 @@ import org.eclipse.scanning.api.event.scan.DeviceAction;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.event.scan.DeviceRequest;
 import org.eclipse.scanning.api.event.scan.DeviceState;
+import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.event.Constants;
 import org.eclipse.scanning.event.EventServiceImpl;
-import org.eclipse.scanning.example.classregistry.ScanningExampleClassRegistry;
 import org.eclipse.scanning.example.detector.MandelbrotDetector;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;
-import org.eclipse.scanning.points.classregistry.ScanningAPIClassRegistry;
-import org.eclipse.scanning.points.serialization.PointsModelMarshaller;
 import org.eclipse.scanning.sequencer.RunnableDeviceServiceImpl;
 import org.eclipse.scanning.server.servlet.DeviceServlet;
 import org.eclipse.scanning.server.servlet.Services;
 import org.eclipse.scanning.test.BrokerTest;
-import org.eclipse.scanning.test.ScanningTestClassRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 /**
  * Class to test that we can run 
