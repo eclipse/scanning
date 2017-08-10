@@ -66,7 +66,7 @@ class ScannableContentProvider implements IStructuredContentProvider, IPositionL
 				try {
 					register(name, cservice.getScannable(name));
 				} catch (ScanningException e) {
-					logger.error("Cannot add scannable to monitor view", e);
+					logger.error("Cannot add scannable '"+name+"' to monitor view", e);
 				}
 			}
         }
