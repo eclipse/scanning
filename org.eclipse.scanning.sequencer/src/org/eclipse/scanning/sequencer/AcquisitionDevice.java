@@ -525,7 +525,10 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	private void fireStart(int size) throws Exception {
 		// Setup the bean to sent
-		getBean().setSize(size);	        
+		getBean().setSize(size);	 
+		ScanInformation scanInfo = getModel().getScanInformation();
+        getBean().setStartTime(System.currentTimeMillis());
+        getBean().setEstimatedTime(scanInfo.getEstimatedScanTime());
 		getBean().setPreviousStatus(getBean().getStatus());
 		getBean().setStatus(Status.RUNNING);
 		

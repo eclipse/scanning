@@ -39,6 +39,8 @@ public class StatusBean extends IdBean {
 	protected double percentComplete;
 	protected String userName;
 	protected String hostName;
+	protected long estimatedTime;
+	protected long startTime;
 	
 	/**
 	 * Directory of rerun, may be null
@@ -82,6 +84,8 @@ public class StatusBean extends IdBean {
         this.message         = with.message;
         this.runDirectory    = with.runDirectory;
         this.properties      = with.properties;
+        this.startTime       = with.startTime;
+        this.estimatedTime   = with.estimatedTime;
 	}
 
 	
@@ -109,6 +113,23 @@ public class StatusBean extends IdBean {
 	public void setPercentComplete(double percentComplete) {
 		this.percentComplete = percentComplete;
 	}
+
+	public long getStartTime() {
+		return startTime;
+	}
+
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
+	
+	public long getEstimatedTime() {
+		return estimatedTime;
+	}
+
+	public void setEstimatedTime(long estimatedTime) {
+		this.estimatedTime = estimatedTime;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -237,6 +258,8 @@ public class StatusBean extends IdBean {
 				+ ", percentComplete=" + percentComplete + ", userName="
 				+ userName + ", hostName=" + hostName + ", runDirectory="
 				+ runDirectory + ", submissionTime=" + submissionTime
+				+ ", startTime=" + startTime
+				+ ", estimatedTime=" + estimatedTime
 				+ ", properties=" + properties
 		        + ", id=" + getUniqueId() + "]";
 	}
