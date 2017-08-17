@@ -36,11 +36,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * Monitors an expression of scannables and if one of the values changes, reevaluates the
  * expression.
- * 
- 
+ *
+
   Example XML configuration
     <pre>
     {@literal <!--  Watchdog Expression Example -->}
@@ -54,12 +54,12 @@ import org.slf4j.LoggerFactory;
     {@literal   <property name="bundle"       value="org.eclipse.scanning.sequencer" /> <!-- Delete for real spring? -->}
 	{@literal </bean>}
 
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class ExpressionWatchdog extends AbstractWatchdog implements IPositionListener {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(ExpressionWatchdog.class);
 
 	private IExpressionEngine engine;
@@ -76,6 +76,7 @@ public class ExpressionWatchdog extends AbstractWatchdog implements IPositionLis
 		super(model);
 	}
 
+	@Override
 	String getId() {
 		return model.getExpression();
 	}
@@ -83,9 +84,11 @@ public class ExpressionWatchdog extends AbstractWatchdog implements IPositionLis
 	/**
 	 * Called on a thread when the position changes.
 	 */
+	@Override
 	public void positionChanged(PositionEvent evt) {
 		checkPosition(evt.getPosition());
 	}
+	@Override
 	public void positionPerformed(PositionEvent evt) {
 		checkPosition(evt.getPosition());
 	}
@@ -93,25 +96,25 @@ public class ExpressionWatchdog extends AbstractWatchdog implements IPositionLis
 	private void checkPosition(IPosition pos) {
 		try {
 			if (engine==null) return;
-			
+
 			if (pos.getNames().size()!=1) return;
 			String name = pos.getNames().get(0);
 			engine.addLoadedVariable(name, pos.get(name));
 			checkExpression(true);
-					
+
 		} catch (Exception ne) {
 			logger.error("Cannot process position "+pos, ne);
-		}	
+		}
 	}
-	
+
 	private boolean checkExpression(boolean requirePause) throws Exception {
 		Boolean ok = engine.evaluate();
-		
+
 		if (requirePause) {
-			
+
 			if (!ok) {
 			    controller.pause(getId(), model); // Will not pause if already paused.
-				
+
 			} else {
 				if (lastCompletedPoint!=null) {
 					controller.seek(getId(), lastCompletedPoint.getStepIndex());
@@ -121,52 +124,52 @@ public class ExpressionWatchdog extends AbstractWatchdog implements IPositionLis
 		}
 		return ok;
 	}
-	
+
 	@ScanStart
 	public void start(ScanBean bean, IPosition firstPosition) throws ScanningException {
-		
+
 		logger.debug("Expression Watchdog starting on "+controller.getName());
 		try {
 		    this.engine = getExpressionService().getExpressionEngine();
-		    
+
 		    engine.createExpression(model.getExpression()); // Parses expression, may send exception on syntax
 		    Collection<String> names = engine.getVariableNamesFromExpression();
 		    this.scannables = new ArrayList<>(names.size());
 		    for (String name : names) {
 				IScannable<?> scannable = getScannable(name);
 				scannables.add(scannable);
-				
+
 			    if (!(scannable instanceof IPositionListenable)) throw new ScanningException(name+" is not a position listenable!");
 
 				engine.addLoadedVariable(scannable.getName(), scannable.getPosition());
 		    }
-		    
+
 		    // Check it
 		    boolean ok = checkExpression(false);
 		    if (!ok) {
 		    	throw new ScanningException(model.getMessage()+". The expression '"+model.getExpression()+"' is false and a scan may not be run!");
 		    }
-		    
+
 		    // Listen to it
 		    for (IScannable<?> scannable : scannables) {
 			    ((IPositionListenable)scannable).addPositionListener(this);
 			}
-		    
+
 		    checkPosition(firstPosition);
-		    
+
 		    logger.debug("Expression Watchdog started on "+controller.getName());
 		} catch (ScanningException ne) {
 			throw ne; // If there is something badly wrong a proper scanning exception will be prepared and thrown
 		} catch (Exception ne) {
 			logger.error("Cannot start watchdog!", ne);
 		}
-	} 
-	
+	}
+
 	@PointEnd
 	public void pointEnd(IPosition done) {
 		this.lastCompletedPoint = done;
 	}
-	
+
 	@ScanFinally
 	public void stop() {
 		logger.debug("Expression Watchdog stopping on "+controller.getName());
@@ -176,16 +179,16 @@ public class ExpressionWatchdog extends AbstractWatchdog implements IPositionLis
 			}
 			scannables.clear();
 			engine = null;
-		    
+
 		} catch (Exception ne) {
 			logger.error("Cannot stop watchdog!", ne);
 		}
 		logger.debug("Expression Watchdog stopped on "+controller.getName());
 	}
-	
-	
+
+
 	private BundleContext bcontext;
-	
+
 	public IExpressionService getExpressionService() {
 		if (expressionService==null) {
 			ServiceReference<IExpressionService> ref = bcontext.getServiceReference(IExpressionService.class);
@@ -199,7 +202,7 @@ public class ExpressionWatchdog extends AbstractWatchdog implements IPositionLis
 	public static void setTestExpressionService(ServerExpressionService eservice) {
 		expressionService = eservice;
 	}
-	
+
 	public void start(ComponentContext context) {
 		this.bcontext = context.getBundleContext();
 	}

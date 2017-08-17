@@ -38,15 +38,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(PublisherImpl.class);
-	
-	// JMS things, these are null when not running and 
+
+	// JMS things, these are null when not running and
 	// are cleaned up at the end of a run.
 	private MessageProducer scanProducer, heartbeatProducer;
 	private boolean         alive;
 	private String          queueName;
-	
+
 	private IConsumer<?> consumer;
 
 	private PrintStream     out;
@@ -57,7 +57,7 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 
 	@Override
 	public synchronized void broadcast(T bean) throws EventException {
-		
+
 		try {
 		    if (getTopicName()!=null) {
 		    	if (scanProducer==null) {
@@ -78,27 +78,27 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 
 		} catch (JMSException ne) {
 			throw new EventException("Unable to start the scan producer using uri "+uri+" and topic "+getTopicName(), ne);
-			
+
 		} catch (Exception neOther) {
 			throw new EventException("Unable to prepare and send the event "+bean, neOther);
 		}
 	}
-	
+
 	protected void send(MessageProducer producer, Object message, long messageLifetime)  throws Exception {
 
 		int priority = message instanceof ConsumerCommandBean ? 8 : 4;
-	
+
 		String json = service.marshal(message);
 		TextMessage msg = createTextMessage(json);
-		producer.send(msg, DeliveryMode.NON_PERSISTENT, priority, messageLifetime);	
+		producer.send(msg, DeliveryMode.NON_PERSISTENT, priority, messageLifetime);
 		if (out!=null) out.println(json);
 	}
-	
+
 	private TextMessage createTextMessage(String json) throws JMSException {
-		
+
 		if (connection==null) createConnection();
 		if (session == null)  createSession();
-		
+
 		TextMessage message = null;
 		try {
 			message = session.createTextMessage(json);
@@ -110,41 +110,43 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
         return message;
 	}
 
+	@Override
 	public boolean isAlive() {
 		return alive;
 	}
-	
+
 	private volatile HeartbeatBean lastBeat;
 
 	private boolean statusSetAddRequired = false;
 
 	@Override
 	public void setAlive(boolean alive) throws EventException {
-		
+
 		boolean wasAlive = this.alive;
 		this.alive = alive;
-		
+
 		if (alive) {
 			try {
 				if (heartbeatProducer==null) heartbeatProducer = createProducer(getTopicName());
 			} catch (JMSException ne) {
 				throw new EventException("Unable to start the heartbeat producer using uri "+uri+" and topic "+getTopicName());
 			}
-			
+
 			Thread aliveThread = new Thread(new Runnable() {
+				@Override
 				public void run() {
 
 					long waitTime = 0;
-					
+
 					HeartbeatBean beat = new HeartbeatBean();
 					beat.setConceptionTime(System.currentTimeMillis());
-					
+
 					// Here we are sending the message out to the topic
 					while(isAlive()) {
 						try {
-							
+
 							// Sleep for a bit
-							Thread.sleep(Constants.getNotificationFrequency());		
+							Thread.sleep(Constants.getNotificationFrequency());
 
 			                // The producer might need to be reconnected.
 							if (heartbeatProducer==null) heartbeatProducer = createProducer(getTopicName());
@@ -159,27 +161,27 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 
 							send(heartbeatProducer, beat, Math.round(Constants.getNotificationFrequency()*2.5));
 							lastBeat = beat;
-							
-							waitTime = 0; // We sent something		
+
+							waitTime = 0; // We sent something
 
 						} catch (Exception ne) {
-								
+
 							heartbeatProducer = null;
 							connection = null;
 							session    = null;
-							
+
 							waitTime+=Constants.getNotificationFrequency();
 							if (waitTime>Constants.getTimeout()) {
 								logger.error("Connection to URI "+uri+" is non-viable, no hearbeats will be sent.");
 							    PublisherImpl.this.alive = false;
 								return;
 							}
-							
+
 			        		logger.warn("Event publisher heartbeat connection to "+uri+" lost.");
 			        		logger.warn("We will check every 2 seconds for 24 hours, until it comes back.");
-			        		
-							continue;							
-						} 
+
+							continue;
+						}
 					}
 				}
 			});
@@ -187,16 +189,16 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 			aliveThread.setDaemon(true);
 			aliveThread.setPriority(Thread.MIN_PRIORITY);
 			aliveThread.start();
-			
+
 		} else {
 			if (wasAlive) { // Might never have been a heartbeat publisher.
 				try {
-					Thread.sleep(Constants.getNotificationFrequency()+100); // Make sure dead			
+					Thread.sleep(Constants.getNotificationFrequency()+100); // Make sure dead
 					if (lastBeat!=null) {
 						lastBeat.setConsumerStatus(ConsumerStatus.STOPPED);
 					    send(heartbeatProducer, lastBeat, Math.round(Constants.getNotificationFrequency()*2.5));
 					}
-					
+
 				} catch (Exception ne) {
 					throw new EventException("Cannot send termination message!", ne);
 				}
@@ -217,37 +219,40 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 			if (scanProducer!=null)      scanProducer.close();
 			if (heartbeatProducer!=null) heartbeatProducer.close();
 			consumer = null;
-			
+
 			super.disconnect();
-			
+
 		} catch (JMSException ne) {
 			throw new EventException("Internal error - unable to close connection!", ne);
-		
+
 		} finally {
 			scanProducer = null;
 			heartbeatProducer = null;
 		}
 	}
 
+	@Override
 	public String getStatusSetName() {
 		return queueName;
 	}
 
+	@Override
 	public void setStatusSetName(String queueName) {
 		this.queueName = queueName;
 	}
+	@Override
 	public void setStatusSetAddRequired(boolean isRequired) {
 		this.statusSetAddRequired  = isRequired;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param bean
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	private boolean updateSet(T bean) throws Exception {
-		
-		
+
+
 		Queue     queue = createQueue(getStatusSetName());
 		QueueBrowser qb = qSession.createBrowser(queue);
 
@@ -294,16 +299,16 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 					t.setJMSTimestamp(m.getJMSTimestamp());
 					t.setJMSPriority(m.getJMSPriority());
 					t.setJMSCorrelationID(m.getJMSCorrelationID());
-		
+
 					producer.send(t);
 				} finally {
 				    producer.close();
 				}
-				
+
 				return true;
 			}
 		}
-		
+
 		if (statusSetAddRequired) { // It wasn't found so we will add it.
 			MessageProducer producer = session.createProducer(queue);
 			try {
@@ -317,7 +322,7 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 
 				TextMessage message = session.createTextMessage(json);
 				producer.send(message);
-				
+
 			} finally {
 				producer.close();
 			}
@@ -327,13 +332,14 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 
 		return false;
 	}
-	
+
+	@Override
 	protected boolean isSame(Object qbean, Object bean) {
-		
+
         if (qbean instanceof PauseBean && bean instanceof PauseBean) {
         	PauseBean q = (PauseBean)qbean;
         	PauseBean b = (PauseBean)bean;
-        	
+
         	if (q.getConsumerId()!=null && q.getConsumerId().equals(b.getConsumerId())) return true;
         	if (q.getQueueName()!=null  && q.getQueueName().equals(b.getQueueName()))   return true;
         }

@@ -58,19 +58,19 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A view which shows the active consumers available to process commands.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class ConsumerView extends EventConnectionView {
-	
+
 	public static final String ID = "org.eclipse.scanning.event.ui.consumerView";
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ConsumerView.class);
-	
+
 	// UI
 	private TableViewer                       viewer;
-	
+
 	// Data
 	private Map<String, HeartbeatBean>        consumers;
 
@@ -78,14 +78,14 @@ public class ConsumerView extends EventConnectionView {
 	private ISubscriber<IBeanListener<ConsumerBean>> oldBeat;
 
 	private IEventService service;
-	
+
 	public ConsumerView() {
 		this.service = ServiceHolder.getEventService();
 	}
-	
+
 	@Override
 	public void createPartControl(Composite content) {
-		
+
 		content.setLayout(new GridLayout(1, false));
 		Util.removeMargins(content);
 
@@ -93,95 +93,99 @@ public class ConsumerView extends EventConnectionView {
 		viewer.setUseHashlookup(true);
 		viewer.getTable().setHeaderVisible(true);
 		viewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		
+
 		createColumns();
 		viewer.setContentProvider(createContentProvider());
-		
+
 		consumers = new ConcurrentHashMap<>();
-		viewer.setInput(consumers);	
-		
+		viewer.setInput(consumers);
+
         createActions();
         try {
 			createTopicListener(new URI(Activator.getJmsUri()));
 		} catch (Exception e) {
 			logger.error("Cannot listen to topic of command server!", e);
 		}
-        
+
         final String partName = getSecondaryIdAttribute("partName");
         if (partName!=null) setPartName(partName);
 	}
-	
+
 	/**
 	 * Listens to a topic
 	 */
 	private void createTopicListener(final URI uri) throws Exception {
-		
+
 		// Use job because connection might timeout.
 		final Job topicJob = new Job("Create topic listener") {
 
 			@SuppressWarnings("deprecation")
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				try {					
+				try {
 					heartMonitor = service.createSubscriber(uri, IEventService.HEARTBEAT_TOPIC);
 					heartMonitor.addListener(new IHeartbeatListener() {
 						@Override
 						public void heartbeatPerformed(HeartbeatEvent evt) {
-							
+
 							HeartbeatBean bean = evt.getBean();
 	        				bean.setLastAlive(System.currentTimeMillis());
 	        				sync(bean);
 						}
 
 					});
-					
+
 					// This subscriber should be removed around DAWN 2.2 please. There will not be
 					// any more old consumers doing this then.
 					oldBeat = service.createSubscriber(uri, "scisoft.commandserver.core.ALIVE_TOPIC");
 					oldBeat.addListener(new IBeanListener<ConsumerBean>() {
 						// Old heartbeat
+						@Override
 						public void beanChangePerformed(BeanEvent<ConsumerBean> evt) {
-							
+
 							ConsumerBean cbean = evt.getBean();
 							HeartbeatBean bean  = cbean.toHeartbeat();
 	        				bean.setLastAlive(System.currentTimeMillis());
 	        				sync(bean);
 						}
-                        public Class<ConsumerBean> getBeanClass() {
+                        @Override
+						public Class<ConsumerBean> getBeanClass() {
                         	return ConsumerBean.class;
                         }
 					});
-					
+
 					return Status.OK_STATUS;
-			        
+
 				} catch (Exception ne) {
 					logger.error("Cannot listen to topic changes because command server is not there", ne);
 			        return Status.CANCEL_STATUS;
 				}
 			}
-			
-			
+
+
 		};
-		
+
 		topicJob.setPriority(Job.INTERACTIVE);
 		topicJob.setSystem(true);
 		topicJob.setUser(false);
 		topicJob.schedule();
 	}
-	
+
 	private void sync(HeartbeatBean bean) {
-		
+
 		HeartbeatBean old = consumers.put(bean.getUniqueId(), bean);
 		if (!bean.equalsIgnoreLastAlive(old)) {
 			viewer.getControl().getDisplay().syncExec(new Runnable() {
+				@Override
 				public void run () {
 					viewer.refresh();
 				}
 			});
-		}					
+		}
 	}
 
-	
+
+	@Override
 	public void dispose() {
 		super.dispose();
 		try {
@@ -198,8 +202,9 @@ public class ConsumerView extends EventConnectionView {
 
 	private void createActions() {
 		final IContributionManager man = getViewSite().getActionBars().getToolBarManager();
-	
+
 		final Action refresh = new Action("Refresh", Activator.getImageDescriptor("icons/arrow-circle-double-135.png")) {
+			@Override
 			public void run() {
 				consumers.clear();
 				try {
@@ -210,38 +215,40 @@ public class ConsumerView extends EventConnectionView {
 				viewer.refresh();
 			}
 		};
-		
+
 		man.add(refresh);
 
 		final Action restart = new Action("Restart consumer", Activator.getImageDescriptor("icons/control-power.png")) {
+			@Override
 			public void run() {
 				restart();
 			}
 		};
 		man.add(restart);
-	
+
 		Action stop = null;
 		if (Boolean.getBoolean("org.eclipse.scanning.consumer.view.showHardStop")) {
 		    stop = new Action("Stop consumer", Activator.getImageDescriptor("icons/terminate.png")) {
+				@Override
 				public void run() {
 					stop();
 				}
 			};
 		}
-		
+
 		if (stop!=null) man.add(stop);
 
 		final MenuManager menuMan = new MenuManager();
 		menuMan.add(refresh);
 		menuMan.add(restart);
 		if (stop!=null) menuMan.add(stop);
-		
+
 		viewer.getControl().setMenu(menuMan.createContextMenu(viewer.getControl()));
-		
+
 	}
-	
+
 	private void stop() {
-				
+
 	    HeartbeatBean bean = getSelection();
 	    if (bean==null) return;
 
@@ -249,12 +256,12 @@ public class ConsumerView extends EventConnectionView {
 				                                                                      + "Are you sure that you want to do this?\n\n"
 				                                                                      + "(NOTE: Long running jobs can be terminated without stopping the consumer!)");
 	    if (!ok) return;
-	    
-	    
+
+
 	    boolean notify = MessageDialog.openQuestion(getSite().getShell(), "Warn Users", "Would you like to warn users before stopping the consumer?\n\n"
 						                        + "If you say yes, a popup will open on users clients to warn about the imminent stop.");
         if (notify) {
-        	
+
         	final AdministratorMessage msg = new AdministratorMessage();
         	msg.setTitle("'"+bean.getConsumerName()+"' will shutdown.");
         	msg.setMessage("'"+bean.getConsumerName()+"' is about to shutdown.\n\n"+
@@ -276,23 +283,23 @@ public class ConsumerView extends EventConnectionView {
 		send(bean, kbean);
 
 	}
-	
+
 	private void restart() {
-		
+
 	    HeartbeatBean bean = getSelection();
 	    if (bean==null) return;
-	    
+
 	    boolean ok = MessageDialog.openConfirm(getSite().getShell(), "Confirm Retstart", "If you restart this consumer other people's running jobs may be lost.\n\n"
 				                                                                      + "Are you sure that you want to continue?");
 	    if (!ok) return;
-	    
+
 	    final KillBean kbean = new KillBean();
 	    kbean.setExitProcess(false);
 		kbean.setMessage("Requesting a restart of "+bean.getConsumerName());
 	    kbean.setConsumerId(bean.getConsumerId());
 	    kbean.setRestart(true);
-		send(bean, kbean); 
-		
+		send(bean, kbean);
+
 		consumers.clear();
         viewer.refresh();
 		try {
@@ -320,21 +327,22 @@ public class ConsumerView extends EventConnectionView {
 
 	private IContentProvider createContentProvider() {
 		return new IStructuredContentProvider() {
-			
+
 			@Override
 			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 			}
-			
+
 			@Override
 			public void dispose() {
 				if (consumers!=null) consumers.clear();
 			}
-			
+
 			@Override
 			public Object[] getElements(Object inputElement) {
 				if (consumers==null) return new HeartbeatBean[]{HeartbeatBean.EMPTY};
 				final List<HeartbeatBean> beats = new ArrayList<>(consumers.values());
 				Collections.sort(beats, new Comparator<HeartbeatBean>() {
+					@Override
 					public int compare(HeartbeatBean o1, HeartbeatBean o2) {
 						return (int)(o2.getConceptionTime()-o1.getConceptionTime());
 					}
@@ -347,29 +355,31 @@ public class ConsumerView extends EventConnectionView {
 	private final static long HOUR_IN_MS = 60*60*1000;
 
 	protected void createColumns() {
-		
+
 		final TableViewerColumn name = new TableViewerColumn(viewer, SWT.LEFT);
 		name.getColumn().setText("Name");
 		name.getColumn().setWidth(300);
 		name.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				return ((HeartbeatBean)element).getConsumerName();
 			}
 		});
-		
+
 		final TableViewerColumn status = new TableViewerColumn(viewer, SWT.CENTER);
 		status.getColumn().setText("Status");
 		status.getColumn().setWidth(100);
 		status.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				final HeartbeatBean cbean = (HeartbeatBean)element;
 				ConsumerStatus status = cbean.getConsumerStatus();
-				
+
 				if (status==ConsumerStatus.ALIVE) {
-					if (cbean.getLastAlive()>(System.currentTimeMillis()-UIConstants.NOTIFICATION_FREQUENCY*10) && 
+					if (cbean.getLastAlive()>(System.currentTimeMillis()-UIConstants.NOTIFICATION_FREQUENCY*10) &&
 						cbean.getLastAlive()<(System.currentTimeMillis()-UIConstants.NOTIFICATION_FREQUENCY*2)) {
 						status = ConsumerStatus.STOPPING;
-						
+
 					} else if (cbean.getLastAlive()<(System.currentTimeMillis()-UIConstants.NOTIFICATION_FREQUENCY*10)) {
 						status = ConsumerStatus.STOPPED;
 					}
@@ -382,6 +392,7 @@ public class ConsumerView extends EventConnectionView {
 		startDate.getColumn().setText("Date Started");
 		startDate.getColumn().setWidth(150);
 		startDate.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				try {
 					return DateFormat.getDateTimeInstance().format(new Date(((HeartbeatBean)element).getConceptionTime()));
@@ -390,11 +401,12 @@ public class ConsumerView extends EventConnectionView {
 				}
 			}
 		});
-		
+
 		final TableViewerColumn host = new TableViewerColumn(viewer, SWT.CENTER);
 		host.getColumn().setText("Host");
 		host.getColumn().setWidth(150);
 		host.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				try {
 					return ((HeartbeatBean)element).getHostName();
@@ -404,11 +416,12 @@ public class ConsumerView extends EventConnectionView {
 			}
 		});
 
-		
+
 		final TableViewerColumn lastAlive = new TableViewerColumn(viewer, SWT.CENTER);
 		lastAlive.getColumn().setText("Last Alive");
 		lastAlive.getColumn().setWidth(150);
 		lastAlive.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				try {
 					return DateFormat.getDateTimeInstance().format(new Date(((HeartbeatBean)element).getLastAlive()));
@@ -422,6 +435,7 @@ public class ConsumerView extends EventConnectionView {
 		age.getColumn().setText("Age");
 		age.getColumn().setWidth(150);
 		age.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				try {
 					final HeartbeatBean cbean = (HeartbeatBean)element;

@@ -32,7 +32,7 @@ public class Activator extends AbstractUIPlugin implements IServiceResolver {
 	// The shared instance
 	private static Activator plugin;
 	private BundleContext context;
-	
+
 	/**
 	 * The constructor
 	 */
@@ -43,6 +43,7 @@ public class Activator extends AbstractUIPlugin implements IServiceResolver {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
+	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
@@ -53,6 +54,7 @@ public class Activator extends AbstractUIPlugin implements IServiceResolver {
 	 * (non-Javadoc)
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#stop(org.osgi.framework.BundleContext)
 	 */
+	@Override
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
 		this.context = null;
@@ -67,7 +69,7 @@ public class Activator extends AbstractUIPlugin implements IServiceResolver {
 	public static Activator getDefault() {
 		return plugin;
 	}
-	
+
 	private static IPreferenceStore store;
 	public static IPreferenceStore getStore() {
 		if (plugin!=null) return plugin.getPreferenceStore();
@@ -78,7 +80,7 @@ public class Activator extends AbstractUIPlugin implements IServiceResolver {
 	public static ImageDescriptor getImageDescriptor(String path) {
 		if (plugin==null) {
 			final ImageData data = new ImageData("../"+PLUGIN_ID+"/"+path);
-			return new ImageDescriptor() {				
+			return new ImageDescriptor() {
 				@Override
 				public ImageData getImageData() {
 					return data;

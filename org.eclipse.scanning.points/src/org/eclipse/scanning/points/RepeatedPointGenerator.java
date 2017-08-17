@@ -24,11 +24,11 @@ import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
 
 class RepeatedPointGenerator extends AbstractGenerator<RepeatedPointModel> implements IDeviceDependentIterable {
-	
+
 	RepeatedPointGenerator() {
 		setLabel("Repeat");
 		setDescription("Repeats a point a given number of times.");
-		setIconPath("icons/scanner--repeat.png"); // This icon exists in the rendering bundle 
+		setIconPath("icons/scanner--repeat.png"); // This icon exists in the rendering bundle
 	}
 
 	@Override
@@ -51,18 +51,20 @@ class RepeatedPointGenerator extends AbstractGenerator<RepeatedPointModel> imple
 	/**
 	 * Provide the names of the scannables at each position without making
 	 * an iterator.
-	 * 
+	 *
 	 * @return
 	 */
+	@Override
 	public List<String> getScannableNames() {
 		return Arrays.asList(model.getName());
 	}
 
-	
+
+	@Override
 	public boolean isScanPointGeneratorFactory() {
 		return false;
 	}
-	
+
 	@Override
 	public IPosition getFirstPoint() {
 		return new Scalar<>(model.getName(), 0, model.getValue());

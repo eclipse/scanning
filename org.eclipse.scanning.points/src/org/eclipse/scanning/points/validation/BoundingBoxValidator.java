@@ -17,7 +17,8 @@ import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 
 class BoundingBoxValidator implements IValidator<BoundingBox> {
-	
+
+	@Override
 	public void validate(BoundingBox model) throws ValidationException {
         if (model.getFastAxisLength()==0)  throw new ModelValidationException("The length must not be 0!", model, "fastAxisLength");
         if (model.getSlowAxisLength()==0)  throw new ModelValidationException("The length must not be 0!", model, "slowAxisLength");

@@ -23,31 +23,33 @@ public class RepeatedPointModel extends AbstractPointsModel {
 
 	@FieldDescriptor(label="Device", device=DeviceType.SCANNABLE, fieldPosition=1)
 	private String name;
-	
+
 	@FieldDescriptor(label="Value", scannable="name", hint="The value to set the scannable to at each point.", fieldPosition=2)
 	private double value;
 
 	@FieldDescriptor(label="Count", hint="Number of points to generate", minimum=1, maximum=10000, fieldPosition=3)
 	private int count;
-	
+
 	@FieldDescriptor(label="Sleep", hint="Sleep time between points, if any", minimum=1, maximum=10000, fieldPosition=4)
 	private long sleep;
 
 	public RepeatedPointModel() {
-		
+
 	}
-	
+
 	public RepeatedPointModel(String name, int count, double value, long sleep) {
 		this.name  = name;
 		this.count = count;
 		this.value = value;
 		this.sleep = sleep;
 	}
-	
+
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

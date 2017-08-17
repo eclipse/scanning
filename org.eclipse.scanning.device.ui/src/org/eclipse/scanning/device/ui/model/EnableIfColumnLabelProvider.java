@@ -24,10 +24,11 @@ class EnableIfColumnLabelProvider extends ColumnLabelProvider {
 
 	private Font  italic;
 
-	
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.jface.viewers.IColorProvider#getBackground(java.lang.Object)
 	 */
+	@Override
 	public Color getForeground(Object ofield) {
 		if (ofield == null) return null;
 
@@ -38,6 +39,7 @@ class EnableIfColumnLabelProvider extends ColumnLabelProvider {
 			return Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
 		}
 	}
+	@Override
 	public Font getFont(Object ofield) {
 		if (ofield == null) return null;
 
@@ -65,6 +67,7 @@ class EnableIfColumnLabelProvider extends ColumnLabelProvider {
 	}
 
 
+	@Override
 	public void dispose() {
 		if (italic!=null)   italic.dispose();
         super.dispose();

@@ -20,30 +20,30 @@ import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.PositionEvent;
 
 /**
- * 
+ *
  * A location is a json object for notifying over JMS
- * the value of an IScannable. We do not use IPosition 
+ * the value of an IScannable. We do not use IPosition
  * directly because this does not have all the information
- * required. A location may be a transient state which a 
+ * required. A location may be a transient state which a
  * motor is moving through or a notifcation of an intent
- * to move. It can be thought of as a PositionEvent 
+ * to move. It can be thought of as a PositionEvent
  * encapsulated in a single JSON object and with context
  * information.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class Location implements INameable {
-	
+
 	/**
-	 * Must match method names in IPositionListener as reflection used on the value to 
+	 * Must match method names in IPositionListener as reflection used on the value to
 	 * call the correct method on the listener.
 	 */
 	public enum LocationType {
 		positionWillPerform, levelPerformed, positionChanged, positionPerformed;
 	}
 
-	
+
 	private LocationType type;
 	private String       name;
 	private IPosition    position;
@@ -51,18 +51,18 @@ public class Location implements INameable {
 	private List<String> levelNames;
 
 	public Location() {
-		
+
 	}
 	public Location(LocationType t, PositionEvent evnt) {
 		this.type       = t;
 		this.position   = evnt.getPosition();
-		if (position.getNames()!=null&&position.getNames().size()==1) this.name = position.getNames().iterator().next(); 
+		if (position.getNames()!=null&&position.getNames().size()==1) this.name = position.getNames().iterator().next();
 		this.level      = evnt.getLevel();
 		this.levelNames = readLevelNames(evnt.getLevelObjects());
 	}
-	
+
 	private List<String> readLevelNames(List<? extends ILevel> levelObjects) {
-		
+
 		if (levelObjects==null || levelObjects.isEmpty()) return null;
 		List<String> ret = new ArrayList<>();
 		for (ILevel level : levelObjects) {
@@ -76,9 +76,11 @@ public class Location implements INameable {
 	public void setType(LocationType type) {
 		this.type = type;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

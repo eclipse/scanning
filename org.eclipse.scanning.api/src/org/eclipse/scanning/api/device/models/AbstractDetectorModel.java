@@ -17,7 +17,7 @@ import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 public abstract class AbstractDetectorModel implements IDetectorModel, IReflectedModel {
 
 	private long timeout;
-	
+
 	/**
 	 * The name of the detector device
 	 */
@@ -31,10 +31,12 @@ public abstract class AbstractDetectorModel implements IDetectorModel, IReflecte
 	@FieldDescriptor(label="Exposure Time", unit="s", minimum=0)
 	private double exposureTime; // Seconds
 
+	@Override
 	public double getExposureTime() {
 		return exposureTime;
 	}
 
+	@Override
 	public void setExposureTime(double exposureTime) {
 		this.exposureTime = exposureTime;
 	}
@@ -72,11 +74,13 @@ public abstract class AbstractDetectorModel implements IDetectorModel, IReflecte
 		return true;
 	}
 
+	@Override
 	@UiReadOnly
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -85,7 +89,7 @@ public abstract class AbstractDetectorModel implements IDetectorModel, IReflecte
 	public long getTimeout() {
 		return timeout;
 	}
-	
+
 	@Override
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;

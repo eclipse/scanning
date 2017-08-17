@@ -28,9 +28,9 @@ import org.eclipse.dawnsci.analysis.dataset.roi.PolygonalROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.RectangularROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.SectorROI;
 import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.jython.JythonObjectFactory;
-import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.python.core.PyDictionary;
 import org.python.core.PyList;
 import org.python.core.PyObject;
@@ -113,10 +113,12 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 		}
 	}
 
+	@Override
 	public PyDictionary toDict() {
 		return null;
 	}
-	
+
+	@Override
 	public int size() {
 		return pyIterator.size();
 	}
@@ -130,7 +132,7 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 	public int getRank() {
 		return pyIterator.getRank();
 	}
-	
-	
-	
+
+
+
 }

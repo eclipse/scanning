@@ -21,7 +21,7 @@ import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
 
 public abstract class AbstractControl implements INamedNode {
-	
+
 	// Should not serialize parent.
 	private String parentName;
 	private String name;
@@ -41,25 +41,29 @@ public abstract class AbstractControl implements INamedNode {
 	public void setParentName(String pName) {
 		this.parentName = pName;
 	}
-	
+
 
 	@Override
 	public boolean hasChildren() {
 		return children!=null&&children.length>0;
 	}
 
+	@Override
 	public INamedNode[] getChildren() {
 		return children;
 	}
 
+	@Override
 	public void setChildren(INamedNode[] children) {
 		this.children = children;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -69,6 +73,7 @@ public abstract class AbstractControl implements INamedNode {
 		if (displayName==null) return getName();
 		return displayName;
 	}
+	@Override
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
@@ -113,7 +118,7 @@ public abstract class AbstractControl implements INamedNode {
 	}
 
 	public void addChild(INamedNode child) {
-		
+
 		final INamedNode[] onodes = getChildren();
 		final INamedNode[] nnodes = new INamedNode[onodes!=null ? onodes.length+1 : 1];
 		if (onodes!=null) System.arraycopy(onodes, 0, nnodes, 0, onodes.length);
@@ -133,11 +138,11 @@ public abstract class AbstractControl implements INamedNode {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return
 	 */
 	public IPosition toPosition() {
-		
+
 		MapPosition ret = new MapPosition();
 		toPosition(null, ret);
 		return ret;
@@ -148,13 +153,13 @@ public abstract class AbstractControl implements INamedNode {
 	 * @return
 	 */
 	public IPosition toPosition(IScannableDeviceService cservice) {
-		
+
 		MapPosition ret = new MapPosition();
 		toPosition(cservice, ret);
 		return ret;
 	}
-	
-	
+
+
 	private IPosition toPosition(IScannableDeviceService cservice, MapPosition toFill) {
 		if (this instanceof ControlNode) {
 			ControlNode cnode = (ControlNode)this;
@@ -190,7 +195,7 @@ public abstract class AbstractControl implements INamedNode {
 		return false;
 	}
 
-	
+
 	public <T extends INamedNode> T findChild(String name) {
 		if (children!=null) for (INamedNode child : children) {
 			if (child.getName().equals(name)) return (T)child;

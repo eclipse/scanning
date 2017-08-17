@@ -22,18 +22,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * @author Matthew Gerring
  *
  */
 abstract class AbstractRemoteService implements IDisconnectable, Closeable {
 
 	protected static final Logger logger = LoggerFactory.getLogger(AbstractRemoteService.class);
-	
+
 	protected IEventService eservice;
 	protected URI uri;
 	private boolean isDisconnected;
-	
+
 	protected AbstractRemoteService() {
 		this.isDisconnected = false;
 	}
@@ -58,9 +58,10 @@ abstract class AbstractRemoteService implements IDisconnectable, Closeable {
 	 * Does nothing, requires override.
 	 */
 	void init() throws EventException {
-		
+
 	}
-	
+
+	@Override
 	public void close() throws IOException {
 		try {
 			disconnect();
@@ -69,6 +70,7 @@ abstract class AbstractRemoteService implements IDisconnectable, Closeable {
 		}
 	}
 
+	@Override
 	public boolean isDisconnected() {
 		return isDisconnected;
 	}

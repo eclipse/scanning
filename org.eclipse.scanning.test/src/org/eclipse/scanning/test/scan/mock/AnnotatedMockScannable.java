@@ -23,18 +23,20 @@ import org.eclipse.scanning.example.scannable.MockScannable;
  *
  */
 public class AnnotatedMockScannable extends MockScannable implements AnnotationRecorder {
-	
+
 
 	public AnnotatedMockScannable(String name, double value) {
 		super(name, value);
 	}
-	
+
 	private Map<Class<? extends Annotation>, Integer> calls = new HashMap<>();
+	@Override
 	public void record(Class<? extends Annotation> method) {
 		if (!calls.containsKey(method)) calls.put(method, 0);
 		calls.put(method, calls.get(method)+1);
 	}
-	
+
+	@Override
 	public int getCount(Class<? extends Annotation> methodName) {
 		Integer val = calls.get(methodName);
 		if (val == null) return 0;

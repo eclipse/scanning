@@ -13,9 +13,9 @@ package org.eclipse.scanning.api.streams;
 
 
 /**
- * 
+ *
  * Convenience class for making IStreamConnection
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
@@ -24,15 +24,19 @@ public abstract class AbstractStreamConnection<T> implements IStreamConnection<T
 
 	private String id;
 	private String label;
+	@Override
 	public String getId() {
 		return id;
 	}
+	@Override
 	public void setId(String id) {
 		this.id = id;
 	}
+	@Override
 	public String getLabel() {
 		return label;
 	}
+	@Override
 	public void setLabel(String label) {
 		this.label = label;
 	}

@@ -41,7 +41,7 @@ public class AxesCellEditor extends CellEditor {
 	private CCombo                  fast, slow;
 	private DelegatingSelectionProvider prov;
 	private List<String>            names;
-	
+
 	public AxesCellEditor(Composite control, DelegatingSelectionProvider prov, IScannableDeviceService cservice) throws ScanningException {
 		super();
 		this.prov   = prov;
@@ -53,28 +53,30 @@ public class AxesCellEditor extends CellEditor {
 
 	@Override
 	protected Control createControl(Composite parent) {
-		
+
         final Composite content = new Composite(parent, SWT.NONE);
         content.setBackground(content.getDisplay().getSystemColor(SWT.COLOR_WHITE));
         content.setLayout(new GridLayout(4, false));
         GridUtils.removeMargins(content);
-        
+
         this.fast = createLabelledCombo(content, "Fast Axis");
         fast.addSelectionListener(new SelectionAdapter() {
-        	public void widgetSelected(SelectionEvent e) {
+        	@Override
+			public void widgetSelected(SelectionEvent e) {
         		if (region!=null) region.getScannables().set(0, fast.getItem(fast.getSelectionIndex()));
         		fireWorkbenchSelection();
         	}
         });
-        
+
         this.slow = createLabelledCombo(content, "Slow Axis");
         slow.addSelectionListener(new SelectionAdapter() {
-        	public void widgetSelected(SelectionEvent e) {
+        	@Override
+			public void widgetSelected(SelectionEvent e) {
         		if (region!=null) region.getScannables().set(1, slow.getItem(slow.getSelectionIndex()));
         		fireWorkbenchSelection();
         	}
         });
-        
+
 		return content;
 
 	}
@@ -84,7 +86,7 @@ public class AxesCellEditor extends CellEditor {
 	}
 
 	private CCombo createLabelledCombo(Composite content, String slabel) {
-		
+
 		Label label = new Label(content, SWT.NONE);
 		label.setBackground(content.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		label.setText("    "+slabel+" ");
@@ -95,7 +97,7 @@ public class AxesCellEditor extends CellEditor {
 		GridData fill = new GridData(SWT.FILL, SWT.CENTER, true, true);
 		fill.widthHint=100;
 		ret.setLayoutData(fill);
-		
+
 		return ret;
 	}
 
@@ -125,7 +127,7 @@ public class AxesCellEditor extends CellEditor {
 	protected void doSetFocus() {
 		if (fast!=null) fast.setFocus();
 	}
-	
+
 	@Override
 	protected void focusLost() {
 		super.focusLost();
@@ -139,7 +141,7 @@ public class AxesCellEditor extends CellEditor {
 		}
 		fast.select(getIndex(region.getScannables().get(0)));
 		slow.select(getIndex(region.getScannables().get(1)));
-		
+
 	}
 
 }

@@ -43,19 +43,19 @@ public class SeekTest extends AbstractAcquisitionTest {
 
 	private File temp;
 	private static INexusFileFactory factory;
-	
+
 	@BeforeClass
 	public static void createFactory() throws Exception {
 		factory = new NexusFileFactoryHDF5();
 		setupServices();
 	}
-	
+
 	@Before
 	public void createFile() throws Exception {
 		temp = File.createTempFile("test_seek", ".nxs");
 		temp.deleteOnExit();
 	}
-	
+
 	@After
 	public void removeFile() throws Exception {
 		temp.delete();
@@ -63,77 +63,77 @@ public class SeekTest extends AbstractAcquisitionTest {
 
 	@Test
 	public void seekFirst() throws Exception {
-		
+
 		IDeviceController controller = createTestScanner(null);
 		AbstractRunnableDevice<ScanModel> scanner = (AbstractRunnableDevice<ScanModel>)controller.getDevice();
-    
+
 		try {
-			scanner.start(null);		
+			scanner.start(null);
 		    scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
-			
+
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();
 			IPosition current = scanner.getPositioner().getPosition();
 			assertNotNull(current);
 			assertNotEquals(first, current);
-			
+
 			scanner.seek(0);
 			current = scanner.getPositioner().getPosition();
 			assertNotNull(current);
 			assertEquals(first.getStepIndex(), current.getStepIndex());
-			
+
 		} finally {
 			scanner.abort();
 		}
 	}
-	
+
 	@Test
 	public void seekFirstNoChangeDatasetShape() throws Exception {
 		checkSeekDataset(0);
 	}
-	
+
 	@Test
 	public void seekSecondNoChangeDatasetShape() throws Exception {
 		checkSeekDataset(2);
 	}
-	
+
 	private void checkSeekDataset(int seekPosition)  throws Exception {
-		
+
 		final String detectorName = "mandelbrot";
 		IDeviceController controller = createTestScanner(sservice.getRunnableDevice(detectorName),
 				                                         0.08,
 				                                         Arrays.asList("xNex", "yNex"),
 				                                         temp.getAbsolutePath());
-		
+
 		AbstractRunnableDevice<ScanModel> scanner = (AbstractRunnableDevice<ScanModel>)controller.getDevice();
-    
+
 		try {
-			scanner.start(null);				
+			scanner.start(null);
 			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
-			
+
 			IPosition current = scanner.getPositioner().getPosition();
 			assertNotNull(current);
-			
+
 			scanner.seek(seekPosition);
 			current = scanner.getPositioner().getPosition();
 			assertNotNull(current);
-			
+
 			IPosition check   = seek(seekPosition, scanner.getModel().getPositionIterable().iterator());
 			assertEquals(check.getStepIndex(), current.getStepIndex());
-			
+
 			// Run to end
 			scanner.resume();
 			scanner.latch(10, TimeUnit.SECONDS);
 
 			NexusFile nf = factory.newNexusFile(temp.getAbsolutePath());
 			nf.openToRead();
-			
+
 			TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 			NXroot rootNode = (NXroot) nexusTree.getGroupNode();
 			NXentry entry = rootNode.getEntry();
 			NXinstrument instrument = entry.getInstrument();
-			
+
 			NXdetector detector = instrument.getDetector(detectorName);
 			assertNotNull(detector);
 
@@ -143,7 +143,7 @@ public class SeekTest extends AbstractAcquisitionTest {
 			assertArrayEquals(new int[]{5, 5, 241, 301}, dataset.getShape());
 
 			nf.close();
-			
+
 		} finally {
 			scanner.abort();
 		}
@@ -166,41 +166,42 @@ public class SeekTest extends AbstractAcquisitionTest {
 
 	@Test
 	public void seekFirstRestartsInCorrectLocation() throws Exception {
-		
+
 		IDeviceController controller = createTestScanner(null);
 		AbstractRunnableDevice<ScanModel> scanner = (AbstractRunnableDevice<ScanModel>)controller.getDevice();
-		
+
 		final List<Integer> steps = new ArrayList<Integer>();
 		scanner.addPositionListener(new IPositionListener() {
+			@Override
 			public void positionPerformed(PositionEvent evt) throws ScanningException {
 				steps.add(evt.getPosition().getStepIndex());
 			}
 		});
 		try {
-			scanner.start(null);		
+			scanner.start(null);
 			boolean ok = scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			assertFalse(ok);
 			scanner.pause();
-			
+
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();
 			IPosition stopped = scanner.getPositioner().getPosition();
 			assertNotNull(stopped);
 			assertNotEquals(first, stopped);
 			assertTrue(stopped.getStepIndex()>0);
 			assertTrue(stopped.getStepIndex()<24);
-			
+
 			scanner.seek(0);
 			IPosition current = scanner.getPositioner().getPosition();
 			assertNotNull(current);
 			assertEquals(first.getStepIndex(), current.getStepIndex());
 			scanner.resume();
 			scanner.latch(10, TimeUnit.SECONDS);
-			
+
 			// The scan should restart from where it is seeked to.
 			// Therefore the steps should be size (25) + stopped.getStepIndex()
 			assertEquals("The scan should restart from where it is seeked to.",
 					     25+stopped.getStepIndex()+1, steps.size());
-			
+
 		} finally {
 			scanner.abort();
 		}
@@ -211,14 +212,14 @@ public class SeekTest extends AbstractAcquisitionTest {
 
 		IDeviceController controller = createTestScanner(null);
 		IRunnableDevice<ScanModel> scanner = (IRunnableDevice<ScanModel>)controller.getDevice();
-    
+
 		try {
-			scanner.start(null);		
+			scanner.start(null);
 			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 
             assertTrue(Services.getRunnableDeviceService().getActiveScanner()!=null);
 			scanner.latch(10, TimeUnit.SECONDS);
-		
+
 		} finally {
 			scanner.abort();
 		}
@@ -231,43 +232,43 @@ public class SeekTest extends AbstractAcquisitionTest {
 
 		IDeviceController controller = createTestScanner(null);
 		AbstractRunnableDevice<ScanModel> scanner = (AbstractRunnableDevice<ScanModel>)controller.getDevice();
-    
+
 		try {
-			scanner.start(null);		
+			scanner.start(null);
 			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
-			
+
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();
 			IPosition current = scanner.getPositioner().getPosition();
 			assertNotNull(current);
 			assertNotEquals(first, current);
-			
+
 			scanner.seek(100); // Too large
-			
+
 		} finally {
 			scanner.abort();
 		}
 
 	}
-	
+
 	@Test(expected=ScanningException.class)
 	public void seekTooSmall() throws Exception {
 
 		IDeviceController controller = createTestScanner(null);
 		AbstractRunnableDevice<ScanModel> scanner = (AbstractRunnableDevice<ScanModel>)controller.getDevice();
-    
+
 		try {
-			scanner.start(null);		
+			scanner.start(null);
 			scanner.latch(200, TimeUnit.MILLISECONDS); // Latch onto the scan, breaking before it is finished.
 			scanner.pause();
-			
+
 			IPosition first   = scanner.getModel().getPositionIterable().iterator().next();
 			IPosition current = scanner.getPositioner().getPosition();
 			assertNotNull(current);
 			assertNotEquals(first, current);
-			
+
 			scanner.seek(-1); // Too large
-			
+
 		} finally {
 			scanner.abort();
 		}

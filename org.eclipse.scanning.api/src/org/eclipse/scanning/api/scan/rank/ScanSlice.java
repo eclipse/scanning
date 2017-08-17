@@ -13,34 +13,35 @@ package org.eclipse.scanning.api.scan.rank;
 
 import java.util.Arrays;
 
-import org.eclipse.scanning.api.scan.rank.IScanSlice;
-
 class ScanSlice implements IScanSlice {
 
 	private int[] start;
 	private int[] stop;
 	private int[] step;
-	
+
 	public ScanSlice() {
-		
+
 	}
 	public ScanSlice(int[] start, int[] stop, int[] step) {
 		this.start = start;
 		this.stop  = stop;
 		this.step  = step;
 	}
+	@Override
 	public int[] getStart() {
 		return start;
 	}
 	public void setStart(int[] start) {
 		this.start = start;
 	}
+	@Override
 	public int[] getStop() {
 		return stop;
 	}
 	public void setStop(int[] stop) {
 		this.stop = stop;
 	}
+	@Override
 	public int[] getStep() {
 		return step;
 	}

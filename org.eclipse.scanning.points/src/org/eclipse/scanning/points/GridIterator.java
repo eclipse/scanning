@@ -34,12 +34,12 @@ class GridIterator extends AbstractScanPointIterator {
 	private final double minY;
 	private final double xStep;
 	private final double yStep;
-	
+
 	private Point currentPoint;
 
 	public GridIterator(GridGenerator gen) {
 		GridModel model = gen.getModel();
-		
+
 		this.columns = model.getFastAxisPoints();
 		this.rows = model.getSlowAxisPoints();
 		this.xName = model.getFastAxisName();
@@ -48,15 +48,15 @@ class GridIterator extends AbstractScanPointIterator {
 		this.yStep = model.getBoundingBox().getSlowAxisLength() / rows;
 		this.minX = model.getBoundingBox().getFastAxisStart() + xStep / 2;
 		this.minY = model.getBoundingBox().getSlowAxisStart() + yStep / 2;
-		
+
 		JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
-        
+
 		ScanPointIterator outerLine = lineGeneratorFactory.createObject(
 				yName, "mm", minY, minY + (rows - 1) * yStep, rows, model.isSnake());
-        
+
 		ScanPointIterator innerLine = lineGeneratorFactory.createObject(
 				xName, "mm", minX, minX + (columns - 1) * xStep, columns, model.isSnake());
-		
+
         Iterator<?>[] generators = {outerLine, innerLine};
 
 		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
@@ -65,7 +65,7 @@ class GridIterator extends AbstractScanPointIterator {
 
 	public GridIterator(RandomOffsetGridGenerator gen) {
 		RandomOffsetGridModel model = (RandomOffsetGridModel) gen.getModel();
-		
+
 		this.columns = model.getFastAxisPoints();
 		this.rows = model.getSlowAxisPoints();
 		this.xName = model.getFastAxisName();
@@ -74,30 +74,30 @@ class GridIterator extends AbstractScanPointIterator {
 		this.yStep = model.getBoundingBox().getSlowAxisLength() / rows;
 		this.minX = model.getBoundingBox().getFastAxisStart() + xStep / 2;
 		this.minY = model.getBoundingBox().getSlowAxisStart() + yStep / 2;
-		
+
         JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
-        
+
 		ScanPointIterator outerLine = lineGeneratorFactory.createObject(
 				yName, "mm", minY, minY + (rows - 1) * yStep, rows);
-        
+
 		ScanPointIterator innerLine = lineGeneratorFactory.createObject(
 				xName, "mm", minX, minX + (columns - 1) * xStep, columns, model.isSnake());
-		
+
         JythonObjectFactory<PyObject> randomOffsetMutatorFactory = ScanPointGeneratorFactory.JRandomOffsetMutatorFactory();
-        
+
         int seed = model.getSeed();
         PyList axes = new PyList(Arrays.asList(new String[] {yName, xName}));
         double offset = xStep * model.getOffset() / 100;
-        
+
         PyDictionary maxOffset = new PyDictionary();
         maxOffset.put(yName, offset);
         maxOffset.put(xName, offset);
-        
+
 		PyObject randomOffset = (PyObject) randomOffsetMutatorFactory.createObject(seed, axes, maxOffset);
-        
+
         Iterator<?>[] generators = {outerLine, innerLine};
         PyObject[] mutators = {randomOffset};
-        
+
 		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
 				new String[] {xName, yName}, mutators);
 	}
@@ -112,14 +112,14 @@ class GridIterator extends AbstractScanPointIterator {
 		this.minY = model.getBoundingBox().getSlowAxisStart();
 		this.columns = (int) Math.floor(model.getBoundingBox().getFastAxisLength() / xStep + 1);
 		this.rows = (int) Math.floor(model.getBoundingBox().getSlowAxisLength() / yStep + 1);
-		
+
 		JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
-        
+
 		ScanPointIterator outerLine = lineGeneratorFactory.createObject(
 				yName, "mm", minY, minY + (rows - 1) * yStep, rows);
 		ScanPointIterator innerLine = lineGeneratorFactory.createObject(
 				xName, "mm", minX, minX + (columns - 1) * xStep, columns, model.isSnake());
-		
+
         Iterator<?>[] generators = {outerLine, innerLine};
 
 		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
@@ -145,10 +145,11 @@ class GridIterator extends AbstractScanPointIterator {
 		}
 		Point point = currentPoint;
 		currentPoint = null;
-		
+
 		return point;
 	}
 
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException("remove");
 	}

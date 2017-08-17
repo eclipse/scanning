@@ -50,6 +50,7 @@ public class SinglePointModel extends AbstractMapModel {
 		this.y = y;
 		this.pcs.firePropertyChange("y", oldValue, y);
 	}
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

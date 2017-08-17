@@ -15,7 +15,7 @@ import org.eclipse.scanning.api.points.IPosition;
 
 /**
  * Designed to model exiting the scan because a certain value is illegal
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -25,8 +25,9 @@ public class MockBeamOnMonitor extends MockScannable {
 		super(string,d,i);
 	}
 
+	@Override
 	public Number setPosition(Number position, IPosition loc) throws Exception {
-		
+
 		final int step = loc.getStepIndex();
 		if (step>0 && step%10==0) { // We wait
 			System.out.println("Beam is deamed to be off ");

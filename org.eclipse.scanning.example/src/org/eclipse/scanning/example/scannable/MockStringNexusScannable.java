@@ -23,7 +23,7 @@ import org.eclipse.scanning.api.scan.rank.IScanSlice;
 public class MockStringNexusScannable extends MockStringScannable implements INexusDevice<NXpositioner> {
 
 	private ILazyWriteableDataset lzValue;
-	
+
 	public MockStringNexusScannable(String name, String pos, String... permittedValues) {
 		super(name, pos, permittedValues);
 	}
@@ -32,10 +32,10 @@ public class MockStringNexusScannable extends MockStringScannable implements INe
 	public NexusObjectProvider<NXpositioner> getNexusProvider(NexusScanInfo info) throws NexusException {
 		final NXpositioner positioner = NexusNodeFactory.createNXpositioner();
 		positioner.setNameScalar(getName());
-		
+
 		if (info.getScanRole(getName()) == ScanRole.MONITOR_PER_SCAN) {
 			try {
-				// note: assume this scannable is a monitor, so no set value dataset created 
+				// note: assume this scannable is a monitor, so no set value dataset created
 				positioner.setValue(DatasetFactory.createFromObject(getPosition()));
 			} catch (Exception e) {
 				throw new NexusException("Could not get value for scannable " + getName(), e);
@@ -45,19 +45,20 @@ public class MockStringNexusScannable extends MockStringScannable implements INe
 			lzValue.setChunking(info.createChunk(false, 8));
 			lzValue.setWritingAsync(true);
 		}
-		
+
 		registerAttributes(positioner, this);
-		
+
 		return new NexusObjectWrapper<>(getName(), positioner, NXpositioner.NX_VALUE);
 	}
-	
+
+	@Override
 	public String setPosition(String value, IPosition position) throws Exception {
 		if (position != null) {
 			write(value, getPosition(), position);
 		}
 		return value;
 	}
-	
+
 	private void write(String demand, String actual, IPosition pos) throws Exception {
 		if (actual != null) {
 			final Dataset newActualValueData = DatasetFactory.createFromObject(actual);
@@ -67,12 +68,12 @@ public class MockStringNexusScannable extends MockStringScannable implements INe
 		}
 		// NOTE: we don't write the demand position as this class is currently only used as a monitor
 	}
-	
+
 	/**
 	 * Add the attributes for the given attribute container into the given nexus object.
 	 * @param positioner
 	 * @param container
-	 * @throws NexusException if the attributes could not be added for any reason 
+	 * @throws NexusException if the attributes could not be added for any reason
 	 */
 	private static void registerAttributes(NXobject nexusObject, IScanAttributeContainer container) throws NexusException {
 		// We create the attributes, if any
@@ -87,5 +88,5 @@ public class MockStringNexusScannable extends MockStringScannable implements INe
 			}
 		}
 	}
-	
+
 }

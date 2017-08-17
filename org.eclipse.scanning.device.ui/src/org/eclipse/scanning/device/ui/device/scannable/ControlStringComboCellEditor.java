@@ -24,14 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class ControlStringComboCellEditor extends ComboBoxCellEditor {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ControlStringComboCellEditor.class);
-		
+
 	private ControlNode controlNode;
 	private ControlViewerMode cmode;
 	private IScannableDeviceService cservice;
 	private ControlValueJob<String> job;
-	
+
 	public ControlStringComboCellEditor(Composite parent, IScannableDeviceService cservice, ControlViewerMode mode, String... permittedValues) {
 		super();
 		setItems(permittedValues);
@@ -46,6 +46,7 @@ final class ControlStringComboCellEditor extends ComboBoxCellEditor {
 		CCombo combo = (CCombo)super.createControl(parent);
 		if (cmode.isDirectlyConnected()) {
 			combo.addSelectionListener(new SelectionAdapter() {
+				@Override
 				public void widgetSelected(SelectionEvent e) {
 					setValue();
 				}
@@ -53,7 +54,7 @@ final class ControlStringComboCellEditor extends ComboBoxCellEditor {
 		}
 		return combo;
 	}
-	
+
 	protected void setValue() {
 		try {
 			CCombo combo = (CCombo)getControl();
@@ -65,7 +66,8 @@ final class ControlStringComboCellEditor extends ComboBoxCellEditor {
 			logger.error("Cannot send value to scannable "+controlNode.getName(), ne);
 		}
 	}
-	
+
+	@Override
 	protected void doSetValue(final Object value) {
 		controlNode = (ControlNode)value;
 		// Need to set the index of the selected item in the superclass method
@@ -80,13 +82,14 @@ final class ControlStringComboCellEditor extends ComboBoxCellEditor {
 		}
 		super.doSetValue(itemIndex);
 	}
-	
+
+	@Override
 	protected Object doGetValue() {
 		final int selectionIndex = ((Integer) super.doGetValue()).intValue();
 		final String stringValue = getItems()[selectionIndex];
 		controlNode.setValue(stringValue);
-		
+
 		return controlNode;
 	}
-	
+
 }

@@ -23,35 +23,35 @@ import org.eclipse.scanning.example.xcen.beans.XcenBean;
  * o Runs Xia2 with file
  * o Progress reported by stating xia2.txt
  * o Runs xia2 html to generate report.
- * 
+ *
  * NOTE:
- * Most of this has been rewritten using examples from DryRunProcess for 
+ * Most of this has been rewritten using examples from DryRunProcess for
  * proper synchronisation, plus corrections and simplifications.
- * 
+ *
  * This is only to produce a correct series of messages when testing. I
  * would not trust this code when running more complicated processes.
  * - Martin
- * 
+ *
  * @author Matthew Gerring
  * @author Martin Gaughran
  *
  */
 public class XcenProcess extends AbstractLockingPausableProcess<XcenBean>{
-	
+
 	private boolean terminated;
 
 	private Thread thread;
-	
+
 	private String processingDir;
-	
+
 	public XcenProcess(XcenBean bean, IPublisher<XcenBean> status) {
-		
+
 		super(bean, status);
-				
+
         final String runDir;
-        
+
         if (bean.getRunDirectory()==null) bean.setRunDirectory("xcenrun");
-               
+
 		if (isWindowsOS()) {
 			// We are likely to be a test consumer, anyway the unix paths
 			// from ISPyB will certainly not work, so we process in C:/tmp/
@@ -62,29 +62,30 @@ public class XcenProcess extends AbstractLockingPausableProcess<XcenBean>{
 
  		final File   xcenDir = getUnique(new File(runDir), "Xcen_", 1);
  		xcenDir.mkdirs();
-		
+
 	    processingDir = xcenDir.getAbsolutePath();
 		bean.setRunDirectory(processingDir);
-		
+
  		try {
 			setLoggingFile(new File(xcenDir, "xcenJavaProcessLog.txt"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		// We record the bean so that reruns of reruns are possible.
 		try {
 			writeProjectBean(processingDir, "xcenBean.json");
 		} catch (Exception e) {
 			e.printStackTrace(out);
 		}
-		
+
 	}
 
 	@Override
 	public void execute() throws EventException, InterruptedException {
-		
+
 		final Thread thread = new Thread(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					XcenProcess.this.run();
@@ -96,11 +97,11 @@ public class XcenProcess extends AbstractLockingPausableProcess<XcenBean>{
 		});
 		thread.setDaemon(true);
 		thread.setPriority(Thread.MAX_PRIORITY);
-		thread.start();	
+		thread.start();
 	}
-	
+
 	private void run()  throws EventException {
-		
+
 		this.thread = Thread.currentThread();
 		getBean().setPreviousStatus(Status.QUEUED);
 		getBean().setStatus(Status.RUNNING);
@@ -108,13 +109,13 @@ public class XcenProcess extends AbstractLockingPausableProcess<XcenBean>{
 
 		terminated = false;
 		for (int i = 0; i < 100; i++) {
-			
+
 			if (isTerminated())	return;
-			
+
 			System.out.println("Dry run : "+getBean().getPercentComplete()+" : "+getBean().getName());
 			getBean().setPercentComplete(i);
 			getPublisher().broadcast(getBean());
-			
+
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
@@ -122,15 +123,15 @@ public class XcenProcess extends AbstractLockingPausableProcess<XcenBean>{
 				System.out.println("Cannot complete dry run");
 				e.printStackTrace();
 			}
-			
+
 			checkPaused();
 		}
-		
+
 		if (!isCancelled()) finishRun();
 	}
-	
+
 	protected void finishRun() throws EventException {
-		
+
 		XcenBean xbean = (XcenBean)bean;
 		xbean.setPreviousStatus(xbean.getStatus());
 		xbean.setStatus(Status.COMPLETE);
@@ -146,8 +147,8 @@ public class XcenProcess extends AbstractLockingPausableProcess<XcenBean>{
 	 * TODO Please implement the running of xcen properly
 	 */
 	protected void runDataCollection() throws EventException {
-		
-		// TODO Run a data collection			
+
+		// TODO Run a data collection
 
 		bean.setStatus(Status.COMPLETE);
 		bean.setMessage("Reconstruction run completed normally");

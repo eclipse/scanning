@@ -72,14 +72,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * Factory for creating editors for FieldValue
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class ModelFieldEditorFactory {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ModelFieldEditorFactory.class);
 
 	private static ISelectionListener selectionListener;
@@ -88,7 +88,7 @@ public class ModelFieldEditorFactory {
 	private IRunnableDeviceService    dservice;
 
 	private ColumnLabelProvider labelProvider;
-	
+
 	public ModelFieldEditorFactory() {
 		try {
 			cservice = ServiceHolder.getRemote(IScannableDeviceService.class);
@@ -97,25 +97,25 @@ public class ModelFieldEditorFactory {
 			logger.error("Cannot get remote services!", e);
 		}
 	}
-	
+
 	public ModelFieldEditorFactory(ColumnLabelProvider labelProvider) {
 		this();
 		this.labelProvider = labelProvider;
 	}
-	
+
 	public void dispose() {
 
 	}
-	
+
 	/**
 	 * Create a new editor for a field.
 	 * @param field
-	 * 
+	 *
 	 * @return null if the field is not editable.
-	 * @throws ScanningException 
+	 * @throws ScanningException
 	 */
 	public CellEditor createEditor(FieldValue field, Composite parent) throws ScanningException {
-        
+
 		Object value;
 		try {
 			value = field.get();
@@ -123,7 +123,7 @@ public class ModelFieldEditorFactory {
 			e.printStackTrace();
 			return null;
 		}
-		
+
 		Class<? extends Object> clazz = null;
 		if (value!=null) {
 			clazz = value.getClass();
@@ -133,33 +133,33 @@ public class ModelFieldEditorFactory {
 			} catch (NoSuchFieldException | SecurityException e) {
 				e.printStackTrace();
 			}
-			
+
 		}
-  
+
 		CellEditor ed = null;
     	final FieldDescriptor anot = field.getAnnotation();
     	if (!isEnabled(field.getModel(), anot)) return null;
-   	
+
         if (clazz == Boolean.class) {
         	ed = new CheckboxCellEditor(parent, SWT.NONE);
-        	
+
         } else if (anot!=null && anot.edit()==EditType.COMPOUND) {
         	ed = new ModelCellEditor(parent, field, labelProvider);
-        	
-        } else if (Number.class.isAssignableFrom(clazz) || isNumberArray(clazz)) {        	
+
+        } else if (Number.class.isAssignableFrom(clazz) || isNumberArray(clazz)) {
         	ed = getNumberEditor(field, clazz, parent);
-        	
-        } else if (IROI.class.isAssignableFrom(clazz)) { 
+
+        } else if (IROI.class.isAssignableFrom(clazz)) {
         	throw new IllegalArgumentException("Have not ported RegionCellEditor to scanning yet!");
         	// TODO FIXME Need way of editing regions.
         	//ed = new RegionCellEditor(parent);
-        	
+
         } else if (Enum.class.isAssignableFrom(clazz)) {
         	ed = getChoiceEditor((Class<? extends Enum>)clazz, parent);
-        	
+
         } else if (CComboWithEntryCellEditorData.class.isAssignableFrom(clazz)) {
         	ed = getChoiceWithEntryEditor((CComboWithEntryCellEditorData) value, parent);
-        	
+
         } else if (FileDialogCellEditor.isEditorFor(clazz) || (anot!=null && anot.file()!=FileType.NONE)) {
         	FileDialogCellEditor fe = new FileDialogCellEditor(parent);
         	fe.setValueClass(clazz);
@@ -170,17 +170,17 @@ public class ModelFieldEditorFactory {
         	}
         } else if (String.class.equals(clazz) && anot!=null && anot.device() != DeviceType.NONE) {
         	ed = getDeviceEditor(anot.device(), parent);
-        	
+
         } else if (String.class.equals(clazz) && anot!=null && anot.dataset() != null &&!anot.dataset().isEmpty()) {
         	ed = getDatasetEditor(field, parent);
-        	
+
         } else if (String.class.equals(clazz) && anot!=null && anot.edit()==EditType.LONG) {
         	ed = getLongTextEditor(parent, anot);
-        	
+
         }else if (String.class.equals(clazz)) {
         	ed = getSimpleTextEditor(parent, anot);
         }
-        
+
         // Show the tooltip, if there is one
         if (ed!=null) {
         	if (anot!=null) {
@@ -190,11 +190,11 @@ public class ModelFieldEditorFactory {
         		}
         	}
         }
-        
+
         return ed;
 
 	}
-	
+
 	private CellEditor getLongTextEditor(Composite parent, FieldDescriptor anot) {
 		return new LongStringCellEditor(parent, labelProvider);
 	}
@@ -216,7 +216,7 @@ public class ModelFieldEditorFactory {
     }
 
 	public CellEditor getDeviceEditor(DeviceType deviceType, Composite parent) throws ScanningException {
-        
+
 		final List<String> items;
 		if (deviceType == DeviceType.SCANNABLE) {
 			items = IFilterService.DEFAULT.filter("org.eclipse.scanning.scannableFilter", cservice.getScannableNames());
@@ -233,15 +233,17 @@ public class ModelFieldEditorFactory {
 			final List<String> sorted = new ArrayList<>(items);
 			Collections.sort(sorted, new SortNatural<>(false));
 			final String[] finalItems = sorted.toArray(new String[sorted.size()]);
-			
+
 			return new CComboCellEditor(parent, finalItems) {
 				private Object lastValue;
-	    	    protected void doSetValue(Object value) {
+	    	    @Override
+				protected void doSetValue(Object value) {
 	                if (value instanceof Integer) value = finalItems[((Integer) value).intValue()];
 	                lastValue = value;
 	                super.doSetValue(value);
 	    	    }
-	    		protected Object doGetValue() {
+	    		@Override
+				protected Object doGetValue() {
 	    			try {
 		    			Integer ordinal = (Integer)super.doGetValue();
 		    			return finalItems[ordinal];
@@ -266,15 +268,15 @@ public class ModelFieldEditorFactory {
 
 		if (anot == null) return true;
 		if (!anot.editable()) return false;
-    	
+
 	   	String enableIf = anot.enableif();
 	   	if (enableIf!=null && !"".equals(enableIf)) {
-	   		
+
 	   		try {
 		   		final IExpressionService service = ServiceHolder.getExpressionService();
 		   		final IExpressionEngine  engine  = service.getExpressionEngine();
 		   		engine.createExpression(enableIf);
-		   		
+
 		   		final Map<String, Object>    values = new HashMap<>();
 		   		final Collection<FieldValue> fields = FieldUtils.getModelFields(model);
 		   		for (FieldValue field : fields) {
@@ -284,35 +286,36 @@ public class ModelFieldEditorFactory {
 				}
 		   		engine.setLoadedVariables(values);
 		   		return (Boolean)engine.evaluate();
-		   		
+
 	   		} catch (Exception ne) {
 	   			logger.error("Cannot evaluate expression "+enableIf, ne);
 	   		}
 	   	}
-	   	
+
 	    return true;
 	}
 
 	private static void showHint(final String hint, final Composite parent) {
-		
+
 		if (parent.isDisposed()) return;
 		if (parent!=null) parent.getDisplay().asyncExec(new Runnable() {
+			@Override
 			public void run() {
-				
+
 				currentHint = new DefaultToolTip(parent, ToolTip.NO_RECREATE, true);
 				((DefaultToolTip)currentHint).setText(hint);
 				currentHint.setHideOnMouseDown(true);
 				currentHint.show(new Point(0, parent.getSize().y));
-				
+
 				if (selectionListener==null) {
 					if (PageUtil.getPage()!=null) {
 						selectionListener = new ISelectionListener() {
 							@Override
 							public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 								if (currentHint!=null) currentHint.hide();
-							} 
+							}
 						};
-						
+
 						PageUtil.getPage().addSelectionListener(selectionListener);
 					}
 
@@ -322,64 +325,68 @@ public class ModelFieldEditorFactory {
 	}
 
 	private static boolean isNumberArray(Class<? extends Object> clazz) {
-		
+
 		if (clazz==null)      return false;
 		if (!clazz.isArray()) return false;
-		
+
 		return double[].class.isAssignableFrom(clazz) || float[].class.isAssignableFrom(clazz) ||
                int[].class.isAssignableFrom(clazz)    || long[].class.isAssignableFrom(clazz);
 	}
 
 	private static CellEditor getChoiceEditor(final Class<? extends Enum> clazz, Composite parent) {
-		
+
 		final Enum[]   values = clazz.getEnumConstants();
 	    final String[] items  = Arrays.toString(values).replaceAll("^.|.$", "").split(", ");
-		
+
 		CComboCellEditor cellEd = new CComboCellEditor(parent, items) {
-    	    protected void doSetValue(Object value) {
+    	    @Override
+			protected void doSetValue(Object value) {
                 if (value instanceof Enum) value = ((Enum) value).ordinal();
                 super.doSetValue(value);
     	    }
-    		protected Object doGetValue() {
+    		@Override
+			protected Object doGetValue() {
     			Integer ordinal = (Integer)super.doGetValue();
     			return values[ordinal];
     		}
 		};
-		
+
 		return cellEd;
 	}
 
 	private static CellEditor getChoiceWithEntryEditor(final CComboWithEntryCellEditorData data, Composite parent) {
-		
+
 	    final String[] items  = data.getItems();
-		
+
 		CComboWithEntryCellEditor cellEd = new CComboWithEntryCellEditor(parent, items) {
-    	    protected void doSetValue(Object value) {
+    	    @Override
+			protected void doSetValue(Object value) {
                 super.doSetValue(((CComboWithEntryCellEditorData)value).getActiveItem());
     	    }
-    		protected Object doGetValue() {
+    		@Override
+			protected Object doGetValue() {
     			return new CComboWithEntryCellEditorData(data, (String)super.doGetValue());
     		}
 		};
-		
+
 		return cellEd;
 	}
-	
+
 	private CellEditor getNumberEditor(FieldValue field, final Class<? extends Object> clazz, Composite parent) {
-    	
+
 		FieldDescriptor anot = field.getAnnotation();
 		NumberCellEditor textEd = null;
 	    if (anot!=null) {
 	    	textEd = new NumberCellEditor(parent, clazz, getMinimum(field, anot), getMaximum(field, anot), getUnit(field, anot), SWT.NONE);
-	    	
+
 	    	if (anot.numberFormat()!=null && !"".equals(anot.numberFormat())) {
 	    		textEd.setDecimalFormat(anot.numberFormat());
 		    }
-	    	
+
 	    } else {
 	    	textEd = new NumberCellEditor(parent, clazz, SWT.NONE);
 	    }
-	    
+
 	    //textEd.setAllowInvalidValues(true);
 	    if (anot!=null && anot.validif().length()>0) {
 	    	final ValidIfDecorator deco = new ValidIfDecorator(field.getName(), field.getModel(), anot.validif());
@@ -388,7 +395,7 @@ public class ModelFieldEditorFactory {
 
     	return textEd;
 	}
-	
+
 	private String getUnit(FieldValue field, FieldDescriptor anot) {
 		if (anot.unit().length()>0) return anot.unit();
 		IScannable<Number> scannable = getScannable(field, anot);
@@ -406,9 +413,9 @@ public class ModelFieldEditorFactory {
 		IScannable<Number> scannable = getScannable(field, anot);
 		return scannable!=null ? scannable.getMaximum(): null;
 	}
-	
+
 	private IScannable<Number> getScannable(FieldValue field, FieldDescriptor anot) {
-		
+
 		if (anot.scannable().length()<1 || cservice ==null) return null;
 	    String scannableName;
 		try {
@@ -416,7 +423,7 @@ public class ModelFieldEditorFactory {
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 			return null;
 		}
-	    
+
 	    if (scannableName!=null && scannableName.length()>0) {
 	    	try {
 		        return cservice.getScannable(scannableName);
@@ -428,11 +435,11 @@ public class ModelFieldEditorFactory {
 	}
 
 	private static TextCellEditor getDatasetEditor(final FieldValue field, Composite parent) {
-		
+
 		final TextCellEditorWithContentProposal ed = new TextCellEditorWithContentProposal(parent, null, null);
-		
+
 		Job job = new Job("dataset name read") {
-			
+
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				String fileField = field.getAnnotation().dataset();
@@ -442,31 +449,31 @@ public class ModelFieldEditorFactory {
 				} catch (Exception e) {
 					return Status.CANCEL_STATUS;
 				}
-				
+
 				if (object == null) return Status.CANCEL_STATUS;
 				final Map<String, int[]> datasetInfo = DatasetNameUtils.getDatasetInfo(object.toString());
 				datasetInfo.toString();
-				
+
 				final IContentProposalProvider cpp = new IContentProposalProvider() {
-					
+
 					@Override
 					public IContentProposal[] getProposals(String contents, int position) {
 						List<IContentProposal> prop = new ArrayList<IContentProposal>();
-						
+
 						for (String key : datasetInfo.keySet()) {
 							if (key.startsWith(contents)) prop.add(new ContentProposal(key));
 						}
-						
+
 						if (prop.isEmpty()) {
 							for(String key : datasetInfo.keySet()) prop.add(new ContentProposal(key));
 						}
-						
+
 						return prop.toArray(new IContentProposal[prop.size()]);
 					}
 				};
-				
+
 				Display.getDefault().syncExec(new Runnable() {
-					
+
 					@Override
 					public void run() {
 						ed.setContentProposalProvider(cpp);
@@ -474,13 +481,13 @@ public class ModelFieldEditorFactory {
 						ed.getContentProposalAdapter().setAutoActivationCharacters(null);
 					}
 				});
-				
+
 				return Status.OK_STATUS;
 			}
 		};
-		
+
 		job.schedule();
-			
+
 		return ed;
 	}
 

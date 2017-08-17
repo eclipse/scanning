@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * <pre>
  	  Rules for controller:
 	  o Pause proceeds and sets preference to pause.
@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 	  o Seek is allowed if all names bar the current device are not paused.
 	  o Abort is allowed regardless.
    </pre>
-   
+
  * @author Matthew Gerring
  *
  * @param <T>
@@ -43,11 +43,11 @@ import org.slf4j.LoggerFactory;
 class DeviceController implements IDeviceController {
 
 	private static Logger logger = LoggerFactory.getLogger(DeviceController.class);
-	
+
 	private IPausableDevice<?> device;
 	private List<?>            objects;
 	private ScanBean           bean;
-	
+
 	/**
 	 * Rules for states:
 	 * Pause proceeds and sets preference to pause.
@@ -68,8 +68,9 @@ class DeviceController implements IDeviceController {
 	 * Only pauses the delegate if is running, otherwise returns
 	 * silently.
 	 */
+	@Override
 	public void pause(String id, DeviceWatchdogModel model) throws ScanningException, InterruptedException {
-		
+
 		states.put(id, DeviceState.PAUSED);
 		models.put(id, model); // May be null
 		if (device.getDeviceState()!=DeviceState.RUNNING) return; // Cannot pause it.
@@ -77,8 +78,9 @@ class DeviceController implements IDeviceController {
 		logger.debug("Controller pausing on "+getName()+" because of id "+id);
 		device.pause();
 	}
+	@Override
 	public void seek(String id, int stepNumber) throws ScanningException, InterruptedException {
-		
+
 		// If any of the others think it should be paused, we do not resume
 		Map<String, DeviceState> copy = new HashMap<>(states);
 		copy.put(id, DeviceState.RUNNING);
@@ -88,14 +90,15 @@ class DeviceController implements IDeviceController {
 		device.seek(stepNumber);
 	}
 
+	@Override
 	public void resume(String id) throws ScanningException, InterruptedException {
-		
+
 		states.put(id, DeviceState.RUNNING);
 		if (device.getDeviceState()!=DeviceState.PAUSED) return; // Cannot resume it.
-		
+
 		// If any of the others think it should be paused, we do not resume
 		if (!canResume(states)) {
-			
+
 			// Attempt to set a message in the bean about why.
 			if (getBean()!=null) {
 	            // Get the first non-null model
@@ -110,21 +113,23 @@ class DeviceController implements IDeviceController {
 			}
 			return;
 		}
-		
+
 		logger.debug("Controller resuming on "+getName()+" because of id "+id);
 		device.resume();
 	}
-	
+
 	private static final boolean canResume(Map<String, DeviceState> states) {
 		// we can resume if none of the states are PAUSED
 		return !states.values().stream().filter(state -> state==DeviceState.PAUSED).findAny().isPresent();
 	}
 
+	@Override
 	public void abort(String id) throws ScanningException, InterruptedException {
 		logger.debug("Controller aborting on "+getName()+" because of id "+id);
 		device.abort();
 	}
 
+	@Override
 	public IPausableDevice<?> getDevice() {
 		return device;
 	}
@@ -133,6 +138,7 @@ class DeviceController implements IDeviceController {
 		this.device = device;
 	}
 
+	@Override
 	public List<?> getObjects() {
 		return objects;
 	}
@@ -140,7 +146,8 @@ class DeviceController implements IDeviceController {
 	public void setObjects(List<?> objects) {
 		this.objects = objects;
 	}
-	
+
+	@Override
 	public boolean isActive() {
 		boolean is = true;
 		for (Object object : objects) {

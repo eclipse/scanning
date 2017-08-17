@@ -23,11 +23,11 @@ class StepIterator implements Iterator<IPosition> {
 
 	private StepModel     model;
 	private double        value;
-	
+
 	public StepIterator(StepGenerator gen) {
 		this(gen.getModel());
 	}
-	
+
 	public StepIterator(StepModel model) {
 		this.model = model;
 		value = model.getStart()-model.getStep();
@@ -37,7 +37,7 @@ class StepIterator implements Iterator<IPosition> {
 	public boolean hasNext() {
 		double next = increment();
 		double dir = Math.signum(model.getStop() - next);
-		return dir == 0 || dir == Math.signum(model.getStop() - model.getStart()); 
+		return dir == 0 || dir == Math.signum(model.getStop() - model.getStart());
 	}
 
 	private double increment() {
@@ -66,6 +66,7 @@ class StepIterator implements Iterator<IPosition> {
         }
 	}
 
+	@Override
 	public void remove() {
         throw new UnsupportedOperationException("remove");
     }

@@ -15,13 +15,14 @@ public class HangingGetConnectorService extends EpicsV4ConnectorService {
 		super();
 		this.latch = new CountDownLatch(1);
 	}
-	
+
 	@Override
 	protected MalcolmMessage sendGetMessage(IMalcolmDevice<?> device, MalcolmMessage message) throws Exception {
 		latch.await();
         return null;
 	}
 
+	@Override
 	public void disconnect() throws MalcolmDeviceException {
 		latch.countDown();
 		super.disconnect();

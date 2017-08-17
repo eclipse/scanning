@@ -35,28 +35,28 @@ import org.eclipse.scanning.sequencer.SubscanModerator;
 public class MalcolmNexusScanFileManager extends NexusScanFileManager {
 
 	private static final Map<NexusBaseClass, ScanRole> DEFAULT_SCAN_ROLES;
-	
+
 	private List<IMalcolmDevice<?>> malcolmDevices = null;
-	
+
 	static {
 		DEFAULT_SCAN_ROLES = new HashMap<>();// not an enum map as most base classes not mapped
 		DEFAULT_SCAN_ROLES.put(NexusBaseClass.NX_DETECTOR, ScanRole.DETECTOR);
 		DEFAULT_SCAN_ROLES.put(NexusBaseClass.NX_MONITOR, ScanRole.MONITOR_PER_POINT);
 		DEFAULT_SCAN_ROLES.put(NexusBaseClass.NX_POSITIONER, ScanRole.SCANNABLE);
 	}
-	
+
 	public MalcolmNexusScanFileManager(AbstractRunnableDevice<ScanModel> scanDevice) throws ScanningException {
 		super(scanDevice);
-		
+
 		malcolmDevices = scanDevice.getModel().getDetectors().stream().
 				filter(IMalcolmDevice.class::isInstance).map(IMalcolmDevice.class::cast).
 				collect(Collectors.toList());
 	}
-	
+
 	@Override
 	protected Map<ScanRole, List<NexusObjectProvider<?>>> extractNexusProviders() throws ScanningException {
 		Map<ScanRole, List<NexusObjectProvider<?>>> nexusProviders = super.extractNexusProviders();
-		
+
 		try {
 			for (NexusObjectProvider<?> nexusProvider : getNexusObjectProvidersForMalcolmDevices()) {
 				ScanRole role = getScanRole(nexusProvider);
@@ -65,16 +65,18 @@ public class MalcolmNexusScanFileManager extends NexusScanFileManager {
 		} catch (Exception e) {
 			handleException(e);
 		}
-		
+
 		return nexusProviders;
 	}
 
+	@Override
 	protected SolsticeScanMonitor createSolsticeScanMonitor(ScanModel scanModel) {
 		SolsticeScanMonitor scanPointsWriter = super.createSolsticeScanMonitor(scanModel);
 		scanPointsWriter.setMalcolmScan(true);
 		return scanPointsWriter;
 	}
-	
+
+	@Override
 	protected int getScanRank(ScanModel model) throws ScanningException {
 		SubscanModerator moderator = new SubscanModerator(model.getPositionIterable(),
 				null, model.getDetectors(), ServiceHolder.getGeneratorService());
@@ -91,7 +93,7 @@ public class MalcolmNexusScanFileManager extends NexusScanFileManager {
 		}
 		return scanRole;
 	}
-	
+
 	private void handleException(Exception e) throws ScanningException {
 		if (e instanceof RuntimeException && e.getCause() != null) {
 			e = (Exception) e.getCause();
@@ -99,13 +101,13 @@ public class MalcolmNexusScanFileManager extends NexusScanFileManager {
 		if (e instanceof ScanningException) throw (ScanningException) e;
 		throw new ScanningException(e);
 	}
-	
+
 	private List<NexusObjectProvider<?>> getNexusObjectProvidersForMalcolmDevices() {
 		return malcolmDevices.stream().filter(IMultipleNexusDevice.class::isInstance)
 				.map(IMultipleNexusDevice.class::cast).flatMap(d -> getNexusProviders(d).stream())
 				.collect(Collectors.toList());
 	}
-	
+
 	private List<NexusObjectProvider<?>> getNexusProviders(IMultipleNexusDevice malcolmDevice) {
 		try {
 			return malcolmDevice.getNexusProviders(getNexusScanInfo());

@@ -21,16 +21,17 @@ import org.eclipse.swt.widgets.Composite;
  * of permitted values.
  */
 final class ControlStringCellEditor extends TextCellEditor {
-	
+
 	// TODO for Matt G.: in direct mode need to update scannable when value changed
-	
+
 	private final ControlNode controlNode;
-	
+
 	public ControlStringCellEditor(Composite parent, ControlNode controlNode) {
 		super(parent);
 		this.controlNode = controlNode;
 	}
 
+	@Override
 	protected void doSetValue(final Object value) {
 		Assert.isTrue(value == controlNode);
 		super.doSetValue(controlNode.getValue());
@@ -42,5 +43,5 @@ final class ControlStringCellEditor extends TextCellEditor {
 		controlNode.setValue(value);
 		return controlNode;
 	}
-	
+
 }

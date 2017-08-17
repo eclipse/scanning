@@ -14,22 +14,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class JythonIterator extends AbstractScanPointIterator implements Iterator<IPosition> {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(JythonIterator.class);
-		
+
 	private int               index;
-	
+
 	JythonIterator(JythonGeneratorModel model) {
-		
+
 		try {
 			// Ensure that the module path is on the path
 			JythonInterpreterManager.addPath(model.getPath());
 		} catch (IOException e) {
 			logger.error("Unable to add '"+model.getPath()+"' to path");
-		} 
-		
+		}
+
 		JythonObjectFactory<ScanPointIterator> jythonObject = new JythonObjectFactory<>(ScanPointIterator.class, model.getModuleName(), model.getClassName());
-		
+
 		Object[] args = getArguments(model);
 		String[] kwds = getKeywords(model);
 		if (args==null) {
@@ -65,12 +65,13 @@ class JythonIterator extends AbstractScanPointIterator implements Iterator<IPosi
 
 	@Override
 	public IPosition next() {
-		IPosition next = pyIterator.next();	
+		IPosition next = pyIterator.next();
 		next.setStepIndex(index);
 		index++;
 		return next;
 	}
 
+	@Override
 	public void remove() {
         throw new UnsupportedOperationException("remove");
     }

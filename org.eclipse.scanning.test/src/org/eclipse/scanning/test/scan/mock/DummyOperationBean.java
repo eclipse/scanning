@@ -23,7 +23,7 @@ import org.eclipse.scanning.api.event.status.StatusBean;
 public class DummyOperationBean extends StatusBean implements IOperationBean {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private String dataKey;
 	private String filePath;
 	private String outputFilePath;
@@ -39,94 +39,113 @@ public class DummyOperationBean extends StatusBean implements IOperationBean {
 	private String name;
 	private String runDirectory;
 	private int numberOfCores;
-	
+
 	public String getDataKey() {
 		return dataKey;
 	}
+	@Override
 	public void setDataKey(String dataKey) {
 		this.dataKey = dataKey;
 	}
+	@Override
 	public String getFilePath() {
 		return filePath;
 	}
+	@Override
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
 	}
+	@Override
 	public String getOutputFilePath() {
 		return outputFilePath;
 	}
+	@Override
 	public void setOutputFilePath(String outputFilePath) {
 		this.outputFilePath = outputFilePath;
 	}
 	public String getDatasetPath() {
 		return datasetPath;
 	}
+	@Override
 	public void setDatasetPath(String datasetPath) {
 		this.datasetPath = datasetPath;
 	}
 	public String getSlicing() {
 		return slicing;
 	}
+	@Override
 	public void setSlicing(String slicing) {
 		this.slicing = slicing;
 	}
 	public String getProcessingPath() {
 		return processingPath;
 	}
+	@Override
 	public void setProcessingPath(String processingPath) {
 		this.processingPath = processingPath;
 	}
 	public List<String>[] getAxesNames() {
 		return axesNames;
 	}
+	@Override
 	public void setAxesNames(List<String>[] axesNames) {
 		this.axesNames = axesNames;
 	}
 	public boolean isDeleteProcessingFile() {
 		return deleteProcessingFile;
 	}
+	@Override
 	public void setDeleteProcessingFile(boolean deleteProcessingFile) {
 		this.deleteProcessingFile = deleteProcessingFile;
 	}
 	public String getXmx() {
 		return xmx;
 	}
+	@Override
 	public void setXmx(String xmx) {
 		this.xmx = xmx;
 	}
 	public int[] getDataDimensions() {
 		return dataDimensions;
 	}
+	@Override
 	public void setDataDimensions(int[] dataDimensions) {
 		this.dataDimensions = dataDimensions;
 	}
 	public Integer getScanRank() {
 		return scanRank;
 	}
+	@Override
 	public void setScanRank(Integer scanRank) {
 		this.scanRank = scanRank;
 	}
 	public boolean isReadable() {
 		return readable;
 	}
+	@Override
 	public void setReadable(boolean readable) {
 		this.readable = readable;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
 	public String getRunDirectory() {
 		return runDirectory;
 	}
+	@Override
 	public void setRunDirectory(String runDirectory) {
 		this.runDirectory = runDirectory;
 	}
 	public int getNumberOfCores() {
 		return numberOfCores;
 	}
+	@Override
 	public void setNumberOfCores(int numberOfCores) {
 		this.numberOfCores = numberOfCores;
 	}

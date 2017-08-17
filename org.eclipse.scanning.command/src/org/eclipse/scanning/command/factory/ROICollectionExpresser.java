@@ -18,6 +18,7 @@ import org.eclipse.scanning.command.PyExpressionNotImplementedException;
 
 class ROICollectionExpresser extends PyModelExpresser<Collection<IROI>> {
 
+	@Override
 	final String pyExpress(Collection<IROI> rois, boolean verbose) throws Exception {
 
 		if (rois.size() == 0)

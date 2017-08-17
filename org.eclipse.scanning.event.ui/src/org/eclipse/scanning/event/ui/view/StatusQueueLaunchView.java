@@ -38,15 +38,15 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Launches a queue monitor which the appropriate queue and topic names.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class StatusQueueLaunchView extends ViewPart {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(StatusQueueLaunchView.class);
-	
-	
+
+
 	private static final String BUNDLE       = "org.dawnsci.commandserver.ui.launchBundle";
 	private static final String BEAN         = "org.dawnsci.commandserver.ui.launchBean";
 	private static final String STATUS_QUEUE = "org.dawnsci.commandserver.ui.launchStatusQueue";
@@ -67,7 +67,7 @@ public class StatusQueueLaunchView extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
-		
+
 		final Composite content = new Composite(parent, SWT.NONE);
 		content.setLayout(new GridLayout(2, false));
 		createTextControl("Bundle Name", BUNDLE, content);
@@ -76,11 +76,12 @@ public class StatusQueueLaunchView extends ViewPart {
 		createTextControl("Status Topic Name", STATUS_TOPIC, content);
 		createTextControl("Submit Queue Name", SUBMIT_QUEUE, content);
 		createTextControl("Part Name", PART_NAME, content);
-		
+
 		final Button launch = new Button(content, SWT.PUSH);
 		launch.setText("Launch");
 		launch.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, false, 2, 1));
 		launch.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				try {
 					openQueueMonitor();
@@ -92,12 +93,12 @@ public class StatusQueueLaunchView extends ViewPart {
 	}
 
 	private void createTextControl(String slabel, final String propName, Composite content) {
-		
+
 		final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
 		final Label label = new Label(content, SWT.NONE);
 		label.setText(slabel);
-		
+
 		final Text text = new Text(content, SWT.BORDER);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		text.setText(store.getString(propName));
@@ -115,9 +116,9 @@ public class StatusQueueLaunchView extends ViewPart {
 
 	}
 
-	
+
 	private void openQueueMonitor() throws UnsupportedEncodingException {
-		
+
 		final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		String bundle = store.getString(BUNDLE);
 		String bean   = store.getString(BEAN);
@@ -131,7 +132,7 @@ public class StatusQueueLaunchView extends ViewPart {
 		try {
 			Util.getPage().showView(StatusQueueView.ID, queueViewId, IWorkbenchPage.VIEW_VISIBLE);
 		} catch (PartInitException e) {
-			ErrorDialog.openError(Display.getDefault().getActiveShell(), "Cannot open view", "Cannot open view "+queueViewId, 
+			ErrorDialog.openError(Display.getDefault().getActiveShell(), "Cannot open view", "Cannot open view "+queueViewId,
 					new Status(Status.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
 			logger.error("Cannot open view", e);
 		}

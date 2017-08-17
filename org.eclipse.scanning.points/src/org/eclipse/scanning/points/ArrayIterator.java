@@ -23,11 +23,11 @@ class ArrayIterator extends AbstractScanPointIterator {
 
 	public ArrayIterator(ArrayGenerator gen) {
 		this.model= gen.getModel();
-		
+
         JythonObjectFactory<ScanPointIterator> arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
 
         double[] points = model.getPositions();
-        
+
 		ScanPointIterator iterator = arrayGeneratorFactory.createObject(
 				model.getName(), "mm", points);
         pyIterator = iterator;
@@ -43,6 +43,7 @@ class ArrayIterator extends AbstractScanPointIterator {
 		return pyIterator.next();
 	}
 
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException("remove");
 	}

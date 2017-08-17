@@ -8,22 +8,28 @@ public class RandomLineModel implements IDetectorModel {
 	private double exposureTime=0.001;
 	private long timeout=-1;
 	private int lineSize=32;
-	
+
+	@Override
 	public String getName() {
 		return name;
 	}
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
 	public double getExposureTime() {
 		return exposureTime;
 	}
+	@Override
 	public void setExposureTime(double exposureTime) {
 		this.exposureTime = exposureTime;
 	}
+	@Override
 	public long getTimeout() {
 		return timeout;
 	}
+	@Override
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
 	}

@@ -24,7 +24,6 @@ import org.eclipse.dawnsci.plotting.api.PlotType;
 import org.eclipse.dawnsci.plotting.api.tool.IToolPageSystem;
 import org.eclipse.dawnsci.plotting.api.trace.IImageTrace;
 import org.eclipse.dawnsci.plotting.api.trace.IImageTrace.DownsampleType;
-import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.ILazyDataset;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -45,36 +44,36 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A view which displays a view of a stream, either MJpeg or Epics array.
- * 
+ *
  * TODO: Matt Taylor this needs to be your absolute best commented and organised code
  * please, because it will go in the open source scanning project!
- * 
+ *
  * @author Matthew Taylor
  * @author Matthew Gerring
  *
  */
 public class StreamView extends ViewPart implements IAdaptable {
-	
+
 	public static final String ID = "org.eclipse.scanning.device.ui.vis.StreamView";
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(StreamView.class);
-		
+
 	// UI
 	protected IPlottingSystem<Composite> system;
-	
+
 	// Connectors
 	private IStreamConnection<ILazyDataset>       selected;
 	private List<IStreamConnection<ILazyDataset>> connectors;
-	
+
 	public StreamView() {
 		try {
 			this.connectors = new ArrayList<>();
 			IPlottingService plottingService = ServiceHolder.getPlottingService();
 			system = plottingService.createPlottingSystem();
-			
+
 		} catch (Exception ne) {
 			logger.error("Unable to make plotting system", ne);
-			system = null; // It creates the view but there will be no plotting system 
+			system = null; // It creates the view but there will be no plotting system
 		}
 	}
 
@@ -85,12 +84,12 @@ public class StreamView extends ViewPart implements IAdaptable {
 		system.createPlotPart(parent, getPartName(), getViewSite().getActionBars(), PlotType.IMAGE, this);
 		connect(findLastConnection()); // TODO Should it be the first one in the list.
 	}
-	
+
 	private IStreamConnection<ILazyDataset> findLastConnection() {
-		
+
 		String id = Activator.getDefault().getPreferenceStore().getString(DevicePreferenceConstants.STREAM_ID);
 		if (id==null) return connectors.get(0);
-		
+
 		for (IStreamConnection<ILazyDataset> connector : connectors) {
 			if (connector.getId().equals(id)) return connector;
 		}
@@ -98,12 +97,12 @@ public class StreamView extends ViewPart implements IAdaptable {
 	}
 
 	private void createConnectionActions() {
-		
+
 		connectors.clear();
-		
+
 		String lastId = Activator.getDefault().getPreferenceStore().getString(DevicePreferenceConstants.STREAM_ID);
 
-		
+
 		final IConfigurationElement[] eles = Platform.getExtensionRegistry().getConfigurationElementsFor("org.eclipse.scanning.api.stream");
 		for (IConfigurationElement e : eles) {
 
@@ -113,7 +112,7 @@ public class StreamView extends ViewPart implements IAdaptable {
 				connectors.add(connection);
 				connection.setId(e.getAttribute("id"));
 				connection.setLabel(e.getAttribute("label"));
-				
+
 				final String iconPath = e.getAttribute("icon");
 				ImageDescriptor icon=null;
 		    	if (iconPath!=null) {
@@ -125,7 +124,8 @@ public class StreamView extends ViewPart implements IAdaptable {
 
 		    	final MenuAction menu = new MenuAction(connection.getLabel());
 		    	final IAction connect = new Action(connection.getLabel(), IAction.AS_CHECK_BOX) {
-		    		public void run() {
+		    		@Override
+					public void run() {
 		    			connect(connection);
 		    		}
 		    	};
@@ -134,66 +134,67 @@ public class StreamView extends ViewPart implements IAdaptable {
 		    	group.add(connect);
 		    	menu.add(connect);
 		    	menu.setSelectedAction(connect);
-		    	
+
 		    	final IAction configure = new Action("Configure...") {
-		    		public void run() {
+		    		@Override
+					public void run() {
 		    			configure(connection);
 		    		}
 		    	};
 		    	menu.add(configure);
 
 		    	getViewSite().getActionBars().getToolBarManager().add(menu);
-			
+
 			} catch (Exception ne) {
 				logger.error("Problem creating stream connection for "+e, ne);
 			}
-			
+
 			getViewSite().getActionBars().getToolBarManager().add(new Separator());
 		}
-		
+
 	}
 
 	private void configure(IStreamConnection<ILazyDataset> connection) {
 		try {
 			connection.configure();
 			if (selected == connection) connect(connection);
-		} catch (StreamConnectionException sce) {			
+		} catch (StreamConnectionException sce) {
 			logger.error("Internal error, connection cannot be configured!", sce);
 		}
 	}
 
 	private void connect(IStreamConnection<ILazyDataset> connection) {
-		
+
 		try {
 			if (selected!=null) {
 				try {
 					selected.disconnect();
-				} catch (StreamConnectionException sce) {				
+				} catch (StreamConnectionException sce) {
 					logger.error("Internal error, connection cannot be disconnected!", sce);
 				}
 			}
 			ILazyDataset image = connection.connect();
 			selected = connection;
 			Activator.getDefault().getPreferenceStore().setValue(DevicePreferenceConstants.STREAM_ID, selected.getId());
-			
+
 			IImageTrace trace = system.createImageTrace("Image"); // TODO
 			trace.setData(image, null, false);
 			system.addTrace(trace);
-			
+
 			// Settings to increase the render speed
 			trace.setDownsampleType(DownsampleType.POINT);
 			trace.setRescaleHistogram(false);
-			
+
 			// Fix the aspect ratio as is typically required for visible cameras
 			system.setKeepAspect(true);
-			
+
 			// Disable auto rescale as the live stream is constantly refreshing
 			system.setRescale(false);
-			
-		} catch (StreamConnectionException sce) {			
+
+		} catch (StreamConnectionException sce) {
 			logger.error("Internal error, connection cannot be reached!", sce);
 		}
-		
+
 	}
 
 	@SuppressWarnings("unchecked")

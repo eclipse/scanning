@@ -39,7 +39,7 @@ import org.eclipse.scanning.connector.epics.EpicsV4ConnectorService;
 import org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice;
 
 class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
-	
+
 	private INexusFileFactory   factory;
 
 	// Latch used such that one thread may wait the state changing at a time.
@@ -53,14 +53,14 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 	private ReentrantLock  taskRunLock;
 
 	private DeviceState state;
-	
+
 
 	/**
 	 * Dummy task block to be overridden in subclasses
 	 */
 	protected Callable<Long> callableTask;
 
-		
+
 	MockedMalcolmDevice(String name) throws ScanningException {
 		this(name, new LatchDelegate());
 		callableTask = new Callable<Long>() {
@@ -71,9 +71,9 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 		};
 		this.factory = new NexusFileFactoryHDF5();
 	}
-	
+
 	MockedMalcolmDevice(String name, final LatchDelegate latcher) throws ScanningException {
-		
+
 		super(new EpicsV4ConnectorService(), null); // Hard coded, that's the way we role in tests.
 		this.latcher = latcher;
 		this.taskRunLock    = new ReentrantLock(true);
@@ -98,7 +98,7 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 		this.state = state;
 
 		latcher.setState(state);
-	
+
 		if (eventDelegate!=null && old!=state) {
 			try {
 				eventDelegate.sendStateChanged(state, old, message);
@@ -110,11 +110,11 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 
 	@Override
 	public void abort() throws ScanningException {
-		
+
 		if (!getState().isAbortable()) {
 			throw new MalcolmDeviceException(this, "Device is in state "+getState()+" which cannot be aborted!");
 		}
-		
+
 		setDeviceState(DeviceState.ABORTING); // Tells any running loops that we are killing it
 		try {
 			if (taskRunLock.tryLock() || taskRunLock.tryLock(5, TimeUnit.SECONDS)) {
@@ -124,7 +124,7 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 				// No sure what to do here as this lock is now no longer to do with pause
 				setDeviceState(DeviceState.ABORTED);
 			}
-			
+
 		} catch (InterruptedException e) {
 			throw new MalcolmDeviceException(this, "Lock waiting for abort interupted!", e);
 		}
@@ -142,7 +142,7 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 
 	@Override
 	public void configure(MapMalcolmModel model) throws ScanningException {
-		
+
 		validate(model);
 		setDeviceState(DeviceState.CONFIGURING);
 		this.model = model;
@@ -155,7 +155,7 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 			}
 		}
 		setDeviceState(DeviceState.ARMED);
-		
+
 		// We configure a bean with all the scan specific things
 		final MalcolmEventBean bean = new MalcolmEventBean();
 		bean.setFilePath(model.getParameterMap().get("file").toString());
@@ -168,19 +168,19 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 
 	@Override
 	public void run(IPosition pos) throws ScanningException {
-		
+
 		if (!getState().isRunnable()) throw new MalcolmDeviceException("Malcolm is in non-runnable state "+getState());
 
 		if (isLocked()) throw new MalcolmDeviceException(this, "Device '"+getName()+"' is already running or paused!");
 		if (getState().isRunning()) throw new MalcolmDeviceException(this, "Device '"+getName()+"' is already running or paused!");
-		
+
 		try {
 			run(model.getParameterMap()); // mimicks running malcolm hdf5
-						
+
 		} catch (Exception e) {
             setDeviceState(DeviceState.FAULT);
 			throw new MalcolmDeviceException(this, "Cannot write", e);
-			
+
 		} finally {
 			try {
 				close();
@@ -194,20 +194,20 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 	 * Writes an HDF5 file with an image stack in.
 	 * Does not need SWMR bindings because we are mocking the test in the same process.
 	 * In the same process, the writing and multiple reading is allowed.
-	 * 
+	 *
 	 * BODGED up scan loop to mimic writing for Mock test.
-	 * 
+	 *
 	 * @param params
 	 */
 	protected void run(final Map<String, Object> params) throws Exception {
-		
+
 		setDeviceState(DeviceState.RUNNING); // Will send an event
 
         int amount = (int)params.get("nframes");
-        
+
         // Send scan start
 		sendEvent(new MalcolmEventBean(getState()));
-     
+
         try {
     		NexusFile file=null;
     		try {
@@ -215,14 +215,14 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
     			file.openToWrite(true); // DO NOT COPY!
 
     			GroupNode par = file.getGroup("/entry/data", true); // DO NOT COPY!
-    			
+
 				int[] ishape = (int[])params.get("shape");
 				if (ishape==null) ishape = new int[]{64,64};
 
 				final int[] shape = new int[]{1,  ishape[0], ishape[1]};
     			final int[] max   = new int[]{-1, ishape[0], ishape[1]};
     			ILazyWriteableDataset writer = new LazyWriteableDataset("image", Dataset.FLOAT, shape, max, shape, null); // DO NOT COPY!
-    			file.createData(par, writer); 
+    			file.createData(par, writer);
 				file.close();
 
     			int index = 0;
@@ -230,21 +230,21 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 
     				try {
 						acquireRunLock(); // Blocks if paused.
-	
+
 	    				int[] start = {index, 0, 0};
 	    				int[] stop  = {index+1, 64, 64};
 	    				index++;
 	    				if (index>23) index = 23; // Stall on the last image to avoid writing massive stacks
-	    				
+
 	    				IDataset       rimage   = Random.rand(new int[]{1, ishape[0], ishape[1]});
 	    				rimage.setName("image");
 	   				    writer.setSlice(new IMonitor.Stub(), rimage, start, stop, null);
 	   				    file.flush();
-	   				    
+
 	   					long exposure = Math.round(((double)params.get("exposure"))*1000d);
 	   					Thread.sleep(exposure);
 	    				System.out.println(">> HDF5 wrote image to "+params.get("file").toString());
-	    				
+
 	    				if (index>=amount) {
 	    					break;
 	    				}
@@ -254,23 +254,23 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
      				}
 
     			}
-   			
+
     		} catch (Exception ne) {
     			ne.printStackTrace();
-    			
+
 			}
-    		
+
     		setDeviceState(DeviceState.POSTRUN); // Devices go into postrun after running
-			
+
 			setDeviceState(DeviceState.ARMED); // State change
 	        sendEvent(new MalcolmEventBean(getState())); // Scan end event
 
-        
+
         } catch (Exception ne) {
         	ne.printStackTrace();
     		setState(DeviceState.FAULT, ne.getMessage());
      	    throw ne;
-     	    
+
         } finally {
             try {
             	releaseRunLock();
@@ -282,7 +282,7 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
             }
         }
 	}
-	
+
 	@Override
 	public DeviceState latch(long time, TimeUnit unit, DeviceState... ignoredStates) throws MalcolmDeviceException {
 		try {
@@ -291,13 +291,13 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 			throw new MalcolmDeviceException(this, e);
 		}
 	}
-	
+
 	public String getLockMessage() {
 		final StringBuilder buf = new StringBuilder();
 		buf.append("Hold Count=");
 		buf.append(taskRunLock.getHoldCount());
 		buf.append(" ; ");
-		
+
 		buf.append("Queue Length=");
 		buf.append(taskRunLock.getQueueLength());
 		buf.append(" ; ");
@@ -307,63 +307,64 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 		buf.append(" ; ");
 		return buf.toString();
 	}
-	
+
+	@Override
 	public boolean isLocked() {
 		return taskRunLock.isLocked();
 	}
 
 
 	/**
-	 * Attempts to acquire the runLock with a timeout. MUST be used in conjunction with 
+	 * Attempts to acquire the runLock with a timeout. MUST be used in conjunction with
 	 * {@link #releaseRunLock()} in this, or derived classes as below:
 	 *
 	 * <pre>
 	 * <code>
 	 * acquireRunLock();
 	 * try {
-	 *    doStuff();   // whatever your run operation is  
+	 *    doStuff();   // whatever your run operation is
 	 * }
 	 * finally {
 	 *    releaseRunLock();
 	 * }
 	 * </code>
 	 * </pre>
-	 * 
+	 *
 	 * @param scan
 	 * @throws Exception
 	 */
 	protected boolean acquireRunLock() throws InterruptedException {
-		
+
 		return taskRunLock.tryLock() || taskRunLock.tryLock(2, TimeUnit.SECONDS);
 	}
-	
+
 	/**
-	 * Releases the runLock. MUST be used in conjunction with 
+	 * Releases the runLock. MUST be used in conjunction with
 	 * {@link #acquireRunLock()} in this, or derived classes as below:
 	 *
 	 * <pre>
 	 * <code>
 	 * acquireRunLock();
 	 * try {
-	 *    doStuff();   // whatever your run operation is  
+	 *    doStuff();   // whatever your run operation is
 	 * }
 	 * finally {
 	 *    releaseRunLock();
 	 * }
 	 * </code>
 	 * </pre>
-	 * 
+	 *
 	 * @param scan
 	 * @throws Exception
 	 */
 	protected void releaseRunLock() {
 		taskRunLock.unlock();
 	}
-	
+
 	/**
-	 * Wrapper method to allow subclasses to enact the task block via the beforeExecute hook. 
+	 * Wrapper method to allow subclasses to enact the task block via the beforeExecute hook.
 	 * The task only proceeds if the device is in the RUNINNG state
-	 * 
+	 *
 	 * @return	The return value of the underlying Callable if required
 	 * @throws MalcolmDeviceException
 	 */
@@ -374,18 +375,18 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 			if (getState().equals(DeviceState.RUNNING)) {		//Only proceed with the task if we're in the right state
 				if (acquireRunLock()) {
 					try {
-						retObject = callableTask.call();						
+						retObject = callableTask.call();
 					}
 					finally {
 						releaseRunLock();
 					}
 				}
 				else {
-					throw new MalcolmDeviceException(this, "Could not acquire the task run lock");					
+					throw new MalcolmDeviceException(this, "Could not acquire the task run lock");
 				}
 			}
 			afterExecute();
-		} 
+		}
 		catch (Exception e) {
 			throw new MalcolmDeviceException(this, "Could not execute the task", e );
 		}
@@ -395,7 +396,7 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 	@Override
 	public void reset() throws MalcolmDeviceException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -412,5 +413,5 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 	public <T> T getAttributeValue(String attributeName) throws ScanningException {
 		return null;
 	}
-	
+
 }

@@ -44,11 +44,11 @@ final class GeneratorLabelProvider extends SeriesItemLabelProvider implements IS
 
 	@Override
 	public String getText(Object element) {
-		
+
 		if(!(element instanceof GeneratorDescriptor)) return super.getText(element);
-		
+
 		GeneratorDescriptor des = (GeneratorDescriptor)element;
-		
+
 		// Other columns
 		if (column>0) {
 			try {
@@ -62,12 +62,12 @@ final class GeneratorLabelProvider extends SeriesItemLabelProvider implements IS
 				return ne.getMessage();
 			}
 		}
-		
+
 		StringBuilder buf = new StringBuilder(" ");
 
 		try {
 			IPointGenerator<?> gen = des.getSeriesObject();
-			
+
 			buf.append(gen.getLabel());
 
 
@@ -77,16 +77,17 @@ final class GeneratorLabelProvider extends SeriesItemLabelProvider implements IS
 		}
 
 		return buf.toString();
-		
+
 	}
-	
+
 	private Font italicFont;
+	@Override
 	public Font getFont(Object element) {
-		
+
 		if(!(element instanceof GeneratorDescriptor)) return super.getFont(element);
-		
+
 		GeneratorDescriptor des = (GeneratorDescriptor)element;
-		
+
 		try {
 			IPointGenerator<?> gen = des.getSeriesObject();
 			if (!gen.isEnabled()) {
@@ -97,7 +98,7 @@ final class GeneratorLabelProvider extends SeriesItemLabelProvider implements IS
 				}
 				return italicFont;
 			}
-			
+
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -106,7 +107,8 @@ final class GeneratorLabelProvider extends SeriesItemLabelProvider implements IS
 		return null;
 	}
 
-	
+
+	@Override
 	public Image getImage(Object element) {
 		if (column>0) return null;
 		if(!(element instanceof GeneratorDescriptor)) return super.getImage(element);
@@ -114,6 +116,7 @@ final class GeneratorLabelProvider extends SeriesItemLabelProvider implements IS
 		return des.getImage();
 	}
 
+	@Override
 	public void dispose() {
 		super.dispose();
 		if (italicFont!=null) {

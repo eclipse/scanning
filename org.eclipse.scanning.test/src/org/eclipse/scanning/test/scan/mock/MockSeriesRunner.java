@@ -29,13 +29,13 @@ import org.eclipse.january.dataset.IDataset;
 
 /**
  * Runs a pipeline by looping the services of operations.
- * 
- * This will not work unless the pipeline is a linear series of operations 
+ *
+ * This will not work unless the pipeline is a linear series of operations
  * with one slug running the length.
- * 
- * If you have averaging or branching, you will need to consider using a 
+ *
+ * If you have averaging or branching, you will need to consider using a
  * graph to execute your operations.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -44,6 +44,7 @@ public class MockSeriesRunner implements IOperationRunner {
 
 	private IOperationContext context;
 
+	@Override
 	public void init(IOperationContext context) {
 		this.context        = context;
 	}
@@ -53,16 +54,16 @@ public class MockSeriesRunner implements IOperationRunner {
 		final IExecutionVisitor visitor = context.getVisitor() ==null ? new IExecutionVisitor.Stub() : context.getVisitor();
 
 		// determine data axes to populate origin metadata
-		SourceInformation ssource = null; 
-		
+		SourceInformation ssource = null;
+
 		try {
 			 ssource = context.getData().getMetadata(SliceFromSeriesMetadata.class).get(0).getSourceInfo();
 		} catch (Exception e) {
 			logger.error("Source not obtainable. Hope this is just a unit test...");
 		}
-		
+
 		final SourceInformation finalSource = ssource;
-		
+
 		// Create the slice visitor
 		SliceVisitor sv = new SliceVisitor() {
 
@@ -72,11 +73,11 @@ public class MockSeriesRunner implements IOperationRunner {
 				OperationData  data = new OperationData(slice, (Serializable[])null);
 				long start = System.currentTimeMillis();
 				for (IOperation<?,?> i : context.getSeries()) {
-					
+
 					OperationData tmp = i.execute(data.getData(), context.getMonitor());
 					//TODO only set metadata if doesnt already contain it!
 					//TODO continue if null;
-					
+
 					if (tmp == null) {
 						data = null;
 						break;
@@ -96,12 +97,12 @@ public class MockSeriesRunner implements IOperationRunner {
 
 		visitor.init(context.getSeries(), context.getData());
 		long start = System.currentTimeMillis();
-		
-		
+
+
 		ISliceViewIterator iterator = null;
-		
+
 		iterator = new MockSliceViewIterator(context.getData(), context.getSlicing(), context.getDataDimensions());
-		
+
 		if (context.getExecutionType()==ExecutionType.SERIES) {
 			Slicer.visit(iterator,sv);
 		} else if (context.getExecutionType()==ExecutionType.PARALLEL) {
@@ -110,7 +111,7 @@ public class MockSeriesRunner implements IOperationRunner {
 			throw new OperationException(context.getSeries()[0], "The edges are needed to execute a graph using ptolemy!");
 		}
 		logger.debug("Data ran in: " +(System.currentTimeMillis()-start)/1000. + " s");
-		
+
 	}
 
 	@Override

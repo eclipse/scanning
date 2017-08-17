@@ -52,21 +52,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * A viewer for editing a list of scannables.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class ScannableViewer {
 
 	private static final Logger logger = LoggerFactory.getLogger(ScannableViewer.class);
-	
+
 	private TableViewer viewer;
-	
+
 	private IScannableDeviceService cservice;
 	private Image ticked, unticked, defaultIcon;
-	
+
 
 	public ScannableViewer() {
 		IEventService eservice = ServiceHolder.getEventService();
@@ -88,15 +88,15 @@ public class ScannableViewer {
 	 * @param parent
 	 */
 	public void createPartControl(Composite parent) {
-		
+
 		viewer = new TableViewer(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
-		
+
 		viewer.getTable().setLinesVisible(true);
 		viewer.getTable().setHeaderVisible(true);
 		viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-		
+
 		createColumns(viewer, "Name", "Value", "Type");
-		
+
 		viewer.setContentProvider(new ScannableContentProvider(cservice));
 
 		try {
@@ -109,7 +109,7 @@ public class ScannableViewer {
 
 
 	private Collection<String> getMonitors() throws Exception {
-		
+
 		boolean onlyActivated = Activator.getDefault()!=null
 				              ? Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_ACTIVATED_ONLY)
 				              : true;
@@ -131,7 +131,8 @@ public class ScannableViewer {
 		tickedColumn.getColumn().setWidth(24);
 		tickedColumn.getColumn().setMoveable(false);
 		tickedColumn.setLabelProvider(new ColumnLabelProvider() {
-			
+
+			@Override
 			public Image getImage(Object element) {
 
 				if (!(element instanceof IScannable<?>)) return null;
@@ -139,14 +140,16 @@ public class ScannableViewer {
 
 				return scannable.isActivated() ? ticked : unticked;
 			}
-			
+
+			@Override
 			public String getText(Object element) {
 				return null;
 			}
 		});
 
 		MouseAdapter mouseClick = new MouseAdapter() {
-			
+
+			@Override
 			public void mouseDown(MouseEvent e) {
 				Point pt = new Point(e.x, e.y);
 				TableItem item = viewer.getTable().getItem(pt);
@@ -171,6 +174,7 @@ public class ScannableViewer {
 		nameColumn.getColumn().setMoveable(false);
 		nameColumn.getColumn().setText(nameTitle);
 		nameColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				if (!(element instanceof IScannable<?>)) return null;
 				IScannable<?> scannable = (IScannable<?>)element;
@@ -180,7 +184,7 @@ public class ScannableViewer {
 			}
 		});
 		nameColumn.setEditingSupport(new ScannableEditingSupport(tableViewer));
-		
+
 		TableViewerColumn valueColumn = new TableViewerColumn(tableViewer, SWT.LEFT, 2);
 		valueColumn.getColumn().setWidth(150);
 		valueColumn.getColumn().setMoveable(false);
@@ -192,6 +196,7 @@ public class ScannableViewer {
 		typeColumn.getColumn().setMoveable(false);
 		typeColumn.getColumn().setText(typeTitle);
 		typeColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				if (!(element instanceof IScannable<?>)) return null;
 				IScannable<?> scannable = (IScannable<?>)element;
@@ -203,7 +208,7 @@ public class ScannableViewer {
 		typeColumn.setEditingSupport(new TypeEditingSupport(tableViewer));
 
 	}
- 
+
 	public void refresh() throws Exception {
 		final Collection<DeviceInformation<?>> scannables = cservice.getDeviceInformation();
 		ScannableContentProvider prov = (ScannableContentProvider)viewer.getContentProvider();
@@ -214,14 +219,14 @@ public class ScannableViewer {
 	}
 
 	public void addScannable() {
-		
+
 		ScannableContentProvider prov = (ScannableContentProvider)viewer.getContentProvider();
 		IScannable<?> sscannable = getSelection();
 		if (sscannable == null) sscannable = prov.last();
 		IScannable<?> nscannable = AbstractScannable.empty();
-		
+
 		prov.insert(sscannable, nscannable);
-		viewer.editElement(nscannable, 1);		
+		viewer.editElement(nscannable, 1);
 	}
 
 	public void removeScannable() throws ScanningException {
@@ -251,12 +256,12 @@ public class ScannableViewer {
 		viewer.setSelection(new StructuredSelection(scannable));
 	}
 
-	
+
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
 
-	
+
 	public void dispose() {
 		if (ticked!=null)   ticked.dispose();
 		if (unticked!=null) unticked.dispose();
@@ -274,12 +279,12 @@ public class ScannableViewer {
 	public void addSelectionChangedListener(ISelectionChangedListener listener) {
 		viewer.addSelectionChangedListener(listener);
 	}
-	
+
 	public void reset() {
 		try {
 			viewer.setInput(getMonitors());
 		} catch (Exception e) {
 			logger.error("Cannot find selected monitors");
-		}		
+		}
 	}
 }

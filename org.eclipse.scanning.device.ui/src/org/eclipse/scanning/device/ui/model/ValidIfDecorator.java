@@ -23,7 +23,7 @@ import org.eclipse.scanning.api.annotation.ui.FieldValue;
 import org.eclipse.scanning.device.ui.ServiceHolder;
 
 class ValidIfDecorator implements IDecoratorValidator {
-	
+
 	private Object model;
 	private String fieldName;
 	private String expression;
@@ -34,15 +34,16 @@ class ValidIfDecorator implements IDecoratorValidator {
 		this.expression = expression;
 	}
 
+	@Override
 	public boolean check(String svalue, String delta) {
 
    		final IExpressionService service = ServiceHolder.getExpressionService();
    		if (service==null) return true;
-		try {			
+		try {
 			Number value = parseValue(svalue);
 	   		final IExpressionEngine  engine  = service.getExpressionEngine();
 	   		engine.createExpression(expression);
-	   		
+
 	   		final Map<String, Object>    values = new HashMap<>();
 	   		final Collection<FieldValue> fields = FieldUtils.getModelFields(model);
 	   		for (FieldValue field : fields) {
@@ -51,11 +52,11 @@ class ValidIfDecorator implements IDecoratorValidator {
 	   			values.put(field.getName(), val);
 			}
 		    values.put(fieldName, value);
-	
+
 	   		engine.setLoadedVariables(values);
-	   		
+
 	   		return (Boolean)engine.evaluate();
-	   		
+
 		} catch (Exception ne) {
 			ne.printStackTrace();
 			return false;
@@ -78,6 +79,7 @@ class ValidIfDecorator implements IDecoratorValidator {
 		this.fieldName = fieldName;
 	}
 
+	@Override
 	public String getExpression() {
 		return expression;
 	}

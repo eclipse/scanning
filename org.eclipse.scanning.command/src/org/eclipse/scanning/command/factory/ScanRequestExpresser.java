@@ -14,16 +14,15 @@ package org.eclipse.scanning.command.factory;
 import java.util.Collection;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
-import org.eclipse.scanning.api.device.models.IReflectedModel;
-import org.eclipse.scanning.api.device.models.ModelReflection;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.command.ParserServiceImpl;
 
 class ScanRequestExpresser extends PyModelExpresser<ScanRequest<?>> {
 
+	@Override
 	String pyExpress(ScanRequest<?> request, boolean verbose) throws Exception {
-		
-		
+
+
 		// TODO Fragment should be a StringBuilder, it is more efficient.
 		String fragment = "mscan(";
 		boolean scanRequestPartiallyWritten = false;
@@ -40,7 +39,7 @@ class ScanRequestExpresser extends PyModelExpresser<ScanRequest<?>> {
 			for (Object model : request.getCompoundModel().getModels()) {  // Order is important.
 				if (listPartiallyWritten) fragment += ", ";
 				Collection<IROI> rois = (Collection<IROI>) ParserServiceImpl.getPointGeneratorService().findRegions(model, request.getCompoundModel().getRegions());
-				
+
 				String smodel = factory.pyExpress(model, rois, verbose);
 				fragment += smodel;
 				listPartiallyWritten |= true;
@@ -84,11 +83,11 @@ class ScanRequestExpresser extends PyModelExpresser<ScanRequest<?>> {
 				fragment += factory.pyExpress(model, verbose);
 				listPartiallyWritten |= true;
 			}
-			
+
 			if (verbose || request.getDetectors().size() > 1) fragment += "]";
 			scanRequestPartiallyWritten |= true;
 		}
-		
+
 		fragment += ")";
 		return fragment;
 

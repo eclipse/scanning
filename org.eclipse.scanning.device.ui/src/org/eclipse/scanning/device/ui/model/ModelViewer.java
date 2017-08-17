@@ -22,7 +22,6 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.bindings.keys.IKeyLookup;
 import org.eclipse.jface.bindings.keys.KeyLookupFactory;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerEditor;
 import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
@@ -50,7 +49,6 @@ import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.annotation.ui.FieldRole;
 import org.eclipse.scanning.api.annotation.ui.FieldUtils;
 import org.eclipse.scanning.api.annotation.ui.FieldValue;
-import org.eclipse.scanning.api.annotation.ui.TypeDescriptor;
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
@@ -101,19 +99,19 @@ import org.slf4j.LoggerFactory;
 /**
  * Class for editing an operation model. Shows a table or other
  * relevant GUI for editing the model.
- * 
+ *
  * This class simply listens to the current selection and shows a GUI for editing
  * it if the selection is an IOperation.
- * 
+ *
  * You can also call setOperation(...) to programmatically set the editing operation.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionProvider {
 
 	private static final Logger logger = LoggerFactory.getLogger(ModelViewer.class);
-	
+
 	// UI
 	private TableViewer viewer;	      // Edits beans with a table of values
 	private TypeEditor<T>  typeEditor;   // Edits beans with TypeDescriptor custom editors
@@ -121,58 +119,61 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 	private Composite   validationComposite;
 	private Label       validationMessage;
 	private ModelPersistAction<T> save, load;
-	
+
 	/**
 	 * Caution, the view site may be null.
 	 */
 	private IViewSite   site;
-	
+
 	// Model
 	private T           model;
-	
+
 	// Validation
-	private IValidator<Object> validator; // The generator or runnable device etc. for which we are editing the model 
+	private IValidator<Object> validator; // The generator or runnable device etc. for which we are editing the model
 	private boolean   validationError = false;
 	private ModelValidationException validationException;
 
 	// Services
 	private IRunnableDeviceService dservice;
-	
+
 	ModelViewer() {
 		super();
 	}
-		
+
+	@Override
 	public <V> void setViewSite(V site) {
 		this.site = (IViewSite)site;
 		if (site != null) this.site.getPage().addSelectionListener(this);
 	}
-	
 
+
+	@Override
 	public void dispose() {
 		if (PageUtil.getPage()!=null) PageUtil.getPage().removeSelectionListener(this);
 	}
 
+	@Override
 	public <U> U createPartControl(U ancestor) {
-		
+
 		this.content = new Composite((Composite)ancestor, SWT.NONE);
 		content.setLayout(new GridLayout(1, false));
 		content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		GridUtils.removeMargins(content);
-		
-		this.viewer = createTableViewer(content);		
-		
+
+		this.viewer = createTableViewer(content);
+
 		this.typeEditor = new TypeEditor<>(this, content,  SWT.NONE);
 		typeEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
 		GridUtils.setVisible(typeEditor, false);
-		
+
 		this.validationComposite = new Composite(content, SWT.NONE);
 		validationComposite.setLayout(new GridLayout(2, false));
 		validationComposite.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
-		
+
 		final Label error = new Label(validationComposite, SWT.NONE);
 		error.setImage(Activator.getImageDescriptor("icons/error.png").createImage());
 		error.setLayoutData(new GridData(SWT.LEFT, SWT.BOTTOM, false, false));
-		
+
 		this.validationMessage = new Label(validationComposite, SWT.WRAP);
 		validationMessage.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
 		validationMessage.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
@@ -181,40 +182,42 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 		if (PageUtil.getPage()!=null) {
 			ISelection selection = PageUtil.getPage().getSelection();
 			processWorkbenchSelection(selection); // If model view is selected later but something it can process is the page selection...
-			
+
 			if (model==null) { // Go and look for the model on a view
 				final IViewPart part  = PageUtil.getPage().findView(ScanView.ID);
 				final Object    model = part!=null ? part.getAdapter(IScanPathModel.class) : null;
 				processObject(model);
 			}
 		}
-		
+
 		createActions();
-		
+
 		return (U)content;
 	}
 
 	private TableViewer createTableViewer(Composite content2) {
 		TableViewer viewer = new TableViewer(content, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
 		viewer.setContentProvider(createContentProvider());
-		
+
 		viewer.getTable().setLinesVisible(true);
 		viewer.getTable().setHeaderVisible(true);
 		viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
 		// resize the row height using a MeasureItem listener
 		viewer.getTable().addListener(SWT.MeasureItem, new Listener() {
-	        public void handleEvent(Event event) {
+	        @Override
+			public void handleEvent(Event event) {
 	            event.height = 24;
 	        }
 	    });
 
 	    //added 'event.height=rowHeight' here just to check if it will draw as I want
 		viewer.getTable().addListener(SWT.EraseItem, new Listener() {
-	        public void handleEvent(Event event) {
+	        @Override
+			public void handleEvent(Event event) {
 	            event.height=24;
 	        }
-	    });		
-		
+	    });
+
 		TableViewerFocusCellManager focusCellManager = new TableViewerFocusCellManager(viewer, new FocusCellOwnerDrawHighlighter(viewer));
 		ColumnViewerEditorActivationStrategy actSupport = new ColumnViewerEditorActivationStrategy(viewer) {
 			@Override
@@ -235,14 +238,16 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 						| ColumnViewerEditor.KEYBOARD_ACTIVATION);
 
 
-		
+
 		createColumns(viewer);
 		createDropTarget(viewer);
 
 		viewer.getTable().addKeyListener(new KeyListener() {
+			@Override
 			public void keyReleased(KeyEvent e) {
 			}
 
+			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.keyCode == SWT.F1) {
 					// TODO Help!
@@ -265,26 +270,27 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 	}
 
 	private void createActions() {
-		
+
 		if (site==null) return;
-		
+
 		List<IContributionManager> mans = Arrays.asList(site.getActionBars().getToolBarManager(), site.getActionBars().getMenuManager());
-		
+
 		// TODO We should be able to switch around different roles
 		// and show parameters in the table depending on role.
 		CheckableActionGroup group = new CheckableActionGroup();
 		createFieldRoleActions(group);
-		
+
 		this.save = new ModelPersistAction<T>(typeEditor, PersistType.SAVE);
 		this.load = new ModelPersistAction<T>(typeEditor, PersistType.LOAD);
 		ViewUtil.addGroups("save", mans, save, load);
 	}
 
 	private void createFieldRoleActions(CheckableActionGroup group) {
-		
+
 		FieldRole[] roles = FieldRole.values();
 		for (FieldRole role : roles) {
 			IAction action = new Action(role.getLabel(), IAction.AS_CHECK_BOX) {
+				@Override
 				public void run() {
 					setFieldRole(role);
 				}
@@ -296,15 +302,16 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 
 	private void setFieldRole(FieldRole simple) {
 		// TODO Filter table!
-		
+
 	}
 
+	@Override
 	public <U> U getControl() {
 		return (U)content;
 	}
 
 	private void createDropTarget(TableViewer viewer) {
-		
+
 		final Table table = (Table)viewer.getControl();
 
 		// Create drop target for file paths.
@@ -314,15 +321,15 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 		Transfer[] types = new Transfer[] {fileTransfer, textTransfer};
 		target.setTransfer(types);
 		target.addDropListener(new DropTargetAdapter() {
-			
+
 			private boolean checkLocation(DropTargetEvent event) {
-				
+
 				if (event.item==null || !(event.item instanceof Item)) {
 					return false;
 				}
-				
+
 				Item item = (Item)event.item;
-				
+
 				// will accept text but prefer to have files dropped
 				Rectangle bounds = ((TableItem)item).getBounds(1);
 				Point coordinates = new Point(event.x, event.y);
@@ -333,8 +340,9 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 				return true;
 			}
 
-			public void drop(DropTargetEvent event) {		
-				
+			@Override
+			public void drop(DropTargetEvent event) {
+
 				String path = null;
 				if (textTransfer.isSupportedType(event.currentDataType)) {
 					path = (String)event.data;
@@ -344,12 +352,12 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 					path = files[0];
 				}
 				if (path==null) return;
-				
+
 				if (!checkLocation(event)) return;
-				
+
 				TableItem item = (TableItem)event.item;
-				
-				FieldValue field = (FieldValue)item.getData();				
+
+				FieldValue field = (FieldValue)item.getData();
 				if (field!=null) {
 					if (field.isFileProperty()) {
 						try {
@@ -365,34 +373,37 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 	}
 
 	private void createColumns(TableViewer viewer) {
-		
+
         TableViewerColumn var   = new TableViewerColumn(viewer, SWT.LEFT, 0);
 		var.getColumn().setText("Name");
 		var.getColumn().setWidth(200);
 		var.setLabelProvider(new EnableIfColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				return ((FieldValue)element).getDisplayName();
 			}
 		});
-		
+
 		var   = new TableViewerColumn(viewer, SWT.LEFT, 1);
 		var.getColumn().setText("Value");
 		var.getColumn().setWidth(300);
-		
+
 		ColumnLabelProvider prov = new ModelFieldLabelProvider(this);
 		var.setLabelProvider(prov);
 		var.setEditingSupport(new ModelFieldEditingSupport(this, viewer, prov));
 	}
 
+	@Override
 	public void setFocus() {
 		viewer.getControl().setFocus();
 	}
-	
+
+	@Override
 	public void refresh() {
 		validate(); // Must be first because refresh() then rerenders the values.
 		viewer.refresh();
 	}
-	
+
 	@Override
 	public void updateModel(T model) {
 		T old      = this.model;
@@ -401,9 +412,9 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 		setSelection(new StructuredSelection(model));
 		setSeriesItem(old, model);
 	}
-	
+
 	private void setSeriesItem(T old, T model) {
-		
+
 		// Find a view reference claiming to edit the thing which we changed.
 		IViewReference ref = Arrays.stream(PageUtil.getPage(site).getViewReferences())
 				                      .filter(des->isScanView(des))
@@ -443,14 +454,14 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 	}
 
 	private void validate() {
-		
+
 		if (validator==null) {
 			validationError = false;
 		} else {
 			try {
 				validator.validate(model);
 				validationError = false;
-				
+
 			} catch (Exception ne) {
 				validationException = ne instanceof ModelValidationException ? (ModelValidationException)ne : null;
 				if (ne.getMessage()!=null) validationMessage.setText(ne.getMessage());
@@ -463,9 +474,9 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-        processWorkbenchSelection(selection);	
+        processWorkbenchSelection(selection);
 	}
-	
+
 	private void processWorkbenchSelection(ISelection selection) {
 		if (selection instanceof IStructuredSelection) {
 			Object ob = ((IStructuredSelection)selection).getFirstElement();
@@ -474,13 +485,13 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 	}
 
 	private void processObject(Object ob) {
-		
+
 		if (ob==null) return;
 		try {
 			if (site != null) site.getActionBars().getStatusLineManager().setErrorMessage(null);
-						
+
 			if (ob instanceof IValidator) setValidator((IValidator<?>)ob);
-			
+
 			// Special case for device information, we read the latest
 			if (ob instanceof DeviceInformation) {
 				String name = ((DeviceInformation<?>)ob).getName();
@@ -490,7 +501,7 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 			}
 			if (ob instanceof IModelProvider) setModel((T)((IModelProvider<?>)ob).getModel());
 			if (ob instanceof IScanPathModel) setModel((T)ob);
-			
+
 			if (ob instanceof IROI && getModel() instanceof IBoundingBoxModel) {
 				try {
 	                BoundingBox box = ScanRegions.createBoxFromPlot(model);
@@ -500,7 +511,7 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 					logger.info("Unable to process box from plot!", ne);
 				}
 			}
-			
+
 		} catch (Exception ne) {
 			logger.error("Cannot set model for object "+ob, ne);
 			if (site != null) site.getActionBars().getStatusLineManager().setErrorMessage("Cannot connect to server "+ne.getMessage());
@@ -523,10 +534,10 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 		if (viewer.getTable().isDisposed()) return;
 		if (viewer.isCellEditorActive())    return;
 		this.model = model;
-		
+
 		if (save!=null) this.save.setModelClass((Class<T>)model.getClass());
 		if (load!=null) this.load.setModelClass((Class<T>)model.getClass());
-		
+
 		// Switch UI as appropriate
 		if (typeEditor.isCustomEditor(model)) {
 			GridUtils.setVisible(viewer.getTable(), false);
@@ -540,13 +551,14 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 		    viewer.setInput(model);
 			content.layout(new Control[]{viewer.getTable()});
 		}
-		validate(); 
+		validate();
 	}
 
+	@Override
 	public T getModel() {
 		return model;
 	}
-	
+
 	private IContentProvider createContentProvider() {
 		return new IStructuredContentProvider() {
 			@Override
@@ -560,7 +572,7 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 
 			@Override
 			public Object[] getElements(Object inputElement) {
-				
+
 				Object model = null;
 				if (inputElement instanceof IPointGenerator) {
 					IPointGenerator<IScanPathModel> op = (IPointGenerator<IScanPathModel>)inputElement;
@@ -605,7 +617,7 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 	public boolean isValidationError() {
 		return validationError;
 	}
-	
+
 	public boolean isValidationError(FieldValue field) {
 		if (!validationError) return false;
 		if (validationException!=null) {

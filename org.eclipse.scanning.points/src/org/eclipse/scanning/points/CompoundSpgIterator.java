@@ -35,20 +35,20 @@ import org.slf4j.LoggerFactory;
 
 /**
  * We are trying to make it super efficient to iterate
- * compound generators by doing this. Otherwise the createPoints(...) 
+ * compound generators by doing this. Otherwise the createPoints(...)
  * would do.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class CompoundSpgIterator extends AbstractScanPointIterator {
 
 	private static Logger logger = LoggerFactory.getLogger(CompoundSpgIterator.class);
-	
+
 	private CompoundGenerator     gen;
 	private IPosition             pos;
 	private Iterator<? extends IPosition>[] iterators;
-	
+
 	private IPosition currentPoint;
 	private int index = -1;
 
@@ -56,42 +56,42 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 		this.gen       = gen;
 		this.iterators = initIterators();
 		this.pos       = createFirstPosition();
-		
+
 		// Throw an exception if iterator is device dependent and can't be processed by SPG
 		for (Iterator<? extends IPosition>it : this.iterators) {
 			if (IDeviceDependentIterable.class.isAssignableFrom(it.getClass())) {
 				throw new IllegalArgumentException();
 			}
 		}
-		
+
 		JythonObjectFactory<ScanPointIterator> compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
-		
+
         Object[] excluders = getExcluders(gen.getModel().getRegions());
         Object[] mutators = getMutators(gen.getModel().getMutators());
         double duration = gen.getModel().getDuration();
-        
+
         ScanPointIterator iterator = compoundGeneratorFactory.createObject(
 				iterators, excluders, mutators, duration);
-        
+
         index = -1;
         pyIterator = iterator;
 	}
 
 	private IPosition createFirstPosition() throws GeneratorException {
-		
+
 	    IPosition pos = new MapPosition();
 		for (int i = 0; i < iterators.length-1; i++) {
 			pos = iterators[i].next().compound(pos);
 		}
 		return pos;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
     public PyDictionary toDict() {
 		return ((PySerializable) pyIterator).toDict();
     }
-    
+
 	@Override
 	public boolean hasNext() {
 		if (pyIterator.hasNext()) {
@@ -113,12 +113,12 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 		}
 		IPosition point = currentPoint;
 		currentPoint = null;
-		
+
 		return point;
 	}
-	
+
 	public IPosition getNext() {
-		
+
 		for (int i = iterators.length-1; i > -1; i--) {
 			if (iterators[i].hasNext()) {
 				IPosition next = iterators[i].next();
@@ -146,6 +146,7 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 		return ret;
 	}
 
+	@Override
 	public void remove() {
         throw new UnsupportedOperationException("remove");
     }
@@ -164,7 +165,7 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 		}
 		return pyMutators.toArray();
 	}
-	
+
 	/**
 	 * Creates an array of python objects representing the excluders
 	 * @param regions

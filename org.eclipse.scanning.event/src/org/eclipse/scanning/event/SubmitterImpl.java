@@ -51,10 +51,10 @@ class SubmitterImpl<T extends StatusBean> extends AbstractQueueConnection<T> imp
 	public void submit(T bean) throws EventException {
         submit(bean, true);
 	}
-	
+
 	@Override
 	public void submit(T bean, boolean prepareBean) throws EventException {
-		      
+
 		Connection      send     = null;
 		Session         session  = null;
 		MessageProducer producer = null;
@@ -98,11 +98,11 @@ class SubmitterImpl<T extends StatusBean> extends AbstractQueueConnection<T> imp
 			message.setJMSPriority(getPriority());
 
 			producer.send(message);
-			
+
 			try {
 				// Deals with paused consumers by publishing something directly after submission.
 				// If there is a topic we tell everyone that we sent something to it in case the consumer is paused.
-				if (getStatusTopicName()!=null) { 
+				if (getStatusTopicName()!=null) {
 					TextMessage msg = session.createTextMessage(json);
 					Topic topic = session.createTopic(getStatusTopicName());
 					MessageProducer prod = session.createProducer(topic);
@@ -168,7 +168,7 @@ class SubmitterImpl<T extends StatusBean> extends AbstractQueueConnection<T> imp
 		submit(bean);
 		latch.await();
 	}
-	
+
 	@Override
 	public boolean reorder(T bean, int amount) throws EventException {
 		return reorder(bean, getSubmitQueueName(), amount);
@@ -184,41 +184,49 @@ class SubmitterImpl<T extends StatusBean> extends AbstractQueueConnection<T> imp
         return replace(bean, getSubmitQueueName());
 	}
 
+	@Override
 	public String getUniqueId() {
 		return uniqueId;
 	}
 
 
+	@Override
 	public void setUniqueId(String uniqueId) {
 		this.uniqueId = uniqueId;
 	}
 
 
+	@Override
 	public int getPriority() {
 		return priority;
 	}
 
 
+	@Override
 	public void setPriority(int priority) {
 		this.priority = priority;
 	}
 
 
+	@Override
 	public long getLifeTime() {
 		return lifeTime;
 	}
 
 
+	@Override
 	public void setLifeTime(long lifeTime) {
 		this.lifeTime = lifeTime;
 	}
 
 
+	@Override
 	public long getTimestamp() {
 		return timestamp;
 	}
 
 
+	@Override
 	public void setTimestamp(long timestamp) {
 		this.timestamp = timestamp;
 	}

@@ -44,7 +44,7 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 
 	@BeforeClass
 	public static void createWatchdogs() throws Exception {
-		
+
 		assertNotNull(connector.getScannable("beamcurrent"));
 		assertNotNull(connector.getScannable("portshutter"));
 
@@ -53,10 +53,10 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		// We create a device watchdog (done in spring for real server)
 		DeviceWatchdogModel model = new DeviceWatchdogModel();
 		model.setExpression("beamcurrent >= 1.0 && !portshutter.equalsIgnoreCase(\"Closed\")");
-		
+
 		edog = new ExpressionWatchdog(model);
 		edog.activate();
-		
+
 		final IScannable<Number>   topups  = connector.getScannable("topup");
 		final MockTopupScannable   topup   = (MockTopupScannable)topups;
 		assertNotNull(topup);
@@ -73,16 +73,16 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		model.setWarmup(200);  // Unpause 200ms after
 		model.setTopupTime(150);
 		model.setPeriod(5000);
-		
+
 		tdog = new TopupWatchdog(model);
 		tdog.activate();
 
 	}
 
-	
+
 	@Before
 	public void before() throws Exception {
-		
+
 		final IScannable<Number>   topups  = connector.getScannable("topup");
 		final MockTopupScannable   topup   = (MockTopupScannable)topups;
 		assertNotNull(topup);
@@ -91,20 +91,20 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		assertTrue(topup.isDisconnected());
 		topup.setPosition(1000);
 		assertTrue("Topup is "+topup.getPosition(), topup.getPosition().doubleValue()>=1000);
-		
+
 		assertNotNull(connector.getScannable("beamcurrent"));
 		assertNotNull(connector.getScannable("portshutter"));
 
 		connector.getScannable("beamcurrent").setPosition(5d);
 		connector.getScannable("portshutter").setPosition("Open");
 	}
-	
+
 	@Test
 	public void dogsSame() {
 		assertEquals(edog, Services.getWatchdogService().getWatchdog("ExpressionWatchdog"));
 		assertEquals(tdog, Services.getWatchdogService().getWatchdog("TopupWatchdog"));
 	}
-	
+
 	@Test
 	public void deactivated() throws Exception {
 
@@ -118,8 +118,8 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 			tdog.activate();
 		}
 	}
-	
-	
+
+
 	@Test
 	public void disabled() throws Exception {
 
@@ -132,13 +132,13 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 			final IScannable<Number>   topup  = connector.getScannable("topup");
 			topup.setPosition(10);
 			assertTrue(scanner.latch(10, TimeUnit.SECONDS));
-			
+
 		} finally {
-			edog.setEnabled(true); 
-			tdog.setEnabled(true); 
+			edog.setEnabled(true);
+			tdog.setEnabled(true);
 		}
 	}
-	
+
 	@Test
 	public void deactivatedExpression() throws Exception {
 
@@ -150,8 +150,8 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 			edog.activate();
 		}
 	}
-	
-	
+
+
 	@Test
 	public void disabledExpression() throws Exception {
 
@@ -163,7 +163,7 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 			mon.setPosition("Closed");
 			assertTrue(scanner.latch(10, TimeUnit.SECONDS));
 		} finally {
-			edog.setEnabled(true); 
+			edog.setEnabled(true);
 		}
 	}
 	@Test
@@ -177,15 +177,15 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 			tdog.activate();
 		}
 	}
-	
-	
+
+
 	@Test
 	public void disabledTopup() throws Exception {
 
 		final IScannable<Number>   topups  = connector.getScannable("topup");
 		final MockTopupScannable   topup   = (MockTopupScannable)topups;
 		assertNotNull(topup);
-	
+
 		long fastPeriod = 500;
 		long orig = topup.getPeriod();
 		topup.setPeriod(fastPeriod);
@@ -197,7 +197,7 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 			IRunnableEventDevice<?> scanner = runQuickie(true);
 			assertTrue(scanner.latch(10, TimeUnit.SECONDS));
 		} finally {
-			tdog.setEnabled(true); 
+			tdog.setEnabled(true);
 			topup.setPeriod(orig);
 		}
 	}
@@ -209,35 +209,36 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		// x and y are level 3
 		IDeviceController controller = createTestScanner(null);
 		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
-		
+
 		Set<DeviceState> states = new HashSet<>();
 		// This run should get paused for beam and restarted.
 		scanner.addRunListener(new IRunListener() {
+			@Override
 			public void stateChanged(RunEvent evt) throws ScanningException {
 				states.add(evt.getDeviceState());
 			}
 		});
-		
+
 		scanner.start(null);
 		scanner.latch(200, TimeUnit.MILLISECONDS);
 		controller.pause("test", null);  // Pausing externally should override any watchdog resume.
-		
+
 		final IScannable<String>   mon  = connector.getScannable("portshutter");
 		mon.setPosition("Closed");
 		mon.setPosition("Open");
 		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
-		
+
 		controller.resume("test");
-		
+
 		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertNotEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		mon.setPosition("Closed");
-		
+
 		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
-		
+
 		controller.resume("test"); // The external resume should still not resume it
 
 		scanner.latch(100, TimeUnit.MILLISECONDS);
@@ -261,28 +262,29 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		// x and y are level 3
 		IDeviceController controller = createTestScanner(null);
 		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
-		
+
 		Set<DeviceState> states = new HashSet<>();
 		// This run should get paused for beam and restarted.
 		scanner.addRunListener(new IRunListener() {
+			@Override
 			public void stateChanged(RunEvent evt) throws ScanningException {
 				states.add(evt.getDeviceState());
 			}
 		});
-		
+
 		scanner.start(null);
 		scanner.latch(200, TimeUnit.MILLISECONDS);
 		controller.pause("test", null);   // Pausing externally should override any watchdog resume.
-		
+
 		topup.setPosition(0);    // Should do nothing, device is already paused
 		topup.setPosition(5000); // Gets it ready to think it has to resume
 		topup.setPosition(4000); // Will resume it because warmup passed
-		
+
 		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState()); // Should still be paused
-		
+
 		controller.resume("test");
-		
+
 		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertNotEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
@@ -290,7 +292,7 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 
 		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
-		
+
 		controller.resume("test"); // It shouldn't because now topup has set to pause.
 
 		scanner.latch(25, TimeUnit.MILLISECONDS);
@@ -301,7 +303,7 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 
 	@Test
 	public void shutterAndTopupWithExternalPause() throws Exception {
-		
+
 		final IScannable<Number>   topups  = connector.getScannable("topup");
 		final MockTopupScannable   topup   = (MockTopupScannable)topups;
 		assertNotNull(topup);
@@ -309,24 +311,25 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		// x and y are level 3
 		IDeviceController controller = createTestScanner(null);
 		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
-		
+
 		Set<DeviceState> states = new HashSet<>();
 		// This run should get paused for beam and restarted.
 		scanner.addRunListener(new IRunListener() {
+			@Override
 			public void stateChanged(RunEvent evt) throws ScanningException {
 				states.add(evt.getDeviceState());
 			}
 		});
-		
+
 		scanner.start(null);
 		Thread.sleep(25);  // Do a bit
 		controller.pause("test", null);   // Pausing externally should override any watchdog resume.
-		
+
 		topup.setPosition(0);    // Should do nothing, device is already paused
 		topup.setPosition(5000); // Gets it ready to think it has to resume
 		topup.setPosition(4000); // Will resume it because warmup passed
 
-		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.		
+		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState()); // Should still be paused
 
 		final IScannable<String>   mon  = connector.getScannable("portshutter");
@@ -336,8 +339,8 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		controller.resume("test");
-		
-		Thread.sleep(100);       	
+
+		Thread.sleep(100);
 		assertNotEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 		mon.setPosition("Closed");
@@ -349,7 +352,7 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		topup.setPosition(5000); // Gets it ready to think it has to resume
 		topup.setPosition(4000); // Will resume it because warmup passed
 
-		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.		
+		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState()); // Should still be paused
 
 		mon.setPosition("Open");
@@ -368,7 +371,7 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		topup.setPosition(5000); // Gets it ready to think it has to resume
 		topup.setPosition(4000); // Will resume it because warmup passed
 
-		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.		
+		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.
 		assertNotEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
 	}

@@ -72,42 +72,42 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * This controller can be used by any plotting
  * system to make it process maps. When regions are
  * selected or moved, the scan path is replotted using a job.
  * {@link org.dawnsci.plotting.tools.profile.ProfileTool.ProfileJob}
- * 
+ *
  * @author Matthew Gerring
  * @author James Mudd
  * @author Colin Palmer
  *
  */
 public class PlottingController implements ISelectionProvider, IAdaptable {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(PlottingController.class);
 
-	
+
 	private static final String MAPPING_PATH_NAME = "Mapping Scan Path";
-	
+
 	// UI
 	private   IPlottingSystem<?> system;
 	private   final Color        scanPathColour;
 	private   final IViewSite    site;
-	
+
 	// Data
 	private   volatile Object    model; // We make accessing the model single threaded because worker threads are involved.
-	
+
 	// Events
 	private   IRegionListener    regionListener;
 	private   IROIListener       roiListener;
-	
+
 	// Workers
 	private PathInfoCalculatorJob job;
 
 
 	public PlottingController(IPlottingSystem<?> system, IViewSite site) {
-		
+
 		this.system         = system;
 		this.site           = site;
 		this.listeners      = new HashSet<ISelectionChangedListener>(11);
@@ -146,27 +146,28 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 				fireRegion((IRegion)evt.getSource(), evt.getRegion().getROI(), true);
 			}
 		};
-		
+
 		createActions(site);
 	}
-	
+
 
 	private AxisConfiguration axisConfig;
 	/**
 	 * Actions in addition to the standard plotting actions which
 	 * should be shown on the plot.
-	 * 
+	 *
 	 * @param site
 	 */
 	private void createActions(IViewSite site) {
-		
+
 		IActionBars bars = site.getActionBars();
 		final List<IContributionManager> mans = Arrays.asList(bars.getToolBarManager(), bars.getMenuManager());
-	
+
 	    final IAction configureAxes = new Action("Configure...", Activator.getImageDescriptor("icons/home-for-sale-sign-blue.png")) {
 
+			@Override
 			public void run() {
-	    		
+
 	    		try {
 		    		IModelDialog<AxisConfiguration>  dialog = ServiceHolder.getInterfaceService().createModelDialog(site.getShell());
 		    		dialog.setPreamble("Please define the axes and their ranges we will map within.");
@@ -189,14 +190,14 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 	}
 
 	protected void setAxisConfiguration(AxisConfiguration conf) {
-		
+
 		this.axisConfig = conf;
 		if (conf==null) return;
-		
+
 		createPlot(conf);
 		system.getSelectedXAxis().setTitle(conf.getFastAxisName());
 		system.getSelectedYAxis().setTitle(conf.getSlowAxisName());
-		
+
 		// If we have to reaxis the regions, try to
 		if (conf.isApplyRegions()) {
 			List<ScanRegion<IROI>> regions = ScanRegions.getScanRegions(system);
@@ -205,7 +206,7 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 				region.setScannables(axes);
 			}
 		}
-		
+
 		if (conf.isApplyModels()) {
 			// TODO Use IScanBuilderService
 			IViewReference[] refs = PageUtil.getPage().getViewReferences();
@@ -227,14 +228,14 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 		}
 
 		send(conf);
-		
+
 		IStashing stash = ServiceHolder.getStashingService().createStash("org.eclipse.scanning.device.ui.axis.configuation.json");
 		try {
-			stash.stash(conf);          
+			stash.stash(conf);
 		} catch (Exception ne) {
 		    logger.error("Cannot save to "+stash.getFile(), ne);
 		}
-        
+
 	}
 
 	private void send(AxisConfiguration conf) {
@@ -243,42 +244,42 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
             IPublisher<AxisConfiguration> publisher = eservice.createPublisher(new URI(CommandConstants.getScanningBrokerUri()), EventConstants.AXIS_CONFIGURATION_TOPIC);
             publisher.broadcast(axisConfig);
             publisher.disconnect();
-            
+
 		} catch (Exception ne) {
 		    logger.error("Cannot publish "+axisConfig, ne);
 		}
 	}
 
 	protected AxisConfiguration getAxisConfiguration() {
-		
-		if (axisConfig==null) axisConfig = new AxisConfiguration();		
+
+		if (axisConfig==null) axisConfig = new AxisConfiguration();
 		axisConfig.setFastAxisName(system.getSelectedXAxis().getTitle());
-		
+
 		final IImageTrace image = (IImageTrace)system.getTrace("image");
 		if (image!=null) {
 			double[] da = image.getGlobalRange();
 			axisConfig.setFastAxisStart(da[0]);
 			axisConfig.setFastAxisEnd(da[1]);
-			
+
 			axisConfig.setSlowAxisStart(da[2]);
 			axisConfig.setSlowAxisEnd(da[3]);
 		} else {
-		
+
 			axisConfig.setFastAxisStart(system.getSelectedXAxis().getLower());
 			axisConfig.setFastAxisEnd(system.getSelectedXAxis().getUpper());
-			
+
 			axisConfig.setSlowAxisStart(system.getSelectedYAxis().getLower());
 			axisConfig.setSlowAxisEnd(system.getSelectedYAxis().getUpper());
 		}
-		
+
 		axisConfig.setFastAxisName(system.getSelectedXAxis().getTitle());
 		axisConfig.setSlowAxisName(system.getSelectedYAxis().getTitle());
 
 		return axisConfig;
 	}
-	
+
 	private void createPlot(AxisConfiguration conf) {
-		
+
 		if (conf==null) return;
 		IDataset image = null;
 		if (conf.getMicroscopeImage()!=null && !"".equals(conf.getMicroscopeImage())) {
@@ -286,7 +287,7 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 			    image = ServiceHolder.getLoaderService().getDataset(conf.getMicroscopeImage(), null);
 			} catch (Exception ne) {
 				final File file = new File(conf.getMicroscopeImage());
-				ErrorDialog.openError(site.getShell(), "Problem Reading '"+file.getName()+"'", 
+				ErrorDialog.openError(site.getShell(), "Problem Reading '"+file.getName()+"'",
 						"There was a problem reading '"+file.getName()+"'\n\n"
 								+ "Please contact our support representative.", new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage(), ne));
 				logger.error("Cannot read file!", ne);
@@ -302,48 +303,48 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 		}
 		createTrace(conf, image);
 	}
-	
+
 	private void createTrace(AxisConfiguration conf, IDataset image) {
-		
+
 		// Images are reversed
 		int fsize = image.getShape()[1];
 		int ssize = image.getShape()[0];
-		
+
 		IDataset x = DatasetFactory.createRange(conf.getFastAxisStart(), conf.getFastAxisEnd(), (conf.getFastAxisEnd()-conf.getFastAxisStart())/fsize, Dataset.FLOAT);
 		x.setName(conf.getFastAxisName());
 		IDataset y = DatasetFactory.createRange(conf.getSlowAxisStart(), conf.getSlowAxisEnd(), (conf.getSlowAxisEnd()-conf.getSlowAxisStart())/ssize, Dataset.FLOAT);
 		y.setName(conf.getSlowAxisName());
-		
-		IImageTrace it = system.getTrace("image")!=null 
+
+		IImageTrace it = system.getTrace("image")!=null
 				       ? (IImageTrace)system.getTrace("image")
 				       : system.createImageTrace("image");
 		it.setData(image, Arrays.asList(new IDataset[]{x,y}), false);
-		
+
 		double[] globalRange = new double[4];
 		globalRange[0] = conf.getFastAxisStart();
 		globalRange[1] = conf.getFastAxisEnd();
 		globalRange[2] = conf.getSlowAxisStart();
 		globalRange[3] = conf.getSlowAxisEnd();
 		it.setGlobalRange(globalRange);
-		
+
 		system.addTrace(it);
 		job.schedule();
 	}
 
 
 	void plot(PathInfo info) {
-		
+
 		boolean newTrace = false;
 		//Remove the previous trace
 		ILineTrace pathTrace = (ILineTrace)system.getTrace(MAPPING_PATH_NAME);
-		
+
 		// If there are no scan regions at all, no trace to draw
 		// If the model is not one we draw scan paths for, no trace to draw.
 		if (!isScanPathModel() || ScanRegions.getScanRegions(system)==null) {
 			if (pathTrace!=null) pathTrace.setVisible(false);
 			return;
-		}	
-		
+		}
+
 		if (pathTrace == null) {
 			pathTrace = system.createLineTrace(MAPPING_PATH_NAME);
 			pathTrace.setTraceColor(scanPathColour);
@@ -370,11 +371,11 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 	private void fireRegion(IRegion region, IROI roi, boolean drawPath) {
 
 		if (region==null) return;
-		
+
 		if (!(region.getUserObject() instanceof ScanRegion)) return; // Must be another region.
 		roi.setName(region.getName());
 		setSelection(new StructuredSelection(roi));
-		
+
 		List<ScanRegion<IROI>> sregions = ScanRegions.getScanRegions(system);
 		if (drawPath) {
 			if (sregions==null) {
@@ -385,10 +386,10 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 		}
 	}
 
-	
+
 	private Set<ISelectionChangedListener> listeners;
 	private ISelection currentSelection;
-	
+
 	@Override
 	public void addSelectionChangedListener(ISelectionChangedListener listener) {
 		listeners.add(listener);
@@ -409,7 +410,7 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 	 */
 	@Override
 	public void setSelection(ISelection selection) {
-		
+
 		if (listeners.isEmpty()) return;
 		currentSelection = selection;
 		SelectionChangedEvent e = new SelectionChangedEvent(this, currentSelection);
@@ -424,17 +425,17 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 	public void refresh() {
 		job.schedule(model, ScanRegions.getScanRegions(system));
 	}
-	
+
 	public void setModel(Object model) throws Exception {
-		
+
 		this.model = model;
-		if (isScanPathModel()) {			
+		if (isScanPathModel()) {
 			job.schedule(model, ScanRegions.getScanRegions(system));
 		} else {
 			setPathVisible(false);
 		}
 	}
-	
+
 	private boolean isScanPathModel() {
 		// TODO We may want to change the definition of this.
 		return model instanceof IBoundingBoxModel || model instanceof IBoundingLineModel;
@@ -458,13 +459,13 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 	}
 
 	public void connect() {
-		
+
 	    connectRegions();
 	    connectAxes();
 	}
 
 	private void connectAxes() {
-		
+
 		IStashing stash = ServiceHolder.getStashingService().createStash("org.eclipse.scanning.device.ui.axis.configuation.json");
 		if (stash.isStashed()) {
 			try {
@@ -474,7 +475,7 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 			}
 			setAxisConfiguration(axisConfig);
 		}
-		
+
 	}
 
 	private void connectRegions() {

@@ -20,7 +20,7 @@ public class RepeatedPointIterator implements ScanPointIterator {
 
 	private RepeatedPointModel   model;
 	private int count = 0;
-	
+
 	public RepeatedPointIterator(RepeatedPointGenerator gen) {
 		this.model= gen.getModel();
 	}
@@ -29,7 +29,7 @@ public class RepeatedPointIterator implements ScanPointIterator {
 	public boolean hasNext() {
 		return count<model.getCount();
 	}
-	
+
 	private static boolean countSleeps;
 	private static int     sleepCount;
 	   /**
@@ -47,7 +47,7 @@ public class RepeatedPointIterator implements ScanPointIterator {
 
 	@Override
 	public IPosition next() {
-		
+
 		if (model.getSleep()>0) {
 			try {
 				Thread.sleep(model.getSleep());
@@ -61,6 +61,7 @@ public class RepeatedPointIterator implements ScanPointIterator {
 		return point;
 	}
 
+	@Override
 	public void remove() {
         throw new UnsupportedOperationException("remove");
     }
