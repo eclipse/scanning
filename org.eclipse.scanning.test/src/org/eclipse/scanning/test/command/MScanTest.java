@@ -54,7 +54,7 @@ public class MScanTest extends AbstractScanCommandsTest {
 
 	@Test
 	public void testI15_1Case() throws Exception {
-		pi.exec("mscan(path=[grid(axes=('stage_x', 'stage_y'), start=(-1.5, -1.0), stop=(0.5, 1.0), count=(2, 2), snake=False)], mon=['s1MockNeXusSlit'], det=[detector('mandelbrot', 0.001, maxIterations=500, escapeRadius=10.0, columns=301, rows=241, points=100, maxRealCoordinate=1.5, maxImaginaryCoordinate=1.2, realAxisName='stage_x', imaginaryAxisName='stage_y', enableNoise=False, noiseFreeExposureTime=5.0, saveImage=True, saveSpectrum=True, saveValue=True)])");
+		pi.exec("mscan(path=[grid(axes=('stage_x', 'stage_y'), start=(-1.5, -1.0), stop=(0.5, 1.0), count=(2, 2), snake=False)], monitorsPerScan=['s1MockNeXusSlit'], det=[detector('mandelbrot', 0.001, maxIterations=500, escapeRadius=10.0, columns=301, rows=241, points=100, maxRealCoordinate=1.5, maxImaginaryCoordinate=1.2, realAxisName='stage_x', imaginaryAxisName='stage_y', enableNoise=False, noiseFreeExposureTime=5.0, saveImage=True, saveSpectrum=True, saveValue=True)])");
 	}
 
 	@Test

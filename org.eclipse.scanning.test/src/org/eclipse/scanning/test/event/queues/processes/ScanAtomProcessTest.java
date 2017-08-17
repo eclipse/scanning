@@ -99,7 +99,7 @@ public class ScanAtomProcessTest {
 		ScanRequest<?> scanReq = new ScanRequest<>();
 		scanReq.setDetectors(detectors);
 		scanReq.setCompoundModel(new CompoundModel<>(scanAxes));
-		scanReq.setMonitorNames(monitors);
+		scanReq.setMonitorNamesPerPoint(monitors);
 
 		scAt = new ScanAtom("vtScan", scanReq);
 		scAt.setName("VT scan across sample");

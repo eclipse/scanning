@@ -179,7 +179,8 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 		deviceInfo.setLower(getMinimum());
 		deviceInfo.setPermittedValues(deviceInfo.getPermittedValues());
 		deviceInfo.setActivated(isActivated());
-		
+		deviceInfo.setMonitorRole(getMonitorRole());
+
 		return deviceInfo;
 	}
 
