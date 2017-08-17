@@ -58,10 +58,10 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class WatchdogTopupTest extends AbstractWatchdogTest {
 
-	
+
 	private static IDeviceWatchdog dog;
 	private File dir;
-		
+
 	@BeforeClass
 	public static void createWatchdogs() throws Exception {
 
@@ -77,34 +77,34 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		dog.setName("topupDog");
 		dog.activate();
 	}
-	
+
 	@Before
 	public void createDir() throws IOException{
 		this.dir = Files.createTempDirectory(DummyMalcolmDeviceTest.class.getSimpleName()).toFile();
 		dir.deleteOnExit();
 	}
-	
+
 	@After
 	public void disconnect() throws Exception {
-		
+
 		final IScannable<Number>   topups  = connector.getScannable("topup");
 		final MockTopupScannable   topup   = (MockTopupScannable)topups;
 		assertNotNull(topup);
 		topup.disconnect();
 		topup.setPosition(1000);
-		
+
 		if (dir!=null) FileUtils.recursiveDelete(dir);
 
 	}
-	
+
 	@Test
 	public void dogsSame() {
 		assertEquals(dog, Services.getWatchdogService().getWatchdog("topupDog"));
 	}
-	
+
 	@Test(expected=Exception.class)
 	public void testBeamOn() throws Exception {
-		
+
 		final IScannable<Number>   topups  = connector.getScannable("topup");
 		final MockTopupScannable   topup   = (MockTopupScannable)topups;
 		assertNotNull(topup);
@@ -112,29 +112,29 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 
 		final IScannable<Number>   beamon   = connector.getScannable("beamon");
 		beamon.setLevel(1);
-		
+
 		// x and y are level 3
 		IDeviceController controller = createTestScanner(beamon);
 		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
 		scanner.run(null);
-		
+
 		assertEquals(10, positions.size());
 	}
 
 
 	@Test
 	public void topupPeriod() throws Exception {
-		
+
 		final IScannable<Number>   topups  = connector.getScannable("topup");
 		final MockTopupScannable   topup   = (MockTopupScannable)topups;
 		assertNotNull(topup);
-	
+
 		long fastPeriod = 500;
 		long orig = topup.getPeriod();
 		topup.setPeriod(fastPeriod);
 		topup.start();
 		Thread.sleep(100);
-		
+
 		try {
 			int max = Integer.MIN_VALUE;
 			int min = Integer.MAX_VALUE;
@@ -148,55 +148,55 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 			}
 			assertTrue("The max is "+max, max<600&&max>300);
 			assertTrue("The min is "+min, min<500&&min>-1);
-			
+
 		} finally {
 			topup.setPeriod(orig);
 
 		}
 	}
-	
+
 	@Test
 	public void topupIn2DScan() throws Exception {
         topupInScan(2, 0.05);
 	}
-	
+
 	@Test
 	public void topupIn3DScan() throws Exception {
         topupInScan(3, 0.05);
 	}
-	
+
 	@Ignore("Needs to work and does but takes a long time so not part of main tests.")
 	@Test
 	public void topupIn5DScan() throws Exception {
         topupInScan(5);
 	}
-	
+
 	@Test
 	public void topupIn2DScanMalcolm() throws Exception {
-		
+
 		DummyMalcolmModel model = createModel();
 		IRunnableDevice<DummyMalcolmModel> malcolmDevice = sservice.createRunnableDevice(model, false);
-      
-		topupInScan(malcolmDevice, model, 2, 0.05);		
+
+		topupInScan(malcolmDevice, model, 2, 0.05);
 	}
-	
+
 	@Test
 	public void topupIn3DScanMalcolm() throws Exception {
-		
+
 		DummyMalcolmModel model = createModel();
 		IRunnableDevice<DummyMalcolmModel> malcolmDevice = sservice.createRunnableDevice(model, false);
-      
+
 		topupInScan(malcolmDevice, model, 3, 0.05);
 	}
-	
+
 	@Test
 	public void topupSeveralMalcolm() throws Exception {
-		
+
 		DummyMalcolmModel model = createModel();
 		IRunnableDevice<DummyMalcolmModel> malcolmDevice = sservice.createRunnableDevice(model, false);
-      
+
 		topupInScan(malcolmDevice, model, 2, 0.05);
-		
+
 		// We do another one to see if 2 in a row are the problem
 		topupInScan(malcolmDevice, model, 3, 0.05);
 
@@ -206,7 +206,7 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 
 
 	private DummyMalcolmModel createModel() throws IOException {
-		
+
 		DummyMalcolmModel model = DummyMalcolmDeviceTest.createModel(dir);
 		model.setExposureTime(0.001);
 		model.setAxesToMove(Arrays.asList("x", "y"));
@@ -217,18 +217,18 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 	private void topupInScan(int size) throws Exception {
 		topupInScan(detector, null, size, 0.001);
 	}
-	
+
 	private void topupInScan(int size, double exposureTime) throws Exception {
 		topupInScan(detector, null, size, exposureTime);
 	}
 
 	private <T> void topupInScan(IRunnableDevice<T> device, T detectorModel, int size, double exposureTime) throws Exception {
-		
+
 		final IScannable<Number>   topups  = connector.getScannable("topup");
 		final MockTopupScannable   topup   = (MockTopupScannable)topups;
 		assertNotNull(topup);
         topup.start();
-		
+
 		// x and y are level 3
         if (detectorModel!=null && detectorModel instanceof IDetectorModel) {
         	((IDetectorModel)detectorModel).setExposureTime(exposureTime);
@@ -238,18 +238,19 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
         }
 		IDeviceController controller = createTestScanner(null, device, detectorModel, size);
 		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
-		
+
 		Set<DeviceState> states = new HashSet<>();
 		// This run should get paused for beam and restarted.
 		scanner.addRunListener(new IRunListener() {
+			@Override
 			public void stateChanged(RunEvent evt) throws ScanningException {
 				states.add(evt.getDeviceState());
 			}
 		});
-		
-		scanner.run(null);				
+
+		scanner.run(null);
 		assertTrue(!controller.isActive());
-		
+
 		assertTrue("States contain no paused: "+states,  states.contains(DeviceState.PAUSED));
 		assertTrue("States contain no running: "+states, states.contains(DeviceState.RUNNING));
 		assertTrue("States contain no seeking: "+states, states.contains(DeviceState.SEEKING));
@@ -266,35 +267,36 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		Thread.sleep(120); // Make sure it stops, it sets value every 100ms but it should get interrupted
 		assertTrue(topup.isDisconnected());
 		topup.setPosition(10);
-		
+
 		IDeviceController controller = createTestScanner(null);
 		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
-		
+
 		Set<DeviceState> states = new HashSet<>();
 		// This run should get paused for beam and restarted.
 		scanner.addRunListener(new IRunListener() {
+			@Override
 			public void stateChanged(RunEvent evt) throws ScanningException {
 				states.add(evt.getDeviceState());
 			}
 		});
-		
+
 		scanner.start(null);
 		scanner.latch(200, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
-		
+
 		topup.setPosition(0);    // Should do nothing, device is already paused
 		topup.setPosition(5000); // Gets it ready to think it has to resume
 		topup.setPosition(4000); // Will resume it because warmup passed
-		
-		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.		
+
+		Thread.sleep(100);       // Ensure watchdog event has fired and it did something.
 		assertEquals(DeviceState.RUNNING, scanner.getDeviceState()); // Should still be paused
-		
+
 		scanner.latch();
-		
+
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState()); // Should still be paused
 	}
 
-	
+
 	@Test
 	public void topupWithExternalPause() throws Exception {
 
@@ -313,28 +315,29 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		}
 		IDeviceController controller = createTestScanner(null);
 		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
-		
+
 		Set<DeviceState> states = new HashSet<>();
 		// This run should get paused for beam and restarted.
 		scanner.addRunListener(new IRunListener() {
+			@Override
 			public void stateChanged(RunEvent evt) throws ScanningException {
 				states.add(evt.getDeviceState());
 			}
 		});
-		
+
 		scanner.start(null);
 		scanner.latch(200, TimeUnit.MILLISECONDS);
 		controller.pause("test", null);   // Pausing externally should override any watchdog resume.
-		
+
 		topup.setPosition(0);    // Should do nothing, device is already paused
 		topup.setPosition(5000); // Gets it ready to think it has to resume
 		topup.setPosition(4000); // Will resume it because warmup passed
-		
+
 		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState()); // Should still be paused
-		
+
 		controller.resume("test");
-		
+
 		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertNotEquals(DeviceState.PAUSED, scanner.getDeviceState());
 
@@ -342,7 +345,7 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 
 		scanner.latch(100, TimeUnit.MILLISECONDS);
 		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
-		
+
 		controller.resume("test"); // It shouldn't because now topup has set to pause.
 
 		scanner.latch(25, TimeUnit.MILLISECONDS);
@@ -351,7 +354,7 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 		controller.abort("test");
 	}
 
-	
+
 	@Test
 	public void topupDeactivated() throws Exception {
 
@@ -363,8 +366,8 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 			dog.activate();
 		}
 	}
-	
-	
+
+
 	@Test
 	public void topupDisabled() throws Exception {
 
@@ -372,14 +375,14 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 			dog.setEnabled(false); // Are a testing a pausing monitor here
 			runQuickie();
 		} finally {
-			dog.setEnabled(true); 
+			dog.setEnabled(true);
 		}
 	}
 
 
 	@Test
 	public void testPause() throws Exception {
-		
+
 		try {
 			dog.deactivate(); // Are a testing a pausing monitor here
 			detector.getModel().setExposureTime(0.0001); // Save some scan time.
@@ -406,27 +409,27 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 				}
 			});
 			pauser.setLevel(1);
-			
+
 			// x and y are level 3
 			IDeviceController controller = createTestScanner(pauser);
 			IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
 			scanner.run(null);
-			
+
 			assertEquals(25, positions.size());
 			assertEquals(50, moved.size());
 			assertTrue(moved.get(0).equals("pauser"));
 			assertTrue(moved.get(1).equals("x"));
-			
+
 			moved.clear();
 			positions.clear();
 			pauser.setLevel(5); // Above x
 			scanner.run(null);
-			
+
 			assertEquals(25, positions.size());
 			assertEquals(50, moved.size());
 			assertTrue(moved.get(0).equals("x"));
 			assertTrue(moved.get(1).equals("pauser"));
-		
+
 		} finally {
 			dog.activate();
 			detector.getModel().setExposureTime(0.25);

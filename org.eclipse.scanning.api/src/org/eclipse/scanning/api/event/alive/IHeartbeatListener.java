@@ -18,7 +18,8 @@ public interface IHeartbeatListener extends IBeanClassListener<HeartbeatBean> {
 	default void heartbeatPerformed(HeartbeatEvent evt) {
 		// default implementation does nothing, subclasses should override as necessary
 	}
-	
+
+	@Override
 	default Class<HeartbeatBean> getBeanClass() {
 		return HeartbeatBean.class;
 	}

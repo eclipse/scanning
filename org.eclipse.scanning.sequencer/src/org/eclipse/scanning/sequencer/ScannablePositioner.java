@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Positions several scannables by level, returning after all the blocking IScannable.setPosition(...)
  * methods have returned.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -41,17 +41,17 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 	private List<IScannable<?>>         monitors;
 	private List<IScannable<?>>         scannables;
 
-	ScannablePositioner(IScannableDeviceService service) {	
-		
+	ScannablePositioner(IScannableDeviceService service) {
+
 		setLevelCachingAllowed(false);
 		this.connectorService = service;
-		
+
 		// This is setting the default but the actual value of the timeout
 		// is set by implementing ITimeoutable in your IScannable. The devices
 		// at a given level are checked for their timeout when they are run.
 		setTimeout(3*60); // Three minutes. If this needs to be increased implement getTimeout() on IScannable.
 	}
-	
+
 	/**
 	 * Objects at a given level are checked to find their maximum timeout.
 	 * By default those objects will return -1 so the three minute wait time is used.
@@ -60,7 +60,7 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 	public long getTimeout(List<IScannable<?>> objects) {
 		long defaultTimeout = super.getTimeout(objects); // Three minutes (see above)
 		if (objects==null) return defaultTimeout;
-		
+
 		long time = Long.MIN_VALUE;
 		for (IScannable<?> device : objects) {
 			time = Math.max(time, device.getTimeout());
@@ -78,7 +78,7 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 		}
 		return buf.toString();
 	}
-	
+
 	@Override
 	public boolean setPosition(IPosition position) throws ScanningException, InterruptedException {
 		run(position);
@@ -100,12 +100,12 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 		ret.setStepIndex(position.getStepIndex());
 		return ret;
 	}
-  
+
 
 	@Override
 	protected Collection<IScannable<?>> getDevices() throws ScanningException {
 		final List<IScannable<?>> devices = new ArrayList<>();
-		
+
 		if (scannables == null) {
 			for (String name : position.getNames()) {
 				devices.add(connectorService.getScannable(name));
@@ -113,11 +113,11 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 		} else {
 			devices.addAll(scannables);
 		}
-		
+
 		if (monitors != null) {
 			devices.addAll(monitors);
 		}
-		
+
 		return devices;
 	}
 
@@ -138,61 +138,64 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 
 		@Override
 		public IPosition call() throws Exception {
-			
+
 			// Get the value in this position, may be null for monitors.
 			Object value    = position.get(scannable.getName());
 			Object achieved = value;
 			try {
 				achieved = setPosition(scannable, value, position);
-			    
+
 			} catch (Exception ne) {
 				abort(scannable, value, position, ne);
 				throw ne;
 			}
 			// achieved might not be equal to demand
 			if (achieved == null) achieved = scannable.getPosition();
-			return new MapPosition(scannable.getName(), position.getIndex(scannable.getName()), achieved); 
+			return new MapPosition(scannable.getName(), position.getIndex(scannable.getName()), achieved);
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		private Object setPosition(IScannable scannable, Object value, IPosition position) throws Exception {
-			
+
 			Object tolerance = scannable.getTolerance();
 			if (tolerance==null || !(value instanceof Number) || !(tolerance instanceof Number)) {
 				return scannable.setPosition(value, position);
 			}
 			Object currentValue = scannable.getPosition();
 			if (!(currentValue instanceof Number)) return scannable.setPosition(value, position);
-			
+
 			// Check tolerance against number
 			double tol = ((Number)tolerance).doubleValue();
 			double cur = ((Number)currentValue).doubleValue();
 			double val = ((Number)value).doubleValue();
-			
+
 			// If are already within tolerance return the value we are at
-			if (cur<(val+tol) && 
-			    cur>(val-tol)) { 
-				
+			if (cur<(val+tol) &&
+			    cur>(val-tol)) {
+
 				return currentValue;
 			}
-			
+
 			// We need to move and did an extra getPosition()
 			// Note sure if this is really faster, depends how
 			// hardware of a given system actually works.
 			return scannable.setPosition(value, position);
 		}
-		
+
 	}
 
+	@Override
 	public List<IScannable<?>> getMonitors() {
 		return monitors;
 	}
 
+	@Override
 	public void setMonitors(List<IScannable<?>> monitors) {
 		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = monitors;
 	}
-	
+
+	@Override
 	public void setMonitors(IScannable<?>... monitors) {
 		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = Arrays.asList(monitors);

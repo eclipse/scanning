@@ -22,23 +22,25 @@ import org.eclipse.scanning.api.scan.IScanParticipant;
 import org.eclipse.scanning.test.scan.mock.AnnotationRecorder;
 
 /**
- * 
+ *
  * Class which counts annotations called.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class MockScanParticpiant implements AnnotationRecorder, IScanParticipant{
 
-	
+
 	private Map<Class<? extends Annotation>, Integer> calls = new HashMap<>();
 	private List<String> paths = new ArrayList<>();
-	
+
+	@Override
 	public void record(Class<? extends Annotation> method) {
 		if (!calls.containsKey(method)) calls.put(method, 0);
 		calls.put(method, calls.get(method)+1);
 	}
-	
+
+	@Override
 	public int getCount(Class<? extends Annotation> methodName) {
 		Integer val = calls.get(methodName);
 		if (val == null) return 0;

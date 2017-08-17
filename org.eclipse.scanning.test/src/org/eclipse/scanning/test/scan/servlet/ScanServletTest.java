@@ -26,8 +26,9 @@ import org.junit.Test;
 
 public class ScanServletTest extends AbstractServletTest {
 
+	@Override
 	protected AbstractConsumerServlet<ScanBean> createServlet() throws EventException, URISyntaxException {
-		
+
 		ScanServlet servlet = new ScanServlet();
 		servlet.setBroker(uri.toString());
 		servlet.setSubmitQueue("org.eclipse.scanning.test.servlet.submitQueue");
@@ -38,27 +39,27 @@ public class ScanServletTest extends AbstractServletTest {
 
 		return servlet;
 	}
-	
+
 	/**
-	 * This test mimiks a client submitting a scan. 
-	 * 
+	 * This test mimiks a client submitting a scan.
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void testStepScan() throws Exception {
-		
+
 		ScanBean bean = createStepScan();
 		runAndCheck(bean, 60);
 	}
-	
+
 	/**
-	 * This test mimiks a client submitting a scan. 
-	 * 
+	 * This test mimiks a client submitting a scan.
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void testStepScanProcessing() throws Exception {
-		
+
 		System.setProperty("org.eclipse.scanning.api.preprocessor.name", "example");
 		try {
 			ScanBean bean = createStepScan();
@@ -66,20 +67,20 @@ public class ScanServletTest extends AbstractServletTest {
 			// We now check that they all had xfred set.
 			for (ScanBean scanBean : beans) {
 				ScanRequest<?> req = scanBean.getScanRequest();
-				
+
 				StepModel step = (StepModel)req.getCompoundModel().getModels().toArray()[0];
 				assertEquals("fred", step.getName());
 			}
 		} finally {
 		    System.setProperty("org.eclipse.scanning.api.preprocessor.name", "");
 		}
-		
+
 	}
 
 
 	@Test
 	public void testGridScan() throws Exception {
-		
+
 		ScanBean bean = createGridScan();
 		runAndCheck(bean, 20);
 
@@ -87,14 +88,14 @@ public class ScanServletTest extends AbstractServletTest {
 
 	@Test
 	public void testStepGridScanNested1() throws Exception {
-		
+
 		ScanBean bean = createStepGridScan(1);
 		runAndCheck(bean, 100);
 	}
-	
+
 	@Test
 	public void testStepGridScanNested5() throws Exception {
-		
+
 		ScanBean bean = createStepGridScan(5);
 		runAndCheck(bean, 500);
 	}

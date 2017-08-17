@@ -17,21 +17,21 @@ import java.util.List;
 import org.eclipse.scanning.api.INameable;
 
 /**
- * 
+ *
  * A scan region encapsulates a geometric region of interest with
  * the names of the scan axes over which it is a region.
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
  */
 public class ScanRegion<T> implements INameable {
-	
+
 	private String       name;
 	private Object       type;
 	private T            roi;
 	private List<String> scannables;
-	
+
 	public ScanRegion() {
 		// We are a bean
 	}
@@ -52,7 +52,7 @@ public class ScanRegion<T> implements INameable {
 		this.roi = roi;
 		this.scannables = Arrays.asList(names);
 	}
-	
+
 	public T getRoi() {
 		return roi;
 	}
@@ -95,10 +95,12 @@ public class ScanRegion<T> implements INameable {
 		return true;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

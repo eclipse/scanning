@@ -27,17 +27,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
- * Convenience class using inheritance to contain some of the general 
+ *
+ * Convenience class using inheritance to contain some of the general
  * things a scannable does that are the same for all scannables.
- * 
+ *
  * NOTE: Inheritance is designed to have three levels only
  * IScannable->AbstractScannable->A device
- * 
+ *
  * The preferred alternative if more complex behaviour is required would
  * be to create delegates for these interfaces which are then aggregated
  * in the device.
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
@@ -57,7 +57,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	private long                timeout=-1;
 
 	/**
-	 * Model is used for some scannables for instance those writing NeXus 
+	 * Model is used for some scannables for instance those writing NeXus
 	 * in a complex way to configure the scannable such that it can write
 	 * the complex information. It is not compulsory to provide a model,
 	 * only those scannables requiring extra-ordinary information require
@@ -80,7 +80,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	}
 
 	/**
-	 * 
+	 *
 	 * @param publisher used to notify of positions externally.
 	 */
 	protected AbstractScannable(IPublisher<Location> publisher) {
@@ -88,7 +88,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	}
 
 	/**
-	 * 
+	 *
 	 * @param sservice
 	 */
 	protected AbstractScannable(IScannableDeviceService sservice) {
@@ -96,7 +96,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	}
 
 	/**
-	 * 
+	 *
 	 * @param publisher
 	 * @param sservice
 	 */
@@ -108,7 +108,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 
 	/**
 	 * Used by spring to register the detector with the Runnable device service
-	 * *WARNING* Before calling register the detector must be given a service to 
+	 * *WARNING* Before calling register the detector must be given a service to
 	 * register this. This can be done from the constructor super(IRunnableDeviceService)
 	 * of the detector to make it easy to instantiate a no-argument detector and
 	 * register it from spring.
@@ -132,7 +132,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 	}
 
 	/**
-	 * 
+	 *
 	 * @return null if no attributes, otherwise collection of the names of the attributes set
 	 */
 	@Override
@@ -142,7 +142,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 
 	/**
 	 * Set any attribute the implementing classes may provide
-	 * 
+	 *
 	 * @param attributeName
 	 *            is the name of the attribute
 	 * @param value
@@ -157,7 +157,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 
 	/**
 	 * Get the value of the specified attribute
-	 * 
+	 *
 	 * @param attributeName
 	 *            is the name of the attribute
 	 * @return the value of the attribute
@@ -179,22 +179,26 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 		deviceInfo.setLower(getMinimum());
 		deviceInfo.setPermittedValues(deviceInfo.getPermittedValues());
 		deviceInfo.setActivated(isActivated());
-		
+
 		return deviceInfo;
 	}
 
+	@Override
 	public int getLevel() {
 		return level;
 	}
 
+	@Override
 	public void setLevel(int level) {
 		this.level = level;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

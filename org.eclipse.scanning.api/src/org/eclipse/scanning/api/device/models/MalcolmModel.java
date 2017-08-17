@@ -26,14 +26,15 @@ public class MalcolmModel extends AbstractDetectorModel implements IMalcolmModel
 	}
 	/**
 	 * The folder for malcolm to create its HDF5 files in. This is set by the scan, any value
-	 * set by the user will be overwritten. 
+	 * set by the user will be overwritten.
 	 */
 	@FieldDescriptor(visible=false, file=FileType.NEW_FOLDER)
 	private String fileDir;
-	
+
 	@FieldDescriptor(editable=false)
 	private List<String> axesToMove;
-	
+
+	@Override
 	public String getFileDir() {
 		return fileDir;
 	}
@@ -46,7 +47,7 @@ public class MalcolmModel extends AbstractDetectorModel implements IMalcolmModel
 	public List<String> getAxesToMove() {
 		return axesToMove;
 	}
-	
+
 	public void setAxesToMove(List<String> axesToMove) {
 		this.axesToMove = axesToMove;
 	}

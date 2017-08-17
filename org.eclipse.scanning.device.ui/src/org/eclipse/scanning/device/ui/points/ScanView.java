@@ -106,18 +106,18 @@ import org.slf4j.LoggerFactory;
 /**
  * This view allows users to build up arbitrary scans
  * and run them.
- * 
+ *
  * @author Matthew Gerring
- * 
+ *
  * TODO Convert to e4 view?
  *
  */
 public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemListener {
-	
+
 	public static final String ID = "org.eclipse.scanning.device.ui.scanEditor";
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ScanView.class);
-	
+
 	// Services
 	private IPointGeneratorService  pservice;
 	private IScannableDeviceService cservice;
@@ -137,9 +137,9 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 	private IPreferenceStore store;
 
 
-	
+
 	public ScanView() {
-		
+
 		this.pservice     = ServiceHolder.getGeneratorService();
         this.seriesTable  = new SeriesTable();
 		this.pointsFilter = new GeneratorFilter(pservice, seriesTable, this);
@@ -151,10 +151,10 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 		store.setDefault(DevicePreferenceConstants.BEFORE_SCRIPT,  false);
 		store.setDefault(DevicePreferenceConstants.AFTER_SCRIPT,   false);
 		store.setDefault(DevicePreferenceConstants.SHOW_CONTROL_TOOLTIPS, true);
-		
+
 		this.trees = new HashMap<>(7);
 	}
-	
+
 	@Override
 	public void init(IViewSite site, IMemento memento) throws PartInitException {
 
@@ -173,11 +173,11 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 	@Override
     public void saveState(IMemento memento) {
 		super.saveState(memento);
-		
+
 		try {
 			final List<IScanPathModel> models = getPath();
 	    	stash.stash(models);
-	    	
+
 	        for (String propName : trees.keySet()) {
 	        	IStashing tstash = ServiceHolder.getStashingService().createStash(propName+".json");
 				tstash.stash(trees.get(propName));
@@ -187,32 +187,32 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 			logger.error("Cannot save generators to memento!", ne);
 		}
     }
-    
+
 	@Override
 	public void createPartControl(Composite parent) {
-		
+
 		final Composite content = new Composite(parent, SWT.NONE);
 		GridLayout layout = new GridLayout(1, false);
 		content.setLayout(layout);
 		GridUtils.removeMargins(content);
 		layout.marginTop        = 10;
-	
+
 		Composite startButton  = createPositionButton(content, DevicePreferenceConstants.START_POSITION, "Start Position", "icons/position-start.png");
 		Composite beforeScript = createPositionButton(content, DevicePreferenceConstants.BEFORE_SCRIPT, "Before Script", "icons/script-before.png");
-		
+
 		final GeneratorLabelProvider prov = new GeneratorLabelProvider(0);
 		seriesTable.createControl(content, prov, SWT.FULL_SELECTION | SWT.SINGLE);
 		seriesTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		seriesTable.setHeaderVisible(false);
-		
+
 		Composite afterScript = createPositionButton(content, DevicePreferenceConstants.AFTER_SCRIPT, "After Script", "icons/script-after.png");
 		Composite endButton = createPositionButton(content, DevicePreferenceConstants.END_POSITION, "End Position", "icons/position-end.png");
-		
+
 		final IViewSite site = getViewSite();
-		
+
 		final DelegatingSelectionProvider selectionProvider = new DelegatingSelectionProvider(seriesTable.getSelectionProvider());
 		site.setSelectionProvider(selectionProvider);
-		
+
 		createControlTree(DevicePreferenceConstants.START_POSITION, "Start Position");
 		createFileTree(DevicePreferenceConstants.BEFORE_SCRIPT, "Before Script");
 		createFileTree(DevicePreferenceConstants.AFTER_SCRIPT, "After Script");
@@ -223,9 +223,9 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 		createListeners(beforeScript, positions, DevicePreferenceConstants.BEFORE_SCRIPT,  selectionProvider);
 		createListeners(afterScript,  positions, DevicePreferenceConstants.AFTER_SCRIPT,   selectionProvider);
 		createListeners(endButton,    positions, DevicePreferenceConstants.END_POSITION,   selectionProvider);
-		
+
 		createActions(site, selectionProvider);
-		
+
 		final MenuManager rightClick = new MenuManager("#PopupMenu");
 		rightClick.setRemoveAllWhenShown(true);
 		//createActions(rightClick);
@@ -235,17 +235,17 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 				setDynamicMenuOptions(manager);
 			}
 		});
-		
+
 		// Here's the data, lets show it
 		seriesTable.setMenuManager(rightClick);
 		seriesTable.setInput(saved, pointsFilter);
-		
+
 		DropTarget dt = seriesTable.getDropTarget();
 		dt.setTransfer(new Transfer[] { TextTransfer.getInstance(),
 				FileTransfer.getInstance(), ResourceTransfer.getInstance(),
 				LocalSelectionTransfer.getTransfer() });
 		dt.addDropListener(new DropTargetAdapter() {
-			
+
 			@Override
 			public void drop(DropTargetEvent event) {
 				Object dropData = event.data;
@@ -265,26 +265,26 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 						return;
 					}
 				}
-				
+
 			}
 		});
-		
+
 		ScanningPerspective.createKeyPlayers();
-		
+
 		seriesTable.addSeriesEventListener(this);
-		
+
 		final List<ISeriesItemDescriptor> desi = seriesTable.getSeriesItems();
         if (desi!=null && desi.size()>0) seriesTable.setSelection(desi.get(desi.size()-1));
-      
+
 	}
-	
+
 	private ControlTree createFileTree(String propName, String name) {
 
 		// TODO FIXME The default control tree for the start and end positions should have their own definitions
 		// or the ability to create them. This code remembers what the user sets for start/end but
 		// the initial fields simply come from the same as the ControlView ones.
 		IStashing stash = ServiceHolder.getStashingService().createStash(propName+".json");
-		
+
 		ControlTree tree = null;
 		try {
 			if (stash.isStashed()) tree = stash.unstash(ControlTree.class);
@@ -298,7 +298,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 			tree.add(new ControlFileNode(propName, "Script file"));
 			tree.add(new ControlEnumNode(propName, "Script type", ScriptLanguage.JYTHON));
 		}
-		
+
 		tree.setName(propName);
 		tree.setDisplayName(name);
 		tree.build();
@@ -307,14 +307,14 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 		return tree;
 
 	}
-	
+
 	private ControlTree createControlTree(String propName, String name) {
-		
+
 		// TODO FIXME The default control tree for the start and end positions should have their own definitions
 		// or the ability to create them. This code remembers what the user sets for start/end but
 		// the initial fields simply come from the same as the ControlView ones.
 		IStashing stash = ServiceHolder.getStashingService().createStash(propName+".json");
-		
+
 		ControlTree tree = null;
 		try {
 			if (stash.isStashed()) tree = stash.unstash(ControlTree.class);
@@ -330,7 +330,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 				logger.warn("Getting tree from default XML", e);
 			}
 		}
-		
+
 		if (tree==null) return null;
 		tree.setName(propName);
 		tree.setDisplayName(name);
@@ -340,14 +340,15 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 	}
 
 	private void createListeners(Composite position, List<Composite> positions, String propName, DelegatingSelectionProvider prov) {
-		
+
 		position.addMouseListener(new MouseAdapter() {
+			@Override
 			public void mouseDown(MouseEvent e) {
 				setPositionSelected(position, positions, propName, prov);
 			}
-		});	
-		
-		store.addPropertyChangeListener(new IPropertyChangeListener() {		
+		});
+
+		store.addPropertyChangeListener(new IPropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
 				if (position.isDisposed()) {
@@ -358,7 +359,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 				boolean show = store.getBoolean(propName);
 				GridUtils.setVisible(position, show);
 				position.getParent().layout(new Control[]{position});
-				
+
 				if (show) {
 					setPositionSelected(position, positions, propName, prov);
 				}
@@ -368,38 +369,38 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 	}
 
 	protected void setPositionSelected(Composite position, List<Composite> positions, String propName, DelegatingSelectionProvider prov) {
-		
+
 		position.setFocus();
 		seriesTable.deselectAll();
 		for (Composite composite : positions) composite.setBackground(position.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		position.setBackground(position.getDisplay().getSystemColor(SWT.COLOR_TITLE_BACKGROUND));
-		
-		seriesTable.addSelectionListener(new ISelectionChangedListener() {	
+
+		seriesTable.addSelectionListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				position.setBackground(position.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 				seriesTable.removeSelectionListener(this);
 			}
 		});
-		
+
 		if (trees.containsKey(propName)) prov.fireSelection(new StructuredSelection(trees.get(propName)));
 	}
 
 	private Composite createPositionButton(final Composite content, final String propName, String label, String iconPath) {
-		
+
 		final CLabel position = new CLabel(content, SWT.LEFT);
 		position.setBackground(content.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		position.setImage(Activator.getImageDescriptor(iconPath).createImage());
 		position.setText(label);
 		position.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		GridUtils.setVisible(position, store.getBoolean(propName));
-			
+
 		return position;
 	}
 
 	@Override
 	public <T> T getAdapter(Class<T> clazz) {
-		
+
 		if (CompoundModel.class == clazz) {
 			List<IScanPathModel> models = getPath();
 			if (models==null) return null;
@@ -412,15 +413,15 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 			ISeriesItemDescriptor selected = seriesTable.getSelected();
 			if (!(selected instanceof GeneratorDescriptor)) return null;
 			return (T)((GeneratorDescriptor)selected).getModel();
-			
+
 		} else if (clazz==IPointGenerator.class || clazz==IPointGenerator[].class) {
 			return (T)getGenerators();
-			
+
 		} else if (clazz==Object[].class||clazz==List.class) {
 			return (T)getPath();
-			
+
 		} else if (clazz==IPosition[].class) {
-			
+
 			if (cservice==null) {
 				try {
 					this.cservice = ServiceHolder.getEventService().createRemoteService(new URI(CommandConstants.getScanningBrokerUri()), IScannableDeviceService.class);
@@ -438,7 +439,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 				ret[1] = tree!=null ? tree.toPosition(cservice) : null;
 			}
 			return (T)ret;
-			
+
 		} else if (clazz==ScriptRequest[].class) {
 			ScriptRequest[] scripts = new ScriptRequest[2];
 			if (store.getBoolean(DevicePreferenceConstants.BEFORE_SCRIPT)) {
@@ -456,10 +457,10 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 	}
 
 	private ScriptRequest createScriptRequest(ControlTree tree) {
-		
+
 		ControlFileNode fnode = tree.findChild("Script file");
 		final String filePath = fnode.getFile();
-		
+
 		ControlEnumNode enode = tree.findChild("Script type");
 		final ScriptLanguage lang = enode!=null ? (ScriptLanguage)enode.getValue() : ScriptLanguage.JYTHON;
 
@@ -469,71 +470,75 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 	private IAction add;
 	private IAction delete;
 	private IAction clear;
-	
+
 	private static String lastPath = System.getProperty("GDA/gda.var", System.getProperty("user.home"));
 	private final static String[] extensions = new String[]{"json", "*.*"};
 	private final static String[] files = new String[]{"Scan files (json)", "All Files"};
 
 	private void createActions(final IViewSite site, DelegatingSelectionProvider prov) {
-		
-		
+
+
 		IToolBarManager tmanager = site.getActionBars().getToolBarManager();
 		IMenuManager    mmanager = site.getActionBars().getMenuManager();
-		
-		IAction start = createButtonAction(DevicePreferenceConstants.START_POSITION, 
-				"Set start position\nThis is the position before a scan", 
+
+		IAction start = createButtonAction(DevicePreferenceConstants.START_POSITION,
+				"Set start position\nThis is the position before a scan",
 				"icons/position-start.png", prov);
-		
-		IAction before = createButtonAction(DevicePreferenceConstants.BEFORE_SCRIPT, 
-				"Set the before script.\nA script run before the scan.", 
+
+		IAction before = createButtonAction(DevicePreferenceConstants.BEFORE_SCRIPT,
+				"Set the before script.\nA script run before the scan.",
                 "icons/script-before.png", prov);
 
-		IAction after = createButtonAction(DevicePreferenceConstants.AFTER_SCRIPT, 
-				"Set the after script.\nA script run after the scan.", 
+		IAction after = createButtonAction(DevicePreferenceConstants.AFTER_SCRIPT,
+				"Set the after script.\nA script run after the scan.",
                 "icons/script-after.png", prov);
 
-		IAction end = createButtonAction(DevicePreferenceConstants.END_POSITION, 
-				"Set end position\nThe position after a scan", 
+		IAction end = createButtonAction(DevicePreferenceConstants.END_POSITION,
+				"Set end position\nThe position after a scan",
 				"icons/position-end.png", prov);
 
 		addGroup("location", tmanager, start, before, after, end);
 		addGroup("location", mmanager, start, before, after, end);
 
 		add = new Action("Insert", Activator.getImageDescriptor("icons/clipboard-list.png")) {
+			@Override
 			public void run() {
 				seriesTable.addNew();
 			}
 		};
 
 		delete = new Action("Delete", Activator.getImageDescriptor("icons/clipboard--minus.png")) {
+			@Override
 			public void run() {
 				seriesTable.delete();
 			}
 		};
 
 		clear = new Action("Clear", Activator.getImageDescriptor("icons/clipboard-empty.png")) {
+			@Override
 			public void run() {
 			    boolean ok = MessageDialog.openQuestion(site.getShell(), "Confirm Clear Scan", "Do you want to clear the scan?");
 			    if (!ok) return;
 				seriesTable.clear();
 			}
 		};
-		
+
 		addGroup("manage", tmanager, add, delete, clear);
 		addGroup("manage", mmanager, add, delete, clear);
-		
+
 		final IAction save = new Action("Save scan", IAction.AS_PUSH_BUTTON) {
+			@Override
 			public void run() {
-				
+
 				List<IScanPathModel> models = getPath();
-				
+
 				if (models == null) return;
 				FileSelectionDialog dialog = new FileSelectionDialog(site.getShell());
 				if (getLastPath() != null) dialog.setPath(getLastPath());
 				dialog.setExtensions(extensions);
 				dialog.setNewFile(true);
 				dialog.setFolderSelector(false);
-				
+
 				dialog.create();
 				if (dialog.open() == Dialog.CANCEL) return;
 				String path = dialog.getPath();
@@ -544,17 +549,18 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 				setLastPath(path);
 			}
 		};
-		
+
 		final IAction load = new Action("Load scan", IAction.AS_PUSH_BUTTON) {
+			@Override
 			public void run() {
-				
+
 				FileSelectionDialog dialog = new FileSelectionDialog(site.getShell());
 				dialog.setExtensions(extensions);
 				dialog.setFiles(files);
 				dialog.setNewFile(false);
 				dialog.setFolderSelector(false);
 				if (lastPath != null) dialog.setPath(lastPath);
-				
+
 				dialog.create();
 				if (dialog.open() == Dialog.CANCEL) return;
 				String path = dialog.getPath();
@@ -564,11 +570,12 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 		};
 		save.setImageDescriptor(Activator.getImageDescriptor("icons/mask-import-wiz.png"));
 		load.setImageDescriptor(Activator.getImageDescriptor("icons/mask-export-wiz.png"));
-	
+
 		addGroup("file", tmanager, save, load);
 		addGroup("file", mmanager, save, load);
-		
+
 		final IAction lock = new Action("Lock scan editing", IAction.AS_CHECK_BOX) {
+			@Override
 			public void run() {
 				store.setValue(DevicePreferenceConstants.LOCK_SCAN_SEQUENCE, isChecked());
 				seriesTable.setLockEditing(isChecked());
@@ -584,14 +591,15 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 		delete.setEnabled(!lock.isChecked());
 		clear.setEnabled(!lock.isChecked());
 		seriesTable.setLockEditing(lock.isChecked());
-		
+
 		addGroup("lock", tmanager, lock);
 		addGroup("lock", mmanager, lock);
 
 	}
-	
+
 	private IAction createButtonAction(String propName, String label, String iconPath, DelegatingSelectionProvider prov) {
 		IAction ret = new Action(label, IAction.AS_CHECK_BOX) {
+			@Override
 			public void run() {
 				updatePositionSelection(propName, isChecked(), prov);
 			}
@@ -617,12 +625,12 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 			manager.add(action);
 		}
 	}
-	
-	private void saveScans(String filename, List<IScanPathModel> models) {	
+
+	private void saveScans(String filename, List<IScanPathModel> models) {
 		IStashing stash = ServiceHolder.getStashingService().createStash(new File(filename));
 		stash.save(models);
 	}
-	
+
 	private void readScans(String filePath) {
 		IStashing stash =ServiceHolder.getStashingService().createStash(new File(filePath));
 		List<IScanPathModel> models = stash.load(List.class);
@@ -633,16 +641,16 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 			logger.error("Unexpected error refreshing saved models in "+getClass().getSimpleName(), e);
 		}
 	}
-	
+
 	private IPointGenerator<?>[] getGenerators() {
-		
+
 		final List<ISeriesItemDescriptor> desi = seriesTable.getSeriesItems();
-		
+
 		if (desi != null) {
 			Iterator<ISeriesItemDescriptor> it = desi.iterator();
 			while (it.hasNext()) if ((!(it.next() instanceof GeneratorDescriptor))) it.remove();
 		}
-		
+
 		if (desi==null || desi.isEmpty()) return null;
 		final IPointGenerator<?>[] pipeline = new IPointGenerator<?>[desi.size()];
 		for (int i = 0; i < desi.size(); i++) {
@@ -657,23 +665,24 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 	}
 
 	private void setDynamicMenuOptions(IMenuManager mm) {
-		
+
 		mm.add(add);
 		mm.add(delete);
 		mm.add(clear);
 		mm.add(new Separator());
-		
+
 		IPointGenerator<?> gen = null;
-		
+
 		try {
 			ISeriesItemDescriptor selected = seriesTable.getSelected();
 			if (!(selected instanceof GeneratorDescriptor)) return;
 			gen = ((GeneratorDescriptor)selected).getSeriesObject();
 		} catch (Exception e1) {
-			
+
 		}
-		
+
 		final IAction passUnMod = new Action("Enabled", IAction.AS_CHECK_BOX) {
+			@Override
 			public void run() {
 				ISeriesItemDescriptor current = seriesTable.getSelected();
 				if (current instanceof GeneratorDescriptor) {
@@ -686,7 +695,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 				}
 			}
 		};
-		
+
 		if (gen != null && !gen.isEnabled()) passUnMod.setChecked(true);
 		mm.add(passUnMod);
 	}
@@ -698,7 +707,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 		seriesTable.removeSeriesEventListener(this);
 		seriesTable.dispose();
     }
-	
+
 	@Override
 	public void setFocus() {
 		seriesTable.setFocus();
@@ -724,7 +733,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 						showTip("There are already scan regions defined.\n"
 								+ "Drag regions to move them. Go to '"+name+"' to manage them.\n"
 								+ "The bounding box of the existing regions has been used.");
-						
+
 						ISelectionProvider prov = getViewSite().getSelectionProvider();
 						prov.setSelection(new StructuredSelection(evt.getDescriptor()));
 					}
@@ -748,7 +757,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 		}
 
 	}
-   	
+
    	private ToolTip         tip;
 
    	private void showTip(String message) {
@@ -760,7 +769,7 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 	@Override
 	public void itemRemoved(SeriesItemEvent evt) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	private List<IScanPathModel> getPath() {

@@ -19,44 +19,48 @@ import org.eclipse.scanning.api.annotation.ui.DeviceType;
 import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 
 public class AbstractMapModel extends AbstractPointsModel implements IMapPathModel {
-	
+
 	@FieldDescriptor(label="Fast Axis", device=DeviceType.SCANNABLE, hint="The name of the scannable in the fast direction, for instance 'stage_x'.") // TODO Right?
 	private String      fastAxisName = "stage_x";
 
 	@FieldDescriptor(label="Slow Axis", device=DeviceType.SCANNABLE, hint="The name of the scannable in the fast direction, for instance 'stage_y'.")  // TODO Right?
 	private String      slowAxisName = "stage_y";
-	
+
 	public AbstractMapModel() {
 		super();
 	}
-	
+
 	public AbstractMapModel(String fastName, String slowName) {
 		this.fastAxisName = fastName;
 		this.slowAxisName = slowName;
 	}
 
+	@Override
 	@UiHidden
 	public String getFastAxisName() {
 		return fastAxisName;
 	}
-	
+
+	@Override
 	public void setFastAxisName(String newValue) {
 		String oldValue = this.fastAxisName;
 		this.fastAxisName = newValue;
 		this.pcs.firePropertyChange("fastAxisName", oldValue, newValue);
 	}
-	
+
+	@Override
 	@UiHidden
 	public String getSlowAxisName() {
 		return slowAxisName;
 	}
-	
+
+	@Override
 	public void setSlowAxisName(String newValue) {
 		String oldValue = this.slowAxisName;
 		this.slowAxisName = newValue;
 		this.pcs.firePropertyChange("slowAxisName", oldValue, newValue);
 	}
-	
+
 	@UiHidden
 	@Override
 	public List<String> getScannableNames() {

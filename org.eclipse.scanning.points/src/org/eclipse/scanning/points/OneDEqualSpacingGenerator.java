@@ -21,7 +21,7 @@ public class OneDEqualSpacingGenerator extends AbstractGenerator<OneDEqualSpacin
 	OneDEqualSpacingGenerator() {
 		setLabel("Line Equal Spacing");
 		setDescription("Creates a line scan along a line defined in two dimensions.");
-		setIconPath("icons/scanner--line.png"); // This icon exists in the rendering bundle 
+		setIconPath("icons/scanner--line.png"); // This icon exists in the rendering bundle
 	}
 
 	@Override
@@ -34,7 +34,8 @@ public class OneDEqualSpacingGenerator extends AbstractGenerator<OneDEqualSpacin
 	public ScanPointIterator iteratorFromValidModel() {
 		return new LineIterator(this);
 	}
-	
+
+	@Override
 	public int[] getShape() {
 		return new int[] { getModel().getPoints() };
 	}

@@ -25,17 +25,17 @@ import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.sequencer.ServiceHolder;
 
 public abstract class AbstractWatchdog implements IDeviceWatchdog {
-	
+
 	protected DeviceWatchdogModel model;
 	protected IDeviceController  controller;
 	protected boolean active = false;
-	
+
 	/**
 	 * Name should be set by spring as it is the mechanism by
 	 * which a watchdog can be retrieved and turned on or off.
 	 */
-	private String name = getClass().getSimpleName(); 
-	
+	private String name = getClass().getSimpleName();
+
 	/**
 	 * A disabled watchdog will not monitor when a scan runs.
 	 */
@@ -47,17 +47,19 @@ public abstract class AbstractWatchdog implements IDeviceWatchdog {
 	public AbstractWatchdog(DeviceWatchdogModel model2) {
 		this.model = model2;
 	}
-	
+
 	abstract String getId();
-	
+
+	@Override
 	public DeviceWatchdogModel getModel() {
 		return model;
 	}
+	@Override
 	public void setModel(DeviceWatchdogModel model) {
 		this.model = model;
 	}
 
-	
+
 	protected long getValueMs(IPosition ipos, String name, String unit) {
 		double pos = ipos.getValue(name);
 		return getValueMs(pos, unit);
@@ -78,7 +80,7 @@ public abstract class AbstractWatchdog implements IDeviceWatchdog {
 				// sanity check: not actually possible as getTimeUnit only return the units above
 				throw new RuntimeException("Unexpected unit " + tu);
 		}
-		
+
 	}
 
 	protected <T> IScannable<T> getScannable(String name) throws ScanningException {
@@ -86,7 +88,7 @@ public abstract class AbstractWatchdog implements IDeviceWatchdog {
 		IScannableDeviceService cservice = ServiceHolder.getRunnableDeviceService().getDeviceConnectorService();
 		return cservice.getScannable(name);
 	}
-	
+
 	private static final TimeUnit getTimeUnit(String unit) {
 		TimeUnit tu = TimeUnit.SECONDS; // if time unit not specified default to seconds
 		if (unit != null) {
@@ -107,12 +109,14 @@ public abstract class AbstractWatchdog implements IDeviceWatchdog {
 	public void activate() {
 		ServiceHolder.getWatchdogService().register(this);
 	}
+	@Override
 	public void deactivate() {
 		ServiceHolder.getWatchdogService().unregister(this);
 	}
 	public IDeviceController getController() {
 		return controller;
 	}
+	@Override
 	public void setController(IDeviceController controller) {
 		this.controller = controller;
 	}
@@ -121,25 +125,29 @@ public abstract class AbstractWatchdog implements IDeviceWatchdog {
 	public void scanStarted() {
 		active = true;
 	}
-	
+
 	@ScanFinally
 	public void scanFinally() {
 		active = false;
 	}
-	
+
 	@Override
 	public boolean isActive() {
 		return active;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
 	public boolean isEnabled() {
 		return enabled;
 	}
+	@Override
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}

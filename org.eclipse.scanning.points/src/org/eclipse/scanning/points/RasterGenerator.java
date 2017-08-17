@@ -17,11 +17,11 @@ import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.RasterModel;
 
 class RasterGenerator extends AbstractGenerator<RasterModel> {
-	
+
 	RasterGenerator() {
 		setLabel("Raster");
 		setDescription("Creates a raster scan (a scan of x and y).\nThe scan supports bidirectional or 'snake' mode.");
-		setIconPath("icons/scanner--raster.png"); // This icon exists in the rendering bundle 
+		setIconPath("icons/scanner--raster.png"); // This icon exists in the rendering bundle
 	}
 
 	@Override
@@ -40,6 +40,7 @@ class RasterGenerator extends AbstractGenerator<RasterModel> {
 			throw new ModelValidationException("Model slow axis step is directed so as to produce no points!", model, "slowAxisStep");
 	}
 
+	@Override
 	public ScanPointIterator iteratorFromValidModel() {
 		return new GridIterator(this);
 	}

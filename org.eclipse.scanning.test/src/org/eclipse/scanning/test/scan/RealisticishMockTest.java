@@ -30,7 +30,7 @@ import org.junit.Test;
 
 /**
  * Test which attemps to see if the mock scannables do reasonable things when moving them.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -41,21 +41,21 @@ public class RealisticishMockTest {
 
 	@BeforeClass
 	public static void setup() throws Exception {
-		// We wire things together without OSGi here 
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		cservice = new MockScannableConnector(null);
 		temp = cservice.getScannable("T");
 		temp.setPosition(295d); // We operate it from a known point.
-		
+
 		((MockScannable)temp).setMoveRate(5); // Slow tests are bad.
 	}
-	
+
 	@AfterClass
 	public static void tearDown() throws Exception {
 		((MockScannable)temp).setMoveRate(0.5);
 	}
 
-	
+
 	@Test
 	public void addFive() throws Exception {
 		checkTemperature(5);
@@ -64,11 +64,12 @@ public class RealisticishMockTest {
 	public void subtractFive() throws Exception {
 		checkTemperature(-5);
 	}
-	
+
 	private void checkTemperature(double delta) throws Exception {
-		
+
 		List<Double> positions = new ArrayList<>();
 		((IPositionListenable)temp).addPositionListener(new IPositionListener() {
+			@Override
 			public void positionChanged(PositionEvent evt) throws ScanningException {
 				double val = (Double)evt.getPosition().get("T");
 //				System.out.println("The value of T was at "+val);

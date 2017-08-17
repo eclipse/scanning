@@ -20,59 +20,55 @@ import javax.annotation.PreDestroy;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.IdBean;
-import org.eclipse.scanning.api.event.core.IConsumer;
-import org.eclipse.scanning.api.event.core.IConsumerProcess;
-import org.eclipse.scanning.api.event.core.IProcessCreator;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.core.IResponder;
 import org.eclipse.scanning.api.event.core.IResponseCreator;
 import org.eclipse.scanning.api.event.core.IResponseProcess;
-import org.eclipse.scanning.api.event.servlet.IConsumerServlet;
 import org.eclipse.scanning.api.event.servlet.IResponderServlet;
-import org.eclipse.scanning.api.event.status.StatusBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 /**
 
-    Class used to register a servlet 
+    Class used to register a servlet
 
     S
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
  */
 public abstract class AbstractResponderServlet<B extends IdBean> implements IResponderServlet<B> {
-	
+
 	protected static final Logger logger = LoggerFactory.getLogger(AbstractResponderServlet.class);
 
 	protected IEventService eventService;
 	protected String        broker;
-	
-	
+
+
 	// Recommended to configure these as
 	protected String        requestTopic;
 	protected String        responseTopic;
-	
+
 	// The responder for requests to this servlet.
 	protected IResponder<B>   responder;
 
-	
+
 	protected AbstractResponderServlet() {
 		this.eventService = Services.getEventService();
 	}
-	
+
 	protected AbstractResponderServlet(String requestTopic, String responseTopic) {
 		this();
 		this.requestTopic  = requestTopic;
 		this.responseTopic = responseTopic;
 	}
 
+	@Override
 	@PostConstruct  // Requires spring 3 or better
-    public void connect() throws EventException, URISyntaxException {	
-    	
+    public void connect() throws EventException, URISyntaxException {
+
 		responder = eventService.createResponder(new URI(broker), requestTopic, responseTopic);
 		responder.setResponseCreator(createResponseCreator());
      	logger.info("Started "+getClass().getSimpleName());
@@ -92,7 +88,8 @@ public abstract class AbstractResponderServlet<B extends IdBean> implements IRes
 			return AbstractResponderServlet.this.createResponder(bean, response);
 		}
 	}
-   
+
+	@Override
 	@PreDestroy
     public void disconnect() throws EventException {
 		responder.disconnect();

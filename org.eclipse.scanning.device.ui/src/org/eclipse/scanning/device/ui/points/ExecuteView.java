@@ -101,10 +101,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * A view which attempts to pick up selection events
  * from building a scan and then display the scan information.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -112,7 +112,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 
 	public static final String ID = "org.eclipse.scanning.device.ui.scan.executeView"; //$NON-NLS-1$
 	private static final Logger logger = LoggerFactory.getLogger(ExecuteView.class);
-	
+
 	// UI
 	private StyledText text;
 	private Composite  run;
@@ -126,12 +126,12 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 
 	// Job
 	private Job updateJob;
-	
+
 	// Data
 	private SampleData sampleData;
-	
+
 	public ExecuteView() {
-		
+
 		Activator.getDefault().getPreferenceStore().setDefault(DevicePreferenceConstants.SHOW_SCAN_INFO, true);
 		Activator.getDefault().getPreferenceStore().setDefault(DevicePreferenceConstants.SHOW_SCAN_CMD,  true);
 		Activator.getDefault().getPreferenceStore().setDefault(DevicePreferenceConstants.SHOW_VERBOSE_SCAN_CMD,  false);
@@ -146,6 +146,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 			logger.error("Unable to get remote device service!", e);
 		}
 		updateJob = new Job("Update Scna Information") {
+			@Override
 			public IStatus run(IProgressMonitor monitor) {
 				update(monitor);
 				return Status.OK_STATUS;
@@ -154,7 +155,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		updateJob.setUser(false);
 		updateJob.setSystem(true);
 		updateJob.setPriority(Job.INTERACTIVE);
-		
+
 		final IStashing stash = ServiceHolder.getStashingService().createStash("org.eclipse.scanning.device.ui.scan.execute.sample.json");
 		sampleData = new SampleData();
 		if (stash.isStashed()) {
@@ -165,7 +166,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 			}
 		}
 	}
-	
+
 	@Override
     public void saveState(IMemento memento) {
 		super.saveState(memento);
@@ -184,24 +185,25 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
-		
+
 		Composite container = new Composite(parent, SWT.NONE);
 		container.setLayout(new GridLayout(1, false));
-		
+
 		this.text = new StyledText(container, SWT.MULTI | SWT.H_SCROLL);
 		text.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		text.setBackground(text.getDisplay().getSystemColor(SWT.COLOR_WHITE));
 		text.getParent().layout(new Control[]{text});
-		
+
 		run = new Composite(container, SWT.NONE);
 		run.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		run.setLayout(new GridLayout(3, false));
-		
+
 		submitButton = new Button(run, SWT.PUSH);
 		submitButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
 		submitButton.setText("Submit");
 		submitButton.setToolTipText("Execute current scan\n(Submits it to the queue of scans to be run.)");
 		submitButton.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				submit();
 			}
@@ -211,7 +213,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		timeEstimate = new Label(run, SWT.NONE);
 		timeEstimate.setText("                    ");
 		timeEstimate.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false));
-		
+
 		final Composite rightButtons = new Composite(run, SWT.NONE);
 		rightButtons.setLayout(new GridLayout(2, false));
 		rightButtons.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
@@ -219,35 +221,37 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		clipboard.setText("Copy");
 		clipboard.setToolTipText("Copy the scan command to the clipboard");
 		clipboard.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				clipboard();
 			}
 		});
 		clipboard.setImage(Activator.getImageDescriptor("icons/clipboard-invoice.png").createImage());
-		
+
 		final Button sampleData = new Button(rightButtons, SWT.PUSH);
 		sampleData.setText("Sample");
 		sampleData.setToolTipText("Set the sample information for the run.");
 		sampleData.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				sampleInformation();
 			}
 		});
 		sampleData.setImage(Activator.getImageDescriptor("icons/beaker.png").createImage());
 
-	
+
 		createActions();
 		PageUtil.getPage(getSite()).addSelectionListener(this);
-		
+
 		// We force the scan view to exist. It might be the one to return the compound model
 		// that we will use.
 		ScanningPerspective.createKeyPlayers();
 
 		updateJob.schedule();
 	}
-	
+
 	protected void sampleInformation() {
-		
+
 		try {
 			IModelDialog<SampleData> dialog = ServiceHolder.getInterfaceService().createModelDialog(getViewSite().getShell());
 			dialog.setPreamble("Please define the sample data.");
@@ -264,7 +268,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		} catch ( InterfaceInvalidException e) {
 			logger.error("Internal error setting Sample Information", e);
 		}
- 
+
 	}
 
 	protected void submit() {
@@ -287,16 +291,16 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 				logger.debug("Submitter isDisconnected = {}", submitter.isDisconnected());
 			}
 			submitter.submit(bean);
-			
+
 			if (logger.isDebugEnabled()) { // Test used because output message does work.
 				logger.debug("Submitted Bean to queue: {}", submitter.getSubmitQueueName());
 				logger.debug("Using URI: {}", submitter.getUri());
 				logger.debug("Submitter isDisconnected = {}", submitter.isDisconnected());
 			}
-			
+
 			// Show the Queue
 			showQueue();
-			
+
 		} catch (Exception ne) {
 			ErrorDialog.openError(getViewSite().getShell(), "Cannot Submit Scan", "There was a problem submitting the scan.\n\nPlease contact your support representative.", new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage(), ne));
 		    logger.error("Unable to submit scan", ne);
@@ -318,17 +322,17 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	}
 
 	/**
-	 * If there is a view which provides the whole ScanRequest. 
+	 * If there is a view which provides the whole ScanRequest.
 	 * This will be used and returned. Otherwise we cycle through the
 	 * components of the scan request looking for views which provide
 	 * their definitions.
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 			// TODO Use IScanBuilderService
 	 */
 	private ScanRequest<IROI> createScanRequest(boolean lookForScanRequest) throws Exception {
-		
+
 		if (lookForScanRequest) {
 			// TODO Replace with IScanBuilderService to make e4 compatible
 			IViewReference[] refs = PageUtil.getPage().getViewReferences();
@@ -339,7 +343,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 				if (req!=null) return req;
 			}
 		}
-		
+
 		if (modelAdaptable==null) {
 			// We see if there is a view with a compound model adaptable
 			// TODO Replace with IScanBuilderService to make e4 compatible
@@ -361,7 +365,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		ScanRequest<IROI> ret = new ScanRequest<IROI>();
 		CompoundModel<IROI> cm = modelAdaptable.getAdapter(CompoundModel.class);
 		ret.setCompoundModel(cm);
-		
+
 		IPosition[] pos = modelAdaptable.getAdapter(IPosition[].class);
 		ret.setStart(pos[0]);
 		ret.setEnd(pos[1]);
@@ -374,7 +378,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		ret.setDetectors(getDetectors());
 		ret.setSampleData(sampleData);
         vservice.validate(ret);
-		
+
 		return ret;
 	}
 
@@ -383,18 +387,18 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		if (PageUtil.getPage()!=null) PageUtil.getPage().removeSelectionListener(this);
 		super.dispose();
 	}
-	
+
 	private IAdaptable modelAdaptable;
 	private IAction    submitAction;
 	private Button     submitButton;
-	
+
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-		
+
 		if (!getViewSite().getPage().isPartVisible(this)) return;
 		if (selection instanceof IStructuredSelection) {
 			Object ob = ((IStructuredSelection)selection).getFirstElement();
-			
+
 			// This slightly funny alg or assign and sometimes update
 			// is correct. Do not change unless sure that UI is working afterwards.
 			if (ob instanceof IAdaptable) { // TODO Replace with ScanBuilderService
@@ -425,7 +429,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	 * @param monitor
 	 */
 	private void update(IProgressMonitor monitor) {
-		
+
 		try {
 			ScanRequest<IROI> req = createScanRequest();
 			if (monitor.isCanceled()) return;
@@ -441,9 +445,9 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	        	// Validate
 	        	vservice.validate(cm);
 				setThreadSafeEnabled(true);
-	        	
+
 	    		StyledString styledString = new StyledString();
-		        	
+
 	        	// Create generator for points
 				if (monitor.isCanceled()) return;
 	        	final IPointGenerator<?> gen = pservice.createCompoundGenerator(cm);
@@ -458,18 +462,18 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 						if (monitor.isCanceled()) return;
 			        	styledString.append("\nStart: "+start);
 			        }
-			        
+
 			        ScriptRequest before = req.getBefore();
 			        if (before!=null) {
 						if (monitor.isCanceled()) return;
 			        	styledString.append("\nBefore: ");
 			        	styledString.append(before.toString(), StyledString.DECORATIONS_STYLER);
 			        }
-		        	
+
 					if (monitor.isCanceled()) return;
 		        	styledString.append("\nScan: ");
 		        	styledString.append(getModelNames(cm), StyledString.DECORATIONS_STYLER);
-	
+
 			        ScriptRequest after = req.getAfter();
 			        if (after!=null) {
 						if (monitor.isCanceled()) return;
@@ -481,15 +485,15 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 						if (monitor.isCanceled()) return;
 			        	styledString.append("\nEnd: "+end);
 			        }
-	
+
 					if (monitor.isCanceled()) return;
 		        	styledString.append("\nDetectors: ");
 		        	styledString.append(getDetectorNames(), FontStyler.BOLD);
-		        	
+
 					if (monitor.isCanceled()) return;
 		        	styledString.append("\nRegions: ");
 		        	styledString.append(getScanRegions(cm.getRegions()), StyledString.QUALIFIER_STYLER);
-		        	
+
 					if (monitor.isCanceled()) return;
 		        	styledString.append("\nMonitors: ");
 		        	styledString.append(getMonitorNames(), StyledString.DECORATIONS_STYLER);
@@ -500,7 +504,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 			        	styledString.append(sampleData.getName(), StyledString.QUALIFIER_STYLER);
 		        	}
 	        	}
-	        	
+
 	        	if (Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_SCAN_CMD)) {
 	        		try {
 	        			final IParserService pyService = ServiceHolder.getParserService();
@@ -515,7 +519,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	        		}
 	        	}
 	            setThreadSafeText(text, styledString);
-	        	
+
 	            String timeString = "";
 	        	if (Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_SCAN_TIME)) {
 
@@ -533,7 +537,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		} catch (ModelValidationException ne) {
 			setThreadSafeEnabled(false);
 			setThreadSafeText(text, ne.getMessage());
-			 
+
 		} catch (Exception ne) {
 			setThreadSafeEnabled(false);
 			logger.error("Cannot create summary of scan!", ne);
@@ -572,25 +576,27 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	private void setThreadSafeText(StyledText text, StyledString styledString) {
 		if (text.isDisposed()) return;
     	text.getDisplay().syncExec(new Runnable() {
-    		public void run() {
+    		@Override
+			public void run() {
     			if (text.isDisposed()) return;
 	        	text.setText(styledString.toString());
 	        	text.setStyleRanges(styledString.getStyleRanges());
     		}
-    	});	
+    	});
     }
 	private void setThreadSafeLabel(Label label, String message) {
 		if (label.isDisposed()) return;
 		label.getDisplay().syncExec(new Runnable() {
-    		public void run() {
+    		@Override
+			public void run() {
     			if (label.isDisposed()) return;
     			label.setText(message);
     		}
-    	});	
+    	});
     }
 
 	private String getScanRegions(Collection<ScanRegion<IROI>> regions) {
-		
+
 		final StringBuilder buf = new StringBuilder();
 		if (regions==null) return "None";
      	for (Iterator<ScanRegion<IROI>> it = regions.iterator(); it.hasNext();) {
@@ -604,14 +610,14 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
  	}
 
 	private String getDetectorNames() throws Exception {
-		
+
 		Collection<DeviceInformation<?>> infos = getDeviceInformation();
 		Collection<DeviceInformation<?>> activated = new ArrayList<>();
     	for (Iterator<DeviceInformation<?>> it = infos.iterator(); it.hasNext();) {
 			DeviceInformation<?> deviceInformation = it.next();
 			if (deviceInformation.isActivated()) activated.add(deviceInformation);
     	}
-    	
+
 		final StringBuilder buf = new StringBuilder();
     	for (Iterator<DeviceInformation<?>> it = activated.iterator(); it.hasNext();) {
     		DeviceInformation<?> info = it.next();
@@ -625,9 +631,9 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
     	if (buf.length()>0) return buf.toString();
     	return "None";
 	}
-	
+
 	private Map<String,Object> getDetectors() throws Exception {
-		
+
 		Map<String,Object> detectors = new HashMap<>();
 		Collection<DeviceInformation<?>> infos = getDeviceInformation();
 		Collection<DeviceInformation<?>> activated = new ArrayList<>();
@@ -644,7 +650,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	}
 
 	private List<String> getMonitors() throws Exception {
-		
+
 		final Collection<DeviceInformation<?>> scannables = cservice.getDeviceInformation();
 		final List<String> ret = new ArrayList<String>();
 		for (DeviceInformation<?> info : scannables) {
@@ -652,12 +658,12 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		}
 		return ret;
 	}
-	
+
 	private String getMonitorNames() throws Exception {
-		
+
 		List<String> mons = getMonitors();
 		if (mons==null || mons.isEmpty()) return "None";
-		
+
 		final StringBuilder buf = new StringBuilder();
     	for (Iterator<String> it = mons.iterator(); it.hasNext();) {
     		String name = it.next();
@@ -670,7 +676,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 
 
 	private Collection<DeviceInformation<?>> getDeviceInformation() throws ScanningException {
-		
+
 		IViewReference[] refs = PageUtil.getPage().getViewReferences();
 		for (IViewReference iViewReference : refs) {
 			IViewPart part = iViewReference.getView(false);
@@ -680,10 +686,10 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 				return (Collection<DeviceInformation<?>>)info;
 			}
 		}
-		
+
 		// We cannot find a part which has the temp information so
         // we use the server information.
-		return dservice.getDeviceInformation(); 
+		return dservice.getDeviceInformation();
 	}
 
 	private String getMotorNames(IPointGenerator<?> gen) {
@@ -706,54 +712,59 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		List<IContributionManager> mans = new ArrayList<>(Arrays.asList(getViewSite().getActionBars().getToolBarManager(), getViewSite().getActionBars().getMenuManager()));
 		MenuManager     rightClick     = new MenuManager();
 		mans.add(rightClick);
-		
 
-		
+
+
 		IAction showInfo = createPreferenceAction("Show scan information", DevicePreferenceConstants.SHOW_SCAN_INFO, "icons/information-white.png");
 		IAction showCmd = createPreferenceAction("Show scan command", DevicePreferenceConstants.SHOW_SCAN_CMD, "icons/information-green.png");
 		IAction showVerbose = createPreferenceAction("Show verbose scan command", DevicePreferenceConstants.SHOW_VERBOSE_SCAN_CMD, "icons/information-purple.png");
 		IAction showTime = createPreferenceAction("Show time estimation", DevicePreferenceConstants.SHOW_SCAN_TIME, "icons/information-red.png");
-	
+
 		ViewUtil.addGroups("show", mans, showInfo, showCmd, showVerbose, showTime);
-		
+
 		this.submitAction = new Action("Submit current scan\n(Submits it to the queue of scans to be run.)", Activator.getImageDescriptor("icons/shoe--arrow.png")) {
+			@Override
 			public void run() {
 				submit();
 			}
 		};
 		IAction copy = new Action("Copy scan command to clipboard", Activator.getImageDescriptor("icons/clipboard-invoice.png")) {
+			@Override
 			public void run() {
 				clipboard();
 			}
 		};
 		IAction sample = new Action("Edit sample information", Activator.getImageDescriptor("icons/beaker.png")) {
+			@Override
 			public void run() {
 				sampleInformation();
 			}
 		};
 		IAction showQueue = new Action("Show the scan queue", Activator.getImageDescriptor("icons/cards-stack.png")) {
+			@Override
 			public void run() {
 				showQueue();
 			}
 		};
-	
+
 		ViewUtil.addGroups("execute", mans, submitAction);
 		ViewUtil.addGroups("auxilary", mans, copy, sample, showQueue);
 
-		
+
 		text.setMenu(rightClick.createContextMenu(text));
 
 	}
 
 	private IAction createPreferenceAction(String label, String preference, String icon) {
 		IAction ret = new Action(label, IAction.AS_CHECK_BOX) {
+			@Override
 			public void run() {
 				Activator.getDefault().getPreferenceStore().setValue(preference, isChecked());
 				updateJob.schedule();
 			}
 		};
 		ret.setImageDescriptor(Activator.getImageDescriptor(icon));
-		ret.setChecked(Activator.getDefault().getPreferenceStore().getBoolean(preference));	
+		ret.setChecked(Activator.getDefault().getPreferenceStore().getBoolean(preference));
 		return ret;
 	}
 
@@ -765,10 +776,10 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 			clipboard.setContents(new Object[] { cmd }, new Transfer[] { TextTransfer.getInstance() });
 			clipboard.dispose();
 			logger.debug("Copied command to clipboard: {}", cmd);
-			
+
 		} catch (Exception ne) {
-			ErrorDialog.openError(getViewSite().getShell(), 
-					"Problem Generating Command", 
+			ErrorDialog.openError(getViewSite().getShell(),
+					"Problem Generating Command",
 					"The mscan(..) command is currently invalid because of the\n"+
 					"current stepup. Please fix any errors in the setup.\n\n"+
 					"Nothing was copied to the clipboard",
@@ -782,7 +793,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	}
 
 	private static class FontStyler extends Styler {
-		
+
 		public static final Styler CODE = new FontStyler(new Font(null, "Courier", 10, SWT.NONE));
 		public static final Styler BOLD = new FontStyler(new Font(null, "Dialog", 10, SWT.BOLD));
 

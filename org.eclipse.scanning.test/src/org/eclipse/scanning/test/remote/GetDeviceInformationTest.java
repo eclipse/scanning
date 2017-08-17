@@ -47,9 +47,9 @@ import org.junit.Test;
 
 /**
  * These tests are designed to test the logic of getting device information from the runnable device service
- * Put in after changing the way this works, in only attempting to get some device information if a device is 
+ * Put in after changing the way this works, in only attempting to get some device information if a device is
  * currently marked as being alive. This can be overridden to get all information for all devices, whether alive or not
- * 
+ *
  * @author Matt Taylor
  *
  */
@@ -59,16 +59,16 @@ public class GetDeviceInformationTest extends BrokerTest {
 	private static  IEventService             eservice;
 	private static AbstractResponderServlet<?>  dservlet, pservlet;
 	private static FakeDevice dev1, dev2, dev3, dev4;
-	
+
 	private         IRunnableDeviceService    rservice;
 
 	@Before
 	public void createService() throws Exception {
-		
+
 		System.out.println("Create Services");
 		RemoteServiceFactory.setTimeout(1, TimeUnit.MINUTES); // Make test easier to debug.
 
-		// We wire things together without OSGi here 
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		setUpNonOSGIActivemqMarshaller();
 		eservice = new EventServiceImpl(new ActivemqConnectorService()); // Do not copy this get the service from OSGi!
@@ -76,7 +76,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		// Set up stuff because we are not in OSGi with a test
 		// DO NOT COPY TESTING ONLY
 		dservice = new RunnableDeviceServiceImpl(new MockScannableConnector(eservice.createPublisher(uri, EventConstants.POSITION_TOPIC)));
-		
+
 		// First device - up and online
 		dev1 = new FakeDevice();
 		final DeviceInformation<Object> info1 = new DeviceInformation<Object>(); // This comes from extension point or spring in the real world.
@@ -91,7 +91,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		dev1.setAlive(true);
 		dev1.setUp(true);
 		((RunnableDeviceServiceImpl)dservice)._register("dev1UpOn", dev1);
-		
+
 		// Second device - down and offline
 		dev2 = new FakeDevice();
 		final DeviceInformation<Object> info2 = new DeviceInformation<Object>(); // This comes from extension point or spring in the real world.
@@ -106,7 +106,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		dev2.setAlive(false);
 		dev2.setUp(false);
 		((RunnableDeviceServiceImpl)dservice)._register("dev2DownOff", dev2);
-		
+
 		// Third device - up and offline
 		dev3 = new FakeDevice();
 		final DeviceInformation<Object> info3 = new DeviceInformation<Object>(); // This comes from extension point or spring in the real world.
@@ -121,7 +121,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		dev3.setAlive(false);
 		dev3.setUp(true);
 		((RunnableDeviceServiceImpl)dservice)._register("dev3UpOff", dev3);
-		
+
 		// Fourth device - down and online
 		dev4 = new FakeDevice();
 		final DeviceInformation<Object> info4 = new DeviceInformation<Object>(); // This comes from extension point or spring in the real world.
@@ -140,13 +140,13 @@ public class GetDeviceInformationTest extends BrokerTest {
 		Services.setRunnableDeviceService(dservice);
 		Services.setEventService(eservice);
 		System.out.println("Set connectors");
-	
+
 		dservlet = new DeviceServlet();
 		dservlet.setBroker(uri.toString());
 		dservlet.setRequestTopic(IEventService.DEVICE_REQUEST_TOPIC);
 		dservlet.setResponseTopic(IEventService.DEVICE_RESPONSE_TOPIC);
 		dservlet.connect();
-		
+
 		pservlet = new PositionerServlet();
 		pservlet.setBroker(uri.toString());
 		pservlet.setRequestTopic(IEventService.POSITIONER_REQUEST_TOPIC);
@@ -155,7 +155,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		System.out.println("Made Servlets");
 		rservice = eservice.createRemoteService(uri, IRunnableDeviceService.class);
 	}
-	
+
 	@After
 	public void disposeService() throws EventException {
 		((IDisconnectable)rservice).disconnect();
@@ -165,23 +165,23 @@ public class GetDeviceInformationTest extends BrokerTest {
 
 	@Test
 	public void testGetDeviceInformation() throws Exception {
-		
+
 		Collection<DeviceInformation<?>> devInfo1 = dservice.getDeviceInformation();
 		Collection<DeviceInformation<?>> devInfo2 = rservice.getDeviceInformation();
 		assertTrue(devInfo1!=null);
 		assertTrue(devInfo2!=null);
-		
+
 		assertEquals(4, devInfo1.size());
 		assertEquals(4, devInfo2.size());
-		
+
 		DeviceInformation<?> diArray[] = new DeviceInformation[devInfo1.size()];
 		devInfo1.toArray(diArray);
-		
+
 		DeviceInformation<?> di1 = null;
 		DeviceInformation<?> di2 = null;
 		DeviceInformation<?> di3 = null;
 		DeviceInformation<?> di4 = null;
-		
+
 		for (int i = 0; i < diArray.length; i++) {
 			switch (diArray[i].getName()) {
 				case "dev1UpOn":
@@ -200,12 +200,12 @@ public class GetDeviceInformationTest extends BrokerTest {
 					fail("Unknown name " + diArray[i].getName());
 			}
 		}
-		
+
 		assertEquals("dev1UpOn", di1.getName());
 		assertEquals("dev2DownOff", di2.getName());
 		assertEquals("dev3UpOff", di3.getName());
 		assertEquals("dev4DownOn", di4.getName());
-				
+
 		// D1 should show as running as online, and was marked as alive
 		assertEquals(DeviceState.RUNNING, di1.getState());
 
@@ -215,34 +215,34 @@ public class GetDeviceInformationTest extends BrokerTest {
 
 		// D4 should show as offline as offline, but was marked as alive so will fail, and turn to offline
 		assertEquals(DeviceState.OFFLINE, di4.getState());
-		
+
 		// Check the flag on the device to ensure only the alive ones were checked
 		assertEquals(true, dev1.isDeviceStateChecked());
 		assertEquals(false, dev2.isDeviceStateChecked());
 		assertEquals(false, dev3.isDeviceStateChecked());
 		assertEquals(true, dev4.isDeviceStateChecked());
-		
+
 	}
 
 	@Test
 	public void testGetDeviceInformationIncludingOffline() throws Exception {
-		
+
 		Collection<DeviceInformation<?>> devInfo1 = dservice.getDeviceInformationIncludingNonAlive();
 		Collection<DeviceInformation<?>> devInfo2 = rservice.getDeviceInformationIncludingNonAlive();
 		assertTrue(devInfo1!=null);
 		assertTrue(devInfo2!=null);
-		
+
 		assertEquals(4, devInfo1.size());
 		assertEquals(4, devInfo2.size());
-		
+
 		DeviceInformation<?> diArray[] = new DeviceInformation[devInfo1.size()];
 		devInfo1.toArray(diArray);
-		
+
 		DeviceInformation<?> di1 = null;
 		DeviceInformation<?> di2 = null;
 		DeviceInformation<?> di3 = null;
 		DeviceInformation<?> di4 = null;
-		
+
 		for (int i = 0; i < diArray.length; i++) {
 			switch (diArray[i].getName()) {
 				case "dev1UpOn":
@@ -261,12 +261,12 @@ public class GetDeviceInformationTest extends BrokerTest {
 					fail("Unknown name " + diArray[i].getName());
 			}
 		}
-		
+
 		assertEquals("dev1UpOn", di1.getName());
 		assertEquals("dev2DownOff", di2.getName());
 		assertEquals("dev3UpOff", di3.getName());
 		assertEquals("dev4DownOn", di4.getName());
-		
+
 		// D1 should show as running as online, and was marked as alive
 		assertEquals(DeviceState.RUNNING, di1.getState());
 
@@ -284,7 +284,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		assertEquals(true, dev2.isDeviceStateChecked());
 		assertEquals(true, dev3.isDeviceStateChecked());
 		assertEquals(true, dev4.isDeviceStateChecked());
-		
+
 	}
 
 	static class FakeDevice extends AbstractRunnableDevice<Object> {
@@ -292,7 +292,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		protected FakeDevice(IRunnableDeviceService dservice) {
 			super(dservice);
 		}
-		
+
 		public FakeDevice() {
 			super(Services.getRunnableDeviceService());
 		}
@@ -302,7 +302,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		private String name = "";
 		private boolean up = false;
 		private boolean deviceStateChecked = false;
-		
+
 		@Override
 		public String getName() {
 			return name;
@@ -320,7 +320,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 
 		@Override
 		public void setRole(DeviceRole role) {
-			
+
 		}
 
 		@Override
@@ -330,7 +330,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 
 		@Override
 		public void setLevel(int level) {
-			
+
 		}
 
 		@Override
@@ -340,12 +340,12 @@ public class GetDeviceInformationTest extends BrokerTest {
 
 		@Override
 		public void configure(Object model) throws ScanningException {
-			
+
 		}
 
 		@Override
 		public void reset() throws ScanningException {
-			
+
 		}
 
 		@Override
@@ -359,6 +359,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 			throw new ScanningException("Not Up");
 		}
 
+		@Override
 		public void setDeviceState(DeviceState deviceState) throws ScanningException {
 			this.deviceState =  deviceState;
 		}
@@ -375,15 +376,15 @@ public class GetDeviceInformationTest extends BrokerTest {
 
 		@Override
 		public void run(IPosition position) throws ScanningException, InterruptedException {
-			
+
 		}
 
 		@Override
-		public void abort() throws ScanningException {			
+		public void abort() throws ScanningException {
 		}
 
 		@Override
-		public void disable() throws ScanningException {			
+		public void disable() throws ScanningException {
 		}
 
 		@Override
@@ -408,7 +409,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		public void setUp(boolean up) {
 			this.up = up;
 		}
-		
+
 		@Override
 		public void setDeviceInformation(DeviceInformation<Object> deviceInformation) {
 			// TODO Auto-generated method stub
@@ -419,7 +420,7 @@ public class GetDeviceInformationTest extends BrokerTest {
 		public boolean isDeviceStateChecked() {
 			return deviceStateChecked;
 		}
-		
+
 	}
-	
+
 }

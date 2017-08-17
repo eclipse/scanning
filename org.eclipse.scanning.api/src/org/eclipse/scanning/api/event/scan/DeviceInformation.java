@@ -23,17 +23,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * Information about a given device. It may be an IRunnabDevice or an IScannableDevice.
- * 
+ *
  * The type of information is for displaying the device in the UI.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class DeviceInformation<T> implements IModelProvider<T> {
 	private static Logger logger = LoggerFactory.getLogger(DeviceInformation.class);
-	
+
 	/**
 	 * The device state, for instance, IDLE, READY, PAUSED, FAULT etc.
 	 */
@@ -43,29 +43,29 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	 * Device name used in scan
 	 */
 	private String name;
-	
+
 	/**
 	 * Level device will be run at
 	 */
 	private int level;
-	
+
 	/**
 	 * Label visible in UI table
 	 */
 	private String label;
-	
+
 	/**
 	 * Id used to identify the device
 	 */
 	private String id;
-	
+
 	/**
 	 * Human readable note on what the device is. For instance 'Device which computes and mandelbrot set and images it.'
 	 */
 	private String description;
-	
+
 	/**
-	 * The path to the icon, including bundle. The user interface will then attempt to 
+	 * The path to the icon, including bundle. The user interface will then attempt to
 	 * load this bundle (if it exists in the UI product) and the icon from it.
 	 * <p>
 	 * Form: bundle:subdir(s)/image name
@@ -76,28 +76,28 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	 * used depending on the UI connecting.
 	 */
 	private String icon;
-	
+
 	/**
-	 * The model which the detector is currently using. Or if 
+	 * The model which the detector is currently using. Or if
 	 * the detector does not have a model, null.
 	 */
 	private T model;
-	
+
 	/**
 	 * The unit for the device, if any
 	 */
 	private String unit;
-	
+
 	/**
 	 * The upper limit or null if none exists.
 	 */
 	private Object upper;
-	
+
 	/**
 	 * The lower limit or null if none exists.
 	 */
 	private Object lower;
-	
+
 	/**
 	 * Allowed values if value has discrete options
 	 */
@@ -106,30 +106,30 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	/**
 	 * Holds activated state of device, if any.
 	 * Activated devices are used when a scan is constructed
-	 * and the state is saved. 
+	 * and the state is saved.
 	 */
 	private boolean activated = false;
-	
+
 	/**
 	 * The device health, free text to describe the current status of the device.
 	 */
 	private String health;
-	
+
 	/**
 	 * Whether the device is busy or not
 	 */
 	private boolean busy;
-	
+
 	private DeviceRole deviceRole;
-	
+
 	/**
 	 * For devices that may be used as monitors, they
 	 * have a specific role in the system.
 	 */
 	private MonitorRole monitorRole;
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private Set<ScanMode> supportedScanModes;
 
@@ -141,11 +141,11 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	public DeviceInformation() {
 
 	}
-	
+
 	public DeviceInformation(String name) {
 	    this.name = name;
 	}
-	
+
     /**
      * Merges in any non-null fields.
      * @param info
@@ -183,6 +183,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	 * @deprecated the id is no longer needed. It is just a fall back
 	 * for when the name is not available.
 	 */
+	@Deprecated
 	public String getId() {
 		return id;
 	}
@@ -191,6 +192,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	 * @deprecated the id is no longer needed. It is just a fall back
 	 * for when the name is not available.
 	 */
+	@Deprecated
 	public void setId(String id) {
 		this.id = id;
 	}
@@ -218,11 +220,11 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	public void setDeviceRole(DeviceRole deviceRole) {
 		this.deviceRole = deviceRole;
 	}
-	
+
 	public Set<ScanMode> getSupportedScanModes() {
 		return supportedScanModes;
 	}
-	
+
 	public void setSupportedScanModes(Set<ScanMode> supportedScanModes) {
 		this.supportedScanModes = supportedScanModes;
 	}
@@ -334,16 +336,18 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "DeviceInformation [name=" + name + ", label=" + label + "]";
 	}
 
+	@Override
 	public T getModel() {
 		return model;
 	}
 
+	@Override
 	public void setModel(T model) {
 		this.model = model;
 	}
@@ -391,15 +395,15 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	public Object[] getPermittedValues() {
 		return permittedValues;
 	}
-	
+
 	public void setPermittedValues(Object[] permittedValues) {
 		this.permittedValues = permittedValues;
 	}
-	
+
 	public boolean isActivated() {
 		return activated;
 	}
-	
+
 	public boolean setActivated(boolean activated) {
 		logger.info("setActivated({}) was {} ({})", activated, this.activated, this);
 		boolean wasactivated = this.activated;
@@ -414,11 +418,11 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	public void setHealth(String health) {
 		this.health = health;
 	}
-	
+
 	public boolean isBusy() {
 		return busy;
 	}
-	
+
 	public void setBusy(boolean busy) {
 		this.busy = busy;
 	}

@@ -31,7 +31,7 @@ import org.eclipse.scanning.api.scan.event.IPositioner;
 class _Positioner extends AbstractRemoteService implements IPositioner {
 
 	private IRequester<PositionerRequest> requester;
-	
+
 	// We use the uniqueid of the request to get a kind of 'session'
 	private PositionerRequest             request;
 
@@ -40,18 +40,19 @@ class _Positioner extends AbstractRemoteService implements IPositioner {
 		setEventService(eservice);
 		init();
 	}
-	
+
 	@Override
 	public void disconnect() throws EventException {
 		requester.disconnect();
 		setDisconnected(true);
 	}
-	
+
+	@Override
 	public void init()  throws EventException {
 		requester = eservice.createRequestor(uri, EventConstants.POSITIONER_REQUEST_TOPIC, EventConstants.POSITIONER_RESPONSE_TOPIC);
-		long timeout = Long.getLong("org.eclipse.scanning.event.remote.positionerTimeout", 100); 
+		long timeout = Long.getLong("org.eclipse.scanning.event.remote.positionerTimeout", 100);
 	    logger.debug("Setting timeout {} {}" , timeout , " ms");
-		requester.setTimeout(timeout, TimeUnit.MILLISECONDS); // Useful for debugging testing 
+		requester.setTimeout(timeout, TimeUnit.MILLISECONDS); // Useful for debugging testing
 		request   = new PositionerRequest();
 	}
 
@@ -123,7 +124,7 @@ class _Positioner extends AbstractRemoteService implements IPositioner {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	@Override
 	public void close() {
 		request.setPositionType(PositionRequestType.CLOSE);

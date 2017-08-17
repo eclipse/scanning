@@ -55,82 +55,83 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class ThreadScanTest extends BrokerTest {
-	
+
 	private static IRunnableDeviceService     sservice;
 	private static IScannableDeviceService    connector;
 	private static IPointGeneratorService     gservice;
 	private static IEventService              eservice;
 
 	protected final static int IMAGE_COUNT = 5;
-	
+
 	@BeforeClass
 	public static void createServices() {
 		setUpNonOSGIActivemqMarshaller();
 		eservice   = new EventServiceImpl(new ActivemqConnectorService());
-		
-		// We wire things together without OSGi here 
+
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		connector = new MockScannableConnector(eservice.createPublisher(uri, EventConstants.POSITION_TOPIC));
 		sservice  = new RunnableDeviceServiceImpl(connector);
 		RunnableDeviceServiceImpl impl = (RunnableDeviceServiceImpl)sservice;
 		impl._register(MockDetectorModel.class, MockWritableDetector.class);
 		impl._register(MockWritingMandlebrotModel.class, MockWritingMandelbrotDetector.class);
-		
+
 		gservice  = new PointGeneratorService();
 
 	}
-	
+
 	private ISubscriber<IScanListener> subscriber;
 	private IPublisher<ScanBean>       publisher;
 
 	@Before
 	public void setup() throws Exception {
-		
+
 
 		// Use in memory broker removes requirement on network and external ActiveMQ process
 		// http://activemq.apache.org/how-to-unit-test-jms-code.html
 		subscriber = eservice.createSubscriber(uri, IEventService.SCAN_TOPIC); // Create an in memory consumer of messages.
 		publisher  = eservice.createPublisher(uri, IEventService.SCAN_TOPIC);
 	}
-	
+
 	@After
 	public void shutdown() throws Exception {
 		subscriber.disconnect();
 		publisher.disconnect();
 	}
-	
+
 	@Test
 	public void testPauseAndResume2Threads() throws Throwable {
-		
+
 		IPausableDevice<?> device = createConfiguredDevice(5, 5);
 		pause100ResumeLoop(device, 2, 100, false);
 	}
-	
+
 	@Test
 	public void testPauseAndResume10Threads() throws Throwable {
-		
+
 		IPausableDevice<?> device = createConfiguredDevice(5, 5);
 		pause100ResumeLoop(device, 10, 100, false);
 	}
 
 
-	protected IRunnableDevice<?> pause100ResumeLoop(final IPausableDevice<?> device, 
-													 int threadcount, 
-													 long sleepTime, 
+	protected IRunnableDevice<?> pause100ResumeLoop(final IPausableDevice<?> device,
+													 int threadcount,
+													 long sleepTime,
 													 boolean expectExceptions) throws Throwable {
 
 		device.start(null);
 		device.latch(500, TimeUnit.MILLISECONDS); // Let it get going.
-		
-		final List<Throwable> exceptions = new ArrayList<>(1);		
+
+		final List<Throwable> exceptions = new ArrayList<>(1);
 
 		final List<ScanBean> beans = new ArrayList<ScanBean>(IMAGE_COUNT);
-		createPauseEventListener(device, beans);	
+		createPauseEventListener(device, beans);
 
 		final List<Integer> usedThreads = new ArrayList<>();
 		for (int i = 0; i < threadcount; i++) {
 			final Integer current = i;
 			Thread thread = new Thread(new Runnable() {
+				@Override
 				public void run() {
 					try {
 						checkPauseResume(device, 100, true);
@@ -173,20 +174,20 @@ public class ThreadScanTest extends BrokerTest {
 		assertTrue(ok);
 
 		if (exceptions.size()>0) throw exceptions.get(0);
-		
+
 		if (device.getDeviceState()!=DeviceState.ARMED) {
 			throw new Exception("The state at the end of the pause/resume cycle(s) must be "+DeviceState.ARMED+" not "+device.getDeviceState());
 		}
-		
+
 		int expectedThreads = usedThreads.size() > 0 ? usedThreads.get(0) : threadcount;
 		// TODO Sometimes too many pause events come from the real malcolm connection.
 		if (beans.size()<(expectedThreads-1)) throw new Exception("The pause event was not encountered the correct number of times! Found "+beans.size()+" required "+expectedThreads);
 
 		return device;
 	}
-	
+
 	protected void createPauseEventListener(IRunnableDevice<?> device, final List<ScanBean> beans) throws EventException, URISyntaxException {
-		
+
 		subscriber.addListener(new IScanListener() {
 			@Override
 			public void scanStateChanged(ScanEvent evt) {
@@ -195,47 +196,47 @@ public class ThreadScanTest extends BrokerTest {
 				    beans.add(bean);
 				}
 			}
-		});	
+		});
 	}
 
 	private IPausableDevice<?> createConfiguredDevice(int rows, int columns) throws ScanningException, GeneratorException, URISyntaxException {
-		
+
 		// Configure a detector with a collection time.
 		MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setExposureTime(0.001);
 		dmodel.setName("detector");
 		IRunnableDevice<MockDetectorModel> detector = sservice.createRunnableDevice(dmodel);
-		
+
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
 		gmodel.setSlowAxisPoints(rows);
 		gmodel.setFastAxisPoints(columns);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
 
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector);
-		
+
 		// Create a scan and run it
 		IPausableDevice<ScanModel> scanner = (IPausableDevice<ScanModel>) sservice.createRunnableDevice(smodel, publisher);
 		return scanner;
 	}
 
-	
+
 	protected synchronized void checkPauseResume(IPausableDevice<?> device, long pauseTime, boolean ignoreReady) throws Exception {
-		
-		
+
+
 		// No fudgy sleeps allowed in test must be as dataacq would use.
 		if (ignoreReady && device.getDeviceState()==DeviceState.ARMED) return;
-		
+
 		device.pause();
-		
+
 		if (pauseTime>0) {
 			device.latch(pauseTime, TimeUnit.MILLISECONDS);
 		}
-		
+
 		DeviceState state = device.getDeviceState();
 		if (state!=DeviceState.PAUSED) throw new Exception("The state is not paused!");
 

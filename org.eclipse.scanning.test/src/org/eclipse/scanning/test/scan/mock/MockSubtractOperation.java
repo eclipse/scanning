@@ -23,7 +23,8 @@ import org.eclipse.january.dataset.Maths;
  *
  */
 class MockSubtractOperation extends MockAbstractMathsOperation<ValueModel, OperationData> {
-	
+
+	@Override
 	protected IDataset operation(IDataset a, Object value) {
 		return a instanceof Dataset ? ((Dataset) a).isubtract(value) : Maths.subtract(a, value);
 	}
@@ -36,6 +37,6 @@ class MockSubtractOperation extends MockAbstractMathsOperation<ValueModel, Opera
     public String getName() {
 		return "Subtract datasets";
 	}
-	
-	
+
+
 }

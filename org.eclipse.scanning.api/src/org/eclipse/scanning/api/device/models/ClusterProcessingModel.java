@@ -17,30 +17,30 @@ import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 import org.eclipse.scanning.api.annotation.ui.FileType;
 
 public class ClusterProcessingModel implements INameable, IReflectedModel {
-	
+
 	private String name;
-	
+
 	@FieldDescriptor(device=DeviceType.RUNNABLE, hint="The name of the detector whose output we will process")
 	private String detectorName;
-	
+
 	@FieldDescriptor(file=FileType.EXISTING_FILE, hint="The full path of the processing file")
 	private String processingFilePath;
-	
+
 	@FieldDescriptor(visible=false)
 	private String xmx = "1024m";
-	
+
 	@FieldDescriptor(visible=false)
 	private int timeOut = 60000;
-	
+
 	@FieldDescriptor(visible=false)
 	private int numberOfCores = 1;
-	
+
 	@FieldDescriptor(visible=false)
 	private boolean monitorForOverwrite = false;
-	
-	
+
+
 	public ClusterProcessingModel() {
-		
+
 	}
 	public ClusterProcessingModel(String name, String detectorName, String processingFilePath) {
 		this.name               = name;
@@ -48,10 +48,12 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 		this.processingFilePath = processingFilePath;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -71,7 +73,7 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 	public void setProcessingFilePath(String processingFileName) {
 		this.processingFilePath = processingFileName;
 	}
-	
+
 	public String getXmx() {
 		return xmx;
 	}
@@ -84,29 +86,29 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 	public void setTimeOut(int timeOut) {
 		this.timeOut = timeOut;
 	}
-	
+
 	public int getNumberOfCores() {
 		return numberOfCores;
 	}
-	
+
 	public void setNumberOfCores(int numberOfCores) {
 		this.numberOfCores = numberOfCores;
 	}
-	
+
 	public boolean isMonitorForOverwrite() {
 		return monitorForOverwrite;
 	}
-	
+
 	public void setMonitorForOverwrite(boolean monitorForOverwrite) {
 		this.monitorForOverwrite = monitorForOverwrite;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "ClusterProcessingModel [name=" + name + ", detectorName=" + detectorName + ", processingFilePath="
 				+ processingFilePath + "]";
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -120,7 +122,7 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 		result = prime * result + ((xmx == null) ? 0 : xmx.hashCode());
 		return result;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -159,6 +161,6 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 		return true;
 	}
 
-	
-	
+
+
 }

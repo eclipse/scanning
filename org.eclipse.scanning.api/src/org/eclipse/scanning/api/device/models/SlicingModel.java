@@ -6,30 +6,30 @@ import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 import org.eclipse.scanning.api.annotation.ui.FileType;
 
 public class SlicingModel implements ITimeoutable {
-	
+
 	@FieldDescriptor(minimum=1, hint="The rank of the data we will slice.")
 	private int dataRank = 2;
 
 	@FieldDescriptor(file=FileType.EXISTING_FILE)
 	private String   dataFile;
-	
+
 	/**
 	 * The name of the detector whose output we will be processing
-	 * 
+	 *
 	 * This is used to figure out which part of the nexus file
 	 * to look at when processing.
 	 */
 	@FieldDescriptor(device=DeviceType.RUNNABLE, hint="The name of the detector whose output we will get.")
 	private String detectorName;
-	
+
 	@FieldDescriptor(editable=false, hint="The unique device name.")
 	private String name;
-	
+
 	@FieldDescriptor(editable=true, hint="The timeout of each data point during the scan in seconds.")
 	private long timeout = -1;
 
 	public SlicingModel() {
-		
+
 	}
 
 	public SlicingModel(String detectorName, String dataFile, long timeout) {
@@ -69,11 +69,13 @@ public class SlicingModel implements ITimeoutable {
 	}
 
 
+	@Override
 	public long getTimeout() {
 		return timeout;
 	}
 
 
+	@Override
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
 	}

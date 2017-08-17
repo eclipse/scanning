@@ -16,15 +16,18 @@ public abstract class AbstractEPICSv4Device implements IEPICSv4Device {
     	recordName = deviceName;
     }
 
-    public String getRecordName() {
+    @Override
+	public String getRecordName() {
 		return recordName;
 	}
 
-    public void stop() {
+    @Override
+	public void stop() {
     	latch.countDown();
     }
-    
-    public Map<String, PVStructure> getReceivedRPCCalls() {
+
+    @Override
+	public Map<String, PVStructure> getReceivedRPCCalls() {
     	return pvRecord.getReceivedRPCCalls();
     }
 

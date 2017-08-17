@@ -77,29 +77,29 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * 
+ *
  * A tool for editing scan regions. The view creates/edits regions
  * and then encapsulates then into a ScanRegion object which the axes
  * upon which they act.
- * 
+ *
  * It translates the IROI's created in data coordinates to IROI's in
  * axis coordinates and can be used via getAdpter(...) to return a list
  * of these ScanRegions which may be packaged in the CompoundModel which
  * is given to the server.
- * 
- * TODO This view is only linked to one plotting system which is 
- * read when the view is created. Should the view actually be a 
+ *
+ * TODO This view is only linked to one plotting system which is
+ * read when the view is created. Should the view actually be a
  * static tool which updates the scan regions for any plotting system?
  * Or should there be an action to change plotting systems that
  * the view is linked to?
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class ScanRegionView extends ViewPart {
-	
+
 	public static final String ID = "org.eclipse.scanning.device.ui.points.scanRegionView";
-	
+
 	private static Logger logger = LoggerFactory.getLogger(ScanRegionView.class);
 
 	private static final Collection<RegionType> regionTypes;
@@ -118,20 +118,21 @@ public class ScanRegionView extends ViewPart {
 
 	// Listeners
 	private IRegionListener regionListener;
-	
+
 	// File
 	private IStashing stash;
 
 	private DelegatingSelectionProvider selectionDelegate;
-	
+
 	public ScanRegionView() {
-		
+
 		Activator.getDefault().getPreferenceStore().setDefault(DevicePreferenceConstants.AUTO_SAVE_REGIONS, true);
 		Activator.getDefault().getPreferenceStore().setDefault(DevicePreferenceConstants.SHOW_SCAN_REGIONS, true);
 		this.stash = ServiceHolder.getStashingService().createStash("org.eclipse.scanning.device.ui.scan.regions.json");
-		
+
 		this.regionListener = new IRegionListener.Stub() {
 
+			@Override
 			protected void update(RegionEvent evt) {
 				viewer.refresh();
 			}
@@ -140,38 +141,42 @@ public class ScanRegionView extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite ancestor) {
-		
+
 		// TODO Action to choose a different plotting system?
 		this.system = PlotUtil.getRegionSystem();
 
 		Composite control = new Composite(ancestor, SWT.NONE);
 		control.setLayout(new GridLayout(1, false));
 		GridUtils.removeMargins(control);
-		
+
 		this.viewer = new TableViewer(control, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION);
 		viewer.setContentProvider(new ScanRegionContentProvider());
-		
+
 		viewer.getTable().setLinesVisible(true);
 		viewer.getTable().setHeaderVisible(true);
 		viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
 		// resize the row height using a MeasureItem listener
 		viewer.getTable().addListener(SWT.MeasureItem, new Listener() {
-	        public void handleEvent(Event event) {
+	        @Override
+			public void handleEvent(Event event) {
 	            event.height = 24;
 	        }
 	    });
 
 	    //added 'event.height=rowHeight' here just to check if it will draw as I want
 		viewer.getTable().addListener(SWT.EraseItem, new Listener() {
-	        public void handleEvent(Event event) {
+	        @Override
+			public void handleEvent(Event event) {
 	            event.height=24;
 	        }
-	    });		
-		
+	    });
+
 		viewer.getTable().addKeyListener(new KeyListener() {
+			@Override
 			public void keyReleased(KeyEvent e) {
 			}
 
+			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.keyCode == SWT.F1) {
 					// TODO Help!
@@ -191,7 +196,7 @@ public class ScanRegionView extends ViewPart {
 			}
 		});
 
-		
+
 		createActions();
 		this.selectionDelegate = new DelegatingSelectionProvider(viewer);
 		try {
@@ -199,11 +204,11 @@ public class ScanRegionView extends ViewPart {
 		} catch (EventException | URISyntaxException e1) {
 			logger.error("Serious internal error trying to create table columns!", e1);
 		}
-		
+
 		getSite().setSelectionProvider(selectionDelegate);
 		viewer.setInput(system);
 		system.addRegionListener(regionListener);
-		
+
 		if (Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.AUTO_SAVE_REGIONS)) {
 			List<ScanRegion<IROI>> regions;
 			try {
@@ -214,9 +219,9 @@ public class ScanRegionView extends ViewPart {
 				logger.error("Cannot unstash regions", e1);
 			}
 		}
-		
+
 		// Called when user clicks on UI
-		viewer.addSelectionChangedListener(new ISelectionChangedListener() {		
+		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				try {
@@ -227,9 +232,9 @@ public class ScanRegionView extends ViewPart {
 				}
 			}
 		});
-		
+
 		// Called when user clicks on UI and when axes change.
-		selectionDelegate.addSelectionChangedListener(new ISelectionChangedListener() {		
+		selectionDelegate.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				try {
@@ -241,15 +246,16 @@ public class ScanRegionView extends ViewPart {
 			}
 		});
 
-		
+
 		viewer.getControl().addFocusListener(new FocusAdapter() {
+			@Override
 			public void focusLost(FocusEvent e) {
 				setSelectedRegion(null);
 			}
 		});
 
 	}
-	
+
 	private void checkAxes(Collection<ScanRegion<IROI>> regions) {
 		if (regions==null || regions.isEmpty()) return;
 		for (ScanRegion<IROI> region : regions) {
@@ -270,7 +276,7 @@ public class ScanRegionView extends ViewPart {
 	}
 
 	private void setSelectedRegion(ScanRegion<IROI> sregion){
-		
+
 		Collection<IRegion> regions = system.getRegions();
 		for (IRegion iRegion : regions) {
 			if (!(iRegion.getUserObject() instanceof ScanRegion)) continue;
@@ -287,7 +293,7 @@ public class ScanRegionView extends ViewPart {
 	@Override
     public void saveState(IMemento memento) {
     	super.saveState(memento);
-    	
+
     	if (!Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.AUTO_SAVE_REGIONS)) return;
     	try {
     		stash.stash(ScanRegions.getScanRegions(system));
@@ -307,23 +313,25 @@ public class ScanRegionView extends ViewPart {
 		IMenuManager    menuMan    = getViewSite().getActionBars().getMenuManager();
 		MenuManager     rightClick     = new MenuManager();
 		List<IContributionManager> mans = Arrays.asList(toolBarMan, menuMan, rightClick);
-				
+
 		final IAction showRegions = new Action("Show regions", IAction.AS_CHECK_BOX) {
-		    public void run() {
+		    @Override
+			public void run() {
 				Activator.getDefault().getPreferenceStore().setValue(DevicePreferenceConstants.SHOW_SCAN_REGIONS, isChecked());
 				setRegionsVisible(isChecked());
 		    }
 		};
 		showRegions.setChecked(Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_SCAN_REGIONS));
 		showRegions.setImageDescriptor(Activator.getImageDescriptor("icons/show-regions.png"));
-		
+
 		addGroups("add", mans, showRegions, createRegionActions());
-		
+
 		final IAction save = new Action("Save regions", IAction.AS_PUSH_BUTTON) {
-		    public void run() {
-				
+		    @Override
+			public void run() {
+
 				List<ScanRegion<IROI>> regions = ScanRegions.getScanRegions(system);
-				
+
 				if (regions == null) return;
 				FileSelectionDialog dialog = new FileSelectionDialog(getViewSite().getShell());
 				if (lastPath != null) dialog.setPath(lastPath);
@@ -331,7 +339,7 @@ public class ScanRegionView extends ViewPart {
 				dialog.setFiles(files);
 				dialog.setNewFile(true);
 				dialog.setFolderSelector(false);
-				
+
 				dialog.create();
 				if (dialog.open() == Dialog.CANCEL) return;
 				String path = dialog.getPath();
@@ -342,17 +350,18 @@ public class ScanRegionView extends ViewPart {
 				lastPath = path;
 			}
 		};
-		
+
 		final IAction load = new Action("Load regions", IAction.AS_PUSH_BUTTON) {
+			@Override
 			public void run() {
-				
+
 				FileSelectionDialog dialog = new FileSelectionDialog(getViewSite().getShell());
 				dialog.setExtensions(extensions);
 				dialog.setFiles(files);
 				dialog.setNewFile(false);
 				dialog.setFolderSelector(false);
 				if (lastPath != null) dialog.setPath(lastPath);
-				
+
 				dialog.create();
 				if (dialog.open() == Dialog.CANCEL) return;
 				String path = dialog.getPath();
@@ -362,10 +371,11 @@ public class ScanRegionView extends ViewPart {
 		};
 		save.setImageDescriptor(Activator.getImageDescriptor("icons/mask-import-wiz.png"));
 		load.setImageDescriptor(Activator.getImageDescriptor("icons/mask-export-wiz.png"));
-		
+
 		addGroups("file", mans, save, load);
 
 		IAction autoSave = new Action("Automatically save regions\nThis will keep the regions as they are\nif the application is restarted.", IAction.AS_CHECK_BOX) {
+			@Override
 			public void run() {
 				Activator.getDefault().getPreferenceStore().setValue(DevicePreferenceConstants.AUTO_SAVE_REGIONS, isChecked());
 			}
@@ -373,11 +383,11 @@ public class ScanRegionView extends ViewPart {
 		autoSave.setChecked(Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.AUTO_SAVE_REGIONS));
 		autoSave.setImageDescriptor(Activator.getImageDescriptor("icons/autosave.png"));
 		addGroups("auto", mans, autoSave);
-		
+
 		viewer.getControl().setMenu(rightClick.createContextMenu(viewer.getControl()));
 
 	}
-	
+
 	private void setRegionsVisible(boolean vis) {
 		Collection<IRegion> regions = system.getRegions();
 		for (IRegion iRegion : regions) {
@@ -385,11 +395,11 @@ public class ScanRegionView extends ViewPart {
 		}
 	}
 
-	private void saveRegions(String filename, List<ScanRegion<IROI>> regions) {	
+	private void saveRegions(String filename, List<ScanRegion<IROI>> regions) {
 		IStashing stash = ServiceHolder.getStashingService().createStash(new File(filename));
 		stash.save(regions);
 	}
-	
+
 	private void readRegions(String filePath) {
 		IStashing stash = ServiceHolder.getStashingService().createStash(new File(filePath));
 		@SuppressWarnings("unchecked")
@@ -397,7 +407,7 @@ public class ScanRegionView extends ViewPart {
 		createRegions(regions);
 		viewer.refresh();
 	}
-	
+
 	private void createRegions(List<ScanRegion<IROI>> regions) {
 		try {
 			ScanRegions.createRegions(system, regions);
@@ -408,21 +418,23 @@ public class ScanRegionView extends ViewPart {
 	}
 
 	private void createColumns(TableViewer viewer, DelegatingSelectionProvider prov) throws EventException, URISyntaxException {
-		
+
         TableViewerColumn var   = new TableViewerColumn(viewer, SWT.LEFT, 0);
 		var.getColumn().setText("Name");
 		var.getColumn().setWidth(100);
 		var.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				return ((ScanRegion<IROI>)element).getName();
 			}
 		});
-		
+
 		var   = new TableViewerColumn(viewer, SWT.LEFT, 1);
 		var.getColumn().setText("Axes");
 		var.getColumn().setWidth(500);
-		
+
 		var.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				if (element==null || ((ScanRegion<IROI>)element).getScannables()==null) return "";
 				return ((ScanRegion<IROI>)element).getScannables().toString();
@@ -432,12 +444,12 @@ public class ScanRegionView extends ViewPart {
 		var.setEditingSupport(new AxesEditingSupport(viewer, prov, cservice));
 	}
 
-	
+
 	@Override
 	public void setFocus() {
 		if (viewer!=null) viewer.getTable().setFocus();
 	}
-	
+
 	@Override
 	public void dispose() {
 		if (selectionDelegate!=null) selectionDelegate.dispose();
@@ -457,19 +469,20 @@ public class ScanRegionView extends ViewPart {
 	}
 
 	private IAction createRegionActions() {
-		
+
 		final String regionViewName = PlotUtil.getRegionViewName();
 		final ToolTip tip = new ToolTip(viewer.getTable().getShell(), SWT.BALLOON);
-        
+
 		MenuAction rois = new MenuAction("Add Region");
 
 		ActionContributionItem menu  = (ActionContributionItem)system.getActionBars().getMenuManager().find(BasePlottingConstants.ADD_REGION);
-		IAction        menuAction = (IAction)menu.getAction();	
+		IAction        menuAction = (IAction)menu.getAction();
 
 		for (RegionType regionType : regionTypes) {
-			
+
             IAction action = new Action("Press to click and drag a "+regionType.getName()+" on '"+PlotUtil.getRegionViewName()+"'") {
-            	public void run() {
+            	@Override
+				public void run() {
             		try {
 						ScanRegions.createRegion(system, regionType, null);
 						ViewUtil.showTip(tip, "Click and drag in the '"+regionViewName+"' to create a scan region.");
@@ -484,7 +497,7 @@ public class ScanRegionView extends ViewPart {
             action.setImageDescriptor(des);
             rois.add(action);
 		}
-		
+
 		rois.setSelectedAction(rois.getAction(0));
 		return rois;
 	}

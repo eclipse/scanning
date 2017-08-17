@@ -17,6 +17,7 @@ import org.eclipse.dawnsci.analysis.dataset.roi.PolygonalROI;
 
 class PolygonalROIExpresser extends PyModelExpresser<PolygonalROI> {
 
+	@Override
 	public String pyExpress(PolygonalROI proi, boolean verbose) {
 		// TODO Use StringBuilder
 		String fragment = "poly(";

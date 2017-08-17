@@ -45,40 +45,41 @@ public class DarkImageDetector extends AbstractRunnableDevice<DarkImageModel> im
 	private IDataset              image;
 	private ILazyWriteableDataset data;
 	private int darkCount = 0;
-	
+
 	@ScanFinally
 	public void clean() {
 		image = null;
 		data  = null;
 	}
 
-	
+
 	public DarkImageDetector() throws IOException {
 		super(Services.getRunnableDeviceService()); // So that spring will work.
 		this.model = new DarkImageModel();
 	}
-	
+
+	@Override
 	public NexusObjectProvider<NXdetector> getNexusProvider(NexusScanInfo info) throws NexusException {
 		NXdetector detector = createNexusObject(info);
 		return new NexusObjectWrapper<NXdetector>(getName(), detector, NXdetector.NX_DATA);
 	}
 
 	public NXdetector createNexusObject(NexusScanInfo info) throws NexusException {
-		
+
 		final NXdetector detector = NexusNodeFactory.createNXdetector();
-		
+
 		data = detector.initializeLazyDataset(NXdetector.NX_DATA, 3, Double.class);
-		
+
 		// Setting chunking is a very good idea if speed is required.
 		data.setChunking(new int[]{1, model.getRows(), model.getColumns()});
-		
+
 		Attributes.registerAttributes(detector, this);
-		
+
 		return detector;
 	}
 
 	@Override
-	public void configure(DarkImageModel model) throws ScanningException {	
+	public void configure(DarkImageModel model) throws ScanningException {
 		super.configure(model);
 		setName(model.getName());
 		darkCount = 0;
@@ -86,7 +87,7 @@ public class DarkImageDetector extends AbstractRunnableDevice<DarkImageModel> im
 
 	@Override
 	public void run(IPosition pos) throws ScanningException, InterruptedException {
-		
+
 		// Other logic may be done here as when to get the dark image.
 		if (pos.getStepIndex()%model.getFrequency() == 0) {
 			image = Random.rand(new int[]{model.getRows(), model.getColumns()});
@@ -94,24 +95,24 @@ public class DarkImageDetector extends AbstractRunnableDevice<DarkImageModel> im
 			image = null;
 		}
   	}
-	
+
 	@Override
     public boolean write(IPosition pos) throws ScanningException {
-		
+
 		if (image==null) return false;
-		
+
 		try {
 			// Append the dark to the stack, without writing
 			// NaNs.
 			// This means an nD scan always gives a 3D dark stack.
 			final int[] start = {darkCount,   0, 0};
-			final int[] stop  = {darkCount+1, model.getRows(), model.getColumns()};			
-			SliceND slice = new SliceND(data.getShape(), data.getMaxShape(), start, stop, null);			
+			final int[] stop  = {darkCount+1, model.getRows(), model.getColumns()};
+			SliceND slice = new SliceND(data.getShape(), data.getMaxShape(), start, stop, null);
 			data.setSlice(null, image, slice);
 			darkCount+=1;
-			
+
 		} catch (Exception e) {
-			throw new ScanningException(e.getMessage(), e); 
+			throw new ScanningException(e.getMessage(), e);
 		}
 
 		return true;
@@ -132,5 +133,5 @@ public class DarkImageDetector extends AbstractRunnableDevice<DarkImageModel> im
 	public void resume() throws ScanningException {
 		throw new ScanningException("Operation not supported!");
 	}
-	
+
 }

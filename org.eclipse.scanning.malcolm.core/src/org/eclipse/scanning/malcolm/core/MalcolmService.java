@@ -28,10 +28,10 @@ import org.eclipse.scanning.api.malcolm.message.MalcolmMessage;
 
 public class MalcolmService implements IMalcolmService, Closeable {
 
-	private IMalcolmConnectorService<MalcolmMessage> connector;	
+	private IMalcolmConnectorService<MalcolmMessage> connector;
 	private IRunnableDeviceService runnableDeviceService;
 	private Map<String, IMalcolmDevice<?>>        devices;
-	
+
 	/**
 	 * Used by OSGi to make the service.
 	 */
@@ -40,9 +40,9 @@ public class MalcolmService implements IMalcolmService, Closeable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param connectorService - null in the OSGi services scenario
-	 * @param malcolmUri - 
+	 * @param malcolmUri -
 	 * @throws MalcolmDeviceException
 	 */
 	public MalcolmService(IMalcolmConnectorService<MalcolmMessage> connector,
@@ -51,36 +51,38 @@ public class MalcolmService implements IMalcolmService, Closeable {
 		this.runnableDeviceService = runnableDeviceService;
 		this.devices   = new ConcurrentHashMap<String, IMalcolmDevice<?>>(4);
 	}
-	
+
 	/**
 	 * Get a device by name. At the point where the device is retrieved the
 	 * caller may know the type of device and use a generic to declare its model.
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 * @throws MalcolmDeviceException
 	 */
+	@Override
 	public <M extends IMalcolmModel> IMalcolmDevice<M> getDevice(String name) throws MalcolmDeviceException {
         return getDevice(name, null);
 	}
-	
+
 	/**
 	 * Get a device by name. At the point where the device is retrieved the
 	 * caller may know the type of device and use a generic to declare its model.
-	 * 
+	 *
 	 * @param name
 	 * @param publisher
 	 * @return
 	 * @throws MalcolmDeviceException
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public <M extends IMalcolmModel> IMalcolmDevice<M> getDevice(String name, IPublisher<ScanBean> publisher) throws MalcolmDeviceException {
 
 		// Check that the connector is not null
 		if (connector==null) throw new MalcolmDeviceException("No connector has been set up for this Service");
-		
+
 		if (devices.containsKey(name)) return (IMalcolmDevice<M>)devices.get(name);
-		
+
 		IMalcolmDevice<M> device = new MalcolmDevice(name, connector, runnableDeviceService, publisher); // Might throw exception
 		devices.put(name, device);
 		return device;
@@ -89,7 +91,7 @@ public class MalcolmService implements IMalcolmService, Closeable {
 	public void setConnectorService(IMalcolmConnectorService<MalcolmMessage> connectorService) {
 		this.connector = connectorService;
 	}
-	
+
 	public void setRunnableDeviceService(IRunnableDeviceService runnableDeviceService) {
 		this.runnableDeviceService = runnableDeviceService;
 	}

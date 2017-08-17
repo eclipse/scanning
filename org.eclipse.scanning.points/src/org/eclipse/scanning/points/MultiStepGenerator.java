@@ -21,7 +21,7 @@ import org.eclipse.scanning.api.points.models.StepModel;
 
 /**
  * Point generator for {@link MultiStepModel}s.
- * 
+ *
  * @author Matthew Dickie
  */
 class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
@@ -30,7 +30,8 @@ class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
 		setLabel("Multi-step");
 		setDescription("Creates a step scan as a series of ranges possibly with different step sizes");
 	}
-	
+
+	@Override
 	public boolean isScanPointGeneratorFactory() {
 		return false;
 	}
@@ -40,17 +41,18 @@ class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
 		return new MultiStepIterator(model);
 	}
 
+	@Override
 	protected void validateModel() {
 		super.validateModel();
-		
+
 		StepGenerator stepGen = new StepGenerator(); // to validate step models
 		double dir = 0; // +1 for forwards, -1 for backwards, 0 when not yet calculated
 		double lastStop = 0;
-		
+
 		if (model.getStepModels().isEmpty()) {
 			throw new ModelValidationException("At least one step model must be specified", model, "stepModels");
 		}
-		
+
 		for (StepModel stepModel : model.getStepModels()) {
 			// check the inner step model has the same sign
 			if (model.getName()==null || stepModel.getName()==null || !model.getName().equals(stepModel.getName())) {
@@ -58,11 +60,11 @@ class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
 						"Child step model must have the same name as the MultiStepModel. Expected ''{0}'', was ''{1}''", model.getName(), stepModel.getName()),
 						model, "name");
 			}
-			
+
 			// check the inner step model is valid according to StepGenerator.validate()
 			stepGen.validate(stepModel);
-			
-			double stepDir = Math.signum(stepModel.getStop() - stepModel.getStart()); 
+
+			double stepDir = Math.signum(stepModel.getStop() - stepModel.getStart());
 			if (dir == 0) {
 				dir = stepDir;
 			} else {
@@ -77,10 +79,10 @@ class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
 				// check this step model is in same direction as previous ones
 				if (stepDir != dir) {
 					throw new ModelValidationException(
-							"Each step model must have the the same direction", model, "stepModels"); 
+							"Each step model must have the the same direction", model, "stepModels");
 				}
 			}
-			
+
 			// check the start of the next step is in the same direction as the
 			lastStop = stepModel.getStop();
 		}

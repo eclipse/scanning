@@ -59,19 +59,19 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("rawtypes")
 class SubscriberImpl<T extends EventListener> extends AbstractConnection implements ISubscriber<T> {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(SubscriberImpl.class);
-	
+
 	private static String DEFAULT_KEY = UUID.randomUUID().toString(); // Does not really matter what key is used for the default collection.
 
 	private Map<String, Collection<T>>    slisteners; // Scan listeners
 	private Map<Class, DiseminateHandler> dMap;
 	private BlockingQueue<DiseminateEvent>  queue;
-	
+
 	private MessageConsumer scanConsumer, hearbeatConsumer;
-	
+
 	private boolean synchronous = true;
-	
+
 	public SubscriberImpl(URI uri, String topic, IEventConnectorService service) {
 		super(uri, topic, service);
 		slisteners = new ConcurrentHashMap<String, Collection<T>>(31); // Concurrent overkill?
@@ -97,26 +97,27 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 			}
 		}
 	}
-	
-	private MessageConsumer createConsumer(final String    topicName, 
+
+	private MessageConsumer createConsumer(final String    topicName,
 			                               final Class<?>  beanClass) throws JMSException {
-		
+
 		Topic topic = super.createTopic(topicName);
-		
+
 
        	final MessageConsumer consumer = session.createConsumer(topic);
     	MessageListener listener = new MessageListener() {
-    		public void onMessage(Message message) {
-    			
+    		@Override
+			public void onMessage(Message message) {
+
     			TextMessage txt   = (TextMessage)message;
     			try {
-	    			String      json  = txt.getText(); 
+	    			String      json  = txt.getText();
 	    			json = JsonUtil.removeProperties(json, properties);
 	    			try {
-	
+
 		    			Object bean = service.unmarshal(json, beanClass);
 		    			schedule(new DiseminateEvent(bean));
-		    			
+
 	    			} catch (Exception ne) {
 	    				logger.error("Error processing message {} on topic {} with beanClass {}", message, topicName, beanClass, ne);
 	    				ne.printStackTrace(); // Unit tests without log4j config show this one.
@@ -129,7 +130,7 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
     	consumer.setMessageListener(listener);
         return consumer;
 	}
-	
+
 	private void schedule(DiseminateEvent event) {
 		if (isSynchronous()) {
 		    if (queue!=null) queue.add(event);
@@ -137,6 +138,7 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 			if (event==DiseminateEvent.STOP) return;
 			// TODO FIXME Might not be right...
 			final Thread thread = new Thread("Execute event "+getTopicName()) {
+				@Override
 				public void run() {
 					diseminate(event); // Use this JMS thread directly to do work.
 				}
@@ -149,24 +151,25 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 
 
 	private void createDiseminateThread() {
-		
+
 		if (!isSynchronous()) return; // If asynch we do not run events in order and wait until they return.
 		if (queue!=null) return;
 		queue      = new LinkedBlockingQueue<>(); // Small, if they do work and things back-up, exceptions will occur.
-		
+
 		final Thread despachter = new Thread(new Runnable() {
+			@Override
 			public void run() {
 				while(isConnected()) {
 					try {
 						DiseminateEvent event = queue.take();
-						if (event==DiseminateEvent.STOP) return;					
+						if (event==DiseminateEvent.STOP) return;
 						diseminate(event);
-						
+
 					} catch (RuntimeException e) {
 						e.printStackTrace();
 						logger.error("RuntimeException occured despatching event", e);
 						continue;
-						
+
 					} catch (Exception e) {
 						e.printStackTrace();
 						logger.error("Stopping event despatch thread ", e);
@@ -181,11 +184,11 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 		despachter.start();
 	}
 
-	
+
 	private final static class DiseminateEvent {
 
 		public static final DiseminateEvent STOP = new DiseminateEvent("STOP");
-		
+
 		protected final Object bean;
 
 		public DiseminateEvent(Object bean) {
@@ -218,7 +221,7 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 		}
 
 	}
-	
+
 	private void diseminate(DiseminateEvent event) {
 		Object bean = event.bean;
 		diseminate(bean, slisteners.get(DEFAULT_KEY));  // general listeners
@@ -232,14 +235,14 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 	}
 
 	private boolean diseminate(Object bean, Collection<T> listeners) {
-		
+
 		if (listeners==null)     return false;
 		if (listeners.isEmpty()) return false;
 		final EventListener[] ls = listeners.toArray(new EventListener[listeners.size()]);
-		
+
 		boolean ret = true;
 		for (EventListener listener : ls) {
-			
+
 			@SuppressWarnings("unchecked")
 			List<Class<?>> types = getAllInterfaces(listener.getClass());
 			boolean diseminated = false;
@@ -255,11 +258,11 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 	}
 
 	private Map<Class<? extends EventListener>,List<Class<?>>> interfaces;
-	
+
 	/**
 	 * Important to cache the interfaces. Getting them caused a bug where scannable
 	 * values were slow to transmit to the client during a scan.
-	 * 
+	 *
 	 * @param class1
 	 * @return
 	 */
@@ -272,21 +275,22 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 	}
 
 	private Map<Class, DiseminateHandler> createDiseminateHandlers() {
-		
+
 		Map<Class, DiseminateHandler> ret = Collections.synchronizedMap(new HashMap<Class, DiseminateHandler>(3));
-		
+
 		ret.put(IScanListener.class, new DiseminateHandler() {
+			@Override
 			public void diseminate(Object bean, EventListener e) {
-				
-				if (!(bean instanceof ScanBean)) return; 
+
+				if (!(bean instanceof ScanBean)) return;
 				// This listener must be used with events publishing ScanBean
 				// If your scan does not publish ScanBean events then you
 				// may listen to it with a standard IBeanListener.
-				
+
 				// Used casting because generics got silly
 				ScanBean sbean  = (ScanBean)bean;
 				IScanListener l = (IScanListener)e;
-				
+
 				DeviceState now = sbean.getDeviceState();
 				DeviceState was = sbean.getPreviousDeviceState();
 				if (now!=null && now!=was) {
@@ -299,11 +303,12 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 						execute(new DespatchEvent(l, new ScanEvent(sbean), true));
 						return;
 					}
-				}		
+				}
 				execute(new DespatchEvent(l, new ScanEvent(sbean), false));
 			}
 		});
 		ret.put(IHeartbeatListener.class, new DiseminateHandler() {
+			@Override
 			public void diseminate(Object bean, EventListener e) {
 				// Used casting because generics got silly
 				HeartbeatBean hbean = (HeartbeatBean)bean;
@@ -312,6 +317,7 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 			}
 		});
 		ret.put(IBeanListener.class, new DiseminateHandler() {
+			@Override
 			public void diseminate(Object bean, EventListener e) {
 				// Used casting because generics got silly
 				@SuppressWarnings("unchecked")
@@ -320,6 +326,7 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 			}
 		});
 		ret.put(ILocationListener.class, new DiseminateHandler() {
+			@Override
 			public void diseminate(Object bean, EventListener e) {
 				// Used casting because generics got silly
 				ILocationListener l = (ILocationListener)e;
@@ -358,12 +365,12 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 			slisteners.get(id).remove(listener);
 		}
 	}
-	
+
 	@Override
 	public void removeListeners(String id) {
 		slisteners.remove(id);
 	}
-	
+
 	@Override
 	public void clear() {
 		slisteners.clear();
@@ -375,12 +382,12 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 			clear();
 			if (scanConsumer!=null)     scanConsumer.close();
 			if (hearbeatConsumer!=null) hearbeatConsumer.close();
-			
+
 			super.disconnect();
-			
+
 		} catch (JMSException ne) {
 			throw new EventException("Internal error - unable to close connection!", ne);
-		
+
 		} finally {
 			scanConsumer = null;
 			hearbeatConsumer = null;
@@ -389,15 +396,15 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 		super.disconnect();
 		schedule(DiseminateEvent.STOP);
 	}
-	
+
 	protected boolean isListenersEmpty() {
 		return slisteners.isEmpty();
 	}
-	
-	private boolean connected; 
-	
+
+	private boolean connected;
+
 	private void execute(DespatchEvent event) {
-		
+
 		if (event.listener instanceof IHeartbeatListener) ((IHeartbeatListener)event.listener).heartbeatPerformed((HeartbeatEvent)event.object);
 		if (event.listener instanceof IBeanListener)      ((IBeanListener)event.listener).beanChangePerformed((BeanEvent)event.object);
 		if (event.listener instanceof ILocationListener)  ((ILocationListener)event.listener).locationPerformed((LocationEvent)event.object);
@@ -414,16 +421,16 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 
 	/**
 	 * Immutable event for queue.
-	 * 
+	 *
 	 * @author fcp94556
 	 *
 	 */
 	private static class DespatchEvent {
-		
+
 		protected final EventListener listener;
 		protected final EventObject   object;
 		protected final boolean       isStateChange;
-		
+
 		public DespatchEvent(EventListener listener, EventObject object) {
 			this(listener, object, false);
 		}
@@ -447,10 +454,12 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 		this.connected = connected;
 	}
 
+	@Override
 	public boolean isSynchronous() {
 		return synchronous;
 	}
 
+	@Override
 	public void setSynchronous(boolean synchronous) {
 		this.synchronous = synchronous;
 	}

@@ -17,64 +17,64 @@ import org.eclipse.scanning.api.device.models.AbstractDetectorModel;
 public class MandelbrotModel extends AbstractDetectorModel {
 
 	// Parameters controlling iteration and termination of the Julia/Mandelbrot algorithm
-	@FieldDescriptor(label="Maximum Iterations", 
-	         minimum=1, 
+	@FieldDescriptor(label="Maximum Iterations",
+	         minimum=1,
 	         hint="Iterations to use.")
 	private int    maxIterations;
-	
-	@FieldDescriptor(label="Escape Radius", 
-	         minimum=0, 
+
+	@FieldDescriptor(label="Escape Radius",
+	         minimum=0,
 	         hint="The radius of escape for the mandelbrot algorithm.")
 	private double escapeRadius;
 
 	// Parameters controlling the dimensions and size of the 1D and 2D Julia set datasets
-	@FieldDescriptor(label="Columns", 
-	         maximum=100000, 
-	         minimum=1, 
+	@FieldDescriptor(label="Columns",
+	         maximum=100000,
+	         minimum=1,
 	         hint="The number of points that the grid should run over, the x direction.")
 	private int    columns; // for the 2D dataset, from -maxRealCoordinate to +maxRealCoordinate
-	
-	@FieldDescriptor(label="Rows", 
-	         maximum=100000, 
-	         minimum=1, 
+
+	@FieldDescriptor(label="Rows",
+	         maximum=100000,
+	         minimum=1,
 	         hint="The number of points that the grid should run over, the y direction.")
 	private int    rows;    // for the 2D dataset, from -maxImaginaryCoordinate to +maxImaginaryCoordinate
-	
-	@FieldDescriptor(label="Points", 
-	         validif="points<=(maxRealCoordinate*maxIterations)", 
-	         minimum=1, 
+
+	@FieldDescriptor(label="Points",
+	         validif="points<=(maxRealCoordinate*maxIterations)",
+	         minimum=1,
 	         hint="Points of Mandelbrot.")
 	private int    points;  // for the 1D dataset, from 0 to maxRealCoordinate
-	
+
 	@FieldDescriptor(label="Max. Real Coordinate")
 	private double maxRealCoordinate;
-	
+
 	@FieldDescriptor(label="Max. Imaginary Coordinate")
 	private double maxImaginaryCoordinate;
 
 	// The names of the scannables used to determine the position to calculate
 	@FieldDescriptor(label="Real Axis Name")
 	private String realAxisName;
-	
+
 	@FieldDescriptor(label="Imaginary Axis Name")
 	private String imaginaryAxisName;
 
 	@FieldDescriptor(hint="Enable Noise dependent on exposure")
 	private boolean enableNoise = false;
-	
+
 	@FieldDescriptor(hint="The exposure above which there is no noise")
 	private double noiseFreeExposureTime = 5.0;
-	
+
 	@FieldDescriptor(hint="Save the image")
 	private boolean saveImage = true;
-	
+
 	@FieldDescriptor(hint="Save the spectrum")
 	private boolean saveSpectrum = true;
 
 	@FieldDescriptor(hint="Save the value")
 	private boolean saveValue = true;
 
-	
+
 	public MandelbrotModel() {
 		maxIterations = 500;
 		escapeRadius = 10.0;
@@ -88,7 +88,7 @@ public class MandelbrotModel extends AbstractDetectorModel {
 		realAxisName = "stage_x";
 		imaginaryAxisName = "stage_y";
 	}
-	
+
 
 	public MandelbrotModel(String r, String i) {
 	    this();
@@ -109,7 +109,7 @@ public class MandelbrotModel extends AbstractDetectorModel {
 	public void setEscapeRadius(double escapeRadius) {
 		this.escapeRadius = escapeRadius;
 	}
-	
+
 	public boolean isEnableNoise() {
 		return enableNoise;
 	}
@@ -117,7 +117,7 @@ public class MandelbrotModel extends AbstractDetectorModel {
 	public void setEnableNoise(boolean enableNoise) {
 		this.enableNoise = enableNoise;
 	}
-	
+
 	public double getNoiseFreeExposureTime() {
 		return noiseFreeExposureTime;
 	}
@@ -125,7 +125,7 @@ public class MandelbrotModel extends AbstractDetectorModel {
 	public void setNoiseFreeExposureTime(double noiseFreeExposureTime) {
 		this.noiseFreeExposureTime = noiseFreeExposureTime;
 	}
-	
+
 	public boolean isSaveImage() {
 		return saveImage;
 	}
@@ -149,7 +149,7 @@ public class MandelbrotModel extends AbstractDetectorModel {
 	public void setSaveValue(boolean saveValue) {
 		this.saveValue = saveValue;
 	}
-	
+
 	public int getColumns() {
 		return columns;
 	}
@@ -246,6 +246,7 @@ public class MandelbrotModel extends AbstractDetectorModel {
 		return true;
 	}
 
+	@Override
 	public String getName() {
 		return super.getName();
 	}
@@ -263,6 +264,7 @@ public class MandelbrotModel extends AbstractDetectorModel {
 	public void setImaginaryAxisName(String yName) {
 		this.imaginaryAxisName = yName;
 	}
+	@Override
 	public double getExposureTime() {
 		return super.getExposureTime();
 	}

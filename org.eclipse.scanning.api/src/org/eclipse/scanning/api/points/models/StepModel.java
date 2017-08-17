@@ -22,36 +22,36 @@ public class StepModel extends AbstractPointsModel {
 
 	@FieldDescriptor(label="Device", device=DeviceType.SCANNABLE, fieldPosition=0)
 	private String name;
-	
+
 	@FieldDescriptor(visible=false)
 	private String label;
-	
+
 	@FieldDescriptor(label="Start", scannable="name", hint="This is the start position for the scan", fieldPosition=1) // The scannable lookup gets the units
 	private double start;
-	
+
 	@FieldDescriptor(label="Stop", scannable="name", hint="This is the stop position for the scan", fieldPosition=2) // The scannable lookup gets the units
 	private double stop;
-	
+
 	@FieldDescriptor(label="Step", scannable="name", hint="This is the step during the scan", fieldPosition=3) // The scannable lookup gets the units
 	private double step;
-	
-	@FieldDescriptor(label="Exposure Time", 
-			         hint="If you set this field the exposure times for all\ndetectors in the scan will be changed when the first\npoint of the step is moved.", 
-			         unit="s", 
-			         minimum=0.001, 
+
+	@FieldDescriptor(label="Exposure Time",
+			         hint="If you set this field the exposure times for all\ndetectors in the scan will be changed when the first\npoint of the step is moved.",
+			         unit="s",
+			         minimum=0.001,
 			         fieldPosition=4,
-			         role=FieldRole.EXPERT, 
+			         role=FieldRole.EXPERT,
 			         visible=false)
 	private double exposureTime;
 
 	public StepModel() {
-	
+
 	}
-	
+
 	public StepModel(String name, double start, double stop, double step) {
 		this(name, start, stop, step, 0d);
 	}
-	
+
 	public StepModel(String name, double start, double stop, double step, double exposureTime) {
 		super();
 		this.name = name;
@@ -61,9 +61,11 @@ public class StepModel extends AbstractPointsModel {
 		this.exposureTime = exposureTime;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -85,7 +87,7 @@ public class StepModel extends AbstractPointsModel {
 	public void setStep(double step) {
 		this.step = step;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -103,7 +105,7 @@ public class StepModel extends AbstractPointsModel {
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

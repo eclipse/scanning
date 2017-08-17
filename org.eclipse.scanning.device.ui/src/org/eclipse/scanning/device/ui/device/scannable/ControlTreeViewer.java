@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A Widget to edit a tree of scannables.
- * 
+ *
  * <p>1. The widget requires a ControlTree to define what the user can edit.
  * This may come in from XML or JSON or code.
  * <p>2. The widget must be given a mode, such as where it changes values of
@@ -65,17 +65,17 @@ import org.slf4j.LoggerFactory;
  * <p>3. ControlTree.toPosition() may be used to create an IPosition representing
  * the values when the user just set up. So ControlTreeViewer.getControlTree().toPosition()
  * for instance.
- * 
+ *
  * <p>
  * <p>Example XML (@see {@link ControlTreeViewer} or client-fragment.xml for XML example)
- 
-<pre> 
- 
+
+<pre>
+
 	<!-- Create some live controls for specific devices. -->
 	<bean id="Control_Factory" class="org.eclipse.scanning.api.scan.ui.ControlTree" init-method="globalize">
 		<property name="name" value="Control Factory" />
 	</bean>
-	
+
 	<bean id="Translations" class="org.eclipse.scanning.api.scan.ui.ControlGroup" init-method="add">
 		<property name="name" value="Translations" />
 		<property name="controls">
@@ -94,7 +94,7 @@ import org.slf4j.LoggerFactory;
 			</list>
 		</property>
 	</bean>
-	
+
 	<bean id="stage_x" class="org.eclipse.scanning.api.scan.ui.ControlNode" init-method="add" >
 		<property name="displayName" value="Stage X" />
 		<property name="scannableName" value="stage_x" />
@@ -118,29 +118,29 @@ import org.slf4j.LoggerFactory;
 
 </pre>
 
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class ControlTreeViewer {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ControlTreeViewer.class);
 
 	// Services
 	private final IScannableDeviceService cservice;
-	
+
 	// UI
 	private TreeViewer viewer;
 	private Composite  content;
 	private List<IAction> editActions;
 	private boolean setUseFilteredTree = true;
-	
+
 	// Data
 	private ControlTree       defaultTree;
 	private String            defaultGroupName = null;
 	private final ControlViewerMode controlViewerMode;
 
-	
+
 	/**
 	 * Create a ContolTreeViewer with the given mode, specifying whether to link to
 	 * hardware directly or keep values locally.
@@ -159,31 +159,31 @@ public class ControlTreeViewer {
 	public ControlTreeViewer(ControlTree defaultTree, IScannableDeviceService cservice) {
 		this(defaultTree, cservice, ControlViewerMode.DIRECT);
 	}
-	
+
 	public ControlTreeViewer(ControlTree defaultTree, IScannableDeviceService cservice, ControlViewerMode mode) {
 		this.cservice          = cservice;
 		this.defaultTree       = defaultTree;
 		this.controlViewerMode = mode;
 	}
 
-	
+
 	/**
 	 * Creates an editor for the tree passed in
 	 * @param parent
 	 * @param tree which is edited. If this ControlTreeViewer was created without specifiying a default, this is cloned for the default.
 	 * @param managers, may be null
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public Composite createPartControl(Composite parent, ControlTree tree, IContributionManager... managers) throws Exception {
-		
+
 		if (viewer!=null) throw new IllegalArgumentException("The createPartControl() method must only be called once!");
 
 		if (defaultTree==null && tree==null) throw new IllegalArgumentException("No control tree has been defined!");
-		
+
 		// Clone this tree so that they can reset it!
 		if (defaultTree==null) defaultTree = ControlTreeUtils.clone(tree);
         if (tree == null)      tree        = ControlTreeUtils.clone(defaultTree);
-		
+
        if (setUseFilteredTree) {
         	FilteredTree ftree = new FilteredTree(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE, new NamedNodeFilter(), true);
         	this.viewer  = ftree.getViewer();
@@ -192,14 +192,14 @@ public class ControlTreeViewer {
         	this.viewer  = new TreeViewer(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
         	this.content = viewer.getTree();
         }
-		
+
 		viewer.getTree().setLinesVisible(true);
 		viewer.getTree().setHeaderVisible(false);
 		ViewerUtils.setItemHeight(viewer.getTree(), 30);
 		content.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 		createColumns(viewer);
-		
+
 		try {
 			viewer.setContentProvider(new ControlContentProvider());
 		} catch (Exception e) {
@@ -207,10 +207,10 @@ public class ControlTreeViewer {
 		}
 		viewer.setInput(tree);
 		viewer.expandAll();
-		
+
 		createActions(viewer, tree, managers);
 		setSearchVisible(false);
-		
+
 		try {
 		    registerAll();
 		} catch (Exception ne) {
@@ -225,21 +225,22 @@ public class ControlTreeViewer {
 	}
 
 	private void createColumns(TreeViewer viewer) {
-		
+
 		viewer.setColumnProperties(new String[] { "Name", "Value"});
 		ColumnViewerToolTipSupport.enableFor(viewer);
-		
+
 		TreeViewerColumn nameColumn = new TreeViewerColumn(viewer, SWT.LEFT, 0);
 		nameColumn.getColumn().setText("Name");
 		nameColumn.getColumn().setWidth(200);
 		nameColumn.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				INamedNode node = (INamedNode)element;
 				return node.getDisplayName();
 			}
 		});
 		nameColumn.setEditingSupport(new NameEditingSupport(this));
-		
+
 		TreeViewerColumn valueColumn = new TreeViewerColumn(viewer, SWT.LEFT, 1);
 		valueColumn.getColumn().setText("Value");
 		valueColumn.getColumn().setWidth(300);
@@ -251,39 +252,43 @@ public class ControlTreeViewer {
 	 * Create the actions.
 	 */
 	private void createActions(final TreeViewer tviewer, ControlTree tree, IContributionManager... managers) {
-		
+
 		List<IContributionManager> mans = new ArrayList<>(Arrays.asList(managers));
 		MenuManager     rightClick     = new MenuManager();
 		mans.add(rightClick);
-		
+
 		// Action to add a new ControlGroup
 		final IAction addGroup = new Action("Add group", Activator.getImageDescriptor("icons/ui-toolbar--purpleplus.png")) {
+			@Override
 			public void run() {
 				INamedNode nnode = getControlTree().insert(getControlTree(), new ControlGroup());
 				edit(nnode, 0);
 			}
 		};
-		
+
 		// Action to add a new ControlNode
 		final IAction addNode = new Action("Add control", Activator.getImageDescriptor("icons/ui-toolbar--plus.png")) {
+			@Override
 			public void run() {
 				addNode();
 			}
 		};
 		addNode.setEnabled(defaultGroupName != null);
-		
+
 		// Action to remove the currently selected ControlNode or ControlGroup
 		final IAction removeNode = new Action("Remove", Activator.getImageDescriptor("icons/ui-toolbar--minus.png")) {
+			@Override
 			public void run() {
 				removeNode();
 			}
 		};
 		removeNode.setEnabled(false);
-			
+
 		ViewUtil.addGroups("add", mans, addGroup, addNode, removeNode);
 
 		// Action to fully expand the control tree
 		IAction expandAll = new Action("Expand All", Activator.getImageDescriptor("icons/expand_all.png")) {
+			@Override
 			public void run() {
 				try {
 					registerAll();
@@ -293,9 +298,10 @@ public class ControlTreeViewer {
 				refresh();
 			}
 		};
-		
+
 		// action to show the search field
 		IAction showSearch = new Action("Show search", IAction.AS_CHECK_BOX) {
+			@Override
 			public void run() {
 				setSearchVisible(isChecked());
 			}
@@ -304,6 +310,7 @@ public class ControlTreeViewer {
 
 		// Action to edit the currently selected ControlNode or ControlGroup
 		IAction edit = new Action("Edit", Activator.getImageDescriptor("icons/pencil.png")) {
+			@Override
 			public void run() {
 				try {
 					setEditNode(true);
@@ -316,9 +323,9 @@ public class ControlTreeViewer {
 				}
 			}
 		};
-		
+
 		ViewUtil.addGroups("refresh", mans, expandAll, showSearch, edit);
-		
+
 		IAction setToCurrentValue;
 		IAction setAllToCurrentValue;
 		if (controlViewerMode.isDirectlyConnected()) {
@@ -327,22 +334,25 @@ public class ControlTreeViewer {
 		} else {
 			// Action to set the selected control node to the current value of the underlying scannable
 			setToCurrentValue = new Action("Set to current value", Activator.getImageDescriptor("icons/reset-value.png")) {
+				@Override
 				public void run() {
 					setSelectedToCurrentValue();
 				}
 			};
-			
+
 			// Action to set all controls to the values of their underlying scannables
 			setAllToCurrentValue = new Action("Set all to current value", Activator.getImageDescriptor("icons/reset-values.png")) {
+				@Override
 				public void run() {
 					setAllToCurrentValue();
 				}
 			};
 			ViewUtil.addGroups("setToCurrentValue", mans, setToCurrentValue, setAllToCurrentValue);
 		}
-	
+
 		// Action to reset all controls to their default value
 		IAction resetAll = new Action("Reset all controls to default", Activator.getImageDescriptor("icons/arrow-return-180-left.png")) {
+			@Override
 			public void run() {
 				boolean ok = MessageDialog.openConfirm(content.getShell(), "Confirm Reset Controls", "Are you sure that you want to reset all controls to default?");
 				if (!ok) return;
@@ -355,9 +365,10 @@ public class ControlTreeViewer {
 			}
 		};
 		ViewUtil.addGroups("reset", mans, resetAll);
-				
+
 		// Toggles whether to show tooltips on edit
 		IAction setShowTip = new Action("Show tooltip on edit", IAction.AS_CHECK_BOX) {
+			@Override
 			public void run() {
 				Activator.getStore().setValue(DevicePreferenceConstants.SHOW_CONTROL_TOOLTIPS, isChecked());
 			}
@@ -405,7 +416,7 @@ public class ControlTreeViewer {
 	public void setFocus() {
 		if (!viewer.getTree().isDisposed()) viewer.getTree().setFocus();
 	}
-	
+
 	public void edit(INamedNode node, int index) {
      	refresh();
     	viewer.editElement(node, index);
@@ -424,14 +435,14 @@ public class ControlTreeViewer {
 		}
 		return null;
 	}
-	
+
 	public void setSelection(INamedNode node) {
 		final IStructuredSelection sel = new StructuredSelection(node);
 		viewer.setSelection(sel);
 	}
 
 
-	
+
 	private boolean editNode = false; // Can be set to true when UI wants to edit
 
 	public boolean isEditNode() {
@@ -457,7 +468,7 @@ public class ControlTreeViewer {
 		content.getParent().layout(new Control[]{content});
 		viewer.expandAll();
 	}
-	
+
 	public void setDefaultGroupName(String defaultGroupName) {
 		this.defaultGroupName = defaultGroupName;
 	}
@@ -469,14 +480,14 @@ public class ControlTreeViewer {
 
 	/**
 	 * Clears all the current listeners and registers all the new ones.
-	 * 
+	 *
 	 * @throws EventException
-	 * @throws URISyntaxException 
+	 * @throws URISyntaxException
 	 */
 	private void registerAll() throws EventException, URISyntaxException {
-		
+
 		if (!controlViewerMode.isDirectlyConnected()) return; // Nothing to monitor.
-		
+
 	}
 
 	/**
@@ -513,7 +524,7 @@ public class ControlTreeViewer {
 		    setSelection(parent);
 		}
 	}
-	
+
 	private void setSelectedToCurrentValue() {
 		INamedNode selectedNode = getSelection();
 		if ((selectedNode instanceof ControlNode)) {
@@ -530,13 +541,13 @@ public class ControlTreeViewer {
 			logger.error("Cannot get value for " + controlNode.getName(), e);
 		}
 	}
-	
+
 	private void setAllToCurrentValue() {
 		ControlTree controlTree = (ControlTree) viewer.getInput();
 		setAllToCurrentValue(controlTree);
 		viewer.refresh();
 	}
-	
+
 	private void setAllToCurrentValue(INamedNode namedNode) {
 		for (INamedNode childNode : namedNode.getChildren()) {
 			if (childNode instanceof ControlGroup) {
@@ -546,14 +557,14 @@ public class ControlTreeViewer {
 			}
 		}
 	}
-	
+
 	public void addSelectionChangedListener(ISelectionChangedListener i) {
 		viewer.addSelectionChangedListener(i);
 	}
 	public void removeSelectionChangedListener(ISelectionChangedListener i) {
 		viewer.removeSelectionChangedListener(i);
 	}
-	
+
 	public void applyEditorValue() {
 		if (!viewer.isCellEditorActive()) return;
 		viewer.applyEditorValue();

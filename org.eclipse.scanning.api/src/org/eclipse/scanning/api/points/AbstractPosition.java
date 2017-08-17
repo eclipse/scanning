@@ -22,16 +22,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public abstract class AbstractPosition implements IPosition, Serializable {
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8555957478192358365L;
-	
+
 	private int stepIndex = -1;
 	private double exposureTime;
 	protected List<Collection<String>> dimensionNames; // Dimension->Names@dimension
 
+	@Override
 	public final IPosition compound(IPosition parent) {
 		if (parent==null) return this; // this+null = this
 		final MapPosition ret = new MapPosition();
@@ -41,12 +42,12 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		ret.putAllIndices(this);
 		ret.setStepIndex(getStepIndex());
 		ret.setExposureTime(getExposureTime());
-		
+
 		List<Collection<String>> dimensionNames = new ArrayList<>();
 		dimensionNames.addAll(((AbstractPosition) parent).getDimensionNames());
 		dimensionNames.addAll(getDimensionNames());
 		ret.setDimensionNames(dimensionNames);
-		
+
 		return ret;
 	}
 
@@ -70,23 +71,23 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	}
 
 	/**
-	 * Do not override equals. 
-	 * 
+	 * Do not override equals.
+	 *
 	 * MapPostion("x:1,y:1") should equal Point("x", 1, "y",1)
 	 * because they represent the same motor values.
-	 * 
+	 *
 	 * @param obj
 	 * @param checkStep
 	 * @return
 	 */
 	public final boolean equals(Object obj, boolean checkStep) {
-		
+
 		if (this == obj)
 			return true;
-		
+
 		if (obj == null)
 			return false;
-		
+
 		if (checkStep) {
 			if (stepIndex != ((IPosition)obj).getStepIndex())
 				return false;
@@ -106,10 +107,10 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 			if (val1!=null && val2==null) return false;
 			if (!val1.equals(val2)) return false;
 		}
-		
+
 		final Map<String, Integer> iours   = getIndices();
 		final Map<String, Integer> itheirs = getIndices((IPosition)obj);
-		if (!iours.equals(itheirs)) return false;		
+		if (!iours.equals(itheirs)) return false;
 
 		List<List<String>> ourDimNames = getDimensionNames().stream()
 				.map(c -> new ArrayList<String>(c))
@@ -140,20 +141,20 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	 * @return
 	 */
     private boolean equals(Collection<?> o, Collection<?> t) {
-        
+
     	if (o == t)
             return true;
     	if (o == null && t == null)
             return true;
     	if (o == null || t == null)
             return false;
- 
+
         Iterator<?> e1 = o.iterator();
         Iterator<?> e2 = t.iterator();
         while (e1.hasNext() && e2.hasNext()) {
             Object o1 = e1.next();
             Object o2 = e2.next();
-            
+
             // Collections go down to the same equals.
             if (o1 instanceof Collection && o2 instanceof Collection) {
             	boolean collectionsEqual = equals((Collection<?>)o1,(Collection<?>)o2);
@@ -163,7 +164,7 @@ public abstract class AbstractPosition implements IPosition, Serializable {
             		continue;
             	}
             }
-            
+
             // Otherwise we use object equals.
             if (!(o1==null ? o2==null : o1.equals(o2)))
                 return false;
@@ -175,7 +176,8 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	public boolean equals(Object obj) {
 		return equals(obj, true);
 	}
-	
+
+	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder("[");
 		final Collection<String> names   = getNames();
@@ -194,16 +196,16 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		}
         buf.append(", step=");
         buf.append(getStepIndex());
-        
+
         if (getExposureTime()>0) {
 	        buf.append(", exp=");
 	        buf.append(getExposureTime());
         }
-        
+
     	buf.append("]");
     	return buf.toString();
 	}
-	
+
 	public Collection<String> getDimensionNames(int dimension) {
 		if (dimensionNames==null && dimension==0) return getNames();
 		if (dimensionNames==null)                 return null;
@@ -217,20 +219,20 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 
 	/**
 	 * This method makes dimensionNames if they are null.
-	 * It must be synchronized because getDimensionNames() 
+	 * It must be synchronized because getDimensionNames()
 	 * is called within the thread pool, for instance when
 	 * neXus writing positions.
-	 * 
+	 *
 	 * Quite a lot of tests were intermittently failing the
 	 * tests because of this issue. Be careful when creating
 	 * member data in this class that things are thread safe.
-	 * 
+	 *
 	 * @return
 	 */
 	public synchronized List<Collection<String>> getDimensionNames() {
 		if (dimensionNames==null||dimensionNames.isEmpty())  {
 			dimensionNames = new ArrayList<>();
-			if (!getNames().isEmpty()) { 
+			if (!getNames().isEmpty()) {
 				dimensionNames.add(new ArrayList<>(getNames())); // List adding a collection, we copy the keys here run SerializationTest to see why
 			}
 		}
@@ -250,20 +252,24 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		final String name = getDimensionNames(dimension).iterator().next();
 		return getIndex(name);
 	}
-	
-	
+
+
+	@Override
 	public int getStepIndex() {
 		return stepIndex;
 	}
 
+	@Override
 	public void setStepIndex(int stepIndex) {
 		this.stepIndex = stepIndex;
 	}
 
+	@Override
 	public double getExposureTime() {
 		return exposureTime;
 	}
 
+	@Override
 	public void setExposureTime(double exposureTime) {
 		this.exposureTime = exposureTime;
 	}

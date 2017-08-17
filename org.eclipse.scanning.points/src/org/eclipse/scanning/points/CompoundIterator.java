@@ -21,9 +21,9 @@ import org.eclipse.scanning.api.points.MapPosition;
 
 /**
  * We are trying to make it super efficient to iterate
- * compound generators by doing this. Otherwise the createPoints(...) 
+ * compound generators by doing this. Otherwise the createPoints(...)
  * would do.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -42,7 +42,7 @@ public class CompoundIterator implements Iterator<IPosition> {
 	}
 
 	private IPosition createFirstPosition() throws GeneratorException {
-		
+
 	    IPosition pos = new MapPosition();
 		for (int i = 0; i < iterators.length-1; i++) {
 			IPosition with=null;
@@ -52,29 +52,29 @@ public class CompoundIterator implements Iterator<IPosition> {
 		}
 		return pos;
 	}
-	
+
 	private IPosition next;
     private boolean justDidNext = false; // This attempts to deal with the case where someone does .next() without .hasNext();
-    
+
 	@Override
 	public boolean hasNext() {
-        next = getNext(); 
+        next = getNext();
         index++;
         if (next!=null) next.setStepIndex(index);
-        
+
         justDidNext = true;
         return next!=null;
 	}
 
 	@Override
 	public IPosition next() {
-		if (!justDidNext) next = getNext(); 
+		if (!justDidNext) next = getNext();
 		justDidNext = false;
 		return next;
 	}
-	
+
 	public IPosition getNext() {
-		
+
 		for (int i = iterators.length-1; i > -1; i--) {
 			if (iterators[i].hasNext()) {
 				IPosition next = iterators[i].next();
@@ -102,6 +102,7 @@ public class CompoundIterator implements Iterator<IPosition> {
 		return ret;
 	}
 
+	@Override
 	public void remove() {
         throw new UnsupportedOperationException("remove");
     }

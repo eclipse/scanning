@@ -30,6 +30,7 @@ public class ScanningPerspective implements IPerspectiveFactory {
 	/**
 	 * Creates the initial layout for a page.
 	 */
+	@Override
 	public void createInitialLayout(IPageLayout layout) {
 		String editorArea = layout.getEditorArea();
 		layout.setEditorAreaVisible(false);
@@ -43,10 +44,10 @@ public class ScanningPerspective implements IPerspectiveFactory {
 			folderLayout.addView(detectorId);
 			folderLayout.addView("org.eclipse.scanning.device.ui.device.MonitorView");
 		}
-		
+
 		IFolderLayout folder = layout.createFolder("folder_3", IPageLayout.LEFT, 0.22f, IPageLayout.ID_EDITOR_AREA);
 		folder.addView("org.dawnsci.mapping.ui.mappeddataview:mapview=org.eclipse.scanning.device.ui.vis.visualiseView;spectrumview=org.eclipse.scanning.device.ui.spectrumview");
-		
+
 		folder = layout.createFolder("folder_4", IPageLayout.RIGHT, 0.05f, IPageLayout.ID_EDITOR_AREA);
 		folder.addView("org.eclipse.scanning.device.ui.spectrumview");
 		folder.addView(getQueueViewId());
@@ -95,10 +96,10 @@ public class ScanningPerspective implements IPerspectiveFactory {
 	/**
 	 * Hard codes certain views to life so that the perspective tends to work.
 	 */
-	public static void createKeyPlayers() {	
+	public static void createKeyPlayers() {
 		ViewUtil.createViews(ScanRegionView.ID, ModelView.ID, getQueueViewId(), getConsumerViewId(), VisualiseView.ID);
 	}
-	
+
 	private static String getQueueViewId() {
 		try {
 			String bundle = FrameworkUtil.getBundle(ScanBean.class).getSymbolicName();
@@ -107,7 +108,7 @@ public class ScanningPerspective implements IPerspectiveFactory {
 			return QueueViews.getQueueViewID();
 		}
 	}
-	
+
 	private static String getConsumerViewId() {
 		return "org.eclipse.scanning.event.ui.consumerView:partName=Consumers";
 	}

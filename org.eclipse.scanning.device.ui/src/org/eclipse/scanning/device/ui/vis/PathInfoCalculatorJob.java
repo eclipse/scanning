@@ -66,22 +66,22 @@ class PathInfoCalculatorJob extends Job {
 
 	@Override
 	public IStatus run(IProgressMonitor monitor) {
-		
+
 		if (scanPathModel==null) return Status.CANCEL_STATUS;
 		if (scanRegions==null || scanRegions.isEmpty())    {
 			setPathVisible(false);
 			return Status.CANCEL_STATUS;
 		}
-		
+
 		{ // Put trace out of scope, drawing the line should not depend on it.
 			final IImageTrace trace = controller.getImageTrace();
 			if (trace!=null) {
 				if (!trace.hasTrueAxes()) throw new IllegalArgumentException(getClass().getSimpleName()+" should act on true axis images!");
 			}
 		}
-		
+
 		monitor.beginTask("Calculating points for scan path", IProgressMonitor.UNKNOWN);
-		
+
 		PathInfo pathInfo = new PathInfo();
 		if (!(scanPathModel instanceof IBoundingBoxModel)) {
 			setPathVisible(false);
@@ -92,23 +92,23 @@ class PathInfoCalculatorJob extends Job {
 		String yAxisName = boxModel.getSlowAxisName();
 		try {
 			vservice.validate(scanPathModel); // Throws exception if invalid.
-			
+
 			final Collection<IROI> rois = pointGeneratorFactory.findRegions(scanPathModel, scanRegions); // Out of the regions defined finds in the ones for this model.
 			if (rois==null || rois.isEmpty()) {
 				setPathVisible(false);
 				return Status.CANCEL_STATUS;// No path to draw.
 			}
-			
+
 			final Iterable<IPosition> pointIterable = pointGeneratorFactory.createGenerator(scanPathModel, rois);
 			double lastX = Double.NaN;
 			double lastY = Double.NaN;
 			for (IPosition point : pointIterable) {
-				
+
 				if (monitor.isCanceled()) {
 					return Status.CANCEL_STATUS;
 				}
 				pathInfo.pointCount++;
-				
+
 				double[] pnt = new double[]{point.getValue(xAxisName), point.getValue(yAxisName)};
 				//pnt = controller.getPointInImageCoordinates(pnt);
 
@@ -132,18 +132,19 @@ class PathInfoCalculatorJob extends Job {
 				}
 			}
 			monitor.done();
-			
+
 			// Update the plot, waiting until it has suceeded before
 			// returning and allowing this job to run again.
 			Display.getDefault().syncExec(new Runnable() {
+				@Override
 				public void run() {
 					controller.plot(pathInfo);
 				}
 			});
-			
+
 		} catch (ModelValidationException mve) {
 			return Status.CANCEL_STATUS;
-			
+
 		} catch (Exception e) {
 			return new Status(IStatus.WARNING, Activator.PLUGIN_ID, "Error calculating scan path", e);
 		}
@@ -152,6 +153,7 @@ class PathInfoCalculatorJob extends Job {
 
 	private void setPathVisible(boolean b) {
 		Display.getDefault().syncExec(new Runnable() {
+			@Override
 			public void run() {
 				controller.setPathVisible(b);
 			}

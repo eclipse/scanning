@@ -14,20 +14,20 @@ package org.eclipse.scanning.api.malcolm.attributes;
 import java.util.Arrays;
 
 /**
- * 
+ *
  * Encapsulates an attribute as read from a malcolm device
- * 
+ *
  * @author Matt Taylor
  * @param <T> the type of the attribute's value
  */
 public abstract class MalcolmAttribute<T> implements IDeviceAttribute<T> {
-	
+
 	private String name;
 	private String description;
 	private String[] tags;
 	private boolean writeable;
 	private String label;
-	
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute#getName()
 	 */
@@ -58,6 +58,7 @@ public abstract class MalcolmAttribute<T> implements IDeviceAttribute<T> {
 	public void setTags(String[] tags) {
 		this.tags = tags;
 	}
+	@Override
 	public boolean isWriteable() {
 		return writeable;
 	}
@@ -79,7 +80,7 @@ public abstract class MalcolmAttribute<T> implements IDeviceAttribute<T> {
 	 */
 	@Override
 	public abstract T getValue();
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -121,6 +122,6 @@ public abstract class MalcolmAttribute<T> implements IDeviceAttribute<T> {
 			return false;
 		return true;
 	}
-	
-	
+
+
 }

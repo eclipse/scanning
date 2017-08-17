@@ -38,7 +38,7 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 
 	protected Number  position = 0d;
 	private boolean requireSleep=true;
-	
+
 	private boolean realisticMove = false;
 	/**
 	 * 1 unit/s or 0.1 in 100ms
@@ -47,15 +47,15 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 
 	private List<Number>            values;
 	private List<AbstractPosition>  positions;
-	
+
 	protected MockScannableModel model;
 	private LazyWriteableDataset writer;
-	
+
 	@ScanFinally
 	public void clean() {
 		writer = null;
 	}
-	
+
     public MockScannable() {
     	super(Services.getScannableDeviceService());
        	values    = new ArrayList<>();
@@ -70,7 +70,7 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 		setName(name);
 		this.position = position;
 	}
-	
+
 	public MockScannable(String name, Double position, int level) {
     	this();
 		setLevel(level);
@@ -92,64 +92,67 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 		this.unit = unit;
 		this.requireSleep = false;
 	}
-	
+
 	private Number upper = 1000;
 	private Number lower = -1000;
 
 	@Override
 	public void configure(MockScannableModel model) throws ScanningException {
 		this.model = model;
-		
+
 		if (model instanceof MockScannableModel) {
 			MockScannableModel mod = (MockScannableModel)model;
-			
+
 			// We make a lazy writeable dataset to write out the mandels.
 			final int[] shape = new int[]{mod.getSize()};
-			
+
 			try {
 				/**
 				 * @see org.eclipse.dawnsci.nexus.NexusFileTest.testLazyWriteStringArray()
-				 
+
 				  TODO FIXME Hack warning! This is not the way to write to NeXus.
 				  We are just doing this for the test!
-				  
+
 				  DO NOT COPY!
 				*/
-				NexusFile file = mod.getFile();			
+				NexusFile file = mod.getFile();
 				GroupNode par = file.getGroup("/entry1/instrument/axes", true); // DO NOT COPY!
 				writer = new LazyWriteableDataset(getName(), Dataset.FLOAT, shape, shape, shape, null); // DO NOT COPY!
-			
+
 				file.createData(par, writer); // DO NOT COPY!
 
 			} catch (NexusException ne) {
 				throw new ScanningException("Cannot open file for writing!", ne);
 			}
-	 		
+
 		} else {
 			writer = null;
 		}
 
 	}
 
-	
+
+	@Override
 	public Number getPosition() {
 		return position;
 	}
+	@Override
 	public Number setPosition(Number position) throws Exception {
 		return setPosition(position, null);
 	}
-	
+
 	public void setInitialPosition(Number position) {
 		this.position = position;
 	}
-	
+
+	@Override
 	public Number setPosition(Number value, IPosition loc) throws Exception {
-		
+
 		int index = loc!=null ? loc.getIndex(getName()) : -1;
 		double val = value!=null ? value.doubleValue() : Double.NaN;
 		boolean ok = delegate.firePositionWillPerform(new Scalar(getName(), index, val));
 		if (!ok) return this.position;
-		
+
 		if (value!=null && position!=null) {
 			long waitTime = Math.abs(Math.round((val-this.position.doubleValue()))*100);
 			waitTime = Math.max(waitTime, 1);
@@ -161,58 +164,58 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 			}
 		}
 		this.position = value;
-		
+
 		values.add(value);
 		positions.add((AbstractPosition)loc);
-		
-		
+
+
 		if (writer!=null && loc!=null) {
-			
+
 			// Write a single value
 			IDataset toWrite = DatasetFactory.createFromObject(value);
-			
+
 			final int[] start = new int[]{loc.getIndex(getName())};    // DO NOT COPY!
 			final int[] stop  = new int[] {loc.getIndex(getName())+1}; // DO NOT COPY!
-			
+
 			SliceND slice = SliceND.createSlice(writer, start, stop); // DO NOT COPY!
 			try {
 				writer.setSlice(new IMonitor.Stub(), toWrite, slice); // DO NOT COPY!
 			} catch (Exception e) {
 				throw new ScanningException("Slice unable to write!", e); // DO NOT COPY!
 			}
-	 
+
 		}
-		
+
 		delegate.firePositionPerformed(-1, new Scalar(getName(), index, val));
 		return this.position;
 	}
-	
+
 	private TerminationPreference terminate;
 	private CountDownLatch        latch;
-	
+
 	protected Number doRealisticMove(Number pos, int index, long minimumWaitTime) throws InterruptedException, ScanningException {
-		
+
 		if (pos==null) return pos;
-		
+
 		try {
 			latch     = new CountDownLatch(1);
 			terminate = null;
-			
+
 			Number orig     = this.position;
 			if (orig==null) orig = 0d;
-			
+
 			double distance = pos.doubleValue()-orig.doubleValue();
 			long waitedTime = 0L;
 			if (Math.abs(distance)>0.000001) {
 				double rate     = getMoveRate(); // units/s
 				double time     = distance/rate; // Time, s, to do the move.
-				
+
 				// We will pretend there are 10 points in any move for notification
 				double increment = distance/10d;
 				long   pauseTime= Math.abs(Math.round(time/10*1000)); // pause in ms
-				
+
 //TODO Helpful for debugging tests				System.err.println("Distance="+distance+" Time="+time+" Increment="+increment);
-				
+
 				double currentPosition = orig.doubleValue();
 				for (int i = 0; i <10; i++) {
 					if (terminate==TerminationPreference.PANIC) return this.position;
@@ -257,11 +260,11 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 	public void setRequireSleep(boolean requireSleep) {
 		this.requireSleep = requireSleep;
 	}
-	
+
 	public void verify(Number value, IPosition point) throws Exception {
-		
+
 		for (int i = 0; i < positions.size(); i++) {
-			
+
 			boolean equalPos  = positions.get(i).equals(point, false);
 			Number other = values.get(i);
 			boolean identical = other == value;
@@ -270,19 +273,19 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 				return;
 			}
 		}
-		
+
 		throw new Exception("No call to setPosition had value="+value+" and position="+point);
 	}
-	
+
 	public List<Number> getValues() {
 		return values;
 	}
-	
+
 	protected static boolean equalsWithinTolerance(Number foo, Number bar, Number tolerance) {
 		if (foo==null || bar==null || tolerance==null) return false;
 		final double a = foo.doubleValue();
 		final double b = bar.doubleValue();
-		final double t = tolerance.doubleValue();	
+		final double t = tolerance.doubleValue();
 		return t>=Math.abs(a-b);
 	}
 
@@ -301,7 +304,8 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 	public Number getMaximum() {
 		return upper;
 	}
-	
+
+	@Override
 	public Number setMaximum(Number upper) {
 		Number ret = this.upper;
 		this.upper = upper;
@@ -313,6 +317,7 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 		return lower;
 	}
 
+	@Override
 	public Number setMinimum(Number lower) {
 		Number ret = this.lower;
 		this.lower = lower;

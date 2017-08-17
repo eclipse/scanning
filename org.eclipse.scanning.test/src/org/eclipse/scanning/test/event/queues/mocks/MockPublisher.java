@@ -31,28 +31,28 @@ import org.eclipse.scanning.api.event.status.StatusBean;
 import org.eclipse.scanning.test.event.queues.dummy.DummyHasQueue;
 
 public class MockPublisher<T> implements IPublisher<T> {
-	
-	
+
+
 	private String topicName;
 	private final URI uri;
 	private String queueName;
 	private MockConsumer<Queueable> mockCons;
-	
+
 	private volatile List<ConsumerCommandBean> broadcastCmdBeans = new ArrayList<>();
 	private volatile List<StatusBean> broadcastStatusBeans = new ArrayList<>();
-	
+
 	private boolean disconnected = false;
-	
+
 	private boolean alive;
-	
+
 	public MockPublisher(URI uri, String topic) {
 		//Removed from sig: IEventConnectorService service
 		this.topicName = topic;
 		this.uri = uri;
-		
+
 		alive = true;
 	}
-	
+
 	public void resetPublisher() {
 		broadcastStatusBeans.clear();
 		disconnected = false;
@@ -66,7 +66,7 @@ public class MockPublisher<T> implements IPublisher<T> {
 	@Override
 	public void setTopicName(String topic) throws EventException {
 		this.topicName = topic;
-		
+
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public class MockPublisher<T> implements IPublisher<T> {
 	public URI getUri() {
 		return uri;
 	}
-	
+
 	@Override
 	public void broadcast(T bean) throws EventException {
 		if (bean instanceof ConsumerCommandBean) {
@@ -99,12 +99,12 @@ public class MockPublisher<T> implements IPublisher<T> {
 					broadBean = new DummyHasQueue();
 					((DummyHasQueue)broadBean).setQueueMessage(((IHasChildQueue)bean).getQueueMessage());
 				}
-				
+
 			} else if (bean instanceof MonitorAtom) {
 				broadBean = new MonitorAtom();
 				((MonitorAtom)broadBean).setFilePath(((MonitorAtom)bean).getFilePath());
 			} else {
-				broadBean = new StatusBean(); 
+				broadBean = new StatusBean();
 			}
 			StatusBean loBean = (StatusBean)bean;
 			broadBean.setMessage(loBean.getMessage());
@@ -113,23 +113,23 @@ public class MockPublisher<T> implements IPublisher<T> {
 			broadBean.setPercentComplete(loBean.getPercentComplete());
 			broadBean.setUniqueId(loBean.getUniqueId());
 			broadBean.setName(loBean.getName());
-			
-			
+
+
 			broadcastStatusBeans.add(broadBean);
 			if ((loBean.getStatus().isRequest()) && (mockCons != null)) {
 				mockCons.addToStatusSet((Queueable) broadBean);
 			}
 		}
 	}
-	
+
 	public List<StatusBean> getBroadcastBeans() {
 		return broadcastStatusBeans;
 	}
-	
+
 	public List<ConsumerCommandBean> getCmdBeans() {
 		return broadcastCmdBeans;
 	}
-	
+
 	public StatusBean getLastQueueable() {
 		if (broadcastStatusBeans.size() > 0) {
 			return broadcastStatusBeans.get(broadcastStatusBeans.size()-1);
@@ -137,7 +137,7 @@ public class MockPublisher<T> implements IPublisher<T> {
 			return null;
 		}
 	}
-	
+
 	public ConsumerCommandBean getLastCmdBean() {
 		if (broadcastCmdBeans.size() > 0) {
 			return broadcastCmdBeans.get(broadcastCmdBeans.size()-1);
@@ -159,14 +159,14 @@ public class MockPublisher<T> implements IPublisher<T> {
 	@Override
 	public void setStatusSetName(String queueName) {
 		this.queueName = queueName;
-		
+
 	}
 
 	@Override
 	public String getStatusSetName() {
 		return queueName;
 	}
-	
+
 	@Override
 	public void setStatusSetAddRequired(boolean required) {
 		throw new RuntimeException("setStatusSetAddRequired is not implemented!");
@@ -176,7 +176,7 @@ public class MockPublisher<T> implements IPublisher<T> {
 	@Override
 	public void setLoggingStream(PrintStream stream) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -193,6 +193,7 @@ public class MockPublisher<T> implements IPublisher<T> {
 		this.mockCons = consumer;
 	}
 
+	@Override
 	public boolean isDisconnected() {
 		return disconnected;
 	}
@@ -200,7 +201,7 @@ public class MockPublisher<T> implements IPublisher<T> {
 	public void setDisconnected(boolean disconnected) {
 		this.disconnected = disconnected;
 	}
-	
+
 	private void addPauseBean(PauseBean bean) {
 		final PauseBean pbean = new PauseBean();
 		pbean.setConsumerId(bean.getConsumerId());
@@ -210,7 +211,7 @@ public class MockPublisher<T> implements IPublisher<T> {
 		pbean.setUniqueId(bean.getUniqueId());
 		broadcastCmdBeans.add(pbean);
 	}
-	
+
 	private void addKillBean(KillBean bean) {
 		final KillBean kBean = new KillBean();
 		kBean.setConsumerId(bean.getConsumerId());
@@ -226,7 +227,7 @@ public class MockPublisher<T> implements IPublisher<T> {
 	@Override
 	public void setConsumer(IConsumer<?> consumer) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

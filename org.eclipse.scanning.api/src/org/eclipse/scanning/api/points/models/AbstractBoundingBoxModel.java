@@ -32,7 +32,7 @@ public abstract class AbstractBoundingBoxModel extends AbstractMapModel implemen
 	protected AbstractBoundingBoxModel() {
 		super();
 	}
-	
+
 	protected AbstractBoundingBoxModel(String fastName, String slowName, BoundingBox box) {
 		super(fastName, slowName);
 		this.boundingBox  = box;
@@ -43,22 +43,24 @@ public abstract class AbstractBoundingBoxModel extends AbstractMapModel implemen
 	public BoundingBox getBoundingBox() {
 		return boundingBox;
 	}
-	
+
 	@Override
 	public void setBoundingBox(BoundingBox newValue) {
 		this.boundingBox = newValue;
 	}
 
+	@Override
 	public void setFastAxisName(String newValue) {
 		if (boundingBox!=null) boundingBox.setFastAxisName(getFastAxisName());
 		super.setFastAxisName(newValue);
 	}
-	
+
+	@Override
 	public void setSlowAxisName(String newValue) {
 		if (boundingBox!=null) boundingBox.setSlowAxisName(getSlowAxisName());
 		super.setSlowAxisName(newValue);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -66,7 +68,7 @@ public abstract class AbstractBoundingBoxModel extends AbstractMapModel implemen
 		result = prime * result + ((boundingBox == null) ? 0 : boundingBox.hashCode());
 		return result;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

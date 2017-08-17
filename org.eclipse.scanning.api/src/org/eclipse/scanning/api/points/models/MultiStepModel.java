@@ -22,31 +22,31 @@ import org.eclipse.scanning.api.annotation.ui.TypeDescriptor;
 
 /**
  * A model consisting of multiple {@link StepModel}s to be iterated over sequentially.
- * 
+ *
  * @author Matthew Dickie
  */
 @TypeDescriptor(editor="org.eclipse.scanning.device.ui.composites.MultiStepComposite")
 public class MultiStepModel extends AbstractPointsModel {
-	
+
 	private static final String FIELD_NAME = "stepModels";
 
 	private List<StepModel> stepModels;
-	
+
 	@FieldDescriptor(visible=true, label="The scannable name over which the multiple steps will run.")
 	private String name;
-	
+
 	public MultiStepModel() {
 		stepModels = new ArrayList<>(4);
 		setName("energy");
 	}
-	
+
 	public MultiStepModel(String name, double start, double stop, double step) {
 		super();
 		setName(name);
 		stepModels = new ArrayList<>(4);
 		stepModels.add(new StepModel(name, start, stop, step));
 	}
-	
+
 	/**
 	 * Used from mapping_scan_commands.py
 	 * @param name
@@ -75,16 +75,16 @@ public class MultiStepModel extends AbstractPointsModel {
 		stepModels.add(new StepModel(getName(), start, stop, step, exposure));
 		firePropertyChange(FIELD_NAME, oldModels, stepModels);
 	}
-	
+
 	public void addRange(StepModel stepModel) {
 		if (!getName().equals(stepModel.getName())) {
 			throw new IllegalArgumentException(MessageFormat.format(
 					"Child step model must have the same name as the MultiStepModel. Expected ''{0}'', was ''{1}''", getName(), stepModel.getName()));
 		}
-		
+
 		stepModels.add(stepModel);
 	}
-	
+
 	public List<StepModel> getStepModels() {
 		return stepModels;
 	}
@@ -147,16 +147,17 @@ public class MultiStepModel extends AbstractPointsModel {
 				sb.append(stepModel.getExposureTime());
 			}
 		}
-		
+
 		sb.append(")]");
-		
+
 		return sb.toString();
 	}
-	
-	
-	
+
+
+
 	private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
+	@Override
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		propertyChangeSupport.addPropertyChangeListener(listener);
 	}
@@ -166,6 +167,7 @@ public class MultiStepModel extends AbstractPointsModel {
 		propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
 	}
 
+	@Override
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 		propertyChangeSupport.removePropertyChangeListener(listener);
 	}

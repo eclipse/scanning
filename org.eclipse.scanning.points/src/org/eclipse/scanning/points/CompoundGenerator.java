@@ -24,32 +24,31 @@ import org.eclipse.scanning.api.points.AbstractPosition;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPosition;
-import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.python.core.PyDictionary;
 
 /**
- * 
+ *
  * The compound generator must only compound positions
- * which implement AbstractPosition or  
- * 
+ * which implement AbstractPosition or
+ *
  * @author Matthew Gerring
  *
  */
 class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySerializable {
-	
+
 	private IPointGenerator<?>[]     generators;
 	private List<Collection<String>> dimensionNames;
 
 	public CompoundGenerator(IPointGenerator<?>[] generators) throws GeneratorException {
 		super(createId(generators));
         if (generators == null || generators.length<1) throw new GeneratorException("Cannot make a compound generator from a list of less than one generators!");
-        
+
         // We create a model with no regions from the generators.
         this.model = new CompoundModel<>();
         for (IPointGenerator<?> g : generators) model.addData(g.getModel(), g.getRegions());
         // This model is not designed to hold all the data because we have the actual generators!
-        
+
         this.generators = generators;
 	    this.dimensionNames = createDimensionNames(generators);
 		setLabel("Compound");
@@ -76,7 +75,7 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 
 	private static String createId(IPointGenerator<?>[] gens) throws GeneratorException {
         if (gens == null || gens.length<1) throw new GeneratorException("Cannot make a compound generator from a list of less than one generators!");
-	
+
         final StringBuilder buf = new StringBuilder();
         for (IPointGenerator<?> gen : gens) buf.append("+"+gen);
         return buf.toString();
@@ -89,7 +88,7 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 		// turn each calls .validateModel(). Therefore we don't need to do any
 		// explicit validation here.
 	}
-	
+
 	@Override
 	public int sizeOfValidModel() throws GeneratorException {
 		Iterator<IPosition> it = (Iterator<IPosition>) iteratorFromValidModel();
@@ -104,12 +103,13 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 		return size;
 	}
 
-    public PyDictionary toDict() {
+    @Override
+	public PyDictionary toDict() {
 		Iterator<?> it = iteratorFromValidModel();
 		if (it instanceof PySerializable) return ((PySerializable)it).toDict();
 		return null;
     }
-	
+
 	/**
 	 * The description is run on the fly for compound generator
 	 * and it provides the scan point summary.
@@ -131,15 +131,15 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 				buf.append(" ");
 			}
 			buf.append('\n');
-			
+
 			return buf.toString();
-			
+
 		} catch (Exception ne) {
 			return ne.getMessage() != null ? ne.getMessage() : ne.toString();
 		}
-		
+
 	}
-	
+
 	@Override
 	protected Iterator<IPosition> iteratorFromValidModel() {
 		try {
@@ -155,7 +155,7 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 
 	@Override
 	public List<IPosition> createPoints() throws GeneratorException {
-		
+
 		List<IPosition> points = new ArrayList<>(size());
 		createPoints(0, points, null);
 		for (int i = 0; i < points.size(); i++) points.get(i).setStepIndex(i);
@@ -164,13 +164,13 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 
 	/**
 	 * This simple recursive method is what nested scans reduce to.
-	 * 
+	 *
 	 * @param igen
 	 * @param points
 	 * @param parent
 	 */
 	private void createPoints(int igen, List<IPosition> points, IPosition parent) {
-		
+
 		IPointGenerator<?> gen = generators[igen];
 		Iterator<? extends IPosition>     it  = gen.iterator();
 		while(it.hasNext()) {
@@ -184,7 +184,7 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 				points.add(pos);
 			}
 		}
-	
+
 	}
 
 	public IPointGenerator<?>[] getGenerators() {
@@ -199,7 +199,8 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 		this.dimensionNames = dimensionNames;
 	}
 
-	
+
+	@Override
 	public boolean isScanPointGeneratorFactory() {
 		for (IPointGenerator<?> gen : generators) {
 			if (!gen.isScanPointGeneratorFactory()) return false;

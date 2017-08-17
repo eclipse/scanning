@@ -20,10 +20,10 @@ import java.util.stream.Collectors;
 
 /**
  * A springable class which encapsulates information for a given feature.
- * 
+ *
  * <h3> Filters </h3>
  * Filters work as follows:<p>
- * 
+ *
  * <pre>
  * L = list of things to be filtered
  * e = excluded function
@@ -32,13 +32,13 @@ import java.util.stream.Collectors;
  * <p>
  *   l = L-e(L)+i(L)
  * </pre>
- * 
+ *
  * This means that all combinations are possible.
  * An exclude of .* may be applied if only particular devices
  * are required in the filter and everything done with includes.
  * A particular set of devices may be removed but if one is
  * required, it may be added back in with the final include.
- * 
+ *
  * <h3>  Example Spring </h3>
  *   <pre>
 	{@literal <bean id="filter" class="org.eclipse.scanning.api.filter.Filter" init-method="register">}
@@ -65,8 +65,8 @@ import java.util.stream.Collectors;
     {@literal    <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->}
 	{@literal</bean>}
 	  </pre>
- *   
- * 
+ *
+ *
  * @author Matthew Gerring
  *
  */
@@ -75,26 +75,32 @@ public class Filter implements IFilter<String> {
 	private String name;
 	private List<String> excludes;
 	private List<String> includes;
-	
+
 	public void register() {
 		IFilterService.DEFAULT.register(this);
 	}
-	
+
+	@Override
 	public String getName() {
 		return name;
 	}
+	@Override
 	public void setName(String n) {
 		this.name = n;
 	}
+	@Override
 	public List<String> getExcludes() {
 		return excludes;
 	}
+	@Override
 	public void setExcludes(List<String> excludes) {
 		this.excludes = excludes;
 	}
+	@Override
 	public List<String> getIncludes() {
 		return includes;
 	}
+	@Override
 	public void setIncludes(List<String> includes) {
 		this.includes = includes;
 	}
@@ -136,20 +142,20 @@ public class Filter implements IFilter<String> {
 
 	@Override
 	public List<String> filter(final Collection<String> items) {
-		
+
 		List<String> ret            = new ArrayList<>(items);
 		Collection<String> excludes = match(getExcludes(), items);
 		ret.removeAll(excludes);
 		Collection<String> includes = match(getIncludes(), items);
-		
+
 		Collection<String> done = new HashSet<>();
 		for (final String item : includes) {
-			
+
 			if (done.contains(item)) continue;
 			int ecount = (int)ret.stream().filter(t->t.equals(item)).count();
 			int icount = (int)includes.stream().filter(t->t.equals(item)).count();
 			ret.addAll(Arrays.stream(new String[icount-ecount]).map(nothing->item).collect(Collectors.toList()));
-			
+
 			done.add(item);
 		}
 
@@ -164,7 +170,7 @@ public class Filter implements IFilter<String> {
 	 * @return
 	 */
 	private Collection<String> match(List<String> regexes, Collection<String> items) {
-		
+
 		// TODO Could solve with lambda but it was not looking as concise at this
 		// simple loop.
 		Collection<String> ret = new ArrayList<>();

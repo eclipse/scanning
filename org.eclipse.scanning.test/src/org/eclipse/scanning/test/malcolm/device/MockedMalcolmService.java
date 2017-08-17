@@ -22,7 +22,7 @@ import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 
 public class MockedMalcolmService implements IMalcolmService {
-	
+
 	private Map<String, IMalcolmDevice<?>> devices;
 	private final LatchDelegate latcher;
 	private boolean usePausableDevices;
@@ -33,9 +33,10 @@ public class MockedMalcolmService implements IMalcolmService {
 		usePausableDevices = pausable;
 	}
 
+	@Override
 	public void dispose() throws MalcolmDeviceException {
 	}
-	
+
 	@Override
 	public <M extends IMalcolmModel> IMalcolmDevice<M> getDevice(String name) throws MalcolmDeviceException {
 		return getDevice(name, null);
@@ -45,16 +46,16 @@ public class MockedMalcolmService implements IMalcolmService {
 		try {
 			if (devices==null || devices.isEmpty()) {
 				devices = new HashMap<String, IMalcolmDevice<?>>(1);
-				IMalcolmDevice<M> device = usePausableDevices ? 
-						(IMalcolmDevice<M>) new MockedWriteInLoopPausableMalcolmDevice("zebra", latcher) : 
+				IMalcolmDevice<M> device = usePausableDevices ?
+						(IMalcolmDevice<M>) new MockedWriteInLoopPausableMalcolmDevice("zebra", latcher) :
 						(IMalcolmDevice<M>) new MockedMalcolmDevice("zebra"); // TODO why are these casts required?
-				
+
 				devices.put("zebra", device);
 			}
 			IMalcolmDevice<M> device = (IMalcolmDevice<M>) devices.get(name);
 			if (device!=null) return device;
 			throw new MalcolmDeviceException("Invalid name "+name);
-		    
+
 		} catch (Exception ne) {
 			throw new MalcolmDeviceException(null, "Unable to connect to device!", ne);
 		}

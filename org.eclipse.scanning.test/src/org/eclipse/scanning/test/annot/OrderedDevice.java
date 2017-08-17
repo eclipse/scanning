@@ -19,12 +19,12 @@ import org.eclipse.scanning.api.annotation.scan.PointStart;
 import org.eclipse.scanning.api.annotation.scan.ScanEnd;
 
 public class OrderedDevice implements ILevel {
-	
+
 	private static List<String> calledNames = new ArrayList<>();
 
 	private int    level;
 	private String name;
-	
+
 	public OrderedDevice(String name) {
 		this.name = name;
 	}
@@ -34,18 +34,22 @@ public class OrderedDevice implements ILevel {
 		calledNames.add(getName());
 	}
 
+	@Override
 	public int getLevel() {
 		return level;
 	}
 
+	@Override
 	public void setLevel(int level) {
 		this.level = level;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

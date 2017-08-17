@@ -42,35 +42,35 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * MonitorAtomProcess reads back a single value from a monitor. It will use 
+ * MonitorAtomProcess reads back a single value from a monitor. It will use
  * the view detector methods discussed that should be available as part of the
  * Mapping project.
- * 
+ *
  * MonitorAtom has the scannable name to find information.
  * 1. Read value
- * 2. Write to a file visit/tmp 
+ * 2. Write to a file visit/tmp
  * 3. Set file path written to MonitorAtom
- * 4. Set the Status to RUNNING, set %-complete at 99.6% 
+ * 4. Set the Status to RUNNING, set %-complete at 99.6%
  * 5. Unit test similar to PositionerAtomProcessTest
- * 
- * 
+ *
+ *
  * @author Michael Wharmby
  * @author Matthew Gerring
  *
- * @param <T> The {@link Queueable} specified by the {@link IConsumer} 
- *            instance using this MonitorAtomProcess. This will be 
+ * @param <T> The {@link Queueable} specified by the {@link IConsumer}
+ *            instance using this MonitorAtomProcess. This will be
  *            {@link QueueAtom}.
  */
 public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<MonitorAtom, T> {
-	
+
 	/**
-	 * Used by {@link QueueProcessFactory} to identify the bean type this 
+	 * Used by {@link QueueProcessFactory} to identify the bean type this
 	 * {@link QueueProcess} handles.
 	 */
 	public static final String BEAN_CLASS_NAME = MonitorAtom.class.getName();
-	
+
 	private static Logger logger = LoggerFactory.getLogger(MonitorAtomProcess.class);
-	
+
 	//Scanning infrastructure
 	private final IScannableDeviceService scanDevService;
 	private final IFilePathService fPathService;
@@ -84,14 +84,14 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 		scanDevService = ServicesHolder.getScannableDeviceService();
 		fPathService = ServicesHolder.getFilePathService();
 		nexusFileFactory = ServicesHolder.getNexusFileFactory();
-		
+
 		//We make direct calls to scanning infrastructure which block -> need to happen in separate thread
 		runInThread = true;
 	}
 
 	@Override
 	protected void run() throws EventException {
-		final File nxsFileObject; 
+		final File nxsFileObject;
 		NexusFile nxsFile = null; //This was final before. Don't know whether it needs to be, but this is a problem for cleanup(...)
 		final String datasetName;
 		final int[] shape;
@@ -100,7 +100,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			logger.debug("Getting path for uniquely named NeXus file to write data to...");
 			broadcast(Status.RUNNING, 1.0, "Getting path for uniquely named NeXus file to write data to...");
 			nxsFileObject = createFilePath();
-			
+
 			//Create a LazyDataset ready to receive the monitor value
 			shape = queueBean.getDataShape(); // This is int[]: not sure about this, what about vector-data from the scannable?
 			logger.debug("Creating lazy dataset with shape "+shape);
@@ -113,13 +113,13 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			logger.debug("Preparing NeXus file for writing...");
 			broadcast(Status.RUNNING, 20.0, "Opening NeXus file for writing...");
 			nxsFile = prepareNexus(nxsFileObject, datasetWriter);
-			
+
 			//Read data, write slice and close file
 			logger.debug("Getting scannable'"+queueBean.getMonitor()+"' and reading current value");
 			broadcast(Status.RUNNING, 40.0, "Reading value of monitor '"+queueBean.getMonitor()+"'");
 			writeDataset(datasetWriter, slice);
 			if (isTerminated()) throw new InterruptedException("Termination requested");
-			
+
 			//Record the full dataset path in the MonitorAtom
 			logger.debug("Data successfully written to file");
 			broadcast(Status.RUNNING, 70.0, "Monitor value recorded to file");
@@ -139,21 +139,21 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			cleanUp(nxsFile);
 		}
 	}
-	
+
 	private File createFilePath() throws InterruptedException {
 		File visitTmpDir = new File(fPathService.getTempDir());
 		final String fileName = UniqueUtils.getSafeName(queueBean.getName());
 		final File visitFile = UniqueUtils.getUnique(visitTmpDir, fileName, "nxs");
 		queueBean.setRunDirectory(visitTmpDir.getAbsolutePath());
-		
+
 		// Tell downstream which file to read
 		String filePath = visitFile.getAbsolutePath();
 		queueBean.setFilePath(filePath);
 		if (isTerminated()) throw new InterruptedException("Termination requested");
-		
+
 		return visitFile;
 	}
-	
+
 	private NexusFile prepareNexus(File visitFile, ILazyWriteableDataset datasetWriter) throws EventException, InterruptedException {
 		//Open the Nexus file & create the group/tree structure
 		final NexusFile nxsFile = nexusFileFactory.newNexusFile(visitFile.getAbsolutePath());
@@ -162,24 +162,24 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			GroupNode nxsParent = nxsFile.getGroup("/entry1/instrument", true);
 			nxsFile.createData(nxsParent, datasetWriter);
 			if (isTerminated()) throw new InterruptedException("Termination requested");
-			
+
 		} catch (NexusException nEx) {
 			logger.error("Failed whilst accessing NeXus file '"+visitFile.getAbsolutePath()+"': "+nEx.getMessage(), nEx);
 			broadcast(Status.FAILED, "Problems encountered accessing NeXus file: "+nEx.getMessage());
 			throw new EventException("Problems encountered accessing NeXus file", nEx);
 		}
-		
+
 		return nxsFile;
 	}
-	
+
 	private void writeDataset(ILazyWriteableDataset datasetWriter, SliceND slice) throws EventException, InterruptedException {
 		try {
 			IScannable<?> scannable = scanDevService.getScannable(queueBean.getMonitor());
-		
+
 			IDataset toWrite = DatasetFactory.createFromObject(scannable.getPosition());
 			datasetWriter.setSlice(new IMonitor.Stub(), toWrite, slice);
 			if (isTerminated()) throw new InterruptedException("Termination requested");
-			
+
 		} catch (DatasetException dsEx) {
 			logger.error("Could not pass data from monitor into LazyDataset for writing");
 			broadcast(Status.FAILED, "Failed writing to LazyDataset: "+dsEx.getMessage());
@@ -197,14 +197,14 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			throw new EventException("Failed to read monitor with the name '"+queueBean.getMonitor()+"'", ex);
 		}
 	}
-	
+
 	private void cleanUp(NexusFile nxsFile) {
 		if (nxsFile == null) {
 			return;
 		}
 		final String path = nxsFile.getFilePath();
 		final File nxsFSObj = new File(path);
-		
+
 		if (nxsFSObj.exists()) {
 			try {
 				nxsFile.close();
@@ -219,7 +219,8 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			}
 		}
 	}
-	
+
+	@Override
 	protected void terminateCleanupAction() {
 		if (queueBean.getFilePath() == null) return;
 		File nxsFSObj = new File(queueBean.getFilePath()).getAbsoluteFile();
@@ -231,7 +232,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 			}
 		}
 	}
-	
+
 	@Override
 	public void postMatchCompleted() {
 		updateBean(Status.COMPLETE, 100d, "Successfully stored current value of '"+queueBean.getMonitor()+"'");
@@ -247,7 +248,7 @@ public class MonitorAtomProcess<T extends Queueable> extends QueueProcess<Monito
 //		queueBean.setStatus(Status.FAILED);//<-- Don't set message here; it's broadcast above!
 //		logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
 //	}
-	
+
 	@Override
 	public Class<MonitorAtom> getBeanClass() {
 		return MonitorAtom.class;

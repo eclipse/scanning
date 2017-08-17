@@ -32,22 +32,22 @@ import org.slf4j.LoggerFactory;
 
     Spring config started servlets, for instance:
     <pre>
-    
+
     {@literal <bean id="myEventServlet" class="org.eclipse.scanning.server.servlet.MyEventServlet">}
     {@literal    <property name="broker"   value="tcp://p45-control:61616" />}
     {@literal    <property name="topic" value="uk.ac.diamond.p45.myActionTopic" />}
     {@literal </bean>}
-     
+
     </pre>
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
  */
 public abstract class AbstractSubscriberServlet<T> implements ISubscriberServlet<T> {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(AbstractSubscriberServlet.class);
-	
+
 	protected IEventService eventService;
 	protected String        broker;
 	protected String        topic;
@@ -55,18 +55,19 @@ public abstract class AbstractSubscriberServlet<T> implements ISubscriberServlet
 
 	protected ISubscriber<IBeanListener<T>> subscriber;
 	protected IPublisher<T> publisher;
-	
+
 	protected AbstractSubscriberServlet() {
 		this.eventService = Services.getEventService();
 	}
-	
+
+	@Override
 	@PostConstruct    // Requires spring 3 or better
-    public void connect() throws EventException, URISyntaxException {	
-    	
+    public void connect() throws EventException, URISyntaxException {
+
     	if (getResponseTopic()!=null) {
     		publisher = eventService.createPublisher(new URI(getBroker()), getResponseTopic());
     	}
-    	
+
     	subscriber = eventService.createSubscriber(new URI(getBroker()), getTopic());
     	subscriber.addListener(new IBeanListener<T>() {
 			@Override
@@ -81,7 +82,8 @@ public abstract class AbstractSubscriberServlet<T> implements ISubscriberServlet
 		});
      	logger.info("Started "+getClass().getSimpleName());
     }
-    
+
+	@Override
 	@PreDestroy
 	public void disconnect() throws EventException {
     	subscriber.disconnect();

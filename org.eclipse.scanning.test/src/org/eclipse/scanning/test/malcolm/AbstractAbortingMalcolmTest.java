@@ -24,9 +24,9 @@ import org.junit.runners.Parameterized;
 
 @RunWith(Parameterized.class)
 public abstract class AbstractAbortingMalcolmTest extends AbstractMalcolmTest {
-	
+
 	private static final int REPEAT_COUNT = 1;
-	
+
 	@Parameterized.Parameters
 	public static List<Object[]> data() {
 	    return Arrays.asList(new Object[REPEAT_COUNT][0]);
@@ -38,7 +38,7 @@ public abstract class AbstractAbortingMalcolmTest extends AbstractMalcolmTest {
 		final List<Throwable> exceptions = new ArrayList<>(1);
 		configureInThread(device, 5000, 10, exceptions);
 		checkAbort(device, 1000);
-		
+
 		if (exceptions.size()>0) throw exceptions.get(0);
 	}
 
@@ -47,34 +47,35 @@ public abstract class AbstractAbortingMalcolmTest extends AbstractMalcolmTest {
 
 		final List<Throwable> exceptions = new ArrayList<>(1);
 		configure(device, 10);
-		runDeviceInThread(device, exceptions);		
+		runDeviceInThread(device, exceptions);
 		checkAbort(device, 1000);
-		
+
 		if (exceptions.size()>0) throw exceptions.get(0);
 	}
-	
+
 	@Test
 	public void testAbortPaused() throws Throwable {
 
 		final List<Throwable> exceptions = new ArrayList<>(1);
 		configure(device, 10);
-		runDeviceInThread(device, exceptions);		
+		runDeviceInThread(device, exceptions);
 		Thread.sleep(1000);
 		device.pause();
 		checkAbort(device, 1000);
-		
+
 		if (exceptions.size()>0) throw exceptions.get(0);
 	}
-	
+
 	@Test
 	public void testAbortPausedByAnotherThread() throws Throwable {
 
 		final List<Throwable> exceptions = new ArrayList<>(1);
 		configure(device, 10);
-		runDeviceInThread(device, exceptions);		
+		runDeviceInThread(device, exceptions);
 		Thread.sleep(1000);
-		
+
 		final Thread thread = new Thread(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					System.out.println("Requesting pause, device is "+device.getDeviceState());
@@ -87,42 +88,42 @@ public abstract class AbstractAbortingMalcolmTest extends AbstractMalcolmTest {
 		});
 		thread.setDaemon(true);
 		thread.start();
-		
+
 		// Wait for pause
 		if (device.getDeviceState()!=DeviceState.PAUSED) {
 		    device.latch(10, TimeUnit.SECONDS, DeviceState.SEEKING, DeviceState.RUNNING);
 		}
-		
+
 		System.out.println("Aborting paused run, current state is "+device.getDeviceState());
 		device.abort();
-        
+
         if (device.getDeviceState()!=DeviceState.ABORTED) {
         	throw new Exception("State was not aborted after abort!");
         }
-		
+
 		if (exceptions.size()>0) throw exceptions.get(0);
 	}
 
 	@Test
 	public void testAbortAfterSeveralPauseResume() throws Throwable {
-        
+
 		pause1000ResumeLoop(device, 10, 3, 2000, false, false, false);
-		
+
 		System.out.println("Aborting paused run, current state is "+device.getDeviceState());
 		device.abort();
-        
+
         if (device.getDeviceState()!=DeviceState.ABORTED) {
         	throw new Exception("State was not aborted after abort!");
         }
-		
+
 	}
 
 	private void checkAbort(IMalcolmDevice zebra, long sleepTime) throws Exception {
-		
+
         Thread.sleep(sleepTime);
-        
+
         zebra.abort();
-        
+
         if (zebra.getDeviceState()!=DeviceState.ABORTED) {
         	throw new Exception("State was not aborted after abort!");
         }

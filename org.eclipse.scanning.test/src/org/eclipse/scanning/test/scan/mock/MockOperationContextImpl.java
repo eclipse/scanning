@@ -31,7 +31,7 @@ class MockOperationContextImpl implements IOperationContext {
 
 	// What we are running, required
 	private IOperation<? extends IOperationModel, ? extends OperationData>[] series;
-	
+
 	// Required Either
 	private ILazyDataset         data;
 	// or
@@ -42,15 +42,15 @@ class MockOperationContextImpl implements IOperationContext {
 	private SliceND slicing;
 	private int[] dataDimensions;
 	private int numberOfCores = 1;
-	
+
 	// May be null
 	private IMonitor             monitor;
 	private IExecutionVisitor    visitor;
-	
-	/** 
+
+	/**
 	 *  The default timeout is 5000 ms for PARALLEL and 10 minutes for GRAPH.
 	 *  This default is applied when setExecutionType(..) is called if the parallel timeout is -1
-	 *  
+	 *
 	 * 1. ExecutionType.SERIES has NO timeout
 	 * 2. ExecutionType.PARALLEL has 5000 ms applied when setExecutionType(...) is called, if parallelTimeout=-1
 	 *    You can use setParallelTimeout(...) to change this.
@@ -59,18 +59,18 @@ class MockOperationContextImpl implements IOperationContext {
 	 *
 	 */
 	private long                 parallelTimeout=-1;
-	
+
 	/**
 	 * The size of the thread pool used in GRAPH mode. By default the value is 1 meaning that 1 slice is ]
 	 * in the pipeline at a time.
 	 */
 	private int                  poolSize=1;
-	
+
 	/**
 	 * Defaults to ExecutionType.SERIES
 	 */
 	private ExecutionType executionType = ExecutionType.SERIES;
-	
+
 	/* (non-Javadoc)
 	 * @see uk.ac.diamond.scisoft.analysis.processing.IOperationContext#getSeries()
 	 */
@@ -122,7 +122,7 @@ class MockOperationContextImpl implements IOperationContext {
 	public void setSlicing(SliceND slicing) {
 		this.slicing = slicing;
 	}
-	
+
 
 	/* (non-Javadoc)
 	 * @see uk.ac.diamond.scisoft.analysis.processing.IOperationContext#getMonitor()
@@ -218,43 +218,55 @@ class MockOperationContextImpl implements IOperationContext {
 			return false;
 		return true;
 	}
+	@Override
 	public ExecutionType getExecutionType() {
 		return executionType;
 	}
+	@Override
 	public void setExecutionType(ExecutionType executionType) {
 		this.executionType = executionType;
 		if (parallelTimeout<0) parallelTimeout = executionType.getTimeout();
 	}
-	
 
+
+	@Override
 	public long getParallelTimeout() {
 		return parallelTimeout;
 	}
 
+	@Override
 	public void setParallelTimeout(long parallelTimeout) {
 		this.parallelTimeout = parallelTimeout;
 	}
+	@Override
 	public String getFilePath() {
 		return filePath;
 	}
+	@Override
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
 	}
+	@Override
 	public String getDatasetPath() {
 		return datasetPath;
 	}
+	@Override
 	public void setDatasetPath(String datasetPath) {
 		this.datasetPath = datasetPath;
 	}
+	@Override
 	public int getPoolSize() {
 		return poolSize;
 	}
+	@Override
 	public void setPoolSize(int slugCount) {
 		this.poolSize = slugCount;
 	}
+	@Override
 	public int getNumberOfCores() {
 		return numberOfCores;
 	}
+	@Override
 	public void setNumberOfCores(int numberOfCores) {
 		this.numberOfCores = numberOfCores;
 	}
@@ -266,12 +278,12 @@ class MockOperationContextImpl implements IOperationContext {
 	@Override
 	public void setDataDimensions(int[] dataDimensions) {
 		this.dataDimensions = dataDimensions;
-		
+
 	}
 	@Override
 	public void setLiveInfo(ILiveOperationInfo info) {
 		this.liveInfo = info;
-		
+
 	}
 	@Override
 	public ILiveOperationInfo getLiveInfo() {

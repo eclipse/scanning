@@ -25,21 +25,21 @@ import org.eclipse.scanning.api.event.status.StatusBean;
 public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 
 	private UUID consumerId;
-	
+
 	private boolean clearSubmitQueue = false, clearStatQueue = false;
 
 	private static boolean noFill = false;
 	private boolean started = false, stopped = false, disconnected = false, pauseOnStart=false;
-	
+
 	private String statusQueueName = "statQ", submitQueueName = "submQ";
 	private String name;
-	
+
 	private List<U> statusSet = new ArrayList<>(), submitQueue = new ArrayList<>();
-	
+
 	@SuppressWarnings("unchecked")
 	public MockConsumer() {
 		consumerId = UUID.randomUUID();
-		
+
 		if (!noFill) {
 			statusSet.add((U) new StatusBean());
 			submitQueue.add((U) new StatusBean());
@@ -85,7 +85,7 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	@Override
 	public void cleanQueue(String queueName) throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -115,7 +115,7 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	@Override
 	public void setBeanClass(Class<U> beanClass) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -155,13 +155,13 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	@Override
 	public void setStatusTopicName(String queueName) throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void setRunner(IProcessCreator<U> process) throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -177,7 +177,7 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	@Override
 	public void run() throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -195,7 +195,7 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	@Override
 	public void setCommandTopicName(String commandTName) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -232,29 +232,29 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	@Override
 	public void setDurable(boolean durable) {
 		// TODO Auto-generated method stub
-		
+
 	}
 	@Override
 	public boolean isDisconnected() {
 		return disconnected;
 	}
-	
+
 	public boolean isClearSubmitQueue() {
 		return clearSubmitQueue;
 	}
-	
+
 	public boolean isClearStatQueue() {
 		return clearStatQueue;
 	}
-	
+
 	public boolean isStarted() {
 		return started;
 	}
-	
+
 	public boolean isStopped() {
 		return stopped;
 	}
-	
+
 	public void addToStatusSet(U bean) {
 		//No duplicates
 		for (U setBean : statusSet) {
@@ -264,13 +264,15 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 		}
 		statusSet.add(bean);
 	}
-	
+
 	public void addToSubmitQueue(U bean) {
 		submitQueue.add(bean);
 	}
+	@Override
 	public boolean isPauseOnStart() {
 		return pauseOnStart;
 	}
+	@Override
 	public void setPauseOnStart(boolean pauseOnStart) {
 		this.pauseOnStart = pauseOnStart;
 	}
@@ -278,7 +280,7 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	public void awaitStart() {
 		throw new IllegalArgumentException("The method awaitStart() is not implemented for "+getClass().getSimpleName());
 	}
-	
+
 	/**
 	 * Do not prepopulate queues with StatusBeans!
 	 * @param noFill
@@ -286,7 +288,6 @@ public class MockConsumer<U extends StatusBean> implements IConsumer<U> {
 	public static void setNoFill(boolean noFill) {
 		MockConsumer.noFill = noFill;
 	}
-	
+
 
 }
-	

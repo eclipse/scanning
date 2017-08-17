@@ -31,26 +31,26 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 
 	@Test
 	public void twoDevicesOneGettingState() throws Throwable {
-		
+
 		final List<Throwable> exceptions = new ArrayList<>(1);
-		
+
 		// Start writing in thread.
 		configure(device, 10);
 		runDeviceInThread(device, exceptions); // Don't use device returned.
- 
+
 		// In this test thread, we simply keep asking for the state.
-		// We get an instance to the device separately to test two 
+		// We get an instance to the device separately to test two
 		// device connections (although MockService will not do this)
 		final Collection<DeviceState> states = new HashSet<DeviceState>();
 		try {
 			IMalcolmDevice zebra = service.getDevice("zebra");
-			zebra.addMalcolmListener(new IMalcolmListener<MalcolmEventBean>() {				
+			zebra.addMalcolmListener(new IMalcolmListener<MalcolmEventBean>() {
 				@Override
 				public void eventPerformed(MalcolmEvent<MalcolmEventBean> e) {
 					states.add(e.getBean().getDeviceState());
 				}
 			});
-			
+
 			for (int i = 0; i < 10; i++) {
 				System.out.println("Device state is "+zebra.getDeviceState());
 				if (zebra.getDeviceState() == DeviceState.READY) {
@@ -60,26 +60,26 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 			}
 		} finally {
 		}
-		
+
 		if (!states.containsAll(Arrays.asList(new DeviceState[]{DeviceState.ARMED, DeviceState.RUNNING}))){
 			throw new Exception("Not all expected states encountered during run! States found were "+states);
 		}
-		
+
 		if (exceptions.size()>0) throw exceptions.get(0);
 	}
-	
-	
+
+
 	@Test
 	public void manyDevicesManyGettingState() throws Throwable {
-		
+
 		final List<Throwable> exceptions = new ArrayList<>(1);
-		
+
 		// Start writing in thread.
 		configure(device, 10);
 		runDeviceInThread(device, exceptions); // Don't use device returned.
- 
+
 		// In this test thread, we simply keep asking for the state.
-		// We get an instance to the device separately to test two 
+		// We get an instance to the device separately to test two
 		// device connections (although MockService will not do this)
 		final Collection<DeviceState> states = new HashSet<DeviceState>();
 		final ExecutorService   exec   = Executors.newFixedThreadPool(10);
@@ -87,11 +87,12 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 		for (int i = 0; i < 10; i++) { // Ten threads all getting state with separate devices.
 
 			exec.execute(new Runnable() {
+				@Override
 				public void run() {
 
 					try {
 						IMalcolmDevice zebra = service.getDevice("zebra");
-						zebra.addMalcolmListener(new IMalcolmListener<MalcolmEventBean>() {				
+						zebra.addMalcolmListener(new IMalcolmListener<MalcolmEventBean>() {
 							@Override
 							public void eventPerformed(MalcolmEvent<MalcolmEventBean> e) {
 								states.add(e.getBean().getDeviceState());
@@ -115,38 +116,38 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 		exec.shutdown();
 		exec.awaitTermination(20, TimeUnit.SECONDS);
 
-		
-		
-		
+
+
+
 		if (!states.containsAll(Arrays.asList(new DeviceState[]{DeviceState.ARMED, DeviceState.RUNNING}))){
 			throw new Exception("Not all expected states encountered during run! States found were "+states);
 		}
-		
+
 		if (exceptions.size()>0) throw exceptions.get(0);
 	}
 
-		
+
 	@Test
 	public void twoDevicesOneGettingStateWithPausing() throws Throwable {
-		
+
 		final List<Throwable> exceptions = new ArrayList<>(1);
-		
+
 		final Collection<DeviceState> states = new HashSet<DeviceState>();
 		try {
 			// Add listener
 			IMalcolmDevice zebra = service.getDevice("zebra");
-			zebra.addMalcolmListener(new IMalcolmListener<MalcolmEventBean>() {				
+			zebra.addMalcolmListener(new IMalcolmListener<MalcolmEventBean>() {
 				@Override
 				public void eventPerformed(MalcolmEvent<MalcolmEventBean> e) {
 					states.add(e.getBean().getDeviceState());
 				}
 			});
-		
+
 			// Start writing in thread using different device reference.
 			pause1000ResumeLoop(device, 5, 2, 2000, false, false, true); // Run scan in thread, run pause in thread, use separate device connections
 
 			// In this test thread, we simply keep asking for the state.
-			// We get an instance to the device separately to test two 
+			// We get an instance to the device separately to test two
 			// device connections (although MockService will not do this)
 			for (int i = 0; i < 10; i++) {
 				System.out.println("Device state is "+zebra.getDeviceState());
@@ -157,11 +158,11 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 			}
 		} finally {
 		}
-		
+
 		if (!states.containsAll(Arrays.asList(new DeviceState[]{DeviceState.ARMED, DeviceState.RUNNING, DeviceState.PAUSED, DeviceState.SEEKING}))){
 			throw new Exception("Not all expected states encountered during run! States found were "+states);
 		}
-		
+
 		if (exceptions.size()>0) throw exceptions.get(0);
 	}
 
