@@ -6,7 +6,7 @@ import java.lang.reflect.Method;
 import org.eclipse.scanning.api.INameable;
 
 /**
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -14,12 +14,12 @@ public class ModelReflection {
 
 
 	/**
-	 * 
+	 *
 	 * @param model
 	 * @return
 	 */
 	public static final String getName(Object model) {
-		
+
 		if (model instanceof INameable) {
 			return ((INameable)model).getName();
 		}
@@ -30,14 +30,14 @@ public class ModelReflection {
 			return null;
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param model
 	 * @return
 	 */
 	public static final double getTime(Object model) {
-		
+
 		if (model instanceof IDetectorModel) {
 			return ((IDetectorModel)model).getExposureTime();
 		}
@@ -50,16 +50,17 @@ public class ModelReflection {
 	}
 
 	/**
-	 * 
+	 * Returns the value of the field of the given object with the given name, or <code>null</code>
+	 * if no such field exists or the field has a <code>null</code> value
 	 * @param model
-	 * @param name
+	 * @param fieldName
 	 * @return
 	 */
-	public static Object getValue(Object model, String name) {
+	public static Object getValue(Object model, String fieldName) {
 
 		boolean isAccessible = false;
 		try {
-	        Field field = model.getClass().getDeclaredField(name);
+	        Field field = model.getClass().getDeclaredField(fieldName);
 	        isAccessible = field.isAccessible();
 	        try {
 	        	field.setAccessible(true);
@@ -80,6 +81,19 @@ public class ModelReflection {
 			return svalue;
 		}
 		return value.toString();
+	}
+
+	public static String stringifyField(Object model, String fieldName) {
+		Object value = getValue(model, fieldName);
+		if (value != null) {
+			StringBuilder buf = new StringBuilder();
+			buf.append(fieldName);
+			buf.append("=");
+			buf.append(stringify(value));
+			return buf.toString();
+		}
+
+		return null;
 	}
 
 }
