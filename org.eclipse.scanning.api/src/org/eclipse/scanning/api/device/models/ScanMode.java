@@ -29,6 +29,15 @@ public enum ScanMode {
 	 * A scan that is at least partially (an inner-scan) performed
 	 * by hardware (i.e. malcolm) with GDA only performing an outer scan.
 	 */
-	HARDWARE
+	HARDWARE;
+	
+	/**
+	 * Returns a user friendly name, e.g. SOFTWARE -> "Software" 
+	 * @see java.lang.Enum#toString()
+	 */
+	@Override
+	public String toString() {
+		return name().charAt(0) + name().substring(1).toLowerCase();
+	}
 
 }
