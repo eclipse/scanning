@@ -9,7 +9,7 @@ Dependency-Note: Do not depend on org.eclipse.dawnsci.remotedataset.test long te
 Require-Bundle: org.eclipse.scanning.api;bundle-version="1.0.0",
  org.eclipse.scanning.event;bundle-version="1.0.0",
  org.eclipse.scanning.connector.activemq;bundle-version="1.0.0",
- uk.ac.diamond.org.apache.activemq;bundle-version="5.9.0",
+ org.apache.activemq.activemq-osgi;bundle-version="5.15.0",
  org.eclipse.dawnsci.analysis.dataset;bundle-version="1.0.0",
  org.eclipse.scanning.points;bundle-version="1.0.0",
  org.eclipse.january;bundle-version="1.0.0",
