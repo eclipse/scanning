@@ -114,7 +114,8 @@ public abstract class AbstractControl implements INamedNode {
 
 	@Override
 	public String toString() {
-		return getClass().getSimpleName()+" [name=" + name + "]";
+		return "AbstractControl [parentName=" + parentName + ", name=" + name + ", displayName=" + displayName
+				+ ", children=" + Arrays.toString(children) + "]";
 	}
 
 	public void addChild(INamedNode child) {

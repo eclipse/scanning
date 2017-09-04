@@ -13,10 +13,8 @@ package org.eclipse.scanning.device.ui.device.scannable;
 
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jface.viewers.ColumnLabelProvider;
@@ -38,12 +36,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class ControlValueLabelProvider extends ColumnLabelProvider implements IStyledLabelProvider, IPositionListener {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ControlValueLabelProvider.class);
-	
+
 	private IScannableDeviceService cservice;
 	private ControlTreeViewer       viewer;
-	
+
 	public ControlValueLabelProvider(IScannableDeviceService cservice, ControlTreeViewer viewer) {
 		Activator.getStore().setDefault(DevicePreferenceConstants.NUMBER_FORMAT, "##########0.0###");
 		this.cservice = cservice;
@@ -57,7 +55,7 @@ class ControlValueLabelProvider extends ColumnLabelProvider implements IStyledLa
 
 		final String       text       = getText(element);
 		final StyledString styledText = new StyledString(text!=null?text:"");
-		
+
 		INamedNode node = (INamedNode)element;
 		try {
 			if (node instanceof ControlNode) {
@@ -69,34 +67,34 @@ class ControlValueLabelProvider extends ColumnLabelProvider implements IStyledLa
 						styledText.append("    ");
 						styledText.append(scannable.getUnit(), StyledString.DECORATIONS_STYLER);
 					}
-				}				
+				}
 			} else {
-		
+
 				// Intentionally do nothing!
 			}
 		} catch (Exception ne) {
 			String message = ne.getMessage() == null ? "" : ne.getMessage();
 			return styledText.append(message, StyledString.QUALIFIER_STYLER);
 		}
-		
+
 		return styledText;
 	}
-	
+
 	private Map<String, INamedNode>    scannableNodes;
 	private Map<String, IScannable<?>> scannables;
-	
+
 	private void registerListener(IScannable<?> scannable, INamedNode node) {
-		
+
 		if (!(scannable instanceof IPositionListenable)) return;
 		if (scannableNodes==null) scannableNodes = new HashMap<>();
 		if (scannables==null)     scannables     = new ConcurrentHashMap<>();
-		
+
 		String name = scannable.getName();
-		
+
 		if (scannables.containsKey(name)) {
 			((IPositionListenable)scannables.remove(name)).removePositionListener(this);
 		}
-		
+
 		IPositionListenable pl = (IPositionListenable)scannable;
 		pl.addPositionListener(this);
 		scannableNodes.put(name, node);
@@ -110,12 +108,12 @@ class ControlValueLabelProvider extends ColumnLabelProvider implements IStyledLa
 	public void positionChanged(PositionEvent evt) throws ScanningException {
 		updatePosition(evt);
 	}
-	
+
 	@Override
 	public void positionPerformed(PositionEvent evt) throws ScanningException {
 		updatePosition(evt);
 	}
-	
+
 	private void updatePosition(PositionEvent evt) {
 		if (viewer.getViewer().isCellEditorActive()) return;
 		viewer.safeRefresh(scannableNodes.get(evt.getDevice().getName()));
@@ -124,19 +122,20 @@ class ControlValueLabelProvider extends ColumnLabelProvider implements IStyledLa
 	@Override
 	public void dispose() {
 		super.dispose();
-		for (String name : Optional.of(scannables).orElse(Collections.emptyMap()).keySet()) {
-			((IPositionListenable)scannables.remove(name)).removePositionListener(this);
+		if (scannables != null) {
+			for (String name : scannables.keySet()) {
+				((IPositionListenable)scannables.remove(name)).removePositionListener(this);
+			}
 		}
 	}
 
-
 	@Override
 	public String getText(Object element) {
-		
+
 		if(!(element instanceof INamedNode)) return super.getText(element);
-		
+
 		INamedNode node = (INamedNode)element;
-		
+
 		if (cservice==null) return "Server Error";
 		try {
 			if (node instanceof ControlNode) {
@@ -147,12 +146,12 @@ class ControlValueLabelProvider extends ColumnLabelProvider implements IStyledLa
 				}
 
 				Object value = cnode.getValue(viewer.getMode().isDirectlyConnected(), cservice);
-				
+
 				if (value == null) return "!VALUE";
 				if (value instanceof Number) {
 					try {
 						final DecimalFormat format = new DecimalFormat(Activator.getStore().getString(DevicePreferenceConstants.NUMBER_FORMAT));
-						return format.format(value); 
+						return format.format(value);
 					} catch (Exception ne) {
 						logger.warn("Could not format value as a decimal: ", value);
 						return value.toString();
@@ -163,16 +162,16 @@ class ControlValueLabelProvider extends ColumnLabelProvider implements IStyledLa
 				} else if (value instanceof double[]) {
 					return Arrays.toString((double[]) value);
 				}
-				
+
 				return value.toString();
-				
+
 			} else if (node instanceof ControlFileNode) {
 				final ControlFileNode fnode = (ControlFileNode)node;
 				return fnode.getFile();
 			} else if (node instanceof ControlEnumNode) {
 				final ControlEnumNode fnode = (ControlEnumNode)node;
 				return fnode.getValue().toString();
-				
+
 			} else {
 				return ""; // Only controls have values...
 			}
@@ -180,7 +179,7 @@ class ControlValueLabelProvider extends ColumnLabelProvider implements IStyledLa
 			logger.error("Error with value for "+node, ne);
 		    return ne.toString();
 		}
-		
+
 	}
 
 }
