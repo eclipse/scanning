@@ -51,50 +51,50 @@ import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("rawtypes")
 public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, IScanService {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(RunnableDeviceServiceImpl.class);
-	
+
 	/**
 	 * The default Malcolm Hostname can be injected by spring. Otherwise
 	 * this machine will be used for the malcolm host for instance 'beamline'-control.
 	 */
 	public static String defaultMalcolmHostname = null;
-	
+
 	/**
 	 * This service can not be present for some tests which run in OSGi
 	 * but mock the test laster.
 	 */
-	private static IScannableDeviceService deviceConnectorService;	
-	
+	private static IScannableDeviceService deviceConnectorService;
+
 	/**
 	 * This service must be present.
 	 */
 	private static IMalcolmService         malcolmService;
-	
+
 	/**
 	 * Map of device model class to device class.
 	 * NOTE This is not unmodifiable. Entries may be made after service create time. For instance
 	 * when the spring files are parsed.
 	 */
 	private static final Map<Class<?>, Class<? extends IRunnableDevice>> modelledDevices;
-	
+
 	/**
 	 * Map of device name to created device. Used to avoid
 	 * recreating non-virtual devices many times.
-	 * 
+	 *
 	 * TODO Should this be populated by spring?
 	 */
 	private static final Map<String, IRunnableDevice> namedDevices;
-	
-	
+
+
 	// This field is used to provide the getActiveScanner() method on the service.
 	// It should not be accessed from elsewhere.
 	private static IRunnableDevice<?> currentScanningDevice;
 
-	
+
 	// Use a factory pattern to register the types.
 	// This pattern can always be extended by extension points
-	// to allow point generators to be dynamically registered. 
+	// to allow point generators to be dynamically registered.
 	static {
 		System.out.println("Starting device service");
 		modelledDevices = new HashMap<>(7);
@@ -113,30 +113,30 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 			logger.error("Problem reading extension points, non-fatal as spring may be used.", e);
 		}
 	}
-	
+
 	// Test, we clear the devices so that each test is clean
 	public RunnableDeviceServiceImpl(IScannableDeviceService deviceConnectorService) {
 		this();
-		RunnableDeviceServiceImpl.deviceConnectorService = deviceConnectorService;	
+		RunnableDeviceServiceImpl.deviceConnectorService = deviceConnectorService;
 		modelledDevices.clear();
 		modelledDevices.put(ScanModel.class,         AcquisitionDevice.class);
 		namedDevices.clear();
 	}
-	
-	
+
+
 	private static void readExtensions() throws CoreException {
-		
+
 		if (Platform.getExtensionRegistry()!=null) {
 			final IConfigurationElement[] eles = Platform.getExtensionRegistry().getConfigurationElementsFor("org.eclipse.scanning.api.device");
 			for (IConfigurationElement e : eles) {
-								
+
 				if (e.getName().equals("device")) {
-					
+
 					final IRunnableDevice device = (IRunnableDevice)e.createExecutableExtension("class");
 					String name = e.getAttribute("name");
 					if (name == null) name = e.getAttribute("id");
 					device.setName(name);
-					
+
 	                // If the model has a name we send it from the extension point.
 					final Object     mod = e.createExecutableExtension("model");
 	                try {
@@ -147,7 +147,7 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 	                }
 
 	                if (!device.getRole().isVirtual()) { // We have to make a good instance which will be used in scanning.
-	                	
+
 						final DeviceInformation<?> info   = new DeviceInformation<>();
 						info.setLabel(e.getAttribute("label"));
 						info.setDescription(e.getAttribute("description"));
@@ -157,11 +157,11 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 						if (device instanceof AbstractRunnableDevice) {
 							AbstractRunnableDevice adevice = (AbstractRunnableDevice)device;
 							adevice.setDeviceInformation(info);
-							
+
 							if (adevice.getModel()==null) adevice.setModel(mod); // Empty Model
 						}
 	                }
-					
+
 					registerDevice(mod.getClass(), device);
 
 				} else {
@@ -170,7 +170,7 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 			}
 		}
 	}
-	
+
 	@Override
 	public <T> void register(IRunnableDevice<T> device) {
 		registerDevice(device.getModel().getClass(), device);
@@ -190,12 +190,12 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 		return new ScannablePositioner(deviceConnectorService);
 	}
 
-	
+
 	@Override
 	public final <T> IRunnableDevice<T> createRunnableDevice(T model) throws ScanningException {
         return createRunnableDevice(model, null, true);
 	}
-	
+
 
 	@Override
 	public <T> IRunnableDevice<T> createRunnableDevice(T model, boolean configure) throws ScanningException {
@@ -206,27 +206,27 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 	public final <T> IRunnableDevice<T> createRunnableDevice(T model, IPublisher<ScanBean> publisher) throws ScanningException {
         return createRunnableDevice(model, publisher, true);
 	}
-	
+
 	@Override
 	public final <T> IRunnableDevice<T> createRunnableDevice(T model, IPublisher<ScanBean> publisher, boolean configure) throws ScanningException {
-				
+
 		try {
 			if (deviceConnectorService==null) deviceConnectorService = getDeviceConnector();
-			
+
 			final IRunnableDevice<T> scanner = createDevice(model);
 			if (scanner instanceof AbstractRunnableDevice) {
 				AbstractRunnableDevice<T> ascanner = (AbstractRunnableDevice<T>)scanner;
 				ascanner.setRunnableDeviceService(this);
                 ascanner.setConnectorService(deviceConnectorService);
                 ascanner.setPublisher(publisher); // May be null
-                
+
                 // If the model has a name for the device, we use
                 // it automatically.
                 try {
                 	String name = null;
                 	// Try with INameable first as faster than reflection
-                	if (model instanceof INameable) name = ((INameable) model).getName(); 
-                	
+                	if (model instanceof INameable) name = ((INameable) model).getName();
+
                 	// Try with reflection
                 	if (name == null) {
 	                	final Method getName = model.getClass().getMethod("getName");
@@ -237,7 +237,7 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
                 	// getName() is not compulsory in the model
                 }
 			}
-			
+
 			if (configure) {
 				AnnotationManager manager = new AnnotationManager(SequencerActivator.getInstance());
 				manager.addDevices(scanner);
@@ -245,20 +245,20 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 				scanner.configure(model);
 				manager.invoke(PostConfigure.class, model);
 			}
-			
+
 			if (!scanner.getRole().isVirtual()) {
 				namedDevices.put(scanner.getName(), scanner);
 			}
-			
+
 			return scanner;
-			
+
 		} catch (ScanningException s) {
 			throw s;
 		} catch (Exception ne) {
 			throw new ScanningException(ne);
 		}
 	}
-	
+
 	@Override
 	public <T> IRunnableDevice<T> getRunnableDevice(String name) throws ScanningException {
 		return getRunnableDevice(name, null);
@@ -266,7 +266,7 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 
 	@Override
 	public <T> IRunnableDevice<T> getRunnableDevice(String name, IPublisher<ScanBean> publisher) throws ScanningException {
-		
+
 		@SuppressWarnings("unchecked")
 		IRunnableDevice<T> device = (IRunnableDevice<T>)namedDevices.get(name);
 		if (device!=null && publisher!=null && device instanceof AbstractRunnableDevice) {
@@ -275,17 +275,17 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 		}
 		return device;
 	}
-	
+
 	private <T> IRunnableDevice<T> createDevice(T model) throws ScanningException, InstantiationException, IllegalAccessException, URISyntaxException, UnknownHostException {
-		
+
 		final IRunnableDevice<T> scanner;
-		
+
 		if (modelledDevices.containsKey(model.getClass())) {
 			@SuppressWarnings("unchecked")
 			final Class<IRunnableDevice<T>> clazz = (Class<IRunnableDevice<T>>)modelledDevices.get(model.getClass());
 			if (clazz == null) throw new ScanningException("The model '"+model.getClass()+"' does not have a device registered for it!");
 			scanner = clazz.newInstance();
-			
+
 			// TODO Might have other extension point driven devices
 		} else {
 			throw new ScanningException("The model '"+model.getClass()+"' does not have a device registered for it!");
@@ -301,17 +301,17 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 	public static void setDeviceConnectorService(IScannableDeviceService connectorService) {
 		RunnableDeviceServiceImpl.deviceConnectorService = connectorService;
 	}
-	
+
 	private BundleContext context;
 
 	public void start(BundleContext context) {
 		this.context = context;
 	}
-	
+
 	public void stop() {
 		this.context = null;
 	}
-	
+
     /**
      * Try to get the connector service or throw an exception
      * @return
@@ -345,7 +345,7 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 	public void _register(Class<?> model, Class<? extends IRunnableDevice> device) {
 		modelledDevices.put(model, device);
 	}
-	
+
 	/**
 	 * Used for testing only
 	 * @param model
@@ -371,47 +371,41 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 	}
 
 	private Collection<DeviceInformation<?>> getDeviceInformation(boolean getNonAliveDeviceInformation) throws ScanningException {
-		
+
 		Collection<DeviceInformation<?>> ret = new ArrayList<>();
 		final Collection<String> names = getRunnableDeviceNames();
 		for (String name : names) {
 			try {
 				if (name==null) continue;
-	
+
 				IRunnableDevice<Object> device = getRunnableDevice(name);
-				if (device==null)  continue;		
-				if (!(device instanceof AbstractRunnableDevice)) continue;
-				DeviceInformation<?> info;
-				if (getNonAliveDeviceInformation) {
-					info = ((AbstractRunnableDevice<?>)device).getDeviceInformationIncludeNonAlive(true);
-				} else {
-					info = ((AbstractRunnableDevice<?>)device).getDeviceInformation();
+				if (device instanceof AbstractRunnableDevice) {
+					DeviceInformation<?> info = ((AbstractRunnableDevice<?>)device).getDeviceInformation(getNonAliveDeviceInformation);
+					ret.add(info);
 				}
-				
-				ret.add(info);
 			} catch (Exception ex) {
 				logger.warn("Error getting device info for : " + name);
 			}
 		}
 		return ret;
 	}
-	
+
 	@Override
 	public Collection<DeviceInformation<?>> getDeviceInformation(final DeviceRole role) throws ScanningException {
 		Collection<DeviceInformation<?>> infos = getDeviceInformation();
 		return infos.stream().filter(info -> info.getDeviceRole()==role).collect(Collectors.toList());
 	}
-	
+
 	@Override
 	public DeviceInformation<?> getDeviceInformation(String name) throws ScanningException {
 		IRunnableDevice<Object> device = getRunnableDevice(name);
-		if (device==null)  return null;		
+		if (device==null)  return null;
 		if (!(device instanceof AbstractRunnableDevice)) return null;
 		return ((AbstractRunnableDevice<?>)device).getDeviceInformation();
 	}
 
 	private Collection<Object> participants;
-	
+
 	@Override
 	public void addScanParticipant(Object device) {
 		if (participants==null) participants = Collections.synchronizedSet(new LinkedHashSet<>(7));
@@ -430,7 +424,7 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 		}
 		return participants;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> IRunnableDevice<T> getActiveScanner() {

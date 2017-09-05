@@ -13,12 +13,14 @@ package org.eclipse.scanning.api.event.scan;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.scanning.api.IModelProvider;
 import org.eclipse.scanning.api.MonitorRole;
 import org.eclipse.scanning.api.device.models.DeviceRole;
 import org.eclipse.scanning.api.device.models.ScanMode;
+import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,6 +134,17 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	 *
 	 */
 	private Set<ScanMode> supportedScanModes;
+
+	/**
+	 * The requested attributes of this device.<ul>
+	 * <li>If {@link DeviceRequest#getAttributeName()} is non-<code>null</code> this map will contain only
+	 *   the attribute of the device with the value returned by that method;<li>
+	 * <li>If {@link DeviceRequest#isGetAllAttributes()} is <code>true</code>, this map will contain all
+	 * attributes of the device;<li>
+	 * <li>If neither of the above cases hold, this field will be <code>null</code><li>
+	 * </ul>
+	 */
+	private Map<String, IDeviceAttribute<?>> attributes = null;
 
 	/**
 	 * A device is 'alive' if it exists and is responding.
@@ -252,6 +265,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 		result = prime * result + ((supportedScanModes == null) ? 0 : supportedScanModes.hashCode());
 		result = prime * result + ((unit == null) ? 0 : unit.hashCode());
 		result = prime * result + ((upper == null) ? 0 : upper.hashCode());
+		result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
 		return result;
 	}
 
@@ -264,7 +278,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		DeviceInformation other = (DeviceInformation) obj;
+		DeviceInformation<?> other = (DeviceInformation<?>) obj;
 		if (activated != other.activated)
 			return false;
 		if (busy != other.busy)
@@ -333,6 +347,11 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 			if (other.upper != null)
 				return false;
 		} else if (!upper.equals(other.upper))
+			return false;
+		if (attributes == null) {
+			if (other.attributes != null)
+				return false;
+		} else if (!attributes.equals(other.attributes))
 			return false;
 		return true;
 	}
@@ -442,6 +461,14 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	public void setMonitorRole(MonitorRole monitorRole) {
 		logger.info("setMonitorRole({}) was {} ({})", monitorRole, this.monitorRole, this);
 		this.monitorRole = monitorRole;
+	}
+
+	public Map<String, IDeviceAttribute<?>> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, IDeviceAttribute<?>> attributes) {
+		this.attributes = attributes;
 	}
 
 }

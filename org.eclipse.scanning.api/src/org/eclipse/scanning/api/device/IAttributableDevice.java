@@ -18,9 +18,9 @@ import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
  * An interface for devices that have attributes that can be got and set.
- * 
+ *
  * @author Matt Taylor
- * 
+ *
  */
 public interface IAttributableDevice {
 
@@ -31,19 +31,19 @@ public interface IAttributableDevice {
 	 * @throws ScanningException if the attribute cannot be retrieved for any reason
 	 */
 	public <T> IDeviceAttribute<T> getAttribute(String attributeName) throws ScanningException;
-	
+
 	/**
 	 * Gets a list of all attributes on the device.
-	 * @return all attributes
-	 * @throws ScanningException if the attributes cannot be retrieved for any reason 
+	 * @return all attributes, never <code>null</code>
+	 * @throws ScanningException if the attributes cannot be retrieved for any reason
 	 */
 	public List<IDeviceAttribute<?>> getAllAttributes() throws ScanningException;
-	
+
 	/**
 	 * Gets the value of an attribute on the device
-	 * @param attributeName 
+	 * @param attributeName
 	 * @return attribute value
-	 * @throws ScanningException if the attribute value cannot be retrieved for any reason 
+	 * @throws ScanningException if the attribute value cannot be retrieved for any reason
 	 */
 	public <T> T getAttributeValue(String attributeName) throws ScanningException;
 
