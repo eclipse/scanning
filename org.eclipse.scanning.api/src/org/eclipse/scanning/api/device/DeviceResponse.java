@@ -11,6 +11,9 @@
  *******************************************************************************/
 package org.eclipse.scanning.api.device;
 
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+
 import java.util.Collection;
 
 import org.eclipse.scanning.api.INameable;
@@ -19,13 +22,14 @@ import org.eclipse.scanning.api.ITerminatable;
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.MonitorRole;
 import org.eclipse.scanning.api.annotation.ui.DeviceType;
-import org.eclipse.scanning.api.device.models.IDetectorModel;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.core.IResponseProcess;
 import org.eclipse.scanning.api.event.scan.DeviceAction;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.event.scan.DeviceRequest;
+import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
+import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
  * TODO FIXME Is the idea of having request/response calls correct for exposing
@@ -34,27 +38,27 @@ import org.eclipse.scanning.api.event.scan.DeviceRequest;
  * 1. Pushes to much to client because it has make/receive request/responses.
  * 2. Lot of specific code around a given service in the client. Would be nicer to discover services
  *    using the original service directly, but it going back to the server...
- * 
+ *
  * Advantages:
  * 1. Can work for any client, python and javascript included
  * 2. No JSON serialization issues
- * 
- * 
+ *
+ *
  * @author Matthew Gerring
  *
  */
 public class DeviceResponse implements IResponseProcess<DeviceRequest> {
-		
+
 	private IRunnableDeviceService    dservice;
 	private DeviceRequest             bean;
 	private IPublisher<DeviceRequest> publisher;
 	private IScannableDeviceService   cservice;
 
-	public DeviceResponse(IRunnableDeviceService  dservice, 
-			              IScannableDeviceService cservice, 
-			              DeviceRequest           bean, 
+	public DeviceResponse(IRunnableDeviceService  dservice,
+			              IScannableDeviceService cservice,
+			              DeviceRequest           bean,
 			              IPublisher<DeviceRequest> statusNotifier) {
-		
+
 		this.dservice = dservice;
 		this.cservice = cservice;
 		this.bean     = bean;
@@ -80,14 +84,14 @@ public class DeviceResponse implements IResponseProcess<DeviceRequest> {
 				processRunnables(request, dservice);
 			}
 			return request;
-			
+
 		} catch (ModelValidationException ne) {
 			DeviceRequest error = new DeviceRequest();
 			error.merge(request);
 			error.setErrorMessage(ne.getMessage());
 			error.setErrorFieldNames(ne.getFieldNames());
 			return error;
-			
+
 		} catch (Exception ne) {
 			ne.printStackTrace();
 			DeviceRequest error = new DeviceRequest();
@@ -96,15 +100,15 @@ public class DeviceResponse implements IResponseProcess<DeviceRequest> {
 			return error;
 		}
 	}
-	
+
 	private static void processScannables(DeviceRequest request, IScannableDeviceService cservice) throws Exception {
-		
+
 		if (request.getDeviceName()!=null) { // Named device required
-            
+
 			IScannable<Object> device = cservice.getScannable(request.getDeviceName());
 			DeviceAction action = request.getDeviceAction();
 			if (action==DeviceAction.SET && request.getDeviceValue()!=null) {
-				
+
 				// Not sure if using type is a good design idea.
 				if (request.getDeviceValue() instanceof MonitorRole) {
 					device.setMonitorRole((MonitorRole)request.getDeviceValue());
@@ -116,35 +120,35 @@ public class DeviceResponse implements IResponseProcess<DeviceRequest> {
 					 * for this call to return before position events are sent out.
 					 * FUDGE warning
 					 */
-					Thread.sleep(10); 
+					Thread.sleep(10);
 					 /* End warning */
 				}
 			} else if (action==DeviceAction.ACTIVATE) {
 				device.setActivated((Boolean)request.getDeviceValue());
 			}
-			
-			
+
+
 			if (action!=null && action.isTerminate() && device instanceof ITerminatable) {
 				ITerminatable tdevice = (ITerminatable)device;
 				tdevice.terminate(action.to());
 			}
-			
+
 			request.setDeviceValue(device.getPosition());
 
 			DeviceInformation<?> info = new DeviceInformation<Object>(device.getName());
 			merge(info, device);
 			request.addDeviceInformation(info);
-			
+
 		} else {
 			final Collection<String> names = cservice.getScannableNames();
 			for (String name : names) {
-	
+
 				if (name==null) continue;
 				if (request.getDeviceName()!=null && !name.matches(request.getDeviceName())) continue;
-	
+
 				IScannable<?> device = cservice.getScannable(name);
 				if (device==null) throw new EventException("There is no created device called '"+name+"'");
-	
+
 				DeviceInformation<?> info = new DeviceInformation<Object>(name);
 				merge(info, device);
 				request.addDeviceInformation(info);
@@ -156,7 +160,7 @@ public class DeviceResponse implements IResponseProcess<DeviceRequest> {
 	private static void merge(DeviceInformation<?> info, IScannable<?> device) throws Exception {
 		info.setLevel(device.getLevel());
 		info.setUnit(device.getUnit());
-        info.setUpper(device.getMaximum());	
+        info.setUpper(device.getMaximum());
         info.setLower(device.getMinimum());
         info.setPermittedValues(device.getPermittedValues());
         info.setActivated(device.isActivated());
@@ -164,13 +168,13 @@ public class DeviceResponse implements IResponseProcess<DeviceRequest> {
  	}
 
 	private static void processRunnables(DeviceRequest request, IRunnableDeviceService dservice) throws Exception {
-		
+
 		if (request.getDeviceName()!=null) { // Named device required
 			IRunnableDevice<Object> device = dservice.getRunnableDevice(request.getDeviceName());
 			if (device==null) throw new EventException("There is no created device called '"+request.getDeviceName()+"'");
-			
+
 			// TODO We should have a much more reflection based way of
-			// calling arbitrary methods. 
+			// calling arbitrary methods.
 			if (request.getDeviceAction()!=null) {
 				DeviceAction action = request.getDeviceAction();
 				if (action.isTerminate() && device instanceof ITerminatable) {
@@ -197,22 +201,21 @@ public class DeviceResponse implements IResponseProcess<DeviceRequest> {
 					}
 				}
 			}
-			
-			DeviceInformation<?> info = ((AbstractRunnableDevice<?>)device).getDeviceInformation();
-			request.addDeviceInformation(info);
-			
+
+			addDeviceInformationAndAttributes(device, request);
 		} else if (request.getDeviceModel()!=null) { // Modelled device created
-			
+
 			String name = request.getDeviceModel() instanceof INameable
                         ? ((INameable)request.getDeviceModel()).getName()
                         : null;
 			IRunnableDevice<Object> device = name != null ? dservice.getRunnableDevice(name) : null;
-			if (device==null) dservice.createRunnableDevice(request.getDeviceModel(), request.isConfigure());
-			DeviceInformation<?> info = ((AbstractRunnableDevice<?>)device).getDeviceInformation();
-			request.addDeviceInformation(info);
-			
+			if (device == null) {
+				device = dservice.createRunnableDevice(request.getDeviceModel(), request.isConfigure());
+			}
+			addDeviceInformationAndAttributes(device, request);
+
 		} else {  // Device list needed.
-			
+
 			Collection<DeviceInformation<?>> info;
 			if (request.isIncludeNonAlive()) {
 				info = dservice.getDeviceInformationIncludingNonAlive();
@@ -222,4 +225,25 @@ public class DeviceResponse implements IResponseProcess<DeviceRequest> {
 			request.setDevices(info);
 		}
 	}
+
+	private static void addDeviceInformationAndAttributes(
+			IRunnableDevice<Object> device, DeviceRequest request) throws ScanningException {
+		// get the device information and set it in the request
+		DeviceInformation<?> info = ((AbstractRunnableDevice<?>)device).getDeviceInformation();
+		request.addDeviceInformation(info);
+
+		// check this device can have attribute, if so cast it
+		if (!(device instanceof IAttributableDevice)) return;
+		IAttributableDevice attrDevice = (IAttributableDevice) device;
+
+		if (request.isGetAllAttributes()) {
+			// convert the list of attributes to a map and set in the request
+			request.setAttributes(attrDevice.getAllAttributes().stream()
+					.collect(toMap(IDeviceAttribute::getName, identity())));
+		} else if (request.getAttributeName() != null) {
+			// add the single attribute with the given name - note: exception thrown if no such attribute
+ 			request.addAttribute(attrDevice.getAttribute(request.getAttributeName()));
+		}
+	}
+
 }

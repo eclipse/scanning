@@ -23,7 +23,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	MappingScanTest.class,
 	AnyBeanEventTest.class,
 	HeartbeatTest.class,
-	RequesterTest.class,
+	DeviceRequestTest.class,
 	AcquireRequestTest.class
 	// MConsumerTest.class  Takes too long! TODO Make shorter
 })
