@@ -264,7 +264,15 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 						nexusObjectProvidersForType.add(nexusProvider);
 					}
 				} catch (NexusException e) {
-					throw new ScanningException("Cannot create device: " + e.getMessage(), e);
+					final String deviceName = (nexusDevice instanceof INameable) ? ((INameable) nexusDevice).getName() : "(unknown device)";
+					if (deviceType == ScanRole.MONITOR_PER_SCAN) {
+						// A failure to get a Nexus object for a per-scan monitor is not regarded as fatal,
+						// so just warn the user.
+						logger.warn("Cannot create per-scan monitor {}: {}", deviceName, e.getMessage());
+					} else {
+						// For all other types of device throw an exception
+						throw new ScanningException("Cannot create device: " + deviceName, e);
+					}
 				}
 			}
 
