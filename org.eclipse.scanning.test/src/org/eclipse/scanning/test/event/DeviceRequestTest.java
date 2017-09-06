@@ -332,4 +332,15 @@ public class DeviceRequestTest extends BrokerTest {
 		assertEquals(0, totalSteps.getValue());
 	}
 
+	@Test
+	public void testGetUnknownAttribute() throws Exception {
+		DeviceRequest req = new DeviceRequest();
+		req.setDeviceName("malcolm");
+		req.setAttributeName("unknown");
+		DeviceRequest res = requester.post(req);
+		assertNotNull(res);
+		assertTrue(res.getAttributes() == null || res.getAttributes().isEmpty());
+		assertEquals("No such attribute: unknown", res.getErrorMessage());
+	}
+
 }

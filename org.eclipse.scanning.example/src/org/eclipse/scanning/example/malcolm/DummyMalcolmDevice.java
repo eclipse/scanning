@@ -797,6 +797,9 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 
 		@SuppressWarnings("unchecked")
 		IDeviceAttribute<T> attribute = (IDeviceAttribute<T>) allAttributes.get(attributeName);
+		if (attribute == null) {
+			throw new MalcolmDeviceException("No such attribute: " + attributeName);
+		}
 		return attribute;
 	}
 
