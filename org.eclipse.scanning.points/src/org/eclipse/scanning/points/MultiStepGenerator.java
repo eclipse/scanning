@@ -33,7 +33,7 @@ class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
 
 	@Override
 	public boolean isScanPointGeneratorFactory() {
-		return false;
+		return true;
 	}
 
 	@Override
