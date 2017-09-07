@@ -142,23 +142,30 @@ public class Filter implements IFilter<String> {
 
 	@Override
 	public List<String> filter(final Collection<String> items) {
+		final List<String> ret = new ArrayList<>(items);
 
-		List<String> ret            = new ArrayList<>(items);
-		Collection<String> excludes = match(getExcludes(), items);
-		ret.removeAll(excludes);
-		Collection<String> includes = match(getIncludes(), items);
-
-		Collection<String> done = new HashSet<>();
-		for (final String item : includes) {
-
-			if (done.contains(item)) continue;
-			int ecount = (int)ret.stream().filter(t->t.equals(item)).count();
-			int icount = (int)includes.stream().filter(t->t.equals(item)).count();
-			ret.addAll(Arrays.stream(new String[icount-ecount]).map(nothing->item).collect(Collectors.toList()));
-
-			done.add(item);
+		// Process excludes
+		final List<String> excludePatterns = getExcludes();
+		if (excludePatterns != null) {
+			final Collection<String> excluded = match(excludePatterns, items);
+			ret.removeAll(excluded);
 		}
 
+		// Process includes
+		final List<String> includePatterns = getIncludes();
+		if (includePatterns != null) {
+			final Collection<String> included = match(includePatterns, items);
+			final Collection<String> done = new HashSet<>();
+
+			for (final String item : included) {
+				if (done.contains(item)) continue;
+				int ecount = (int)ret.stream().filter(t->t.equals(item)).count();
+				int icount = (int)included.stream().filter(t->t.equals(item)).count();
+				ret.addAll(Arrays.stream(new String[icount-ecount]).map(nothing->item).collect(Collectors.toList()));
+
+				done.add(item);
+			}
+		}
 		return ret;
 	}
 
