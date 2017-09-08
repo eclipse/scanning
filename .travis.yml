@@ -57,7 +57,7 @@ before_install:
  
 # Just needed for travis build, not if making an IDE version. No need to copy this if doing
 # a manual checkout because uk.ac.diamond.jython is in the target or an appropriate OSGi jython bundle.
-  - git clone --depth=50 --branch=master https://github.com/openGDA/diamond-jython.git ../../diamond-jython
+  - git clone --depth=50 --branch=gda-9.5 https://github.com/openGDA/diamond-jython.git ../../diamond-jython
  
 # Only needed for submodules which we are not currently using.
 # Replace the SSH URL with the public URL, then initialize submodules
