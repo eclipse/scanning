@@ -38,7 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MultiStepComposite extends Composite {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(MultiStepComposite.class);
 
 	// UI
@@ -47,23 +47,23 @@ public class MultiStepComposite extends Composite {
 	private IScannableDeviceService             scannableConnectorService;
 	private StepModelComposite                  stepComposite;
 
-	public MultiStepComposite(Composite parent, int style) throws ScanningException {
+	public MultiStepComposite(Composite parent, int style) {
 		super(parent, style);
-		
+
 		setLayout(new GridLayout(2, false));
-		
+
 		Label label = new Label(this, SWT.NONE);
 		label.setText("Scannable");
-		
+
 		this.name = new ComboWrapper(this, SWT.READ_ONLY);
 		name.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		name.addValueListener(new ValueAdapter("unitUpdater") {			
+		name.addValueListener(new ValueAdapter("unitUpdater") {
 			@Override
 			public void valueChangePerformed(ValueEvent e) {
 				updateUnits(e.getValue());
 			}
 		});
-			
+
 		// List of ExampleItems
 		this.steps = new VerticalListEditor<>(this, SWT.NONE);
 		steps.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
@@ -71,18 +71,18 @@ public class MultiStepComposite extends Composite {
 		steps.setMaxItems(10);
 		steps.setEditorClass(StepModel.class); // Must match generic!
 		steps.setBeanConfigurator((bean, previous, context)->contiguous(bean, previous));
-		steps.setListHeight(80);		
+		steps.setListHeight(80);
 		steps.setRequireSelectionPack(false);
 		steps.setTemplateName("Step");
 		steps.setNameField("label");
-		
+
 		stepComposite = new StepModelComposite(this, SWT.NONE);
 		stepComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
-		
+
 		steps.setEditorUI(stepComposite);
 
 	}
-	
+
 	public boolean updateUnits(Object value) {
 		if (value==null) return false;
 		if (scannableConnectorService==null) return false;
@@ -100,23 +100,23 @@ public class MultiStepComposite extends Composite {
 
 	@Inject
 	public void setScannableService(IScannableDeviceService service, MultiStepModel model) throws ScanningException {
-		
+
 		this.scannableConnectorService = service;
 		List<String> names = service.getScannableNames();
 		List<String> items = IFilterService.DEFAULT.filter("org.eclipse.scanning.scannableFilter", names);
 		Collections.sort(items, new SortNatural<>(false));
 		name.setItems(items.toArray(new String[items.size()]));
-		if (model.getName()!=null && items!=null) {
+		if (model.getName()!=null) {
 			int index = items.indexOf(model.getName());
 			name.select(index);
 		}
 		getParent().layout(new Control[]{this});
 	}
 
-	private void contiguous(StepModel bean, StepModel previous) {		
-		
-		bean.setStart(previous!=null?previous.getStop():10000);
-		bean.setStop(bean.getStart()+10000);
+	private void contiguous(StepModel bean, StepModel previous) {
+
+		bean.setStart(previous!=null?previous.getStop():10);
+		bean.setStop(bean.getStart()+10);
 		bean.setName(Optional.of(getName().getValue()).orElse("").toString());
 		bean.setStep((bean.getStop()-bean.getStart())/10d);
 	}
@@ -128,7 +128,7 @@ public class MultiStepComposite extends Composite {
 	public ComboWrapper getName() {
 		return name;
 	}
-	
+
 	public void setNameComboEnabled(boolean enabled) {
 		name.setEnabled(enabled);
 	}
