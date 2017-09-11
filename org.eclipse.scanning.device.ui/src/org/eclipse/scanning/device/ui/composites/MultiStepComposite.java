@@ -102,15 +102,31 @@ public class MultiStepComposite extends Composite {
 	public void setScannableService(IScannableDeviceService service, MultiStepModel model) throws ScanningException {
 
 		this.scannableConnectorService = service;
-		List<String> names = service.getScannableNames();
-		List<String> items = IFilterService.DEFAULT.filter("org.eclipse.scanning.scannableFilter", names);
-		Collections.sort(items, new SortNatural<>(false));
-		name.setItems(items.toArray(new String[items.size()]));
-		if (model.getName()!=null) {
+		List<String> items = getScannablesList(true);
+		if (model.getName()!= null) {
+			if (!items.contains(model.getName())) {
+				items = getScannablesList(false);
+			}
+			populateComboBox(items);
 			int index = items.indexOf(model.getName());
 			name.select(index);
+		} else {
+			populateComboBox(items);
 		}
 		getParent().layout(new Control[]{this});
+	}
+
+	private List<String> getScannablesList(boolean usingFilter) throws ScanningException {
+		List<String> names = scannableConnectorService.getScannableNames();
+		if (usingFilter) {
+			names = IFilterService.DEFAULT.filter("org.eclipse.scanning.scannableFilter", names);
+		}
+		return names;
+	}
+
+	private void populateComboBox(List<String> items) {
+		Collections.sort(items, new SortNatural<>(false));
+		name.setItems(items.toArray(new String[items.size()]));
 	}
 
 	private void contiguous(StepModel bean, StepModel previous) {
