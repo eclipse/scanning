@@ -42,10 +42,11 @@ import org.eclipse.scanning.example.Services;
  * value of 0 if the point (x, y) is in the Mandelbrot set, and greater than zero otherwise.
  * <p>
  * Note: values will always be high if used at (x, y) positions more than 2 units away from the origin.
+ *
  */
 public class MandelbrotDetector extends AbstractRunnableDevice<MandelbrotModel> implements IWritableDetector<MandelbrotModel>, INexusDevice<NXdetector> {
 
-	// Field names to be used in the NeXus file 
+	// Field names to be used in the NeXus file
 	private static final String FIELD_NAME_VALUE = "value";
 	private static final String FIELD_NAME_SPECTRUM = "spectrum";
 	private static final String FIELD_NAME_SPECTRUM_AXIS = "spectrum_axis";
@@ -68,7 +69,7 @@ public class MandelbrotDetector extends AbstractRunnableDevice<MandelbrotModel> 
 		this.model = new MandelbrotModel();
 		setDeviceState(DeviceState.READY);
 	}
-	
+
 	@ScanFinally
 	public void clean() {
 		image     = null;
@@ -105,7 +106,7 @@ public class MandelbrotDetector extends AbstractRunnableDevice<MandelbrotModel> 
 			nexusProvider.addAxisDataFieldForPrimaryDataField(FIELD_NAME_REAL_AXIS, NXdetector.NX_DATA, scanRank);
 			nexusProvider.addAxisDataFieldForPrimaryDataField(FIELD_NAME_IMAGINARY_AXIS, NXdetector.NX_DATA, scanRank + 1);
 		}
-		
+
 		if (model.isSaveSpectrum())nexusProvider.addAxisDataFieldForPrimaryDataField(FIELD_NAME_SPECTRUM_AXIS, FIELD_NAME_SPECTRUM, scanRank);
 
 		return nexusProvider;
@@ -152,7 +153,7 @@ public class MandelbrotDetector extends AbstractRunnableDevice<MandelbrotModel> 
 		if (model.isSaveSpectrum()) detector.setDataset(FIELD_NAME_SPECTRUM_AXIS, DatasetFactory.createLinearSpace(0.0, model.getMaxRealCoordinate(), model.getPoints(), Dataset.FLOAT64));
 
 		Attributes.registerAttributes(detector, this);
-		
+
 		return detector;
 	}
 
@@ -248,7 +249,7 @@ public class MandelbrotDetector extends AbstractRunnableDevice<MandelbrotModel> 
 			y = yStart + yIndex * yStep;
 			IDataset line = calculateJuliaSetLine(a, b, y, xStart, xStop, columns);
 			for (int x = 0; x < line.getSize(); x++) {
-				juliaSet.set(line.getObject(x), yIndex, x);	
+				juliaSet.set(line.getObject(x), yIndex, x);
 			}
 		}
 		return juliaSet;
@@ -308,7 +309,7 @@ public class MandelbrotDetector extends AbstractRunnableDevice<MandelbrotModel> 
 	 * First checks if noise is enabled, if not just returns the value. Then checks if the exposure is greater than the
 	 * "noise free exposure" if it is, return the value unchanged. Finally if noise is enabled and the exposure time is
 	 * below the noise free exposure time then noise will be added proportional to the exposure time.
-	 * 
+	 *
 	 * @param value
 	 * @return value with noise added, if model specifies it
 	 */
