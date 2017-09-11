@@ -126,6 +126,10 @@ public class ControlTreeViewer {
 
 	private static final Logger logger = LoggerFactory.getLogger(ControlTreeViewer.class);
 
+	public static final String ACTION_ID_ADD_GROUP = "add_group";
+	public static final String ACTION_ID_ADD_CONTROL = "add_control";
+	public static final String ACTION_ID_REMOVE_ELEMENT = "remove_element";
+
 	// Services
 	private final IScannableDeviceService cservice;
 
@@ -265,6 +269,7 @@ public class ControlTreeViewer {
 				edit(nnode, 0);
 			}
 		};
+		addGroup.setId(ACTION_ID_ADD_GROUP);
 
 		// Action to add a new ControlNode
 		final IAction addNode = new Action("Add control", Activator.getImageDescriptor("icons/ui-toolbar--plus.png")) {
@@ -274,6 +279,7 @@ public class ControlTreeViewer {
 			}
 		};
 		addNode.setEnabled(defaultGroupName != null);
+		addNode.setId(ACTION_ID_ADD_CONTROL);
 
 		// Action to remove the currently selected ControlNode or ControlGroup
 		final IAction removeNode = new Action("Remove", Activator.getImageDescriptor("icons/ui-toolbar--minus.png")) {
@@ -283,6 +289,7 @@ public class ControlTreeViewer {
 			}
 		};
 		removeNode.setEnabled(false);
+		removeNode.setId(ACTION_ID_REMOVE_ELEMENT);
 
 		ViewUtil.addGroups("add", mans, addGroup, addNode, removeNode);
 

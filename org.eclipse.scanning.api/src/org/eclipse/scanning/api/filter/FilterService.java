@@ -18,13 +18,13 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 
+ *
  * This class is not an OSGi service at the moment
  * because its logic uses only JDK classes therefore
  * we may add the implementation to API using a deeply
  * unfashionable singleton pattern. (This works with
  * Spring rather well however.)
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -32,7 +32,7 @@ class FilterService implements IFilterService {
 
 
 	private Map<String, IFilter<?>> filters;
-	
+
  	/**
 	 * Intentionally package private
 	 */
@@ -53,7 +53,9 @@ class FilterService implements IFilterService {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> List<T> filter(String filterName, Collection<T> items) {
-		if (!filters.containsKey(filterName)) return new ArrayList<>(items);
+		if (!filters.containsKey(filterName)) {
+			return new ArrayList<>(items);
+		}
 	    return ((IFilter<T>)filters.get(filterName)).filter(items);
 	}
 
@@ -66,5 +68,10 @@ class FilterService implements IFilterService {
 	@Override
 	public void clear() {
 		filters.clear();
+	}
+
+	@Override
+	public String toString() {
+		return "FilterService [filters=" + filters + "]";
 	}
 }

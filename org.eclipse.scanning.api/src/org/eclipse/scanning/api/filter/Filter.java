@@ -191,4 +191,9 @@ public class Filter implements IFilter<String> {
 		}
 		return ret;
 	}
+
+	@Override
+	public String toString() {
+		return "Filter [name=" + name + ", excludes=" + excludes + ", includes=" + includes + "]";
+	}
 }
