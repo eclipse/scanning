@@ -26,6 +26,11 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 	@FieldDescriptor(file=FileType.EXISTING_FILE, hint="The full path of the processing file")
 	private String processingFilePath;
 
+	// Note: this field is required by GDA when configuring an existing processing bean so that we
+	// know which malcolm device (if any) to use in the acquire scan. It is not required for processing on the cluster.
+	@FieldDescriptor(visible=false)
+	private String malcolmDeviceName;
+
 	@FieldDescriptor(visible=false)
 	private String xmx = "1024m";
 
@@ -74,6 +79,14 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 		this.processingFilePath = processingFileName;
 	}
 
+	public String getMalcolmDeviceName() {
+		return malcolmDeviceName;
+	}
+
+	public void setMalcolmDeviceName(String malcolmDeviceName) {
+		this.malcolmDeviceName = malcolmDeviceName;
+	}
+
 	public String getXmx() {
 		return xmx;
 	}
@@ -114,6 +127,7 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((detectorName == null) ? 0 : detectorName.hashCode());
+		result = prime * result + ((malcolmDeviceName == null) ? 0 : malcolmDeviceName.hashCode());
 		result = prime * result + (monitorForOverwrite ? 1231 : 1237);
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + numberOfCores;
@@ -124,6 +138,7 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 	}
 
 	@Override
+	@SuppressWarnings("squid:S3776")
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
@@ -136,6 +151,11 @@ public class ClusterProcessingModel implements INameable, IReflectedModel {
 			if (other.detectorName != null)
 				return false;
 		} else if (!detectorName.equals(other.detectorName))
+			return false;
+		if (malcolmDeviceName == null) {
+			if (other.malcolmDeviceName != null)
+				return false;
+		} else if (!malcolmDeviceName.equals(other.malcolmDeviceName))
 			return false;
 		if (monitorForOverwrite != other.monitorForOverwrite)
 			return false;

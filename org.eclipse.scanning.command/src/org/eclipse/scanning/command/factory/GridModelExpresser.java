@@ -15,13 +15,12 @@ import java.util.Collection;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.scanning.api.points.models.GridModel;
-import org.eclipse.scanning.command.PyExpressionNotImplementedException;
 
 class GridModelExpresser extends PyModelExpresser<GridModel> {
 
 	@Override
 	public String pyExpress(GridModel model, Collection<IROI> rois, boolean verbose) throws Exception {
-		
+
 		// TODO Use StringBuilder
 		return "grid("
 			+(verbose?"axes=":"")+"("
@@ -41,11 +40,9 @@ class GridModelExpresser extends PyModelExpresser<GridModel> {
 			+(verbose
 				? (", snake="+(model.isSnake()?"True":"False"))
 				: (model.isSnake()?"":", snake=False"))
-			+((rois == null)
+			+((rois == null || rois.isEmpty())
 				? ""
-				: ((rois.size() == 0)
-					? ""
-					: (", roi="+factory.pyExpress(rois, verbose))))
+				: (", roi="+factory.pyExpress(rois, verbose)))
 			+")";
 	}
 

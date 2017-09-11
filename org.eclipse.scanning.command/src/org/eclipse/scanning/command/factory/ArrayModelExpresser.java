@@ -23,7 +23,7 @@ class ArrayModelExpresser extends PyModelExpresser<ArrayModel> {
 	@Override
 	String pyExpress(ArrayModel model, Collection<IROI> rois, boolean verbose) throws PyExpressionNotImplementedException {
 
-		if (rois != null && rois.size() > 0) throw new IllegalStateException("ArrayModels cannot be associated with ROIs.");
+		if (rois != null && !rois.isEmpty()) throw new IllegalStateException("ArrayModels cannot be associated with ROIs.");
 
 		if (model.getPositions().length == 1 && !verbose)
 			return "val('"+model.getName()+"', "+model.getPositions()[0]+")";
