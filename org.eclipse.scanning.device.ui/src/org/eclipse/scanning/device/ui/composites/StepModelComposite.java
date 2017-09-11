@@ -71,6 +71,7 @@ public class StepModelComposite extends Composite {
 		
 		exposureTime = new ScaleBox(this, SWT.NONE);
 		exposureTime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+		exposureTime.setDecimalPlaces(3);
 		exposureTime.setUnit("s");
 		exposureTime.setMinimum(0);
 		exposureTime.setMaximum(600);
@@ -103,7 +104,7 @@ public class StepModelComposite extends Composite {
 		start.setMinimum(minimum.doubleValue());
 		start.setMaximum(maximum.doubleValue());
 		stop.setMinimum(start);
-		stop.setMaximum(maximum.doubleValue());		
+		stop.setMaximum(maximum.doubleValue());
 		step.setMinimum(0.00001);
 		step.setMaximum(maximum.doubleValue());
 	}
