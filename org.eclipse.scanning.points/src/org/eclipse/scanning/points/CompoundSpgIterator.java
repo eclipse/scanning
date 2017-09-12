@@ -11,6 +11,7 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -204,5 +205,11 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 				.map(e -> excluderFactory.createObject(e.getValue().toArray(), e.getKey()))
 				.collect(Collectors.toList());
 		return pyExcluders.toArray();
+	}
+
+	@Override
+	public String toString() {
+		return "CompoundSpgIterator [gen=" + gen + ", pos=" + pos + ", iterators=" + Arrays.toString(iterators)
+				+ ", currentPoint=" + currentPoint + ", index=" + index + "]";
 	}
 }

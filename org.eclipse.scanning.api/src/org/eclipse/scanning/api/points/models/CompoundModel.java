@@ -293,4 +293,10 @@ public class CompoundModel<R> implements Cloneable {
         return !(e1.hasNext() || e2.hasNext());
     }
 
+	@Override
+	public String toString() {
+		return "CompoundModel [models=" + models + ", regions=" + regions + ", mutators=" + mutators + ", duration="
+				+ duration + "]";
+	}
+
 }

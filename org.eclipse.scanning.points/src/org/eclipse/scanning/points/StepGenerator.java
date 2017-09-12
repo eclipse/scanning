@@ -18,11 +18,11 @@ import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.StepModel;
 
 class StepGenerator extends AbstractGenerator<StepModel> {
-	
+
 	StepGenerator() {
 		setLabel("Step");
 		setDescription("Creates a step scan.\nIf the last requested point is within 1%\nof the end it will still be included in the scan");
-		setIconPath("icons/scanner--step.png"); // This icon exists in the rendering bundle 
+		setIconPath("icons/scanner--step.png"); // This icon exists in the rendering bundle
 	}
 
 	@Override
@@ -38,7 +38,7 @@ class StepGenerator extends AbstractGenerator<StepModel> {
 		if (containers!=null) throw new GeneratorException("Cannot deal with regions in a step scan!");
 		return getModel().size();
 	}
-	
+
 	@Override
 	public ScanPointIterator iteratorFromValidModel() {
 		return new LineIterator(this);
@@ -47,6 +47,11 @@ class StepGenerator extends AbstractGenerator<StepModel> {
 	@Override
 	public int[] getShape() throws GeneratorException {
 		return new int[] { sizeOfValidModel() };
+	}
+
+	@Override
+	public String toString() {
+		return "StepGenerator [" + super.toString() + "]";
 	}
 
 }

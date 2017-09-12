@@ -154,4 +154,11 @@ class GridIterator extends AbstractScanPointIterator {
 		throw new UnsupportedOperationException("remove");
 	}
 
+	@Override
+	public String toString() {
+		return "GridIterator [columns=" + columns + ", rows=" + rows + ", xName=" + xName + ", yName=" + yName
+				+ ", minX=" + minX + ", minY=" + minY + ", xStep=" + xStep + ", yStep=" + yStep + ", currentPoint="
+				+ currentPoint + ", AbstractScanPointIterator [" + super.toString() + "]";
+	}
+
 }

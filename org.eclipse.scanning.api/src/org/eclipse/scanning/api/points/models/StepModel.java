@@ -138,7 +138,8 @@ public class StepModel extends AbstractPointsModel {
 
 	@Override
 	public String toString() {
-		return "StepModel [name=" + name + ", start=" + start + ", stop=" + stop + ", step=" + step + "]";
+		return "StepModel [name=" + name + ", label=" + label + ", start=" + start + ", stop=" + stop + ", step=" + step
+				+ ", exposureTime=" + exposureTime + "]";
 	}
 
 	public double getExposureTime() {

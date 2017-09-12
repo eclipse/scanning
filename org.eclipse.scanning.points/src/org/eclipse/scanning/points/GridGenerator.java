@@ -13,16 +13,15 @@ package org.eclipse.scanning.points;
 
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
-import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.GridModel;
 
 class GridGenerator extends AbstractGenerator<GridModel> {
-	
+
 	GridGenerator() {
 		setLabel("Grid");
 		setDescription("Creates a grid scan (a scan of x and y).\nThe scan supports bidirectional or 'snake' mode.");
-		setIconPath("icons/scanner--grid.png"); // This icon exists in the rendering bundle 
+		setIconPath("icons/scanner--grid.png"); // This icon exists in the rendering bundle
 	}
 
 	@Override
@@ -37,6 +36,11 @@ class GridGenerator extends AbstractGenerator<GridModel> {
 	@Override
 	public ScanPointIterator iteratorFromValidModel() {
 		return new GridIterator(this);
+	}
+
+	@Override
+	public String toString() {
+		return "GridGenerator [" + super.toString() + "]";
 	}
 
 }

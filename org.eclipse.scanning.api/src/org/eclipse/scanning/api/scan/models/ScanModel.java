@@ -35,35 +35,35 @@ public class ScanModel {
 
 	/**
 	 * If you want the scan to attempt to write to a given
-	 * path, set this field. If it is set the scan will 
+	 * path, set this field. If it is set the scan will
 	 * attempt to use the NexusBuilderFactory and register all the
 	 * devices with it.
-	 * 
+	 *
 	 * TODO Should we never allow this to be set? Would it allow
 	 * users to write data anywhere?
-	 * 
+	 *
 	 */
 	private String filePath;
-	
+
 	/**
 	 * Normally this is a generator for the scan points
 	 * of the scan. IPointGenerator implements Iterable
 	 */
 	private Iterable<IPosition> positionIterable;
-	
+
 	/**
 	 * This is the set of detectors which should be collected
-	 * and (if they are IReadableDetector) read out during the 
+	 * and (if they are IReadableDetector) read out during the
 	 * scan.
 	 */
 	private List<IRunnableDevice<?>> detectors;
-	
+
 	/**
 	 * The bean which was submitted. May be null but if it is not,
 	 * all points are published using this bean.
 	 */
 	private ScanBean bean;
-	
+
 	/**
 	 * A list of scannables that may be set to a position
 	 * during the scan. They have {@code setPostition(pos, IPosition)}
@@ -76,16 +76,16 @@ public class ScanModel {
 	 * {@code getPositionIterable().iterator().next().getNames()}.
 	 */
 	private List<IScannable<?>> scannables;
-	
+
 	/**
 	 * A set of scannables may optionally be 'readout' during
 	 * the scan without being told a value for their location.
-	 * They have {@code setPosition(null, IPosition)} called and should 
+	 * They have {@code setPosition(null, IPosition)} called and should
 	 * ensure that if their value is {@code null}, they do not move but
 	 * still readout position
 	 */
 	private List<IScannable<?>> monitors;
-	
+
 	/**
 	 * Scan metadata that is not produced by a particular device, e.g.
 	 * scan command, chemical formula etc., grouped by type.
@@ -97,13 +97,13 @@ public class ScanModel {
 	 * annotated methods which the scan should call at different points.
 	 */
 	private List<?> annotationParticipants;
-	
+
 	private ScanInformation scanInformation;
-	
+
 	public ScanModel() {
 		this(null);
 	}
-	
+
 	public ScanModel(Iterable<IPosition> positionIterator, IRunnableDevice<?>... detectors) {
 		this.positionIterable = positionIterator;
 		if (detectors!=null && detectors.length>0) this.detectors = Arrays.asList(detectors);
@@ -131,7 +131,7 @@ public class ScanModel {
 				+ ((scanMetadata == null) ? 0 : scanMetadata.hashCode());
 		return result;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -185,22 +185,22 @@ public class ScanModel {
 		if (positionIterable == null) {
 			return Collections.emptyList();
 		}
-		
+
 		return positionIterable;
 	}
 
 	public void setPositionIterable(Iterable<IPosition> positionIterator) {
 		this.positionIterable = positionIterator;
 	}
-	
+
 	public List<IScannable<?>> getScannables() {
 		return scannables;
 	}
-	
+
 	public void setScannables(List<IScannable<?>> scannables) {
 		this.scannables = scannables;
 	}
-	
+
 	public List<IRunnableDevice<?>> getDetectors() {
 		if (detectors == null) {
 			return Collections.emptyList();
@@ -215,19 +215,19 @@ public class ScanModel {
 	public void setDetectors(IRunnableDevice<?>... detectors) {
 		this.detectors = Arrays.asList(detectors);
 	}
-	
+
 	public List<IScannable<?>> getMonitors() {
 		if (monitors == null) {
 			return Collections.emptyList();
 		}
 		return monitors;
 	}
-	
+
 	public void setMonitors(List<IScannable<?>> monitors) {
 		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = monitors;
 	}
-	
+
 	public void setMonitors(IScannable<?>... monitors) {
 		logger.info("setMonitors({}) was {} ({})", this, monitors, this.monitors, this);
 		this.monitors = new ArrayList<>(Arrays.asList(monitors));
@@ -235,26 +235,26 @@ public class ScanModel {
 			if (iterator.next()==null) iterator.remove();
 		}
 	}
-	
+
 	public String getFilePath() {
 		return filePath;
 	}
-	
+
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
 	}
-	
+
 	public List<ScanMetadata> getScanMetadata() {
 		if (scanMetadata == null) {
 			return Collections.emptyList();
 		}
 		return scanMetadata;
 	}
-	
+
 	public void setScanMetadata(List<ScanMetadata> scanMetadata) {
 		this.scanMetadata = scanMetadata;
 	}
-	
+
 	public void addScanMetadata(ScanMetadata scanMetadata) {
 		if (this.scanMetadata == null) {
 			this.scanMetadata = new ArrayList<>();
@@ -272,7 +272,7 @@ public class ScanModel {
 	public void setAnnotationParticipants(List<?> annotationParticipants) {
 		this.annotationParticipants = annotationParticipants;
 	}
-	
+
 	public ScanInformation getScanInformation() {
 		return scanInformation;
 	}
@@ -280,5 +280,13 @@ public class ScanModel {
 	public void setScanInformation(ScanInformation scanInformation) {
 		this.scanInformation = scanInformation;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "ScanModel [filePath=" + filePath + ", positionIterable=" + positionIterable + ", detectors=" + detectors
+				+ ", bean=" + bean + ", scannables=" + scannables + ", monitors=" + monitors + ", scanMetadata="
+				+ scanMetadata + ", annotationParticipants=" + annotationParticipants + ", scanInformation="
+				+ scanInformation + "]";
+	}
+
 }

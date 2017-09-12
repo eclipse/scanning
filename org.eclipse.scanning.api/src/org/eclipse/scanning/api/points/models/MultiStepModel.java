@@ -141,11 +141,11 @@ public class MultiStepModel extends AbstractPointsModel {
 			sb.append(stepModel.getStop());
 			sb.append(", step=");
 			sb.append(stepModel.getStep());
-			sb.append("; ");
 			if (stepModel.getExposureTime()>0) {
-				sb.append(" exp=");
+				sb.append(", exp=");
 				sb.append(stepModel.getExposureTime());
 			}
+			sb.append("; ");
 		}
 
 		sb.append(")]");
