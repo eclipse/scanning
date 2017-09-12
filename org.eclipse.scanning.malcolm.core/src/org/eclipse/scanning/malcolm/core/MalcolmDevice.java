@@ -413,17 +413,19 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	private EpicsMalcolmModel createEpicsMalcolmModel(M model) {
 		double exposureTime = model.getExposureTime();
 
-		if (pointGenerator != null) { // TODO could the point generator be null here?
-			List<IMutator> mutators = new ArrayList<IMutator>();
+		if (pointGenerator != null) {
+			List<IMutator> mutators = new ArrayList<>();
 			((CompoundModel<?>) pointGenerator.getModel()).setMutators(mutators);
 			((CompoundModel<?>) pointGenerator.getModel()).setDuration(exposureTime);
 		}
 
 		final String fileDir = model.getFileDir();
-		final String fileTemplate = new File(fileDir).getName() + "-%s." + FILE_EXTENSION_H5;
-		final EpicsMalcolmModel epicsModel = new EpicsMalcolmModel(fileDir, fileTemplate,
-				model.getAxesToMove(), pointGenerator);
-		return epicsModel;
+		String fileTemplate = null;
+		if (fileDir != null) {
+			fileTemplate = new File(fileDir).getName() + "-%s." + FILE_EXTENSION_H5;
+		}
+
+		return new EpicsMalcolmModel(fileDir, fileTemplate, model.getAxesToMove(), pointGenerator);
 	}
 
 	@Override
