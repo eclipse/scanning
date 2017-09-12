@@ -12,6 +12,7 @@
 package org.eclipse.scanning.api.points;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -19,20 +20,23 @@ import java.util.List;
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.points.models.IBoundingBoxModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Matthew Gerring
  *
  * @param <T>
- * @param <P>
  */
 public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterable<IPosition> {
+
+	private static Logger logger = LoggerFactory.getLogger(AbstractGenerator.class);
 
 	protected volatile T model; // Because of the validateModel() method
 
 	protected List<IPointContainer> containers;
-	protected Collection<Object> regions = new ArrayList<Object>();
+	protected Collection<Object> regions = new ArrayList<>();
 	private String id;
 	private String label;
 	private String description;
@@ -62,10 +66,10 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	}
 
 	@Override
-	final public Iterator<IPosition> iterator() {
+	public final Iterator<IPosition> iterator() {
 		validateModel();
 		return iteratorFromValidModel();
-	};
+	}
 
 	/**
 	 * Creates and returns an iterator for this model. If possible subclasses should aim to
@@ -145,8 +149,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	 * Subclasses should override if a more efficient way of calculating the
 	 * scan shape can be provided.
 	 *
-	 * @param iterator
-	 * @return
+	 * @return scan shape
 	 * @throws GeneratorException
 	 */
 	protected int[] calculateShape() throws GeneratorException {
@@ -191,7 +194,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 
 			if (pointNum % 10000 == 0) {
 				long newTime = System.currentTimeMillis();
-				System.err.println("Point number " + pointNum++ + ", took " + (newTime - lastTime) + "ms");
+				logger.debug("Point number {}, took {} ms", pointNum++, (newTime - lastTime));
 			}
 		}
 
@@ -235,7 +238,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 
 	@Override
 	public List<IPosition> createPoints() throws GeneratorException {
-		final List<IPosition> points = new ArrayList<IPosition>(89);
+		final List<IPosition> points = new ArrayList<>(89);
 		Iterator<IPosition> it = iterator();
 		while(it.hasNext()) points.add(it.next());
 		return points;
@@ -274,7 +277,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 
 	@Override
 	public void setRegions(Collection<Object> regions) throws GeneratorException {
-		this.regions = regions == null ? new ArrayList<Object>() : regions;
+		this.regions = regions == null ? new ArrayList<>() : regions;
 	}
 
 	@Override
@@ -404,4 +407,10 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "AbstractGenerator [model=" + model + ", containers=" + containers + ", regions=" + regions + ", id="
+				+ id + ", label=" + label + ", visible="
+				+ visible + ", enabled=" + enabled + ", shape=" + Arrays.toString(shape) + "]";
+	}
 }
