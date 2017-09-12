@@ -23,27 +23,27 @@ import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
  *
  */
 public class GridModel extends AbstractBoundingBoxModel {
-	
 
-	@FieldDescriptor(label="Fast Axis Count", 
-			         maximum=100000, 
-			         minimum=1, 
+
+	@FieldDescriptor(label="Fast Axis Count",
+			         maximum=100000,
+			         minimum=1,
 			         hint="The number of points that the grid should run over in the fast direction.")
 	private int fastAxisPoints = 5;
-	
-	@FieldDescriptor(label="Slow Axis Count", 
-			         maximum=100000, 
-			         minimum=1, 
+
+	@FieldDescriptor(label="Slow Axis Count",
+			         maximum=100000,
+			         minimum=1,
 			         hint="The number of points that the grid should run over in the slow direction.")
 	private int slowAxisPoints = 5;
-	
+
 	@FieldDescriptor(label="Snake")
 	private boolean snake = false;
-	
+
 	public GridModel() {
 		setName("Grid");
 	}
-	
+
 	public GridModel(String fastName, String slowName) {
 		this();
 		setFastAxisName(fastName);
@@ -81,7 +81,7 @@ public class GridModel extends AbstractBoundingBoxModel {
 	 * <--------------------
 	 * |
 	 * --------------------> etc.
-     * 
+     *
      * snake = false
      * -------------------->
      * -------------------->
@@ -121,5 +121,11 @@ public class GridModel extends AbstractBoundingBoxModel {
 		if (snake != other.snake)
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "GridModel [fastAxisPoints=" + fastAxisPoints + ", slowAxisPoints=" + slowAxisPoints + ", snake=" + snake
+				+ ", AbstractBoundingBoxModel [" + super.toString() + "]";
 	}
 }

@@ -71,4 +71,9 @@ class StepIterator implements Iterator<IPosition> {
         throw new UnsupportedOperationException("remove");
     }
 
+	@Override
+	public String toString() {
+		return "StepIterator [model=" + model + ", value=" + value + ", index=" + index + "]";
+	}
+
 }

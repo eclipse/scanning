@@ -208,4 +208,10 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "CompoundGenerator [generators=" + Arrays.toString(generators) + ", dimensionNames=" + dimensionNames
+				+ ", AbstractGenerator [" + super.toString() + "]";
+	}
+
 }
