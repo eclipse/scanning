@@ -19,26 +19,26 @@ import org.eclipse.scanning.api.event.queues.remote.QueueRequest;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 
 /**
- * A response which will start, stop or restart the {@link IQueueService} 
- * associated with the {@link IQueueControllerService}. The response returns 
- * the request to the user unchanged since there is no output from the 
- * start/stop calls, except an {@link EventException}.  
- * 
+ * A request handler which will start, stop or restart the {@link IQueueService}
+ * associated with the {@link IQueueControllerService}. The response returns
+ * the request to the user unchanged since there is no output from the
+ * start/stop calls, except an {@link EventException}.
+ *
  * @author Michael Wharmby
  *
  */
-public class StartStopResponse extends AbstractQueueResponseProcess {
-	
+public class StartStopRequestHandler extends AbstractQueueRequestHandler {
+
 	private IQueueControllerService queueControl;
-	
-	public StartStopResponse(QueueRequest requestBean, IPublisher<QueueRequest> reponseBroadcaster) {
+
+	public StartStopRequestHandler(QueueRequest requestBean, IPublisher<QueueRequest> reponseBroadcaster) {
 		super(requestBean, reponseBroadcaster);
 		queueControl = ServicesHolder.getQueueControllerService();
 	}
 
 	@Override
 	public QueueRequest process(QueueRequest request) throws EventException {
-		
+
 		if (request.isStartQueueService() && request.isStopQueueService()) {
 			//This is a restart
 			queueControl.stopQueueService(request.isForceStop());
@@ -52,10 +52,10 @@ public class StartStopResponse extends AbstractQueueResponseProcess {
 		} else {
 			throw new EventException("Request does not specify start or stop action");
 		}
-		
+
 		return request;
 	}
-	
+
 
 
 }

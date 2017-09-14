@@ -21,19 +21,19 @@ import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.eclipse.scanning.event.remote._Queue;
 
 /**
- * A response which returns a remote {@link IQueue} ({@link _Queue}) object 
- * containing all of the configuration options of a real queue from the 
- * {@link IQueueService}. The queue which will have its configuration returned 
+ * A request handler which returns a remote {@link IQueue} ({@link _Queue}) object
+ * containing all of the configuration options of a real queue from the
+ * {@link IQueueService}. The queue which will have its configuration returned
  * is determined from the queueID field of the request.
- *   
+ *
  * @author Michael Wharmby
  *
  */
-public class GetQueueResponse extends AbstractQueueResponseProcess {
-	
+public class GetQueueRequestHandler extends AbstractQueueRequestHandler {
+
 	private IQueueService queueService;
 
-	protected GetQueueResponse(QueueRequest requestBean, IPublisher<QueueRequest> reponseBroadcaster) {
+	protected GetQueueRequestHandler(QueueRequest requestBean, IPublisher<QueueRequest> reponseBroadcaster) {
 		super(requestBean, reponseBroadcaster);
 		queueService = ServicesHolder.getQueueService();
 	}
@@ -42,15 +42,15 @@ public class GetQueueResponse extends AbstractQueueResponseProcess {
 	public QueueRequest process(QueueRequest request) throws EventException {
 		//Get the requested queue & make a local copy with it
 		IQueue<? extends Queueable> realQueue = queueService.getQueue(request.getQueueID());
-		
+
 		//Send the remote copy back to the requester
 		request.setCommandSetName(realQueue.getCommandSetName());
 		request.setCommandTopicName(realQueue.getCommandTopicName());
 		request.setHeartbeatTopicName(realQueue.getHeartbeatTopicName());
-		
+
 		request.setQueueID(realQueue.getQueueID());
 		request.setStatus(realQueue.getStatus());
-		
+
 		request.setStatusSetName(realQueue.getStatusSetName());
 		request.setStatusTopicName(realQueue.getStatusTopicName());
 		request.setSubmissionQueueName(realQueue.getSubmissionQueueName());

@@ -18,7 +18,7 @@ import static org.junit.Assert.fail;
 
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IResponseCreator;
-import org.eclipse.scanning.api.event.core.IResponseProcess;
+import org.eclipse.scanning.api.event.core.IRequestHandler;
 import org.eclipse.scanning.api.event.queues.IQueue;
 import org.eclipse.scanning.api.event.queues.IQueueControllerService;
 import org.eclipse.scanning.api.event.queues.IQueueService;
@@ -52,7 +52,7 @@ public class QueueResponseProcessTest {
 	
 	private QueueRequest qReq, qAns;
 	private IResponseCreator<QueueRequest> qResponseCreator;
-	private IResponseProcess<QueueRequest> responseProc;
+	private IRequestHandler<QueueRequest> responseProc;
 	
 	@Before
 	public void setUp() throws EventException {

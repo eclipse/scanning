@@ -23,7 +23,7 @@ import org.eclipse.scanning.api.event.IdBean;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.core.IResponder;
 import org.eclipse.scanning.api.event.core.IResponseCreator;
-import org.eclipse.scanning.api.event.core.IResponseProcess;
+import org.eclipse.scanning.api.event.core.IRequestHandler;
 import org.eclipse.scanning.api.event.servlet.IResponderServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +84,7 @@ public abstract class AbstractResponderServlet<B extends IdBean> implements IRes
 
 	class DoResponseCreator implements IResponseCreator<B> {
 		@Override
-		public IResponseProcess<B> createResponder(B bean, IPublisher<B> response) throws EventException {
+		public IRequestHandler<B> createResponder(B bean, IPublisher<B> response) throws EventException {
 			return AbstractResponderServlet.this.createResponder(bean, response);
 		}
 	}

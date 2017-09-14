@@ -22,7 +22,7 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.models.MalcolmModel;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IPublisher;
-import org.eclipse.scanning.api.event.core.IResponseProcess;
+import org.eclipse.scanning.api.event.core.IRequestHandler;
 import org.eclipse.scanning.api.event.scan.AcquireRequest;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
@@ -37,7 +37,7 @@ import org.eclipse.scanning.server.application.Activator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AcquireRequestHandler implements IResponseProcess<AcquireRequest> {
+public class AcquireRequestHandler implements IRequestHandler<AcquireRequest> {
 
 	private static final Logger logger = LoggerFactory.getLogger(AcquireRequestHandler.class);
 

@@ -23,7 +23,7 @@ public interface IResponseCreator<T extends IdBean> {
 	 * @return
 	 * @throws EventException
 	 */
-	IResponseProcess<T> createResponder(T bean, IPublisher<T> statusNotifier) throws EventException;
+	IRequestHandler<T> createResponder(T bean, IPublisher<T> statusNotifier) throws EventException;
 
 	/**
 	 * Override to allows events to be despatched asynchronously.
