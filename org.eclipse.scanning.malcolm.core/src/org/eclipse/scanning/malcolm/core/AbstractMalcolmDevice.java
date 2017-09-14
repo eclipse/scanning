@@ -35,6 +35,7 @@ import org.eclipse.scanning.api.device.models.IMalcolmModel;
 import org.eclipse.scanning.api.device.models.ScanMode;
 import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
+import org.eclipse.scanning.api.malcolm.MalcolmConstants;
 import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 import org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService;
 import org.eclipse.scanning.api.malcolm.connector.MalcolmMethod;
@@ -176,7 +177,7 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 
 	@Override
 	public Set<String> getAxesToMove() throws ScanningException {
-		String[] axesToMove = (String[]) getAttributeValue(ATTRIBUTE_NAME_AXES_TO_MOVE);
+		String[] axesToMove = (String[]) getAttributeValue(MalcolmConstants.ATTRIBUTE_NAME_AXES_TO_MOVE);
 		return new HashSet<>(Arrays.asList(axesToMove));
 	}
 

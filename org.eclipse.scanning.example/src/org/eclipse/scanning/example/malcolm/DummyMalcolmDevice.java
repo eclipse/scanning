@@ -13,6 +13,13 @@
 
 package org.eclipse.scanning.example.malcolm;
 
+import static org.eclipse.scanning.api.malcolm.MalcolmConstants.ATTRIBUTE_NAME_AXES_TO_MOVE;
+import static org.eclipse.scanning.api.malcolm.MalcolmConstants.DATASETS_TABLE_COLUMN_FILENAME;
+import static org.eclipse.scanning.api.malcolm.MalcolmConstants.DATASETS_TABLE_COLUMN_NAME;
+import static org.eclipse.scanning.api.malcolm.MalcolmConstants.DATASETS_TABLE_COLUMN_PATH;
+import static org.eclipse.scanning.api.malcolm.MalcolmConstants.DATASETS_TABLE_COLUMN_RANK;
+import static org.eclipse.scanning.api.malcolm.MalcolmConstants.DATASETS_TABLE_COLUMN_TYPE;
+import static org.eclipse.scanning.api.malcolm.MalcolmConstants.DATASETS_TABLE_COLUMN_UNIQUEID;
 import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.MONITOR;
 import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.POSITION_SET;
 import static org.eclipse.scanning.api.malcolm.attributes.MalcolmDatasetType.POSITION_VALUE;
@@ -51,6 +58,7 @@ import org.eclipse.january.dataset.IDataset;
 import org.eclipse.january.dataset.ILazyWriteableDataset;
 import org.eclipse.january.dataset.Random;
 import org.eclipse.january.dataset.SliceND;
+import org.eclipse.scanning.api.INameable;
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.annotation.scan.PreConfigure;
@@ -361,7 +369,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 
 	private int scanRank;
 
-	DeviceState deviceState;
+	private DeviceState deviceState;
 
 	// the dummy devices are responsible for writing the nexus files
 	private Map<String, IDummyMalcolmControlledDevice> devices = null;
@@ -493,7 +501,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 		super.configure(model);
 
 		devices = model.getDummyDetectorModels().stream().collect(Collectors.toMap(
-				d -> d.getName(), d -> new DummyMalcolmControlledDetector(d)));
+				INameable::getName, DummyMalcolmControlledDetector::new));
 		devices.put("panda", new DummyPandaDevice());
 	}
 
@@ -515,6 +523,7 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 
 	@Override
 	protected void setDeviceState(DeviceState nstate) throws ScanningException {
+		System.err.println("Setting malcolm device state to: " + nstate); // TODO remove
 		deviceState = nstate;
 		if (state != null) {
 			state.setValue(nstate.toString());
