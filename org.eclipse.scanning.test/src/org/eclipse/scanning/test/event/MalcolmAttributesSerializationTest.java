@@ -1,8 +1,5 @@
 package org.eclipse.scanning.test.event;
 
-import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_NAME;
-import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_RANK;
-import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_TYPE;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
@@ -13,6 +10,7 @@ import java.util.Map;
 
 import org.eclipse.dawnsci.analysis.api.persistence.IMarshallerService;
 import org.eclipse.dawnsci.json.MarshallerService;
+import org.eclipse.scanning.api.malcolm.MalcolmConstants;
 import org.eclipse.scanning.api.malcolm.MalcolmTable;
 import org.eclipse.scanning.api.malcolm.attributes.BooleanArrayAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.BooleanAttribute;
@@ -32,13 +30,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class MalcolmAttributesSerializationTest {
-	
+
 	private IMarshallerService service;
-	
+
 	@Before
 	public void create() throws Exception {
 		// Non-OSGi for test - do not copy
-		
+
 		service = new MarshallerService(
 				Arrays.asList(new ScanningAPIClassRegistry(),
 						new ScanningExampleClassRegistry(),
@@ -46,7 +44,7 @@ public class MalcolmAttributesSerializationTest {
 				Arrays.asList(new PointsModelMarshaller())
 				);
 	}
-	
+
 	@Test
 	public void testSerializeMalcolmBooleanAttribute() throws Exception {
 		BooleanAttribute attrib = new BooleanAttribute();
@@ -56,12 +54,12 @@ public class MalcolmAttributesSerializationTest {
 		attrib.setTags(new String[] { "foo", "bar" });
 		attrib.setWriteable(true);
 		attrib.setValue(true);
-		
+
 		String json = service.marshal(attrib);
 		BooleanAttribute newAttrib = service.unmarshal(json, BooleanAttribute.class);
 		assertEquals(attrib, newAttrib);
 	}
-	
+
 	@Test
 	public void testSerializeMalcolmBooleanArrayAttribute() throws Exception {
 		BooleanArrayAttribute attrib = new BooleanArrayAttribute();
@@ -71,12 +69,12 @@ public class MalcolmAttributesSerializationTest {
 		attrib.setTags(new String[] { "foo", "bar" });
 		attrib.setWriteable(true);
 		attrib.setValue(new boolean[] { true, false, true, true, false });
-		
+
 		String json = service.marshal(attrib);
 		BooleanArrayAttribute newAttrib = service.unmarshal(json, BooleanArrayAttribute.class);
 		assertEquals(attrib, newAttrib);
 	}
-	
+
 	@Test
 	public void testSerializeChoiceAttribute() throws Exception {
 		ChoiceAttribute attrib = new ChoiceAttribute();
@@ -87,12 +85,12 @@ public class MalcolmAttributesSerializationTest {
 		attrib.setWriteable(true);
 		attrib.setChoices(new String[] { "first", "second", "third" });
 		attrib.setValue("second");
-		
+
 		String json = service.marshal(attrib);
 		ChoiceAttribute newAttrib = service.unmarshal(json, ChoiceAttribute.class);
 		assertEquals(attrib, newAttrib);
 	}
-	
+
 	@Test
 	public void testSerializeNumberAttribute() throws Exception {
 		NumberAttribute attrib = new NumberAttribute();
@@ -102,12 +100,12 @@ public class MalcolmAttributesSerializationTest {
 		attrib.setTags(new String[] { "foo", "bar" });
 		attrib.setWriteable(true);
 		attrib.setValue(123.456);
-		
+
 		String json = service.marshal(attrib);
 		NumberAttribute newAttrib = service.unmarshal(json, NumberAttribute.class);
 		assertEquals(attrib, newAttrib);
 	}
-	
+
 	@Test
 	public void testSerializeNumberArrayAttribute() throws Exception {
 		NumberArrayAttribute attrib = new NumberArrayAttribute();
@@ -118,12 +116,12 @@ public class MalcolmAttributesSerializationTest {
 		attrib.setWriteable(true);
 		attrib.setDtype("double");
 		attrib.setValue(new Number[] { 1.2, 3.4, 5.6, 7.8 });
-		
+
 		String json = service.marshal(attrib);
 		NumberArrayAttribute newAttrib = service.unmarshal(json, NumberArrayAttribute.class);
 		assertEquals(attrib, newAttrib);
 	}
-	
+
 	@Test
 	public void testSerializePointGeneratorAttribute() throws Exception {
 //		BoundingBox box = new BoundingBox();
@@ -131,22 +129,22 @@ public class MalcolmAttributesSerializationTest {
 //		box.setSlowAxisStart(0);
 //		box.setFastAxisLength(3);
 //		box.setSlowAxisLength(3);
-//		
+//
 //		GridModel gridModel = new GridModel("x", "y");
 //		gridModel.setFastAxisPoints(20);
 //		gridModel.setSlowAxisPoints(50);
 //		gridModel.setBoundingBox(box);
-//		
+//
 //		CompoundModel<?> compoundModel = new CompoundModel<>(gridModel);
-//		
+//
 //		IPointGeneratorService genService = new PointGeneratorService();
 //		IPointGenerator<?> gen = genService.createCompoundGenerator(compoundModel);
-		
+
 		// It seems that point generator attribute just stores a map, so we just test that
 		Map<String, String> map = new HashMap<>();
 		map.put("key", "value");
 		map.put("foo", "bar");
-		
+
 		PointGeneratorAttribute attrib = new PointGeneratorAttribute();
 		attrib.setName("pointGeneratorAttribute");
 		attrib.setLabel("Point Generator Attribute");
@@ -154,12 +152,12 @@ public class MalcolmAttributesSerializationTest {
 		attrib.setTags(new String[] { "foo", "bar" });
 		attrib.setWriteable(true);
 		attrib.setValue(map);
-		
+
 		String json = service.marshal(attrib);
 		PointGeneratorAttribute newAttrib = service.unmarshal(json, PointGeneratorAttribute.class);
 		assertEquals(attrib, newAttrib);
 	}
-	
+
 	@Test
 	public void testSerializeStringAttribute() throws Exception {
 		StringAttribute attrib = new StringAttribute();
@@ -169,12 +167,12 @@ public class MalcolmAttributesSerializationTest {
 		attrib.setTags(new String[] { "foo", "bar" });
 		attrib.setWriteable(true);
 		attrib.setValue("hello");
-		
+
 		String json = service.marshal(attrib);
 		StringAttribute newAttrib = service.unmarshal(json, StringAttribute.class);
 		assertEquals(attrib, newAttrib);
 	}
-	
+
 	@Test
 	public void testSerializeHealthAttribute() throws Exception {
 		HealthAttribute attrib = new HealthAttribute();
@@ -184,12 +182,12 @@ public class MalcolmAttributesSerializationTest {
 		attrib.setTags(new String[] { "foo", "bar" });
 		attrib.setWriteable(true);
 		attrib.setValue("Good Health");
-		
+
 		String json = service.marshal(attrib);
 		HealthAttribute newAttrib = service.unmarshal(json, HealthAttribute.class);
 		assertEquals(attrib, newAttrib);
 	}
-	
+
 	@Test
 	public void testSerializeStringArrayAttribute() throws Exception {
 		StringArrayAttribute attrib = new StringArrayAttribute();
@@ -199,39 +197,39 @@ public class MalcolmAttributesSerializationTest {
 		attrib.setTags(new String[] { "foo", "bar" });
 		attrib.setWriteable(true);
 		attrib.setValue(new String[] { "this", "is", "a", "string", "array", "attribute" });
-		
+
 		String json = service.marshal(attrib);
 		StringArrayAttribute newAttrib = service.unmarshal(json, StringArrayAttribute.class);
 		assertEquals(attrib, newAttrib);
 	}
-	
+
 	@Test
 	public void testSerializeTableAttribute() throws Exception {
 		Map<String, Class<?>> types = new LinkedHashMap<>();
-		// a simplified version of the datasets table 
-		types.put(DATASETS_TABLE_COLUMN_NAME, String.class);
-		types.put(DATASETS_TABLE_COLUMN_RANK, Integer.class);
-		types.put(DATASETS_TABLE_COLUMN_TYPE, String.class);
-		
+		// a simplified version of the datasets table
+		types.put(MalcolmConstants.DATASETS_TABLE_COLUMN_NAME, String.class);
+		types.put(MalcolmConstants.DATASETS_TABLE_COLUMN_RANK, Integer.class);
+		types.put(MalcolmConstants.DATASETS_TABLE_COLUMN_TYPE, String.class);
+
 		Map<String, List<Object>> tableData = new HashMap<>();
-		tableData.put(DATASETS_TABLE_COLUMN_NAME, Arrays.asList("det.data", "det.sum",
+		tableData.put(MalcolmConstants.DATASETS_TABLE_COLUMN_NAME, Arrays.asList("det.data", "det.sum",
 				"x.value", "x.value_set", "y.value", "y.value_set", "I0", "It"));
-		tableData.put(DATASETS_TABLE_COLUMN_RANK, Arrays.asList(4, 2, 2, 2, 2, 2, 2, 2));
-		tableData.put(DATASETS_TABLE_COLUMN_TYPE, Arrays.asList("primary", "secondary",
+		tableData.put(MalcolmConstants.DATASETS_TABLE_COLUMN_RANK, Arrays.asList(4, 2, 2, 2, 2, 2, 2, 2));
+		tableData.put(MalcolmConstants.DATASETS_TABLE_COLUMN_TYPE, Arrays.asList("primary", "secondary",
 				"position_value", "position_set", "position_value", "position_set", "monitor", "monitor"));
-		
+
 		MalcolmTable table = new MalcolmTable(tableData, types);
-		
+
 		TableAttribute attrib = new TableAttribute();
 		attrib.setName("tableAttribute");
 		attrib.setLabel("Table Attribute");
 		attrib.setDescription("Description of a table attribute");
 		attrib.setTags(new String[] { "foo", "bar" });
 		attrib.setWriteable(true);
-		attrib.setHeadings(new String[] { DATASETS_TABLE_COLUMN_NAME, DATASETS_TABLE_COLUMN_RANK,
-				DATASETS_TABLE_COLUMN_TYPE });
+		attrib.setHeadings(new String[] { MalcolmConstants.DATASETS_TABLE_COLUMN_NAME, MalcolmConstants.DATASETS_TABLE_COLUMN_RANK,
+				MalcolmConstants.DATASETS_TABLE_COLUMN_TYPE });
 		attrib.setValue(table);
-		
+
 		String json = service.marshal(attrib);
 		TableAttribute newAttrib = service.unmarshal(json, TableAttribute.class);
 		assertEquals(attrib, newAttrib);

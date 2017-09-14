@@ -62,15 +62,6 @@ import org.eclipse.scanning.api.scan.ScanningException;
  */
 public interface IMalcolmDevice<T> extends IRunnableEventDevice<T>, IMalcolmEventPublisher, ILatchableDevice, IAttributableDevice, IValidator<T> {
 	
-	public static final String ATTRIBUTE_NAME_DATASETS = "datasets";
-	public static final String ATTRIBUTE_NAME_AXES_TO_MOVE = "axesToMove";
-	public static final String DATASETS_TABLE_COLUMN_NAME = "name";
-	public static final String DATASETS_TABLE_COLUMN_FILENAME = "filename";
-	public static final String DATASETS_TABLE_COLUMN_PATH = "path";
-	public static final String DATASETS_TABLE_COLUMN_TYPE = "type";
-	public static final String DATASETS_TABLE_COLUMN_RANK = "rank";
-	public static final String DATASETS_TABLE_COLUMN_UNIQUEID = "uniqueid";
-	
 	/**
 	 * Attempts to determine if the device is locked doing something like a configure or a run.
 	 * 

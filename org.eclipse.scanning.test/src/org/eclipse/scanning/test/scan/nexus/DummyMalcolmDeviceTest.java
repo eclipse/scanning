@@ -12,10 +12,11 @@
 
 package org.eclipse.scanning.test.scan.nexus;
 
-import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_FILENAME;
-import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_PATH;
-import static org.eclipse.scanning.api.malcolm.IMalcolmDevice.DATASETS_TABLE_COLUMN_RANK;
+import static org.eclipse.scanning.api.malcolm.MalcolmConstants.DATASETS_TABLE_COLUMN_FILENAME;
+import static org.eclipse.scanning.api.malcolm.MalcolmConstants.DATASETS_TABLE_COLUMN_PATH;
+import static org.eclipse.scanning.api.malcolm.MalcolmConstants.DATASETS_TABLE_COLUMN_RANK;
 import static org.eclipse.scanning.example.malcolm.DummyMalcolmDevice.FILE_EXTENSION_HDF5;
+import static org.eclipse.scanning.example.malcolm.DummyMalcolmDevice.UNIQUE_KEYS_DATASET_PATH;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -67,15 +68,15 @@ import org.junit.Test;
 /**
  * This test uses the RunnableDeviceService to create a {@link DummyMalcolmDevice}
  * and run it. Creates nexus files according to the {@link DummyMalcolmModel}.
- * 
+ *
  * @author Matt Taylor
  * @author Matthew Dickie
  *
  */
 public class DummyMalcolmDeviceTest extends NexusTest {
-	
+
 	private File malcolmOutputDir;
-	
+
 	@Before
 	public void setUp() throws Exception {
 		// create a temp directory for the dummy malcolm device to write hdf files into
@@ -112,7 +113,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 							9.99d / (size[dim] - 1));
 				} else {
 					// Will generate one value at 10
-					model = new StepModel("neXusScannable" + (dim + 1), 10, 20, 30); 
+					model = new StepModel("neXusScannable" + (dim + 1), 10, 20, 30);
 				}
 				final IPointGenerator<?> step = gservice.createGenerator(model);
 				gens[dim] = step;
@@ -144,7 +145,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 
 		return model;
 	}
-	
+
 	@Test
 	public void testDummyMalcolmNexusFiles() throws Exception {
 		DummyMalcolmModel model = createModel(malcolmOutputDir);
@@ -160,7 +161,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 		// Check file has been written with some data
 		checkMalcolmNexusFiles(model, (IMalcolmDevice<DummyMalcolmModel>) malcolmDevice, scanRank);
 	}
-	
+
 	@Test
 	public void testMalcolmNexusObjects() throws Exception {
 		DummyMalcolmModel model = createModel(malcolmOutputDir);
@@ -176,13 +177,13 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 
 		checkNexusObjectProviders(nexusProviders, model, scanRank);
 	}
-	
+
 	private NXentry getNexusEntry(String filePath) throws Exception {
 		INexusFileFactory fileFactory = org.eclipse.dawnsci.nexus.ServiceHolder
 				.getNexusFileFactory();
 		NexusFile nf = fileFactory.newNexusFile(filePath);
 		nf.openToRead();
-	
+
 		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 		NXroot root = (NXroot) nexusTree.getGroupNode();
 		return root.getEntry();
@@ -196,7 +197,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 		Map<String, NXentry> nexusEntries = new HashMap<>();
 		for (Map<String, Object> datasetRow : table) {
 			String filename = (String) datasetRow.get(DATASETS_TABLE_COLUMN_FILENAME);
-			
+
 			// load the nexus entry for the file (may be cached from a previous dataset)
 			NXentry entry = nexusEntries.get(filename);
 			if (entry == null) {
@@ -204,7 +205,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 				nexusEntries.put(filename, entry);
 			}
 			assertNotNull(entry);
-			
+
 			String path = (String) datasetRow.get(DATASETS_TABLE_COLUMN_PATH);
 
 			String[] pathSegments = path.split("/");
@@ -216,16 +217,16 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 				groupNode = groupNode.getGroupNode(pathSegments[i]);
 			}
 			assertNotNull(groupNode);
-			
+
 			// check the datanode is not null and has the expected rank
 			DataNode dataNode = groupNode.getDataNode(pathSegments[pathSegments.length - 1]);
 			assertNotNull(dataNode);
-			
+
 			int datasetRank = ((Integer) datasetRow.get(DATASETS_TABLE_COLUMN_RANK)).intValue();
-			assertEquals(datasetRank, dataNode.getRank()); 
-			
+			assertEquals(datasetRank, dataNode.getRank());
+
 			// assert that the uniquekeys dataset is present
-			String[] uniqueKeysPathSegments = DummyMalcolmDevice.UNIQUE_KEYS_DATASET_PATH.split("/");
+			String[] uniqueKeysPathSegments = UNIQUE_KEYS_DATASET_PATH.split("/");
 			NXcollection ndAttributesCollection = entry.getCollection(uniqueKeysPathSegments[2]);
 			assertNotNull(ndAttributesCollection);
 			DataNode uniqueKeysDataNode = ndAttributesCollection.getDataNode(uniqueKeysPathSegments[3]);
@@ -247,7 +248,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 			assertNotNull(nexusObject);
 			final String expectedFileName = malcolmOutputDir.getName() + "/" + device.getName() + FILE_EXTENSION_HDF5;
 			assertArrayEquals(new Object[] { expectedFileName }, nexusProvider.getExternalFileNames().toArray());
-			
+
 			boolean isFirst = true;
 			for (DummyMalcolmDatasetModel datasetModel : device.getDatasets()) {
 				final String targetDatasetName = datasetModel.getName();
@@ -256,7 +257,7 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 				assertNotNull(externalLinkNode);
 				assertEquals(scanRank + datasetModel.getRank(), nexusProvider.getExternalDatasetRank(linkName));
 				assertEquals(expectedFileName, externalLinkNode.getSourceURI().toString());
-				
+
 				// check the nexus provider which describes how to add the device to the tree
 				// (in particular how NXdata groups should be built) is configured correctly
 				if (isFirst) {
@@ -269,5 +270,5 @@ public class DummyMalcolmDeviceTest extends NexusTest {
 			}
 		}
 	}
-	
+
 }
