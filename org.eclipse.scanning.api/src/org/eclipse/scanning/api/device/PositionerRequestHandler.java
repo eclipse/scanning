@@ -18,13 +18,13 @@ import java.util.Map;
 
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IPublisher;
-import org.eclipse.scanning.api.event.core.IResponseProcess;
+import org.eclipse.scanning.api.event.core.IRequestHandler;
 import org.eclipse.scanning.api.event.scan.PositionRequestType;
 import org.eclipse.scanning.api.event.scan.PositionerRequest;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositioner;
 
-public class PositionerResponse implements IResponseProcess<PositionerRequest>{
+public class PositionerRequestHandler implements IRequestHandler<PositionerRequest>{
 	
 	private static Map<String, Reference<IPositioner>> positioners;
 
@@ -32,7 +32,7 @@ public class PositionerResponse implements IResponseProcess<PositionerRequest>{
 	private PositionerRequest             bean;
 	private IPublisher<PositionerRequest> publisher;
 
-	public PositionerResponse(IRunnableDeviceService        dservice, 
+	public PositionerRequestHandler(IRunnableDeviceService        dservice, 
 			                  PositionerRequest             bean, 
 			                  IPublisher<PositionerRequest> statusNotifier) {
 

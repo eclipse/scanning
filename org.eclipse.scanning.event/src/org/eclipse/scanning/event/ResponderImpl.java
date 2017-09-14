@@ -21,7 +21,7 @@ import org.eclipse.scanning.api.event.bean.IBeanListener;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.core.IResponder;
 import org.eclipse.scanning.api.event.core.IResponseCreator;
-import org.eclipse.scanning.api.event.core.IResponseProcess;
+import org.eclipse.scanning.api.event.core.IRequestHandler;
 import org.eclipse.scanning.api.event.core.ISubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +55,7 @@ public class ResponderImpl<T extends IdBean> extends AbstractRequestResponseConn
 			public void beanChangePerformed(BeanEvent<T> evt) {
 				T request = evt.getBean();
 				try {
-					IResponseProcess<T> process = creator.createResponder(request, publisher);
+					IRequestHandler<T> process = creator.createResponder(request, publisher);
 					T response = process.process(request);
 					publisher.broadcast(response);
 					

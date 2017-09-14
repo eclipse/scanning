@@ -19,11 +19,11 @@ import java.net.URISyntaxException;
 
 import javax.annotation.PostConstruct;
 
-import org.eclipse.scanning.api.device.DeviceResponse;
+import org.eclipse.scanning.api.device.DeviceRequestHandler;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.core.IResponseCreator;
-import org.eclipse.scanning.api.event.core.IResponseProcess;
+import org.eclipse.scanning.api.event.core.IRequestHandler;
 import org.eclipse.scanning.api.event.scan.DeviceRequest;
 
 /**
@@ -72,8 +72,8 @@ public class DeviceServlet extends AbstractResponderServlet<DeviceRequest> {
 	}
 
 	@Override
-	public IResponseProcess<DeviceRequest> createResponder(DeviceRequest bean, IPublisher<DeviceRequest> response) throws EventException {
-		return new DeviceResponse(Services.getRunnableDeviceService(), Services.getConnector(), bean, response);
+	public IRequestHandler<DeviceRequest> createResponder(DeviceRequest bean, IPublisher<DeviceRequest> response) throws EventException {
+		return new DeviceRequestHandler(Services.getRunnableDeviceService(), Services.getConnector(), bean, response);
 	}
 
 }

@@ -22,35 +22,35 @@ import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 
 /**
- * A response which searches in both the submission queue and status set of an 
+ * A request handler which searches in both the submission queue and status set of an
  * {@link IConsumer} for a bean with a given unique ID and then returns the
- * {@link Status} of the bean. The {@link IConsumer} to search is that 
- * associated with the {@link IQueue} with the queueID found on the request. 
- * 
+ * {@link Status} of the bean. The {@link IConsumer} to search is that
+ * associated with the {@link IQueue} with the queueID found on the request.
+ *
  * @author Michael Wharmby
  *
  */
-public class BeanStatusReponse extends AbstractQueueResponseProcess {
-	
+public class BeanStatusRequestHandler extends AbstractQueueRequestHandler {
+
 	private IQueueService queueService;
-	
-	public BeanStatusReponse(QueueRequest requestBean, IPublisher<QueueRequest> reponseBroadcaster) {
+
+	public BeanStatusRequestHandler(QueueRequest requestBean, IPublisher<QueueRequest> reponseBroadcaster) {
 		super(requestBean, reponseBroadcaster);
 		queueService = ServicesHolder.getQueueService();
 	}
-	
+
 	@Override
 	public QueueRequest process(QueueRequest request) throws EventException {
 		//Get request details
 		String beanID = request.getBeanID();
 		String queueID = request.getQueueID();
-		
+
 		//Get the queue consumer requested
 		IConsumer<? extends Queueable> consumer = queueService.getQueue(queueID).getConsumer();
-		
+
 		BeanStatusFinder<? extends Queueable> statusFinder = new BeanStatusFinder<>(beanID, consumer);
 		Status foundStatus = statusFinder.find();
-		
+
 		//We've got the status, put it into the reply & return
 		request.setBeanStatus(foundStatus);
 		return request;

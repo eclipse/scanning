@@ -19,17 +19,17 @@ import org.eclipse.scanning.api.event.queues.remote.QueueRequest;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 
 /**
- * A response which returns the the ID of the job-queue configured in the 
- * {@link IQueueService} that the parent responder is associated with. 
- * 
+ * A request handler which returns the the ID of the job-queue configured in the
+ * {@link IQueueService} that the parent responder is associated with.
+ *
  * @author Michael Wharmby
  *
  */
-public class GetServerStringResponse extends AbstractQueueResponseProcess {
-	
+public class GetServerStringRequestHandler extends AbstractQueueRequestHandler {
+
 	private IQueueControllerService queueControl;
-	
-	public GetServerStringResponse(QueueRequest requestBean, IPublisher<QueueRequest> reponseBroadcaster) {
+
+	public GetServerStringRequestHandler(QueueRequest requestBean, IPublisher<QueueRequest> reponseBroadcaster) {
 		super(requestBean, reponseBroadcaster);
 		queueControl = ServicesHolder.getQueueControllerService();
 	}

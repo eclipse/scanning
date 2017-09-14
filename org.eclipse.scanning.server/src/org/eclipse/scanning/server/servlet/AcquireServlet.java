@@ -16,7 +16,7 @@ import static org.eclipse.scanning.api.event.EventConstants.ACQUIRE_RESPONSE_TOP
 
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IPublisher;
-import org.eclipse.scanning.api.event.core.IResponseProcess;
+import org.eclipse.scanning.api.event.core.IRequestHandler;
 import org.eclipse.scanning.api.event.scan.AcquireRequest;
 
 /**
@@ -29,7 +29,7 @@ public class AcquireServlet extends AbstractResponderServlet<AcquireRequest> {
 	}
 
 	@Override
-	public IResponseProcess<AcquireRequest> createResponder(AcquireRequest bean,
+	public IRequestHandler<AcquireRequest> createResponder(AcquireRequest bean,
 			IPublisher<AcquireRequest> response) throws EventException {
 		return new AcquireRequestHandler(bean, response);
 	}

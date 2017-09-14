@@ -24,7 +24,7 @@ import org.eclipse.scanning.api.MonitorRole;
 import org.eclipse.scanning.api.annotation.ui.DeviceType;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.core.IPublisher;
-import org.eclipse.scanning.api.event.core.IResponseProcess;
+import org.eclipse.scanning.api.event.core.IRequestHandler;
 import org.eclipse.scanning.api.event.scan.DeviceAction;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.event.scan.DeviceRequest;
@@ -47,14 +47,14 @@ import org.eclipse.scanning.api.scan.ScanningException;
  * @author Matthew Gerring
  *
  */
-public class DeviceResponse implements IResponseProcess<DeviceRequest> {
+public class DeviceRequestHandler implements IRequestHandler<DeviceRequest> {
 
 	private IRunnableDeviceService    dservice;
 	private DeviceRequest             bean;
 	private IPublisher<DeviceRequest> publisher;
 	private IScannableDeviceService   cservice;
 
-	public DeviceResponse(IRunnableDeviceService  dservice,
+	public DeviceRequestHandler(IRunnableDeviceService  dservice,
 			              IScannableDeviceService cservice,
 			              DeviceRequest           bean,
 			              IPublisher<DeviceRequest> statusNotifier) {
