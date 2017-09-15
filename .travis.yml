@@ -1,6 +1,5 @@
 dist: trusty
 sudo: required
-group: deprecated-2017Q3
 
 # SonarCloud
 # See https://docs.travis-ci.com/user/sonarcloud/
