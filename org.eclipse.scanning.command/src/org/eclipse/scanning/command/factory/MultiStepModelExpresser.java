@@ -22,17 +22,18 @@ class MultiStepModelExpresser extends PyModelExpresser<MultiStepModel> {
 
 	@Override
 	public String pyExpress(MultiStepModel mmodel, Collection<IROI> rois, boolean verbose) {
-		
-		if (rois != null && rois.size() > 0) throw new IllegalStateException("StepModels cannot be associated with ROIs.");
-		
+
+		if (rois != null && !rois.isEmpty()) throw new IllegalStateException("StepModels cannot be associated with ROIs.");
+
 		StringBuilder buf = new StringBuilder();
 		buf.append("mstep(");
 		buf.append(verbose?"axis=":"");
 		buf.append("'"+mmodel.getName()+"'");
-		buf.append(", [");
-		
+		buf.append(verbose?", stepModels=[":", [");
+
+
 		for (Iterator<StepModel> it = mmodel.getStepModels().iterator(); it.hasNext();) {
-			String step =  getString(it.next());
+			String step = getString(it.next());
 			buf.append(step);
             if (it.hasNext()) buf.append(", ");
 		}
@@ -41,18 +42,17 @@ class MultiStepModelExpresser extends PyModelExpresser<MultiStepModel> {
 	}
 
 	static final String getString(StepModel model) {
-		// TODO Use StringBuilder
 		StringBuilder ret = new StringBuilder("StepModel(");
 		ret.append("'"+model.getName()+"'"+", ");
 		ret.append(model.getStart()+", ");
 		ret.append(model.getStop()+", ");
 		ret.append(model.getStep());
-		
+
 		if (model.getExposureTime()>0d) {
 			ret.append(", ");
 			ret.append(model.getExposureTime());
 		}
-			
+
 		ret.append(")");
 		return ret.toString();
 	}
