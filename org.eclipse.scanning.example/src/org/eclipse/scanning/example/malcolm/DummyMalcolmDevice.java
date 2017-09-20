@@ -506,24 +506,24 @@ public class DummyMalcolmDevice extends AbstractMalcolmDevice<DummyMalcolmModel>
 	}
 
 	@ScanFinally
-	public void scanFinally() {
+	public void scanFinally() throws ScanningException {
 		// close all the nexus file
 		if (devices!=null) for (Map.Entry<String, IDummyMalcolmControlledDevice> entry : devices.entrySet()) {
 			try {
 				entry.getValue().closeNexusFile();
 			} catch (NexusException e) {
-				throw new RuntimeException("Unable to create nexus file for device " + entry.getKey());
+				throw new ScanningException("Unable to create nexus file for device " + entry.getKey());
 			}
 		}
 
 		// reset device state for next scan.
 		devices = null;
 		firstRunCompleted = false;
+		setDeviceState(DeviceState.READY);
 	}
 
 	@Override
-	protected void setDeviceState(DeviceState nstate) throws ScanningException {
-		System.err.println("Setting malcolm device state to: " + nstate); // TODO remove
+	protected void setDeviceState(DeviceState nstate) {
 		deviceState = nstate;
 		if (state != null) {
 			state.setValue(nstate.toString());
