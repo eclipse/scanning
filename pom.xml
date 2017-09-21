@@ -10,10 +10,18 @@
 		<maven>3.0</maven>
 	</prerequisites>
 
-	<modules>
-        <module>org.eclipse.scanning.target.platform</module>
-		<module>../org.eclipse.dawnsci</module>
+	<profiles>
+		<profile>
+			<id>externalModules</id>
+			<activation><activeByDefault>true</activeByDefault></activation>
+			<modules>
+				<module>../org.eclipse.dawnsci</module>
+			</modules>
+		</profile>
+	</profiles>
 
+	<modules>
+		<module>org.eclipse.scanning.target.platform</module>
 		<module>org.eclipse.scanning.api</module>
 		<module>org.eclipse.scanning.command</module>
 		<module>org.eclipse.scanning.connector.epics</module>

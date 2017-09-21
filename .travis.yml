@@ -79,7 +79,9 @@ script:
  - mvn -T 4 -q clean install
  - mvn -q surefire:test -Dtest.includes=org/eclipse/scanning/**/Suite.java
  - mvn -q surefire:test -Dtest.includes=org/eclipse/scanning/**/UISuite.java -Dlog4j.configuration=log4j.properties
+# Exclude external modules from sonar, to prevent `should be relative to project baseDir` error in travis
+# see https://stackoverflow.com/q/46243616/42473
 # Add never fail to the sonar scan job so that the failure when processing a pull request from a forked repository
 # doesn't block those pull requests from ever being merged. This also prevents pull requests which touch lots of files
 # from being blocked due to there being too many existing critical or blocker sonar issues.
- - mvn -q --fail-never sonar:sonar
+ - mvn -e -P !externalModules --fail-never sonar:sonar
