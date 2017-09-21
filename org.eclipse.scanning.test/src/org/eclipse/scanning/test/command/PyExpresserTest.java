@@ -41,7 +41,7 @@ import org.junit.Test;
 
 
 public class PyExpresserTest {
-	
+
 	private PyExpressionFactory factory;
 
 	@Before
@@ -74,7 +74,7 @@ public class PyExpresserTest {
 				"mscan(path=[step(axis='fred', start=0.0, stop=10.0, step=1.0)], mon=['someMonitor'])",
 				factory.pyExpress(request, true));
 	}
-	
+
 	@Test
 	public void testScanRequestWithMonitor_Repeat()
 			throws Exception {
@@ -180,21 +180,21 @@ public class PyExpresserTest {
 
 		MultiStepModel mmodel = new MultiStepModel();
 		mmodel.setName("fred");
-		
+
 		assertEquals(  // Concise.
 				"mstep('fred', [])",
 				factory.pyExpress(mmodel, false));
 		assertEquals(  // Verbose.
-				"mstep(axis='fred', [])",
+				"mstep(axis='fred', stepModels=[])",
 				factory.pyExpress(mmodel, true));
 	}
-	
+
 	@Test
 	public void testMultiStepModelOneStep() throws Exception{
 
 		MultiStepModel mmodel = new MultiStepModel();
 		mmodel.setName("fred");
-		
+
 		StepModel smodel = new StepModel();
 		smodel.setStart(0);
 		smodel.setStop(10);
@@ -206,16 +206,16 @@ public class PyExpresserTest {
 				"mstep('fred', [StepModel('fred', 0.0, 10.0, 1.0)])",
 				factory.pyExpress(mmodel, false));
 		assertEquals(  // Verbose.
-				"mstep(axis='fred', [StepModel('fred', 0.0, 10.0, 1.0)])",
+				"mstep(axis='fred', stepModels=[StepModel('fred', 0.0, 10.0, 1.0)])",
 				factory.pyExpress(mmodel, true));
 	}
-	
+
 	@Test
 	public void testMultiStepModelOneStepWithExposure() throws Exception{
 
 		MultiStepModel mmodel = new MultiStepModel();
 		mmodel.setName("fred");
-		
+
 		StepModel smodel = new StepModel();
 		smodel.setStart(0);
 		smodel.setStop(10);
@@ -228,23 +228,23 @@ public class PyExpresserTest {
 				"mstep('fred', [StepModel('fred', 0.0, 10.0, 1.0, 0.1)])",
 				factory.pyExpress(mmodel, false));
 		assertEquals(  // Verbose.
-				"mstep(axis='fred', [StepModel('fred', 0.0, 10.0, 1.0, 0.1)])",
+				"mstep(axis='fred', stepModels=[StepModel('fred', 0.0, 10.0, 1.0, 0.1)])",
 				factory.pyExpress(mmodel, true));
 	}
-	
+
 	@Test
 	public void testMultiStepModelTwoSteps() throws Exception{
 
 		MultiStepModel mmodel = new MultiStepModel();
 		mmodel.setName("fred");
-		
+
 		StepModel smodel = new StepModel();
 		smodel.setStart(0);
 		smodel.setStop(10);
 		smodel.setStep(1);
 		smodel.setName("fred");
 		mmodel.addStepModel(smodel);
-		
+
 		smodel = new StepModel();
 		smodel.setStart(20);
 		smodel.setStop(30);
@@ -255,12 +255,12 @@ public class PyExpresserTest {
 		assertEquals(  // Concise.
 				"mstep('fred', [StepModel('fred', 0.0, 10.0, 1.0), StepModel('bill', 20.0, 30.0, 2.0)])",
 				factory.pyExpress(mmodel, false));
-		
-		String expected = "mstep(axis='fred', [StepModel('fred', 0.0, 10.0, 1.0), StepModel('bill', 20.0, 30.0, 2.0)])";
+
+		String expected = "mstep(axis='fred', stepModels=[StepModel('fred', 0.0, 10.0, 1.0), StepModel('bill', 20.0, 30.0, 2.0)])";
 		String actual   = factory.pyExpress(mmodel, true);
 		assertEquals(expected, actual);
 	}
-	
+
 
 
 	@Test
@@ -286,7 +286,7 @@ public class PyExpresserTest {
 				"grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=False)",
 				factory.pyExpress(gmodel, new ArrayList<>(), true));
 	}
-	
+
 	@Test
 	public void testScanRequestWithProcessing() throws Exception {
 
@@ -313,7 +313,7 @@ public class PyExpresserTest {
 		String mscan = factory.pyExpress(request, false);
 		String expected = "mscan(grid(('p', 'q'), (0.0, 1.0), (10.0, 12.0), count=(2, 2), snake=False), [detector('mandelbrot', 0.1), detector('processing', -1.0)])";
 		assertEquals(expected, mscan);
-		
+
 		mscan = factory.pyExpress(request, true);
 		expected = "mscan(path=[grid(axes=('p', 'q'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(2, 2), snake=False)], det=[detector('mandelbrot', 0.1, maxIterations=500, escapeRadius=10.0, columns=301, rows=241, points=1000, maxRealCoordinate=1.5, maxImaginaryCoordinate=1.2, realAxisName='p', imaginaryAxisName='q', enableNoise=False, noiseFreeExposureTime=5.0, saveImage=True, saveSpectrum=True, saveValue=True), detector('processing', -1.0, detectorName='mandelbrot', processingFilePath='/tmp/something.nxs', xmx='1024m', timeOut=60000, numberOfCores=1, monitorForOverwrite=False)])";
 		assertEquals(expected, mscan);
@@ -352,7 +352,7 @@ public class PyExpresserTest {
 		assertEquals(expected, detector);
 	}
 
-	
+
 	@Test
 	public void testRasterModel() throws Exception {
 
