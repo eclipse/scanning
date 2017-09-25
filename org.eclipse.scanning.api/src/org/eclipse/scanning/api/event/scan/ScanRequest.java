@@ -319,6 +319,7 @@ public class ScanRequest<T> implements Serializable {
 		this.after = after;
 	}
 
+	@SuppressWarnings("squid:S1452")
 	public ScriptResponse<?> getBeforeResponse() {
 		return beforeResponse;
 	}
@@ -327,6 +328,7 @@ public class ScanRequest<T> implements Serializable {
 		this.beforeResponse = beforeResponse;
 	}
 
+	@SuppressWarnings("squid:S1452")
 	public ScriptResponse<?> getAfterResponse() {
 		return afterResponse;
 	}

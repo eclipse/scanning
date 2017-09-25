@@ -92,6 +92,7 @@ class _Positioner extends AbstractRemoteService implements IPositioner {
 		}
 	}
 
+	@SuppressWarnings("squid:S1168")
 	@Override
 	public List<IScannable<?>> getMonitorsPerPoint() throws ScanningException {
 		// TODO Use the _Scannable which is a remote scannable connection.

@@ -130,6 +130,7 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		monitorsModel = monitors;
 	}
 
+	@SuppressWarnings("squid:S1452")
 	public ScanRequest<?> getScanReq() {
 		return scanReq;
 	}
@@ -211,6 +212,7 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		return result;
 	}
 
+	@SuppressWarnings("squid:S3776")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

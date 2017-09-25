@@ -174,6 +174,7 @@ public abstract class AbstractServletTest extends BrokerTest {
 		}
 	}
 
+	@SuppressWarnings("sonar:S1192")
 	protected ScanBean createStepScan() throws IOException {
 		// We write some pojos together to define the scan
 		final ScanBean bean = new ScanBean();

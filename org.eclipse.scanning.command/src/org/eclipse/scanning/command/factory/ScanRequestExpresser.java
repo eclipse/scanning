@@ -19,6 +19,7 @@ import org.eclipse.scanning.command.ParserServiceImpl;
 
 class ScanRequestExpresser extends PyModelExpresser<ScanRequest<?>> {
 
+	@SuppressWarnings("squid:S3776")
 	@Override
 	String pyExpress(ScanRequest<?> request, boolean verbose) throws Exception {
 

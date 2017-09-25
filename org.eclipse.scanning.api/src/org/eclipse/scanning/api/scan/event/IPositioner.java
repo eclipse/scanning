@@ -78,6 +78,7 @@ public interface IPositioner extends IPositionListenable {
 	 * @return monitors
 	 * @throws ScanningException
 	 */
+	@SuppressWarnings("squid:S1452")
 	List<IScannable<?>> getMonitorsPerPoint()  throws ScanningException;
 
 	/**

@@ -28,7 +28,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.IScannable;
-import org.eclipse.scanning.api.MonitorRole;
 import org.eclipse.scanning.api.annotation.scan.AnnotationManager;
 import org.eclipse.scanning.api.annotation.scan.FileDeclared;
 import org.eclipse.scanning.api.annotation.scan.PointEnd;
@@ -420,6 +419,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		}
 	}
 
+	@SuppressWarnings("squid:S1163")
 	private void close(boolean errorFound, IPosition last) throws ScanningException {
 		try {
 			try {
@@ -571,6 +571,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	 * @return true if state has not been set to a rest one, i.e. we are still scanning.
 	 * @throws Exception
 	 */
+	@SuppressWarnings("squid:S2274")
 	private boolean checkPaused() throws Exception {
 
 		if (!getDeviceState().isRunning() && getDeviceState()!=DeviceState.ARMED) {
