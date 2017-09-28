@@ -10,7 +10,7 @@
 <unit id="uk.ac.diamond.dawn.product.feature.feature.group" version="2.5.0.v20170619-1505"/>
 <unit id="org.eclipse.equinox.executable.feature.group" version="3.6.200.v20150602-1417"/>
 <unit id="org.dawnsci.base.product.feature.feature.group" version="2.5.0.v20170619-1505"/>
-<repository location="http://www.opengda.org/DawnDiamond/master/updates/snapshot/"/>
+<repository location="https://alfred.diamond.ac.uk/DawnDiamond/master/updates/snapshot/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
 <unit id="epp.package.rcp" version="4.5.2.20160218-0600"/>
