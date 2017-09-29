@@ -14,7 +14,7 @@ package org.eclipse.scanning.api.points;
 public class GeneratorException extends Exception {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2484455579381036697L;
 

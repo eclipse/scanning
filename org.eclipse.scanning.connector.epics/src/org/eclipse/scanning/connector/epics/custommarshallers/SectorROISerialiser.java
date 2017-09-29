@@ -28,7 +28,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom serialiser for Circular ROI.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -37,7 +37,7 @@ public class SectorROISerialiser implements IPVStructureSerialiser<SectorROI> {
 	@Override
 	public Structure buildStructure(Serialiser serialiser, SectorROI roi) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-		
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			add("averageArea", ScalarType.pvBoolean).
 			add("dpp", ScalarType.pvDouble).
@@ -54,19 +54,19 @@ public class SectorROISerialiser implements IPVStructureSerialiser<SectorROI> {
 	@Override
 	public void populatePVStructure(Serialiser serialiser, SectorROI roi, PVStructure pvStructure) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		PVBoolean averageArea = pvStructure.getSubField(PVBoolean.class, "averageArea");
-		averageArea.put(roi.isAverageArea());		
+		averageArea.put(roi.isAverageArea());
 		PVDouble dpp = pvStructure.getSubField(PVDouble.class, "dpp");
-		dpp.put(roi.getDpp());			
+		dpp.put(roi.getDpp());
 		PVInt symmetry = pvStructure.getSubField(PVInt.class, "symmetry");
 		symmetry.put(roi.getSymmetry());
 		PVDoubleArray angles = pvStructure.getSubField(PVDoubleArray.class, "angles");
 		angles.put(0, roi.getAngles().length, roi.getAngles(), 0);
 		PVDoubleArray anglesDegrees = pvStructure.getSubField(PVDoubleArray.class, "anglesDegrees");
-		anglesDegrees.put(0, roi.getAnglesDegrees().length, roi.getAnglesDegrees(), 0);		
+		anglesDegrees.put(0, roi.getAnglesDegrees().length, roi.getAnglesDegrees(), 0);
 		PVDoubleArray radii = pvStructure.getSubField(PVDoubleArray.class, "radii");
 		radii.put(0, roi.getRadii().length, roi.getRadii(), 0);
 		PVDoubleArray point = pvStructure.getSubField(PVDoubleArray.class, "point");
 		point.put(0, roi.getPoint().length, roi.getPoint(), 0);
 	}
-	
+
 }

@@ -31,7 +31,7 @@ public class RandomOffsetMutator implements IMutator {
 		this.axes = axes;
 		this.maxOffsets = maxOffsets;
 	}
-	
+
 	public int getSeed() {
 		return seed;
 	}
@@ -55,18 +55,18 @@ public class RandomOffsetMutator implements IMutator {
 	public void setMaxOffsets(Map<String, Double> maxOffsets) {
 		this.maxOffsets = maxOffsets;
 	}
-	
+
 	@Override
 	public Object getMutatorAsJythonObject() {
 		JythonObjectFactory randomOffsetMutatorFactory = ScanPointGeneratorFactory.JRandomOffsetMutatorFactory();
-        
+
         PyList pyAxes = new PyList(axes);
-        
+
         PyDictionary maxOffset = new PyDictionary();
         for (String axis : maxOffsets.keySet()) {
-        	maxOffset.put(axis, maxOffsets.get(axis));
+		maxOffset.put(axis, maxOffsets.get(axis));
         }
-        
+
 		return randomOffsetMutatorFactory.createObject(seed, pyAxes, maxOffset);
 	}
 }

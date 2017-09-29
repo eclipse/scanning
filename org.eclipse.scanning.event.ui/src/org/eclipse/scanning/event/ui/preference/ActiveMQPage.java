@@ -22,13 +22,13 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
  *
  */
 public class ActiveMQPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage{
-	
+
 	// Do not change, referenced externally.
 	public static final String ID = "org.dawnsci.commandserver.ui.activemqPage";
 
 	public ActiveMQPage() {
 		super();
-		
+
 		final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		setPreferenceStore(store);
 		setDescription("Preferences for connecting auto-processing reruns to the command server.");
@@ -36,7 +36,7 @@ public class ActiveMQPage extends FieldEditorPreferencePage implements IWorkbenc
 
 	@Override
 	protected void createFieldEditors() {
-		
+
 	    final StringFieldEditor uri = new StringFieldEditor(CommandConstants.JMS_URI, "Comamnd Server", getFieldEditorParent());
 	    addField(uri);
 
@@ -47,7 +47,7 @@ public class ActiveMQPage extends FieldEditorPreferencePage implements IWorkbenc
 	@Override
 	public void init(IWorkbench workbench) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

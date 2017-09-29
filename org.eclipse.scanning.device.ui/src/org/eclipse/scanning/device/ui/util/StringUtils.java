@@ -8,7 +8,7 @@
  *
  * Contributors:
  *    Matthew Gerring - initial API and implementation and/or initial documentation
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.scanning.device.ui.util;
 
 import java.util.Arrays;
@@ -20,25 +20,25 @@ import java.util.Arrays;
  *
  */
 public class StringUtils {
-	
+
 
 	/**
 	 * Returns a StringBuilder with only the digits and . contained
 	 * in the original string.
-	 * 
+	 *
 	 * @param text
-	 * @param decimalPlaces 
+	 * @param decimalPlaces
 	 * @return StringBuilder
 	 */
 	public static final StringBuilder keepDigits(final String text,
 			                                           int    decimalPlaces) {
-		
+
 		// Used to make algorithm below simpler, bit of a hack.
 		if (decimalPlaces==0) decimalPlaces = -1;
-		
+
 		final StringBuilder buf = new StringBuilder();
 		// Remove non digits
-		final char [] ca   = text.toCharArray();		
+		final char [] ca   = text.toCharArray();
 		int decCount = 0;
 		for (int i =0;i<ca.length;++i) {
 			if (i==0&&ca[i]=='-') {
@@ -49,14 +49,14 @@ public class StringUtils {
 				if ('.'==ca[i]||decCount>0) {
 					++decCount;
 				}
-	        	if (decCount<=decimalPlaces+1) buf.append(ca[i]);
+			if (decCount<=decimalPlaces+1) buf.append(ca[i]);
 	        } else {
-	        	break;
+			break;
 	        }
 		}
         return buf;
 	}
-	
+
 	/**
 	 * Returns true if digit or .
 	 * @param c
@@ -74,40 +74,38 @@ public class StringUtils {
 	 * @param value
 	 */
 	public static String toString(Object value) {
-		
+
 		if (value==null) return null;
-		
+
         if (value instanceof short[]) {
-        	return Arrays.toString((short[])value);
-        	
+		return Arrays.toString((short[])value);
+
         } else if  (value instanceof int[]) {
-        	return Arrays.toString((int[])value);
-        	
+		return Arrays.toString((int[])value);
+
         } else if  (value instanceof long[]) {
-        	return Arrays.toString((long[])value);
-        	
+		return Arrays.toString((long[])value);
+
         } else if  (value instanceof char[]) {
-        	return Arrays.toString((char[])value);
-        	
+		return Arrays.toString((char[])value);
+
         } else if  (value instanceof float[]) {
-        	return Arrays.toString((float[])value);
-        	
+		return Arrays.toString((float[])value);
+
         } else if  (value instanceof double[]) {
-        	return Arrays.toString((double[])value);
-        	
+		return Arrays.toString((double[])value);
+
         } else if  (value instanceof boolean[]) {
-        	return Arrays.toString((boolean[])value);
-        	
+		return Arrays.toString((boolean[])value);
+
         } else if  (value instanceof byte[]) {
-        	return Arrays.toString((byte[])value);
-        	
+		return Arrays.toString((byte[])value);
+
         } else if  (value instanceof Object[]) {
-        	return Arrays.toString((Object[])value);
+		return Arrays.toString((Object[])value);
         }
-        
+
         return value.toString();
 	}
 
 }
-
-	

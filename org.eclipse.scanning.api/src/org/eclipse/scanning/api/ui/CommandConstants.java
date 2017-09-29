@@ -17,8 +17,8 @@ public class CommandConstants {
 	public static final String DIR_CHECKING_URI      = "org.dawnsci.commandserver.xia2.directory.checkingURL";
 	public static final String DEFAULT_JMS_URI       = "tcp://sci-serv5.diamond.ac.uk:61616";
 	public static final String DEFAULT_CHECKING_URI  = "http://cs04r-sc-vserv-45.diamond.ac.uk:8619";
-	
-	
+
+
 	/**
 	 * Attempts to read the probable broker URI from the system configuration.
 	 * May return null.
@@ -28,7 +28,7 @@ public class CommandConstants {
 		String uri = null;
 	    if (uri == null) uri = System.getProperty("org.eclipse.scanning.broker.uri");
 	    if (uri == null) uri = System.getProperty("GDA/gda.activemq.broker.uri"); // GDA specific but not a compilation dependency.
-	    if (uri == null) uri = System.getProperty("gda.activemq.broker.uri"); // GDA specific but not a compilation dependency.		
+	    if (uri == null) uri = System.getProperty("gda.activemq.broker.uri"); // GDA specific but not a compilation dependency.
 		return uri;
 	}
 

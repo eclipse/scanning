@@ -23,13 +23,13 @@ import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 
 /**
- * Queue is a concrete implementation of {@link IQueue}. It holds details of 
- * the consumer and of the consumer/queue configuration needed for the 
+ * Queue is a concrete implementation of {@link IQueue}. It holds details of
+ * the consumer and of the consumer/queue configuration needed for the
  * {@link IQueueService} to control the queue.
- * 
+ *
  * @author Michael Wharmby
  *
- * @param <T> Base type of atom/bean operated on by the queue, e.g. 
+ * @param <T> Base type of atom/bean operated on by the queue, e.g.
  *            {@link QueueAtom} or {@QueueBean}.
  */
 public class Queue<T extends Queueable> implements IQueue<T> {
@@ -38,16 +38,16 @@ public class Queue<T extends Queueable> implements IQueue<T> {
 	private final URI uri;
 	private final IConsumer<T> consumer;
 
-	private final String submissionQueueName, statusSetName, statusTopicName, 
+	private final String submissionQueueName, statusSetName, statusTopicName,
 	heartbeatTopicName, commandSetName, commandTopicName;
 
 	private QueueStatus status;
 
 	/**
-	 * Constructs a Queue object from minimal arguments. Names of heartbeat 
-	 * topic and commmand set/topic will be automatically generated, based on 
+	 * Constructs a Queue object from minimal arguments. Names of heartbeat
+	 * topic and commmand set/topic will be automatically generated, based on
 	 * the suffixes in {@link IQueue}.
-	 * 
+	 *
 	 * @param queueID String name of queue.
 	 * @param uri URI of the broker.
 	 * @throws EventException When consumer cannot be created.
@@ -57,30 +57,30 @@ public class Queue<T extends Queueable> implements IQueue<T> {
 	}
 
 	/**
-	 * Constructs a Queue with heartbeats published to a specific destination. 
-	 * Command set/topics will be automatically generated, based on  the 
+	 * Constructs a Queue with heartbeats published to a specific destination.
+	 * Command set/topics will be automatically generated, based on  the
 	 * suffixes in {@link IQueue}.
-	 * 
+	 *
 	 * @param queueID String name of queue.
 	 * @param uri URI of the broker
 	 * @param heartbeatTopicName String topic name where heartbeats published.
 	 * @throws EventException When consumer cannot be created.
 	 */
 	public Queue(String queueID, URI uri, String heartbeatTopicName) throws EventException {
-		this(queueID, uri, heartbeatTopicName, queueID+IQueue.COMMAND_SET_SUFFIX, 
+		this(queueID, uri, heartbeatTopicName, queueID+IQueue.COMMAND_SET_SUFFIX,
 				queueID+IQueue.COMMAND_TOPIC_SUFFIX);
 	}
 
 	/**
-	 * Constructs a Queue with heartbeats & commands published to specific 
+	 * Constructs a Queue with heartbeats & commands published to specific
 	 * destinations.
-	 *  
+	 *
 	 * @param queueID String name of queue.
 	 * @param uri URI of the broker
 	 * @param heartbeatTopicName String topic name where heartbeats published.
-	 * @param commandSetName String queue name where consumer commands will be 
+	 * @param commandSetName String queue name where consumer commands will be
 	 *                       stored.
-	 * @param commandTopicName String topic name where commands will be 
+	 * @param commandTopicName String topic name where commands will be
 	 *                         published.
 	 * @throws EventException When consumer cannot be created.
 	 */
@@ -92,7 +92,7 @@ public class Queue<T extends Queueable> implements IQueue<T> {
 		//Record all the destination paths
 		submissionQueueName = queueID+IQueue.SUBMISSION_QUEUE_SUFFIX;
 		statusSetName = queueID+IQueue.STATUS_SET_SUFFIX;
-		statusTopicName = queueID+IQueue.STATUS_TOPIC_SUFFIX; 
+		statusTopicName = queueID+IQueue.STATUS_TOPIC_SUFFIX;
 		this.heartbeatTopicName = heartbeatTopicName;
 		this.commandSetName = commandSetName;
 		this.commandTopicName = commandTopicName;
@@ -122,7 +122,7 @@ public class Queue<T extends Queueable> implements IQueue<T> {
 	public void stop() throws EventException {
 		QueueStatus previousState = status;
 		status = QueueStatus.STOPPING;
-		
+
 		try {
 			//If the consumer has been killed, we still need to set status STOPPED;
 			//If it's still active, then we need to push the stop button.
@@ -171,7 +171,7 @@ public class Queue<T extends Queueable> implements IQueue<T> {
 	public String getStatusTopicName() {
 		return statusTopicName;
 	}
- 
+
 	@Override
 	public String getHeartbeatTopicName() {
 		return heartbeatTopicName;

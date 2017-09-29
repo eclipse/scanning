@@ -13,22 +13,22 @@ package org.eclipse.scanning.api.event.status;
 
 /**
  * Class used to broadcast fact that user wanted to open a given item.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class OpenRequest {
 
 	private StatusBean statusBean;
-	
+
 	public OpenRequest() {
-		
+
 	}
 
 	public OpenRequest(StatusBean statusBean) {
 		this.statusBean = statusBean;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

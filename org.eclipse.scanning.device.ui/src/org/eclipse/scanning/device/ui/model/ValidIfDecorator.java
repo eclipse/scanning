@@ -37,25 +37,25 @@ class ValidIfDecorator implements IDecoratorValidator {
 	@Override
 	public boolean check(String svalue, String delta) {
 
-   		final IExpressionService service = ServiceHolder.getExpressionService();
-   		if (service==null) return true;
+		final IExpressionService service = ServiceHolder.getExpressionService();
+		if (service==null) return true;
 		try {
 			Number value = parseValue(svalue);
-	   		final IExpressionEngine  engine  = service.getExpressionEngine();
-	   		engine.createExpression(expression);
+			final IExpressionEngine  engine  = service.getExpressionEngine();
+			engine.createExpression(expression);
 
-	   		final Map<String, Object>    values = new HashMap<>();
-	   		final Collection<FieldValue> fields = FieldUtils.getModelFields(model);
-	   		for (FieldValue field : fields) {
-	   			Object val = field.get();
-	   			if (val instanceof Enum) val = ((Enum)val).name();
-	   			values.put(field.getName(), val);
+			final Map<String, Object>    values = new HashMap<>();
+			final Collection<FieldValue> fields = FieldUtils.getModelFields(model);
+			for (FieldValue field : fields) {
+				Object val = field.get();
+				if (val instanceof Enum) val = ((Enum)val).name();
+				values.put(field.getName(), val);
 			}
 		    values.put(fieldName, value);
 
-	   		engine.setLoadedVariables(values);
+			engine.setLoadedVariables(values);
 
-	   		return (Boolean)engine.evaluate();
+			return (Boolean)engine.evaluate();
 
 		} catch (Exception ne) {
 			ne.printStackTrace();

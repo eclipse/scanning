@@ -89,7 +89,7 @@ import org.junit.Test;
 
 @Ignore("You must have jetty in the runner path to run this and travis does not")
 public class MandelbrotRemoteTest extends NexusTest {
-	
+
 	private static IRemoteDatasetService   dataService;
 
 
@@ -102,19 +102,19 @@ public class MandelbrotRemoteTest extends NexusTest {
 
 	@Before
 	public void before() throws Exception {
-		
-	
+
+
         // Start the DataServer
 		int port   = getFreePort(8080);
 		server = new DataServer();
 		server.setPort(port);
 		server.start(false);
-		
+
 		System.out.println("Started DataServer on port "+port);
-		
+
 		this.model = createMandelbrotModel();
 		model.setExposureTime(0.1);
-		
+
 		detector = (IWritableDetector<MandelbrotModel>)dservice.createRunnableDevice(model);
 		assertNotNull(detector);
 		detector.addRunListener(new IRunListener() {
@@ -127,7 +127,7 @@ public class MandelbrotRemoteTest extends NexusTest {
 		dataService = new RemoteDatasetServiceImpl();
 		org.eclipse.dawnsci.remotedataset.ServiceHolder.setLoaderService(new LoaderServiceMock());
 	}
-	
+
 	@After
 	public void stop() {
 		server.stop();
@@ -137,37 +137,37 @@ public class MandelbrotRemoteTest extends NexusTest {
 	public void test2DNexusScan() throws Exception {
 		testScan(8,5);
 	}
-	
+
 	@Test
 	public void test3DNexusScan() throws Exception {
 		testScan(3,2,5);
 	}
-	
+
 	@Test
 	public void test4DNexusScan() throws Exception {
 		testScan(2,3,2,5);
 	}
-	
+
 	private void testScan(int... shape) throws Exception {
-		
+
 		IRunnableDevice<ScanModel> scanner = createGridScan(detector, shape); // Outer scan of another scannable, for instance temp.
 		((AbstractRunnableDevice<ScanModel>)scanner).start(null); // Does the scan in a thread.
-		
+
 		// We now connect a remote dataset looking at the scan file and see if we get information about it.
 		final ScanModel mod = ((AbstractRunnableDevice<ScanModel>)scanner).getModel();
 		String filePath = ((AbstractRunnableDevice<ScanModel>)scanner).getModel().getFilePath();
-		
+
 		IDatasetConnector remote = dataService.createRemoteDataset("localhost", server.getPort());
 		remote.setPath(filePath);
 		remote.setDatasetName("/entry/instrument/"+mod.getDetectors().get(0).getName()+"/data");
 		remote.setWritingExpected(true); // We know that we are writing to this file, so we declare it.
-		
+
 		remote.connect();
 		scanner.latch(1, TimeUnit.SECONDS);
 		try {
-			
+
 			final List<DataEvent> events = new ArrayList<DataEvent>(7);
-			remote.addDataListener(new IDataListener() {				
+			remote.addDataListener(new IDataListener() {
 				@Override
 				public void dataChangePerformed(DataEvent evt) {
 					System.out.println("Data change notified for "+evt.getFilePath());
@@ -175,8 +175,8 @@ public class MandelbrotRemoteTest extends NexusTest {
 					events.add(evt);
 				}
 			});
-			
-			
+
+
 			// Wait until the scan end.
 			final CountDownLatch latch = new CountDownLatch(1);
 			((AbstractRunnableDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
@@ -191,56 +191,56 @@ public class MandelbrotRemoteTest extends NexusTest {
 				}
 			});
 			latch.await();
-			
+
 			assertTrue("There should be some events, there were: "+events.size(), events.size()>0); // There won't be the full 40 but there should be a lot of them.
-			
+
 			int[] fshape = ArrayUtils.addAll(shape, new int[]{model.getRows(), model.getColumns()});
 			int[] eshape = events.get(events.size()-1).getShape();
 			assertTrue(Arrays.equals(fshape, eshape));
-			
+
 		} finally {
 			remote.disconnect();
 		}
-		
+
 		// Check we reached ready (it will normally throw an exception on error)
 		checkNexusFile(scanner, shape); // Step model is +1 on the size
 	}
 
 	private void checkNexusFile(IRunnableDevice<ScanModel> scanner, int... sizes) throws NexusException, ScanningException, DatasetException {
-		
+
 		final ScanModel mod = ((AbstractRunnableDevice<ScanModel>)scanner).getModel();
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
-		
+
 		String filePath = ((AbstractRunnableDevice<ScanModel>)scanner).getModel().getFilePath();
 		NexusFile nf = fileFactory.newNexusFile(filePath);
 		nf.openToRead();
-		
+
 		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 		NXroot rootNode = (NXroot) nexusTree.getGroupNode();
 		NXentry entry = rootNode.getEntry();
 		NXinstrument instrument = entry.getInstrument();
-		
+
 		// check that the scan points have been written correctly
 		assertSolsticeScanGroup(entry, false, false, sizes);
-		
+
 		LinkedHashMap<String, List<String>> detectorDataFields = new LinkedHashMap<>();
 		// axis for additional dimensions of a datafield, e.g. image
 		detectorDataFields.put(NXdetector.NX_DATA, Arrays.asList("real", "imaginary"));
 		detectorDataFields.put("spectrum", Arrays.asList("spectrum_axis"));
 		detectorDataFields.put("value", Collections.emptyList());
-		
+
 		String detectorName = mod.getDetectors().get(0).getName();
 		NXdetector detector = instrument.getDetector(detectorName);
 		// map of detector data field to name of nxData group where that field is the @signal field
-		Map<String, String> expectedDataGroupNames = 
+		Map<String, String> expectedDataGroupNames =
 				detectorDataFields.keySet().stream().collect(Collectors.toMap(Function.identity(),
 						x -> detectorName + (x.equals(NXdetector.NX_DATA) ? "" : "_" + x)));
-		
+
 		// validate the NXdata generated by the NexusDataBuilder
 		Map<String, NXdata> nxDataGroups = entry.getChildren(NXdata.class);
 		assertEquals(detectorDataFields.size(), nxDataGroups.size());
 		assertTrue(nxDataGroups.keySet().containsAll(expectedDataGroupNames.values()));
-		
+
 		for (String nxDataGroupName : nxDataGroups.keySet()) {
 			NXdata nxData = entry.getData(nxDataGroupName);
 			String sourceFieldName = nxDataGroupName.equals(detectorName) ? NXdetector.NX_DATA :
@@ -250,11 +250,11 @@ public class MandelbrotRemoteTest extends NexusTest {
 			DataNode dataNode = detector.getDataNode(sourceFieldName);
 			IDataset dataset = dataNode.getDataset().getSlice();
 			assertSame(dataNode, nxData.getDataNode(sourceFieldName));
-			
+
 			int[] shape = dataset.getShape();
-	
+
 			for (int i = 0; i < sizes.length; i++) assertEquals(sizes[i], shape[i]);
-	
+
 			// Make sure none of the numbers are NaNs. The detector
 			// is expected to fill this scan with non-nulls.
 			final PositionIterator it = new PositionIterator(shape);
@@ -262,43 +262,43 @@ public class MandelbrotRemoteTest extends NexusTest {
 				int[] next = it.getPos();
 				assertFalse(Double.isNaN(dataset.getDouble(next)));
 			}
-	
+
 			// Check axes
 			final IPosition pos = mod.getPositionIterable().iterator().next();
 			final Collection<String> names = pos.getNames();
-	
+
 			// Append _value_demand to each name in list, then add detector axis fields to result
 			List<String> expectedAxesNames = Stream.concat(
 					names.stream().map(x -> x + "_value_set"),
 					detectorDataFields.get(sourceFieldName).stream()).collect(Collectors.toList());
 			assertAxes(nxData, expectedAxesNames.toArray(new String[expectedAxesNames.size()]));
-			
+
 			int[] defaultDimensionMappings = IntStream.range(0, sizes.length).toArray();
 			int i = -1;
 			for (String  positionerName : names) {
-				
+
 			    i++;
 				NXpositioner positioner = instrument.getPositioner(positionerName);
 				assertNotNull(positioner);
 				dataNode = positioner.getDataNode("value_set");
-				
+
 				dataset = dataNode.getDataset().getSlice();
 				shape = dataset.getShape();
 				assertEquals(1, shape.length);
 				assertEquals(sizes[i], shape[0]);
-	
+
 				String nxDataFieldName = positionerName + "_value_set";
 				assertSame(dataNode, nxData.getDataNode(nxDataFieldName));
 				assertIndices(nxData, nxDataFieldName, i);
 				assertTarget(nxData, nxDataFieldName, rootNode,
 						"/entry/instrument/" + positionerName + "/value_set");
-				
+
 				// Actual values should be scanD
 				dataNode = positioner.getDataNode(NXpositioner.NX_VALUE);
 				dataset = dataNode.getDataset().getSlice();
 				shape = dataset.getShape();
 				assertArrayEquals(sizes, shape);
-				
+
 				nxDataFieldName = positionerName + "_" + NXpositioner.NX_VALUE;
 				assertSame(dataNode, nxData.getDataNode(nxDataFieldName));
 				assertIndices(nxData, nxDataFieldName, defaultDimensionMappings);
@@ -309,7 +309,7 @@ public class MandelbrotRemoteTest extends NexusTest {
 	}
 
 	private IRunnableDevice<ScanModel> createGridScan(final IRunnableDevice<?> detector, int... size) throws Exception {
-		
+
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
 		gmodel.setFastAxisName("xNex");
@@ -317,11 +317,11 @@ public class MandelbrotRemoteTest extends NexusTest {
 		gmodel.setSlowAxisName("yNex");
 		gmodel.setSlowAxisPoints(size[size.length-2]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
-		
+
 		// We add the outer scans, if any
-		if (size.length > 2) { 
+		if (size.length > 2) {
 			for (int dim = size.length-3; dim>-1; dim--) {
 				final StepModel model;
 				if (size[dim]-1>0) {
@@ -333,19 +333,19 @@ public class MandelbrotRemoteTest extends NexusTest {
 				gen = gservice.createCompoundGenerator(step, gen);
 			}
 		}
-	
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector);
-		
+
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());
 		System.out.println("File writing to "+smodel.getFilePath());
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override
@@ -371,10 +371,10 @@ public class MandelbrotRemoteTest extends NexusTest {
 	}
 
 	public static int getFreePort(final int startPort) {
-		
+
 	    int port = startPort;
 	    while(!isPortFree(port)) port++;
-	    	
+
 	    return port;
 	}
 
@@ -395,8 +395,8 @@ public class MandelbrotRemoteTest extends NexusTest {
 	        ds.setReuseAddress(true);
 	        return true;
 	    } catch (IOException e) {
-	    	// Swallow this, it's not free
-	    	return false;
+		// Swallow this, it's not free
+		return false;
 	    } finally {
 	        if (ds != null) {
 	            ds.close();

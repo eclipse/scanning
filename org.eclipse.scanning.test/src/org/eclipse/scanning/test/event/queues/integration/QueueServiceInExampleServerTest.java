@@ -29,19 +29,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class QueueServiceInExampleServerTest {
-	
+
 	private static URI uri;
 	private static IEventService eservice;
 	private static MarshallerService marshaller;
-	
+
 	private IQueueControllerService queueControl;
 	private ISubscriber<IBeanListener<StatusBean>> statusSubsc;
 	private String jqID;
-	
+
 	@BeforeClass
 	public static void setUpTestSuite() throws URISyntaxException {
 		uri = new URI("failover:(tcp://localhost:61616)?startupMaxReconnectAttempts=3");
-		
+
 		marshaller = new MarshallerService(
 				Arrays.asList(new ScanningAPIClassRegistry(),
 						new ScanningExampleClassRegistry(),
@@ -51,25 +51,25 @@ public class QueueServiceInExampleServerTest {
 		ActivemqConnectorService.setJsonMarshaller(marshaller);
 		eservice  = new EventServiceImpl(new ActivemqConnectorService());
 	}
-	
+
 	@Before
 	public void setUp() throws EventException {
 		queueControl = eservice.createRemoteService(uri, IQueueControllerService.class);
 		queueControl.startQueueService();
-		
+
 		jqID = queueControl.getJobQueueID();
 		IQueue<? extends StatusBean> queue = queueControl.getQueue(jqID);
 		String topicName = queue.getStatusTopicName();
 		statusSubsc = eservice.createSubscriber(uri, topicName);
 	}
-	
+
 	@After
 	public void tearDown() throws EventException {
 		queueControl.stopQueueService(true);
-		
+
 		statusSubsc.disconnect();
 	}
-	
+
 	@Test
 	public void testPositioner() throws Exception {
 		PositionerAtom posAt = new PositionerAtom("setT", "T", 290);//Starts at 295 with rate of change 1/s

@@ -36,6 +36,6 @@ messages = [
             ]
 
 send_all(conn, conn_dict, messages)
- 
+
 # Required to keep Python running indefinitely.
 raw_input()

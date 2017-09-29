@@ -44,12 +44,12 @@ import org.junit.Test;
 
 /**
  * Uses extension points so please run as plugin test.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class LowLevelDetectorPluginTest {
-	
+
 
 	private static INexusFileFactory factory;
 
@@ -64,36 +64,36 @@ public class LowLevelDetectorPluginTest {
 	private IRunnableDeviceService        service;
 	private IPointGeneratorService       gservice;
 	private IScannableDeviceService connector;
-	
+
 	@Before
 	public void before() {
 		connector = new MockScannableConnector(null);
 		service   = new RunnableDeviceServiceImpl(connector); // Not testing OSGi so using hard coded service.
 		gservice  = new PointGeneratorService();
 	}
-	
+
 	@Test
 	@Ignore
 	public void testDetector() throws Exception {
 		// FIXME: This test currently broken as shape contains -1
-		
+
 		// Create Nexus File
 		NexusFile file = createNexusFile();
 		final MockWritingMandlebrotModel model = new MockWritingMandlebrotModel();
 		model.setFile(file);
-		
+
 		// Create the device
 		IRunnableDevice<MockWritingMandlebrotModel> det = service.createRunnableDevice(model);
 		model.getFile().close();
 		assertNotNull(det);
 	}
-	
+
 	@Test
 	public void testMandelbrotScan() throws Exception {
 
 		// Create Nexus File
 		NexusFile file = createNexusFile();
-		
+
 		// Configure a detector with a collection time.
 		final MockWritingMandlebrotModel model = new MockWritingMandlebrotModel();
 		model.setFile(file);
@@ -106,49 +106,49 @@ public class LowLevelDetectorPluginTest {
 		smod.setSize(8);
 		IScannable<Number> x = connector.getScannable("x");
 		((IConfigurable)x).configure(smod);
-		
+
 		smod = new MockScannableModel();
 		smod.setFile(file);
 		smod.setSize(5);
 		IScannable<Number> y = connector.getScannable("y");
 		((IConfigurable)y).configure(smod);
-		
+
 		IRunnableDevice<MockWritingMandlebrotModel> det = service.createRunnableDevice(model);
 		model.getFile().close();
-		
+
 		IRunnableDevice<ScanModel> scanner = createTestScanner(det, 5, 8);
 		scanner.run(null);
-		
+
 		// Check we reached armed (it will normally throw an exception on error)
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
-		
 
-		// Check what was written. Quite a bit to do here, it is not written in the 
+
+		// Check what was written. Quite a bit to do here, it is not written in the
 		// correct locations or with the correct attributes for now...
 		NexusFile nf = factory.newNexusFile(model.getFile().getFilePath());
 		nf.openToRead();
-		
+
 		DataNode d = nf.getData("/entry1/instrument/detector/"+model.getName());
 		IDataset ds = d.getDataset().getSlice().squeeze();
 		int[] shape = ds.getShape();
 
 		assertEquals(8, shape[0]);
 		assertEquals(5, shape[1]);
-		
+
 		// Make sure none of the numbers are NaNs. The detector
 		// is expected to fill this scan with non-nulls.
         final PositionIterator it = new PositionIterator(shape);
         while(it.hasNext()) {
-        	int[] next = it.getPos();
-        	assertFalse(Double.isNaN(ds.getDouble(next)));
+		int[] next = it.getPos();
+		assertFalse(Double.isNaN(ds.getDouble(next)));
         }
-        
+
 		d     = nf.getData("/entry1/instrument/axes/"+x.getName());
 		ds    = d.getDataset().getSlice().squeeze();
 		shape = ds.getShape();
 		assertEquals(8, shape[0]);
 
-		
+
 		d     = nf.getData("/entry1/instrument/axes/"+y.getName());
 		ds    = d.getDataset().getSlice().squeeze();
 		shape = ds.getShape();
@@ -157,29 +157,29 @@ public class LowLevelDetectorPluginTest {
 	}
 
 	private NexusFile createNexusFile() throws Exception {
-		
+
 		File output = File.createTempFile("test_nexus", ".nxs");
 		output.deleteOnExit();
-		
+
 		NexusFile file = factory.newNexusFile(output.getAbsolutePath(), true);  // DO NOT COPY!
 		file.openToWrite(true); // DO NOT COPY!
 		return file;
 	}
 
 	private IRunnableDevice<ScanModel> createTestScanner(final IRunnableDevice<?> detector, int... size) throws Exception {
-		
+
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
 		gmodel.setSlowAxisPoints(size[0]);
 		gmodel.setFastAxisPoints(size[1]);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
 
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector);
-		
+
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = service.createRunnableDevice(smodel, null);
 		return scanner;

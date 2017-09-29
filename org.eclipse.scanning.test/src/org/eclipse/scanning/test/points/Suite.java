@@ -18,15 +18,15 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({
 
 	ArrayTest.class,
-	CompoundTest.class, 
-	GridTest.class, 
-	LinearTest.class, 
+	CompoundTest.class,
+	GridTest.class,
+	LinearTest.class,
 	// LissajousTest.class, FIXME Why does this not work?
-	MultiStepTest.class, 
+	MultiStepTest.class,
 	PointServiceTest.class,
 	RandomOffsetDecoratorTest.class,
-	RandomOffsetGridTest.class,	
-	RasterTest.class, 
+	RandomOffsetGridTest.class,
+	RasterTest.class,
 	ScanPointGeneratorFactoryTest.class,
 	ScanRankTest.class,
 	ScanShapeTest.class,
@@ -36,8 +36,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	JythonGeneratorTest.class
 
 	// TODO Smoke tests?
-	//GridTestLarge.class, 
-	//RasterTestLarge.class, 
+	//GridTestLarge.class,
+	//RasterTestLarge.class,
 	//CompoundTestLarge.class
 
 })

@@ -41,36 +41,36 @@ import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 /**
  * Class to test the API changes for PositionerRequest messaging.
- * 
+ *
  * NOTE: Change Python messaging examples accordingly, if any of these
  * tests fail. The 'examples' package can be found in:
  * org.eclipse.scanning.example.messaging/scripts
- * 
+ *
  * @author Martin Gaughran
  *
  */
 public class PositionerRequestMessagingAPITest extends BrokerTest {
-	
-	
+
+
 	protected IEventService             	eservice;
 	protected MockScannableConnector 		connector;
 	protected IRunnableDeviceService		dservice;
 	protected IRequester<PositionerRequest>	requester;
 	protected PositionerServlet positionerServlet;
-	
+
 	@Before
 	public void createServices() throws Exception {
-		
-		// We wire things together without OSGi here 
+
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		setUpNonOSGIActivemqMarshaller();
-		
-		eservice = new EventServiceImpl(new ActivemqConnectorService()); // Do not copy this get the service from OSGi!	
-		
+
+		eservice = new EventServiceImpl(new ActivemqConnectorService()); // Do not copy this get the service from OSGi!
+
 		// If the publisher is not given, then the mock items are not created! Use null instead to avoid publishing.
 		connector = new MockScannableConnector(null);
 		dservice = new RunnableDeviceServiceImpl(connector);
-				
+
 		setupScannableDeviceService();
 
 		Services.setEventService(eservice);
@@ -79,57 +79,57 @@ public class PositionerRequestMessagingAPITest extends BrokerTest {
 
 		connect();
 	}
-	
+
 	protected void setupScannableDeviceService() throws IOException, ScanningException {
-	
+
 		registerScannableDevice(new MockScannable("drt_mock_scannable", 10d, 2, "µm"));
-		
+
 		MockScannable x = new MockNeXusScannable("drt_mock_nexus_scannable", 0d,  3, "mm");
 		x.setRealisticMove(true);
 		x.setRequireSleep(false);
 		x.setMoveRate(10000);
-		
+
 		registerScannableDevice(x);
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	protected void registerScannableDevice(IScannable device) {
 		connector.register(device);
 	}
 
 	protected void connect() throws EventException, URISyntaxException {
-		
+
 		positionerServlet = new PositionerServlet();
 		positionerServlet.setBroker(uri.toString());
 		positionerServlet.connect();
-		
+
 		requester = eservice.createRequestor(uri, POSITIONER_REQUEST_TOPIC, POSITIONER_RESPONSE_TOPIC);
 		requester.setTimeout(10, TimeUnit.SECONDS);
 	}
-	
+
 	@After
 	public void stop() throws EventException {
-		
-    	if (requester!=null) requester.disconnect();
-    	if (positionerServlet!=null) positionerServlet.disconnect();
+
+	if (requester!=null) requester.disconnect();
+	if (positionerServlet!=null) positionerServlet.disconnect();
 	}
-	
+
 	public String getMessageResponse(String sentJson) throws Exception {
-		
+
 		PositionerRequest req = eservice.getEventConnectorService().unmarshal(sentJson, null);
 		PositionerRequest res = requester.post(req);
 		return eservice.getEventConnectorService().marshal(res);
 	}
-	
+
 	@Test
 	public void testPositioner() throws Exception {
-				
+
 		String sentJson = "{\"@type\":\"PositionerRequest\",\"positionType\":\"SET\",\"position\": {\"values\":{\"drt_mock_scannable\":290.0},\"indices\":{\"T\":0},\"stepIndex\": -1, \"dimensionNames\":[[\"drt_mock_scannable\"]]},\"uniqueId\":\"c8f12aee-d56a-49f6-bc03-9c7de9415674\"}";
 		String expectedJson = "{\"@type\":\"PositionerRequest\",\"positionType\":\"SET\",\"position\": {\"values\":{\"drt_mock_scannable\":290.0},\"indices\":{},\"stepIndex\": -1, \"dimensionNames\":[[\"drt_mock_scannable\"]]},\"uniqueId\":\"c8f12aee-d56a-49f6-bc03-9c7de9415674\"}";
-		
+
 		String returnedJson = getMessageResponse(sentJson);
-		
+
 		SubsetStatus.assertJsonContains("Failed to return correct Positioner response.", returnedJson, expectedJson);
-		
+
 	}
 }

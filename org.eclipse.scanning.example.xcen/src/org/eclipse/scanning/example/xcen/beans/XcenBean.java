@@ -15,10 +15,10 @@ import org.eclipse.scanning.api.event.status.StatusBean;
 
 /**
  * Bean to serialise with JSON and be sent to the server.
- * 
+ *
  * JSON is used rather than the direct object because we may want to have
  * a python server.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -30,7 +30,7 @@ public class XcenBean extends StatusBean {
 	private String      collection; // DatacollectionId, same as ISPyB definition
 	private double      x,y,z;
 	private GridROIBean[] grids;
-	
+
 	@Override
 	public void merge(StatusBean with) {
         super.merge(with);
@@ -130,7 +130,7 @@ public class XcenBean extends StatusBean {
 	public void setGrids(GridROIBean... grids) {
 		this.grids = grids;
 	}
-	
+
 	public void addGrid(GridROIBean grid) {
 		if (grid== null) throw new NullPointerException("Cannot add null grid!");
 		if (grids==null) {

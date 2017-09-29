@@ -26,7 +26,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom serialiser for Circular ROI.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -35,7 +35,7 @@ public class ParabolicROISerialiser implements IPVStructureSerialiser<ParabolicR
 	@Override
 	public Structure buildStructure(Serialiser serialiser, ParabolicROI roi) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-		
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			add("focalParameter", ScalarType.pvDouble).
 			add("angle", ScalarType.pvDouble).
@@ -48,11 +48,11 @@ public class ParabolicROISerialiser implements IPVStructureSerialiser<ParabolicR
 	@Override
 	public void populatePVStructure(Serialiser serialiser, ParabolicROI roi, PVStructure pvStructure) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		PVDouble focalParameter = pvStructure.getSubField(PVDouble.class, "focalParameter");
-		focalParameter.put(roi.getFocalParameter());	
+		focalParameter.put(roi.getFocalParameter());
 		PVDouble angle = pvStructure.getSubField(PVDouble.class, "angle");
-		angle.put(roi.getAngle());		
+		angle.put(roi.getAngle());
 		PVDoubleArray point = pvStructure.getSubField(PVDoubleArray.class, "point");
 		point.put(0, roi.getPoint().length, roi.getPoint(), 0);
 	}
-	
+
 }

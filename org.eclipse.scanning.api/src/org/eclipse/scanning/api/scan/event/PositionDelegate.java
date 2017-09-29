@@ -26,12 +26,12 @@ import org.eclipse.scanning.api.scan.event.Location.LocationType;
 
 /**
  * Manages position listeners.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class PositionDelegate {
-		
+
 	private Collection<IPositionListener> listeners;
 	private IPublisher<Location>          publisher;
 	private INameable                     device;
@@ -41,7 +41,7 @@ public class PositionDelegate {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param publisher to send events to, may be null.
 	 */
 	public PositionDelegate(IPublisher<Location> publisher, INameable device) {
@@ -66,7 +66,7 @@ public class PositionDelegate {
 			try {
 				publisher.broadcast(new Location(type, evnt));
 			} catch (EventException e) {
-				// We swallow this without a logger because 
+				// We swallow this without a logger because
 				// there is no logger dependency on the API.
 				e.printStackTrace();
 			}
@@ -77,7 +77,7 @@ public class PositionDelegate {
 		final PositionEvent evnt = new PositionEvent(position, device);
 		evnt.setLevel(finalLevel);
 		broadcast(LocationType.positionChanged, evnt);
-		
+
 		if (listeners==null) return;
 		IPositionListener[] ls = listeners.toArray(new IPositionListener[listeners.size()]);
 		for (IPositionListener l : ls)  l.positionChanged(evnt);
@@ -98,7 +98,7 @@ public class PositionDelegate {
 		evnt.setLevel(level);
 	    evnt.setLevelObjects(levels);
 		broadcast(LocationType.levelPerformed, evnt);
-		
+
 		if (listeners==null) return;
 		IPositionListener[] ls = listeners.toArray(new IPositionListener[listeners.size()]);
 		for (IPositionListener l : ls)  l.levelPerformed(evnt);

@@ -30,40 +30,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Generic class for processing a {@link Queueable} implementing 
+ * Generic class for processing a {@link Queueable} implementing
  * {@link IHasAtomQueue}. The processor spools the atoms in the contained queue
- * into a new queue  created through the {@link IQueueService}. The new queue 
+ * into a new queue  created through the {@link IQueueService}. The new queue
  * is monitored using the {@link QueueListener} and through the queue service.
- * 
+ *
  * @author Michael Wharmby
  *
- * @param <P> Bean implementing {@link Queueable}, but must be an  
+ * @param <P> Bean implementing {@link Queueable}, but must be an
  *            {@link IHasAtomQueue}.
  * @param <Q> Bean from within the AtomQueue - implements {@link QueueAtom}.
- * @param <T> The {@link Queueable} specified by the {@link IConsumer} 
+ * @param <T> The {@link Queueable} specified by the {@link IConsumer}
  *            instance using the parent {@link QueueProcess}. This might be a
  *            {@link QueueBean} or a {@link QueueAtom}.
  */
-public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>, 
-								Q extends QueueAtom, 
+public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
+								Q extends QueueAtom,
 								T extends Queueable> {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(AtomQueueProcessor.class);
-	
+
 	private IQueueService queueService;
 	private IQueueControllerService queueController;
 	private QueueListener<P, Q> queueListener;
 	private ISubscriber<QueueListener<P, Q>> queueSubscriber;
-	
+
 	private QueueProcess<P, T> parentProcess;
-	private String activeQueueID; 
-	
+	private String activeQueueID;
+
 	/**
-	 * Constructs a new AtomQueueProcessor configured to use the 
-	 * {@link IQueueService} and {@link IQueueControllerService} provided by 
+	 * Constructs a new AtomQueueProcessor configured to use the
+	 * {@link IQueueService} and {@link IQueueControllerService} provided by
 	 * the OSGi services holder ({@link ServicesHolder}).
-	 * 
-	 * @param parentProcess {@link IQueueProcess} tasked with processing a 
+	 *
+	 * @param parentProcess {@link IQueueProcess} tasked with processing a
 	 * 						bean implementing {@link IHasAtomQueue}.
 	 */
 	public AtomQueueProcessor(QueueProcess<P, T> parentProcess) {
@@ -71,41 +71,41 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 		queueController = ServicesHolder.getQueueControllerService();
 		this.parentProcess = parentProcess;
 	}
-	
+
 	/**
-	 * Creates a child active-queue {@link IQueue} using the 
-	 * {@link IQueueService} and a {@link QueueListener} to monitor it. Beans 
-	 * are then spooled from the {@link IHasAtomQueue} instance into the 
-	 * consumer using the {@link IQueueControllerService}. Finally the 
-	 * {@link Queue} is started and run() then waits to be signalled that 
-	 * processing has finished before the method returns. 
-	 * 
+	 * Creates a child active-queue {@link IQueue} using the
+	 * {@link IQueueService} and a {@link QueueListener} to monitor it. Beans
+	 * are then spooled from the {@link IHasAtomQueue} instance into the
+	 * consumer using the {@link IQueueControllerService}. Finally the
+	 * {@link Queue} is started and run() then waits to be signalled that
+	 * processing has finished before the method returns.
+	 *
 	 * @throws EventException when spooling beans fails.
-	 * @throws InterruptedException if wait for processing to complete is 
+	 * @throws InterruptedException if wait for processing to complete is
 	 *                              interrupted.
 	 */
 	public void run() throws EventException, InterruptedException {
 		//Everything should be set up by now, so we can get the atomQueue
 		final P atomQueue = parentProcess.getQueueBean();
-		
+
 		//Create a new active queue to submit the atoms into
 		logger.debug("Registering active-queue for "+parentProcess.getQueueBean().getClass().getSimpleName()+" '"+parentProcess.getQueueBean().getName()+"'");
 		parentProcess.broadcast(Status.RUNNING, 0d, "Registering new active queue.");
 		activeQueueID = queueService.registerNewActiveQueue();
-		
+
 		/*
-		 * Create QueueListener - this must happen BEFORE submitting beans, 
-		 * otherwise the QueueListener doesn't know about the child beans it 
-		 * has to listen for. 
+		 * Create QueueListener - this must happen BEFORE submitting beans,
+		 * otherwise the QueueListener doesn't know about the child beans it
+		 * has to listen for.
 		 */
 		logger.debug("Creating QueueListener for "+parentProcess.getQueueBean().getClass().getSimpleName()+" '"+parentProcess.getQueueBean().getName()+"'...");
 		queueListener = new QueueListener<>(
-				parentProcess, 
-				parentProcess.getQueueBean(), 
+				parentProcess,
+				parentProcess.getQueueBean(),
 				parentProcess.getProcessLatch());
 		queueSubscriber = queueController.createQueueSubscriber(activeQueueID);
 		queueSubscriber.addListener(queueListener);
-		
+
 		/*
 		 * Spool beans from bean atom queue to the queue service
 		 * (queue empty after this!)
@@ -127,39 +127,39 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 			queueController.submit(atomQueue.nextAtom(), activeQueueID);
 		}
 		logger.debug(initialQueueSize+" atoms submitted from "+parentProcess.getQueueBean().getClass().getSimpleName()+" '"+parentBean.getName()+"'");
-		
+
 		/*
-		 * Start processing & wait for it to end - after returning, we start 
+		 * Start processing & wait for it to end - after returning, we start
 		 * the post-match analysis immediately.
 		 */
 		parentProcess.broadcast(Status.RUNNING, 4d, "Beans submitted. Starting active queue...");
 		queueService.startActiveQueue(activeQueueID);
 		parentProcess.broadcast(Status.RUNNING, 5d, "Waiting for active queue to complete");
 	}
-	
+
 	/**
-	 * Instructs {@link IQueueService} to terminate the {@link IConsumer} 
-	 * instance (using the stop() method - this terminates all beans in the 
+	 * Instructs {@link IQueueService} to terminate the {@link IConsumer}
+	 * instance (using the stop() method - this terminates all beans in the
 	 * status set.
-	 *  
+	 *
 	 * @throws EventException if stop failed.
 	 */
 	protected void terminate() throws EventException {
 		//Calling IConsumer.stop() causes all jobs being processed to terminate
 		queueService.stopActiveQueue(activeQueueID, false);
 	}
-	
+
 	/**
-	 * Clean-up {@link IEventService} infrastructure created to process the 
+	 * Clean-up {@link IEventService} infrastructure created to process the
 	 * {@link IHasAtomQueue}.
-	 * 
+	 *
 	 * @throws EventException in case of problems during shutdown.
 	 */
 	protected void tidyQueue() throws EventException {
 		logger.debug("Cleaning up queue infrastructure for "+parentProcess.getQueueBean().getClass().getSimpleName()+" '"+parentProcess.getQueueBean().getName()+"'...");
 		//This should happen first to avoid spurious messages about termination
 		queueSubscriber.disconnect();
-		
+
 		//Tidy up our processes, before handing back control
 		try {
 			//Only stop the queue if it hasn't already been
@@ -169,8 +169,8 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 			queueService.deRegisterActiveQueue(activeQueueID);
 		} catch (EventException evEx) {
 			/*
-			 * If the queueService pushes back an EventException with the 
-			 * message "stopped" this means the QueueService has been stopped 
+			 * If the queueService pushes back an EventException with the
+			 * message "stopped" this means the QueueService has been stopped
 			 * by another process & we don't need to do anything. If another
 			 * message is sent, it's a real problem.
 			 */
@@ -189,5 +189,5 @@ public class AtomQueueProcessor<P extends Queueable & IHasAtomQueue<Q>,
 	public String getActiveQueueID() {
 		return activeQueueID;
 	}
-	
+
 }

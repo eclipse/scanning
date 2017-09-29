@@ -20,11 +20,11 @@ import org.eclipse.scanning.example.detector.MandelbrotModel;
 
 /**
  * A preprocessor which overwrites the stage names with 'xfred' and 'yfred' in various models.
- * 
+ *
  * We are just doing various example things here to the request without purpose. Your implementation
- * should ensure that the correct models for scan path and for detector are defined. For instance a 
+ * should ensure that the correct models for scan path and for detector are defined. For instance a
  * GridModel might be replaced with a malcolm detector model.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -37,7 +37,7 @@ public class ExamplePreprocessor implements IPreprocessor {
 
 	@Override
 	public <T> ScanRequest<T> preprocess(ScanRequest<T> req) throws ProcessingException {
-	
+
 		for (Object model : req.getCompoundModel().getModels()) {
 			if (model instanceof StepModel) {
 				((StepModel)model).setName("xfred");
@@ -46,7 +46,7 @@ public class ExamplePreprocessor implements IPreprocessor {
 				((IBoundingBoxModel)model).setSlowAxisName("yfred");
 			}
 		}
-		
+
 		for (String name : req.getDetectors().keySet()) {
 			Object dmodel = req.getDetectors().get(name);
 			if (dmodel instanceof MandelbrotModel) {
@@ -55,7 +55,7 @@ public class ExamplePreprocessor implements IPreprocessor {
 				mmodel.setImaginaryAxisName("yfred");
 			}
 		}
-		
+
 		return req;
 	}
 }

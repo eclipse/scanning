@@ -53,9 +53,9 @@ import org.eclipse.january.dataset.ILazyDataset;
 import org.eclipse.january.dataset.PositionIterator;
 
 /**
- * 
+ *
  * Copied to avoid dependency on org.eclipse.dawnsci.nexus.test which is not on the dawnsci p2
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -83,7 +83,7 @@ public class NexusAssert {
 			assertEquals(indices[i], value.getInt(i));
 		}
 	}
-	
+
 	public static void assertTarget(NXdata nxData, String destName, NXroot nxRoot, String targetPath) {
 		DataNode dataNode = nxData.getDataNode(destName);
 		assertNotNull(dataNode);
@@ -91,12 +91,12 @@ public class NexusAssert {
 		assertNotNull(targetAttr);
 		assertEquals(1, targetAttr.getSize());
 		assertEquals(targetPath, targetAttr.getFirstElement());
-		
+
 		NodeLink nodeLink = nxRoot.findNodeLink(targetPath);
 		assertTrue(nodeLink.isDestinationData());
 		assertTrue(nodeLink.getDestination()==dataNode);
 	}
-	
+
 	public static void assertSignal(NXdata nxData, String expectedSignalFieldName) {
 		Attribute signalAttr = nxData.getAttribute(ATTR_NAME_SIGNAL);
 		assertNotNull(signalAttr);
@@ -104,25 +104,25 @@ public class NexusAssert {
 		assertEquals(expectedSignalFieldName, signalAttr.getFirstElement());
 		assertNotNull(nxData.getDataNode(expectedSignalFieldName));
 	}
-	
+
 	public static void assertSolsticeScanGroup(NXentry entry, boolean snake, boolean foldedGrid, int... sizes) {
 		assertSolsticeScanGroup(entry, false, snake, foldedGrid, sizes);
 	}
-	
+
 	public static void assertSolsticeScanGroup(NXentry entry, boolean malcolmScan, boolean snake, boolean foldedGrid, int... sizes) {
 		assertSolsticeScanGroup(entry, malcolmScan, snake, foldedGrid, null, sizes);
 	}
-	
+
 	public static void assertSolsticeScanGroup(NXentry entry, boolean malcolmScan,
 			boolean snake, boolean foldedGrid, List<String> expectedExternalFiles, int... sizes) {
 		assertScanFinished(entry);
-		
+
 		NXcollection solsticeScanCollection = entry.getCollection(GROUP_NAME_SOLSTICE_SCAN);
 		assertNotNull(solsticeScanCollection);
 
 		assertScanShape(solsticeScanCollection, sizes);
 		assertScanTimes(solsticeScanCollection);
-		 
+
 		NXcollection keysCollection = (NXcollection) solsticeScanCollection.getGroupNode(GROUP_NAME_KEYS);
 		assertNotNull(keysCollection);
 		if (!malcolmScan) {
@@ -132,7 +132,7 @@ public class NexusAssert {
 			assertUniqueKeysExternalFileLinks(keysCollection, expectedExternalFiles, malcolmScan, sizes);
 		}
 	}
-	
+
 	private static void assertScanShape(NXcollection solsticeScanCollection, int... sizes) {
 		DataNode shapeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_SHAPE);
 		assertNotNull(shapeDataNode);
@@ -145,7 +145,7 @@ public class NexusAssert {
 		assertEquals(Integer.class, shapeDataset.getElementClass());
 		if (sizes.length == 0) {
 			// TODO remove this workaround when january updated
-			assertEquals(0, shapeDataset.getRank()); 
+			assertEquals(0, shapeDataset.getRank());
 			assertArrayEquals(new int[0], shapeDataset.getShape());
 		} else {
 			assertEquals(1, shapeDataset.getRank());
@@ -155,7 +155,7 @@ public class NexusAssert {
 			}
 		}
 	}
-	
+
 	private static final DateTimeFormatter formatter = new DateTimeFormatterBuilder().
 			appendPattern("HH:mm:ss").appendFraction(ChronoField.NANO_OF_SECOND, 3, 3, true).toFormatter();
 
@@ -169,7 +169,7 @@ public class NexusAssert {
 		} catch (DatasetException e) {
 			throw new AssertionError("Could not get data from lazy dataset", e);
 		}
-		
+
 		assertEquals(String.class, estimatedTimeDataset.getElementClass());
 		assertEquals(0, estimatedTimeDataset.getRank());
 		assertArrayEquals(new int[]{}, estimatedTimeDataset.getShape());
@@ -177,7 +177,7 @@ public class NexusAssert {
 		assertNotNull(estimatedTimeStr);
 		LocalTime estimatedTimeAsTime = LocalTime.parse(estimatedTimeStr, formatter); // throws exception if not a valid time
 		long estimateDurationMs = estimatedTimeAsTime.getLong(ChronoField.MILLI_OF_DAY);
-		
+
 		// check the actual scan duration dataset
 		DataNode actualTimeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_DURATION);
 		assertNotNull(actualTimeDataNode);
@@ -187,7 +187,7 @@ public class NexusAssert {
 		} catch (DatasetException e) {
 			throw new AssertionError("Could not get data from lazy dataset", e);
 		}
-		
+
 		// written as a 1d dataset of rank 1, as we can't write a scalar lazy writeable dataset
 		// TODO: is this now possible?
 		assertEquals(String.class, actualTimeDataset.getElementClass());
@@ -197,7 +197,7 @@ public class NexusAssert {
 		assertNotNull(actualTime);
 		LocalTime scanDurationAsTime = LocalTime.parse(actualTime, formatter); // throws exception if not a valid time
 		long scanDurationMs = scanDurationAsTime.getLong(ChronoField.MILLI_OF_DAY);
-		
+
 		// check the scan dead time dataset
 		DataNode deadTimeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_DEAD_TIME);
 		assertNotNull(deadTimeDataNode);
@@ -207,7 +207,7 @@ public class NexusAssert {
 		} catch (DatasetException e) {
 			throw new AssertionError("Could not get data from lazy dataset", e);
 		}
-		
+
 		// written as a 1d dataset of rank 1, as we can't write a scalar lazy writeable dataset
 		assertEquals(String.class, deadTimeDataset.getElementClass());
 		assertEquals(1, deadTimeDataset.getRank());
@@ -216,10 +216,10 @@ public class NexusAssert {
 		assertNotNull(deadTimeStr);
 		LocalTime deadTimeAsTime = LocalTime.parse(deadTimeStr, formatter); // throws exception if not a valid time
 		long deadTimeMs = deadTimeAsTime.getLong(ChronoField.MILLI_OF_DAY);
-		
+
 		// The scan duration should be equal to the estimated time plus the dead time
 		assertEquals(estimateDurationMs + deadTimeMs, scanDurationMs);
-		
+
 		// check the percentage dead time
 		DataNode deadTimePercentDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_DEAD_TIME_PERCENT);
 		assertNotNull(deadTimePercentDataNode);
@@ -229,16 +229,16 @@ public class NexusAssert {
 		} catch (DatasetException e) {
 			throw new AssertionError("Could not get data from lazy dataset", e);
 		}
-		
+
 		assertEquals(String.class, deadTimePercentDataset.getElementClass());
 		assertEquals(1, deadTimePercentDataset.getRank());
 		assertArrayEquals(new int[] { 1 }, deadTimePercentDataset.getShape());
 		String deadTimePercentStr = deadTimePercentDataset.getString(0);
 		double deadTimePercent = Double.parseDouble(deadTimePercentStr);
-		
+
 		assertEquals((double) deadTimeMs / scanDurationMs, deadTimePercent / 100, 0.001);
 	}
-	
+
 	private static void assertUniqueKeys(NXcollection keysCollection, boolean snake, boolean foldedGrid, int... sizes) {
 		// check the unique keys field - contains the step number for each scan
 		// point
@@ -279,13 +279,13 @@ public class NexusAssert {
 			int expectedInnerScanEnd = innerScanSize - (oddNumRows ? 0 : lineSize - 1);
 			while (iter.hasNext()) { // hasNext also increments the position iterator (ugh!)
 				assertEquals(expectedPos, dataset.getInt(iter.getPos()));
-				
+
 				if (!foldedGrid && !isBottomToTopInnerScan && expectedPos == expectedInnerScanEnd) {
 					// end of top to bottom inner scan, next is bottom to top
 					isBottomToTopInnerScan = true;
 					isBackwardLine = true; // top line of bottom to top scan is always backward
 					expectedPos += innerScanSize + (oddNumRows ? 0 : lineSize - 1);
-					expectedLineEnd = expectedPos - lineSize + 1; 
+					expectedLineEnd = expectedPos - lineSize + 1;
 					expectedInnerScanEnd = (expectedPos - innerScanSize) + (oddNumRows ? 1 : lineSize);
 				} else if (!foldedGrid && isBottomToTopInnerScan && expectedPos == expectedInnerScanEnd) {
 					// end of bottom to top inner scan, next is top to bottom
@@ -314,7 +314,7 @@ public class NexusAssert {
 			}
 		}
 	}
-	
+
 	private static void assertUniqueKeysExternalFileLinks(NXcollection keysCollection,
 			List<String> expectedExternalFiles, boolean malcolmScan, int... sizes) {
 		for (String externalFileName : expectedExternalFiles) {
@@ -324,7 +324,7 @@ public class NexusAssert {
 			assertEquals(sizes.length, dataNode.getRank());
 		}
 	}
-	
+
 	public static void assertScanFinished(NXentry entry) {
 		assertScanFinished(entry, true);
 	}
@@ -332,11 +332,11 @@ public class NexusAssert {
 	public static void assertScanNotFinished(NXentry entry) {
 		assertScanFinished(entry, false);
 	}
-	
+
 	private static void assertScanFinished(NXentry entry, boolean finished) {
 		NXcollection scanPointsCollection = entry.getCollection(GROUP_NAME_SOLSTICE_SCAN);
 		assertNotNull(scanPointsCollection);
-		
+
 		// check the scan finished boolean is set to true
 		DataNode dataNode = scanPointsCollection.getDataNode(FIELD_NAME_SCAN_FINISHED);
 		assertNotNull(dataNode);
@@ -351,7 +351,7 @@ public class NexusAssert {
 		assertArrayEquals(new int[] {1}, dataset.getShape());
 		assertEquals(finished, dataset.getBoolean(0));
 	}
-	
+
 	public static void assertDataNodesEqual(final String path,
 			final DataNode expectedDataNode, final DataNode actualDataNode) {
 		// check number of attributes same (i.e. actualDataNode has no additional attributes)
@@ -361,7 +361,7 @@ public class NexusAssert {
 			expectedNumAttributes--;
 		}
 		assertEquals(expectedNumAttributes, actualDataNode.getNumberOfAttributes());
-		
+
 		// check attributes properties same for each attribute
 		Iterator<String> attributeNameIterator = expectedDataNode.getAttributeNameIterator();
 		while (attributeNameIterator.hasNext()) {
@@ -387,7 +387,7 @@ public class NexusAssert {
 		assertEquals(path, expectedDataNode.getString(), actualDataNode.getString());
 		assertDatasetsEqual(path, expectedDataNode.getDataset(), actualDataNode.getDataset());
 	}
-	
+
 	public static void assertAttributesEquals(final String path, final Attribute expectedAttr,
 			final Attribute actualAttr) {
 		assertEquals(path, expectedAttr.getName(), actualAttr.getName());
@@ -406,7 +406,7 @@ public class NexusAssert {
 	public static void assertDatasetValue(Object expectedValue, ILazyDataset dataset) {
 		assertDatasetsEqual(null, DatasetFactory.createFromObject(expectedValue), dataset);
 	}
-	
+
 	public static void assertDatasetsEqual(final String path, final ILazyDataset expectedDataset,
 			final ILazyDataset actualDataset) {
 		// Note: dataset names can be different, as long as the containing data node names are the same
@@ -432,7 +432,7 @@ public class NexusAssert {
 			if (expectedDataset.getSize() == 0) {
 				return;
 			}
-			
+
 			// getSlice() with no args loads whole dataset if a lazy dataset
 			IDataset expectedSlice;
 			IDataset actualSlice;

@@ -14,7 +14,7 @@ package org.eclipse.scanning.api;
 public class ValidationException extends RuntimeException {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8403805577882681516L;
 

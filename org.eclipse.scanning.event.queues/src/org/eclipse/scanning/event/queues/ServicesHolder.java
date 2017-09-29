@@ -22,10 +22,10 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 
 /**
- * Class to hold services referenced in the implementation of the 
+ * Class to hold services referenced in the implementation of the
  * {@link IQueueService} and it's subsystems. Services are configured
  * by OSGi (or may be set by tests).
- * 
+ *
  * @author Michael Wharmby
  *
  */

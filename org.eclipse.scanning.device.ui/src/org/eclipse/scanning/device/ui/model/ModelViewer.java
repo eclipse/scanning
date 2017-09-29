@@ -505,8 +505,8 @@ class ModelViewer<T> implements IModelViewer<T>, ISelectionListener, ISelectionP
 			if (ob instanceof IROI && getModel() instanceof IBoundingBoxModel) {
 				try {
 	                BoundingBox box = ScanRegions.createBoxFromPlot(model);
-		    		((IBoundingBoxModel)getModel()).setBoundingBox(box);
-		    		refresh();
+				((IBoundingBoxModel)getModel()).setBoundingBox(box);
+				refresh();
 				} catch (Exception ne) {
 					logger.info("Unable to process box from plot!", ne);
 				}

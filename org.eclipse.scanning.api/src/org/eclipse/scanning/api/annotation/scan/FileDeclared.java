@@ -20,10 +20,10 @@ import java.lang.annotation.Target;
  * Used to annotate methods which wish to be notified when a file
  * to which we will write, is declared for use in a scan.
  * FileDeclared is invoked after ScanStart and before anything else.
- * 
+ *
  * <p>
  * It is possible using annotations to have more than one method annotated
- * which means a super class can declare its implementation as final, requiring a 
+ * which means a super class can declare its implementation as final, requiring a
  * subclass to define another annotation.
  * <p>
  * Services such as IRunnableDeviceService, IPointsGenerator etc may be declared
@@ -73,7 +73,7 @@ import java.lang.annotation.Target;
  *     }
  *}
  * </pre></code>
- * 
+ *
  * <p>
  * @author Matthew Gerring
  *

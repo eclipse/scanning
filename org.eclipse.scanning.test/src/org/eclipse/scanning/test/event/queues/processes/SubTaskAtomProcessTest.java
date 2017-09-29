@@ -35,18 +35,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SubTaskAtomProcessTest {
-	
+
 	private SubTaskAtom stAt;
 	private QueueProcess<SubTaskAtom, Queueable> stAtProcr;
 	private ProcessTestInfrastructure pti;
-	
+
 	private static QueueService qServ;
 	private static MockConsumer<Queueable> mockCons;
 	private static MockPublisher<QueueAtom> mockPub;
 	private static MockSubmitter<QueueAtom> mockSub;
 	private static MockEventService mockEvServ;
 	private static IQueueControllerService controller;
-	
+
 	@BeforeClass
 	public static void setUpClass() throws EventException {
 		//Configure the processor Mock queue infrastructure
@@ -59,7 +59,7 @@ public class SubTaskAtomProcessTest {
 		mockEvServ.setMockPublisher(mockPub);
 		mockEvServ.setMockSubmitter(mockSub);
 		ServicesHolder.setEventService(mockEvServ);
-		
+
 		//This is a real queue service, so we have to do some set up
 		qServ = new QueueService("fake-qserv", "file:///foo/bar");
 		qServ.init();
@@ -68,28 +68,28 @@ public class SubTaskAtomProcessTest {
 		controller = qServ;
 		ServicesHolder.setQueueControllerService(controller);
 	}
-	
+
 	@AfterClass
 	public static void tearDownClass() throws EventException {
 		ServicesHolder.setQueueControllerService(null);
 		controller = null;
-		
+
 		ServicesHolder.setEventService(null);
 		mockEvServ = null;
 		mockPub = null;
 		mockCons = null;
 		mockSub = null;
-		
+
 		ServicesHolder.setQueueService(null);
 		qServ.disposeService();
 		qServ = null;
 		controller = null;
 	}
-	
+
 	@Before
 	public void setUp() throws EventException {
 		pti = new ProcessTestInfrastructure();
-		
+
 		//Create test atom & process
 		stAt = new SubTaskAtom(null, "Test queue sub task bean");
 		stAt.setBeamline("I15-1(test)");
@@ -101,27 +101,27 @@ public class SubTaskAtomProcessTest {
 		stAt.addAtom(atomA);
 		stAt.addAtom(atomB);
 		stAt.addAtom(atomC);
-		
+
 		stAtProcr = new SubTaskAtomProcess<>(stAt, pti.getPublisher(), false);
-		
+
 		//Reset queue architecture
 		mockSub.resetSubmitter();
 		mockPub.resetPublisher();
 	}
-	
+
 	@After
 	public void tearDown() {
 		pti = null;
 		mockEvServ.clearRegisteredConsumers();
 	}
-	
+
 	/**
 	 * After execution:
 	 * - first bean in statPub should be Status.RUNNING
 	 * - last bean in statPub should be Status.COMPLETE and 100%
 	 * - status publisher should have: 1 RUNNING bean and 1 COMPLETE bean
 	 * - child active-queue should be deregistered from QueueService
-	 * 
+	 *
 	 * N.B. This is *NOT* an integration test, so beans don't get run.
 	 *      It only checks the processor behaves as expected
 	 */
@@ -130,22 +130,22 @@ public class SubTaskAtomProcessTest {
 		pti.executeProcess(stAtProcr, stAt, true);
 		pti.waitForExecutionEnd(10000l);
 		pti.checkLastBroadcastBeanStatuses(Status.COMPLETE, false);
-		
+
 		//These are the statuses & percent completes reported by the processor as it sets up the run
 		Status[] reportedStatuses = new Status[]{Status.RUNNING, Status.RUNNING,
 				Status.RUNNING, Status.RUNNING};
-		Double[] reportedPercent = new Double[]{0d, 1d, 
+		Double[] reportedPercent = new Double[]{0d, 1d,
 				4d, 5d};
-		
+
 		pti.checkFirstBroadcastBeanStatuses(reportedStatuses, reportedPercent);
 		pti.checkLastBroadcastBeanStatuses(Status.COMPLETE, true);
-		
+
 		pti.checkSubmittedBeans(mockSub, ((SubTaskAtomProcess<Queueable>) stAtProcr).getAtomQueueProcessor().getActiveQueueID());
-		
+
 		//Child queue should be removed after execution
 		assertEquals("Active queues still registered after terminate", 0, qServ.getAllActiveQueueIDs().size());
 	}
-	
+
 	/**
 	 * On terminate:
 	 * - first bean in statPub should be Status.RUNNING
@@ -161,22 +161,22 @@ public class SubTaskAtomProcessTest {
 		pti.waitToTerminate(100l, true);
 		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
-		
+
 		//TODO Should this be the message or the queue-message?
 		assertEquals("Wrong message set after termination.", "Active-queue was requested to abort before completion", pti.getLastBroadcastBean().getMessage());
 		assertEquals("Active queues still registered after terminate", 0, qServ.getAllActiveQueueIDs().size());
-		
+
 		pti.checkConsumersStopped(mockEvServ, qServ);
-		
+
 		//Termination should remove the child queue
 		assertEquals("Active queues still registered after terminate", 0, qServ.getAllActiveQueueIDs().size());
 	}
-	
+
 //	@Test
 	public void testPauseResume() throws Exception {
 		//TODO!
 	}
-	
+
 	/**
 	 * On failure:
 	 * - first bean in statPub should be Status.RUNNING
@@ -192,16 +192,16 @@ public class SubTaskAtomProcessTest {
 		stAtProcr.getProcessLatch().countDown();
 		//Need to give the post-match analysis time to run
 		Thread.sleep(10);
-		
+
 		/*
-		 * FAILED is always going to happen underneath - i.e. process will be 
+		 * FAILED is always going to happen underneath - i.e. process will be
 		 * running & suddenly latch will be counted down.
-		 * 
+		 *
 		 * QueueListener sets the message and queueMessage.
 		 * We just need to set this bean's status to FAILED.
 		 */
 		pti.checkLastBroadcastBeanStatuses(Status.FAILED, false);
-		
+
 		//After fail child queue should be deregistered
 		assertEquals("Active queues still registered after terminate", 0, qServ.getAllActiveQueueIDs().size());
 	}

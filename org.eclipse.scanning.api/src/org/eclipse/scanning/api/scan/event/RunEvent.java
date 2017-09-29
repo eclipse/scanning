@@ -20,12 +20,12 @@ import org.eclipse.scanning.api.points.IPosition;
 public class RunEvent extends EventObject {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8344532962994793917L;
 
 	private final IPosition position;
-	
+
 	private final DeviceState deviceState;
 	private DeviceState oldState;
 
@@ -38,11 +38,11 @@ public class RunEvent extends EventObject {
 	public IRunnableDevice<?> getDevice() {
 		return (IRunnableDevice<?>)getSource();
 	}
-	
+
 	public IPosition getPosition() {
 		return position;
 	}
-	
+
 	public DeviceState getDeviceState() {
 		return deviceState;
 	}
@@ -54,5 +54,5 @@ public class RunEvent extends EventObject {
 	public void setOldState(DeviceState oldState) {
 		this.oldState = oldState;
 	}
-	
+
 }

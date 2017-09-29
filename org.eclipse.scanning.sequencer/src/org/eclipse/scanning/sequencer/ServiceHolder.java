@@ -24,7 +24,7 @@ import org.eclipse.scanning.api.scan.IFilePathService;
 import org.eclipse.scanning.api.scan.IParserService;
 
 public class ServiceHolder {
-	
+
 	// OSGi stuff
 	private static NexusBuilderFactory factory;
 
@@ -45,7 +45,7 @@ public class ServiceHolder {
 	public void setOperationService(IOperationService operationService) {
 		ServiceHolder.operationService = operationService;
 	}
-	
+
     private static IDeviceWatchdogService watchdogService;
 
 	public static IDeviceWatchdogService getWatchdogService() {
@@ -56,7 +56,7 @@ public class ServiceHolder {
 		ServiceHolder.watchdogService = watchdogService;
 	}
 
-    
+
 	private static IPersistenceService persistenceService;
 
 	public static IPersistenceService getPersistenceService() {
@@ -66,7 +66,7 @@ public class ServiceHolder {
 	public void setPersistenceService(IPersistenceService persistenceService) {
 		ServiceHolder.persistenceService = persistenceService;
 	}
-	
+
 	private static ILoaderService loaderService;
 
 	public static ILoaderService getLoaderService() {
@@ -78,38 +78,38 @@ public class ServiceHolder {
 	}
 
 	private static IEventService eventService;
-	
+
 	public static IEventService getEventService() {
 		return eventService;
 	}
-	
+
 	public static void setEventService(IEventService eventService) {
 		ServiceHolder.eventService = eventService;
 	}
-	
+
 	private static IFilePathService filePathService;
 
 	public static IFilePathService getFilePathService() {
 		return filePathService;
 	}
-	
+
 	public void setFilePathService(IFilePathService filePathService) {
 		ServiceHolder.filePathService = filePathService;
 	}
-	
+
 	private static IRunnableDeviceService runnableDeviceService;
-	
+
 	public static IRunnableDeviceService getRunnableDeviceService() {
 		return runnableDeviceService;
 	}
-	
+
 	public static void setRunnableDeviceService(IRunnableDeviceService runnableDeviceService) {
 		ServiceHolder.runnableDeviceService = runnableDeviceService;
 	}
-	
+
 	private static IPointGeneratorService generatorService;
 
-	
+
 	public static IPointGeneratorService getGeneratorService() {
 		return generatorService;
 	}
@@ -117,7 +117,7 @@ public class ServiceHolder {
 	public void setGeneratorService(IPointGeneratorService generatorService) {
 		ServiceHolder.generatorService = generatorService;
 	}
-	
+
 	private static IParserService parserService;
 
 	public static IParserService getParserService() {
@@ -127,9 +127,9 @@ public class ServiceHolder {
 	public void setParserService(IParserService parserService) {
 		ServiceHolder.parserService = parserService;
 	}
-	
+
 	private static IMarshallerService marshallerService;
-	
+
 
 	public static IMarshallerService getMarshallerService() {
 		return marshallerService;
@@ -149,7 +149,7 @@ public class ServiceHolder {
 		factory = defaultNexusBuilderFactory;
 		operationService = oservice;
 	}
-	
+
 	/**
 	 * Used to provide services when tests running in non-OSGi mode.
 	 */
@@ -160,7 +160,7 @@ public class ServiceHolder {
 		loaderService = ls;
 		factory = defaultNexusBuilderFactory;
 		operationService = oservice;
-		filePathService = fpservice; 
+		filePathService = fpservice;
 		generatorService = gService;
 	}
 

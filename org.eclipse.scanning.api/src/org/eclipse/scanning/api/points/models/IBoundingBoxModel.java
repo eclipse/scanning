@@ -21,5 +21,5 @@ public interface IBoundingBoxModel extends IMapPathModel {
 
 	public BoundingBox getBoundingBox();
 	public void setBoundingBox(BoundingBox boundingBox);
-	
+
 }

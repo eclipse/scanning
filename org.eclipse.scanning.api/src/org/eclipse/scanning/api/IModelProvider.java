@@ -12,9 +12,9 @@
 package org.eclipse.scanning.api;
 
 /**
- * 
+ *
  * A model provider is any object that holds a model.
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
@@ -23,26 +23,26 @@ package org.eclipse.scanning.api;
 public interface IModelProvider<T> {
 
 	/**
-	 * 
+	 *
 	 * @return the model that we are providing
 	 */
 	public T getModel() throws Exception;
-	
+
 	/**
-	 * The model for some providers may be set but be warned that others 
+	 * The model for some providers may be set but be warned that others
 	 * throw an IllegalArgumentException.
-	 * 
+	 *
 	 * @param model
 	 * @return the old model or null
 	 */
 	default void setModel(T model) throws Exception{
 		throw new IllegalArgumentException("setModel is not implemented for "+getClass().getSimpleName());
 	}
-	
+
 	/**
-	 * The model for some providers may be updated but be warned that others 
+	 * The model for some providers may be updated but be warned that others
 	 * throw an IllegalArgumentException.
-	 * 
+	 *
 	 * @param model
 	 * @throws Exception
 	 */

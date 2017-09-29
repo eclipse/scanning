@@ -38,13 +38,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class to allow access to all the controls of the {@link IQueueService} from 
- * a remote client. Calls to {@link IQueueService} are mediated by an 
- * {@link IRequester} instance (in contrast to the non-remote implementation 
- * of the {@link IQueueControllerService}). Calls to influence beans (e.g. 
- * submission/termination) are handled through the same {@link IEventService} 
+ * Class to allow access to all the controls of the {@link IQueueService} from
+ * a remote client. Calls to {@link IQueueService} are mediated by an
+ * {@link IRequester} instance (in contrast to the non-remote implementation
+ * of the {@link IQueueControllerService}). Calls to influence beans (e.g.
+ * submission/termination) are handled through the same {@link IEventService}
  * classes.
- * 
+ *
  * @author Michael Wharmby
  *
  */
@@ -62,25 +62,25 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 		eventConnector = new QueueControllerEventConnector();
 		eventConnector.setEventService(eservice);
 		eventConnector.setUri(uri);
-		
+
 		resultHandler = new ExceptionHandler() {
 
 			@Override
 			public Logger getLogger() {
 				return logger;
 			}
-			
+
 		};
 
 		//Set up requester to handle remote requests
-		requester = eservice.createRequestor(uri, 
-				IQueueService.QUEUE_REQUEST_TOPIC, 
+		requester = eservice.createRequestor(uri,
+				IQueueService.QUEUE_REQUEST_TOPIC,
 				IQueueService.QUEUE_RESPONSE_TOPIC);
-		
-		long timeout = Long.getLong("org.eclipse.scanning.event.remote.queueControllerServiceTimeout", 5000); 
+
+		long timeout = Long.getLong("org.eclipse.scanning.event.remote.queueControllerServiceTimeout", 5000);
 	    logger.debug("Setting timeout {} {}" , timeout , " ms");
-		ResponseConfiguration conf = new ResponseConfiguration( ResponseType.ONE, 
-																timeout, 
+		ResponseConfiguration conf = new ResponseConfiguration( ResponseType.ONE,
+																timeout,
 																TimeUnit.MILLISECONDS);
 		requester.setResponseConfiguration(conf);
 	}
@@ -262,7 +262,7 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 		reply = sendQuery(query);
 		return reply.getJobQueueID();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public IQueue<QueueBean> getJobQueue() throws EventException {
@@ -287,7 +287,7 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 		stateReply = sendQuery(stateQuery);
 		return stateReply.getBeanStatus();
 	}
-	
+
 	@Override
 	public Logger getLogger() {
 		return logger;
@@ -304,7 +304,7 @@ public class _QueueControllerService extends AbstractRemoteService implements IQ
 			if (bean instanceof QueueAtom) return;
 		}
 		logger.error("Bean type ("+bean.getClass().getSimpleName()+") not supported by queue "+queueID);
-		throw new EventException("Bean is wrong type for given queueID"); 
+		throw new EventException("Bean is wrong type for given queueID");
 	}
 
 	/**

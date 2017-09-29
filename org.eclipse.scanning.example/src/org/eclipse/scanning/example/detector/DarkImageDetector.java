@@ -94,7 +94,7 @@ public class DarkImageDetector extends AbstractRunnableDevice<DarkImageModel> im
 		} else {
 			image = null;
 		}
-  	}
+	}
 
 	@Override
     public boolean write(IPosition pos) throws ScanningException {

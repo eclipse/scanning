@@ -61,20 +61,20 @@ public class AxesCellEditor extends CellEditor {
 
         this.fast = createLabelledCombo(content, "Fast Axis");
         fast.addSelectionListener(new SelectionAdapter() {
-        	@Override
+		@Override
 			public void widgetSelected(SelectionEvent e) {
-        		if (region!=null) region.getScannables().set(0, fast.getItem(fast.getSelectionIndex()));
-        		fireWorkbenchSelection();
-        	}
+			if (region!=null) region.getScannables().set(0, fast.getItem(fast.getSelectionIndex()));
+			fireWorkbenchSelection();
+		}
         });
 
         this.slow = createLabelledCombo(content, "Slow Axis");
         slow.addSelectionListener(new SelectionAdapter() {
-        	@Override
+		@Override
 			public void widgetSelected(SelectionEvent e) {
-        		if (region!=null) region.getScannables().set(1, slow.getItem(slow.getSelectionIndex()));
-        		fireWorkbenchSelection();
-        	}
+			if (region!=null) region.getScannables().set(1, slow.getItem(slow.getSelectionIndex()));
+			fireWorkbenchSelection();
+		}
         });
 
 		return content;

@@ -29,15 +29,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * QueueListener provides a bridge between an atom which creates a queue (e.g. 
- * TaskBean, SubTaskAtom, ScanAtom) and its dependent queue. When an event in 
- * the child queue causes the listener to fire, it  reads the {@link Status} 
- * and percent complete of the bean causing the event and updates the 
+ * QueueListener provides a bridge between an atom which creates a queue (e.g.
+ * TaskBean, SubTaskAtom, ScanAtom) and its dependent queue. When an event in
+ * the child queue causes the listener to fire, it  reads the {@link Status}
+ * and percent complete of the bean causing the event and updates the
  * parent bean appropriately.
- * 
- * The QueueListener is used in the ScanAtomProcess and also in the 
+ *
+ * The QueueListener is used in the ScanAtomProcess and also in the
  * AtomQueueProcessor.
- * 
+ *
  * @author Michael Wharmby
  *
  * @param <Q> Bean extending {@link StatusBean} from the child queue.
@@ -45,13 +45,13 @@ import org.slf4j.LoggerFactory;
  */
 //TODO Can we update the broadcast mechanism to accept queuemessage updates too?
 public class QueueListener<P extends Queueable, Q extends StatusBean> implements IBeanListener<Q> {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(QueueListener.class);
-	
+
 	//Infrastructure
 	private final IQueueBroadcaster<? extends Queueable> broadcaster;
 	private final CountDownLatch processLatch;
-	
+
 	//
 	private P parent;
 	private double initPercent;
@@ -59,15 +59,15 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 	private Map<String, ProcessStatus> children = new HashMap<>();
 	private boolean childCommand;
 	private final double queueCompletePercentage = 99.5;
-	
+
 	/**
-	 * Create QueueListener with child atoms to listen for specified by the 
+	 * Create QueueListener with child atoms to listen for specified by the
 	 * atomQueue of the given parent.
-	 * 
+	 *
 	 * @param broadcaster {@link IQueueBroadcaster} - typically parent process.
-	 * @param parent {@link IHasAtomQueue} bean which specifies atoms to 
+	 * @param parent {@link IHasAtomQueue} bean which specifies atoms to
 	 *        listen for.
-	 * @param processLatch {@link CountDownLatch} to be released when beans 
+	 * @param processLatch {@link CountDownLatch} to be released when beans
 	 *        complete.
 	 * @throws EventException if
 	 */
@@ -76,7 +76,7 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		this.broadcaster = broadcaster;
 		this.parent = parent;
 		this.processLatch = processLatch;
-		
+
 		if (parent instanceof IHasAtomQueue<?>) {
 			List<?> children = ((IHasAtomQueue<?>)parent).getAtomQueue();
 			initChildList((List<Q>) children);//QueueAtom extends StatusBean, so this cast is OK.
@@ -86,10 +86,10 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		}
 		logger.debug("Initialised from atomQueue of '"+parent.getName()+"' ("+children.size()+" atoms)");
 	}
-	
+
 	/**
 	 * Create QueueListener with a single given child atom to listen for (explicitly declared).
-	 * 
+	 *
 	 * @param broadcaster
 	 * @param parent
 	 * @param processLatch
@@ -99,11 +99,11 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		this.broadcaster = broadcaster;
 		this.parent = parent;
 		this.processLatch = processLatch;
-		
+
 		children.put(child.getUniqueId(), new ProcessStatus(child));
 		logger.debug("Initialised with "+parent.getClass().getSimpleName()+" '"+parent.getName()+"' and 1 atom ("+child.getClass().getSimpleName()+": '"+child.getName()+"') explicitly declared");
 	}
-	
+
 	/**
 	 * Used in tests
 	 */
@@ -111,19 +111,19 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		this.broadcaster = broadcaster;
 		this.parent = parent;
 		this.processLatch = processLatch;
-		
+
 		initChildList(children);
 	}
-	
+
 	private void initChildList(List<Q> children) {
 		double childWork, totalWork = 0d;
 		for (Q child : children) {
 			String childID = child.getUniqueId();
 			this.children.put(childID, new ProcessStatus(child));
-			
+
 			/*
-			 * Record the runtime of each child, if it is an instance of 
-			 * Queueable. If not, assume each child does an equal amount 
+			 * Record the runtime of each child, if it is an instance of
+			 * Queueable. If not, assume each child does an equal amount
 			 * of work (this is set in the inner class {@see ProcessStatus}).
 			 */
 			if (child instanceof Queueable) {
@@ -140,7 +140,7 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		for(String childID : this.children.keySet()) {
 			childWork = this.children.get(childID).workFraction;
 			this.children.get(childID).workFraction = childWork/totalWork;
-		}	
+		}
 	}
 
 	@Override
@@ -150,24 +150,24 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		String beanID = bean.getUniqueId();
 		//If this bean is not from the parent ignore it.
 		if (!children.containsKey(beanID)) return;
-		
+
 		if (!children.get(beanID).operating) {
 			/*
 			 * We're not interested in SUBMITTED or QUEUED - nothing should be happening;
-			 * likewise, REQUEST_* might be a legitimate call, so we just allow them past, 
+			 * likewise, REQUEST_* might be a legitimate call, so we just allow them past,
 			 * without setting our bean operating.
 			 */
 			if (bean.getStatus().isActive()) {
 				children.get(beanID).operating = true;
 			} else if (bean.getStatus().isFinal()) {
 				//Bean should only broadcast a final status if it's operating
-				logger.warn(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is not set to operating, but is broadcasting (Status="+bean.getStatus()+")");	
+				logger.warn(bean.getClass().getSimpleName()+" '"+bean.getName()+"' is not set to operating, but is broadcasting (Status="+bean.getStatus()+")");
 			}
 		}
-		
+
 		//Whatever happens update the message on the parent
 		parent.setMessage("'"+bean.getName()+"': "+bean.getMessage());
-		
+
 		//The percent complete changed, update the parent
 		if (bean.getPercentComplete() != children.get(beanID).percentComplete) {
 			//First time we need to change the parent percent, get its initial value
@@ -182,7 +182,7 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 			children.get(beanID).percentComplete = childPercent;
 			broadcastUpdate = true;
 		}
-		
+
 		/*
 		 * If the status of the child changed, test if we need to update the
 		 * parent. Transitions handled: (for each, set queue message)
@@ -195,7 +195,7 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		if (bean.getStatus() != children.get(beanID).status) {
 			//Update the status of the process
 			children.get(beanID).status = bean.getStatus();
-			
+
 			if (bean.getStatus().isRunning() || bean.getStatus().isResumed()) {
 				//RESUMED/RUNNING
 				if (parent.getStatus().isPaused()) {
@@ -243,7 +243,7 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 				}
 			}
 		}
-		
+
 		//If we have an update to broadcast, do it!
 		if (broadcastUpdate) {
 			try {
@@ -252,9 +252,9 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 				logger.error("Broadcasting '"+bean.getName()+"' failed with: "+evEx.getMessage());
 			}
 		}
-		
+
 		/*
-		 * If no beans are still operating and all beans have concluded, 
+		 * If no beans are still operating and all beans have concluded,
 		 * release the latch.
 		 */
 		if (beanCompleted) {
@@ -279,36 +279,36 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 			}
 		}
 	}
-	
+
 	/**
-	 * Mark the last command status change of parent as resulting from a 
+	 * Mark the last command status change of parent as resulting from a
 	 * command from  a child process (to prevent instruction loops).
-	 * 
+	 *
 	 * @return true if last command to parent came from a child.
 	 */
 	public boolean isChildCommand() {
 		return childCommand;
 	}
-	
+
 	/**
-	 * Records the state of a process within a monitored consumer queue, as 
+	 * Records the state of a process within a monitored consumer queue, as
 	 * viewed by the {@link QueueListener}.
-	 * 
+	 *
 	 * @author Michael Wharmby
 	 *
 	 */
 	private class ProcessStatus {
-		
+
 		private Status status; //Current status of a bean
 		private double percentComplete; //Current percent complete of a bean
 		private double workFraction = 1d; //Fraction of total work in parent performed by this bean
 		private boolean operating = false; //Flag to show this bean is currently doing work (i.e. queue is running)
-		
+
 		/**
-		 * Create ProcessStatus from the bean describing the process in the 
+		 * Create ProcessStatus from the bean describing the process in the
 		 * queue.
-		 * 
-		 * @param bean extending StatusBean which will be used to update 
+		 *
+		 * @param bean extending StatusBean which will be used to update
 		 *        this object.
 		 */
 		public ProcessStatus(StatusBean bean) {
@@ -317,7 +317,7 @@ public class QueueListener<P extends Queueable, Q extends StatusBean> implements
 		}
 
 		/**
-		 * Test whether the process has actually been started (NONE is being 
+		 * Test whether the process has actually been started (NONE is being
 		 * used to indicate nothing done yet).
 		 * @return true if process state is final & is NONE
 		 */

@@ -57,35 +57,35 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 	}
 
     public MockScannable() {
-    	super(Services.getScannableDeviceService());
-       	values    = new ArrayList<>();
-       	positions = new ArrayList<>();
+	super(Services.getScannableDeviceService());
+	values    = new ArrayList<>();
+	positions = new ArrayList<>();
     }
     public MockScannable(double position) {
-    	this();
-    	this.position = position;
+	this();
+	this.position = position;
     }
 	public MockScannable(String name, double position) {
-    	this();
+	this();
 		setName(name);
 		this.position = position;
 	}
 
 	public MockScannable(String name, Double position, int level) {
-    	this();
+	this();
 		setLevel(level);
 		setName(name);
 		this.position = position;
 	}
 	public MockScannable(String name, Double position, int level, boolean requireSleep) {
-    	this();
-    	this.requireSleep = requireSleep;
+	this();
+	this.requireSleep = requireSleep;
 		setLevel(level);
 		setName(name);
 		this.position = position;
 	}
 	public MockScannable(String name, Double position, int level, String unit) {
-    	this();
+	this();
 		setLevel(level);
 		setName(name);
 		this.position = position;
@@ -297,7 +297,7 @@ public class MockScannable extends CountableScannable<Number> implements IConfig
 	}
 
     public void setUnit(String unit) {
-    	this.unit = unit;
+	this.unit = unit;
     }
 
 	@Override

@@ -25,17 +25,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * This is a useful label provider for formatting the value of an IScannable in
  * the standard way in a table.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class ScannableValueLabelProvider extends ColumnLabelProvider implements IStyledLabelProvider {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ScannableValueLabelProvider.class);
-		
+
 	public ScannableValueLabelProvider() {
 		Activator.getStore().setDefault(DevicePreferenceConstants.NUMBER_FORMAT, "##########0.0###");
 	}
@@ -47,23 +47,23 @@ public class ScannableValueLabelProvider extends ColumnLabelProvider implements 
 
 		final String       text       = getText(element);
 		final StyledString styledText = new StyledString(text!=null?text:"");
-		
+
 		IScannable<?> scannable = (IScannable<?>)element;
 		try {
 
 			if (scannable.getUnit() != null) {
 				styledText.append("    ");
 				styledText.append(scannable.getUnit(), StyledString.DECORATIONS_STYLER);
-						
+
 			} else {
-		
+
 				// Intentionally do nothing!
 			}
 		} catch (Exception ne) {
 			String message = ne.getMessage() == null ? "" : ne.getMessage();
 			return styledText.append(message, StyledString.QUALIFIER_STYLER);
 		}
-		
+
 		return styledText;
 	}
 
@@ -72,7 +72,7 @@ public class ScannableValueLabelProvider extends ColumnLabelProvider implements 
 
 		if(!(element instanceof IScannable<?>)) return super.getText(element);
 
-		IScannable<?> scannable = (IScannable<?>)element;		
+		IScannable<?> scannable = (IScannable<?>)element;
 		try {
 
 			Object value = scannable.getPosition();
@@ -81,7 +81,7 @@ public class ScannableValueLabelProvider extends ColumnLabelProvider implements 
 			if (value instanceof Number) {
 				try {
 					final DecimalFormat format = new DecimalFormat(Activator.getStore().getString(DevicePreferenceConstants.NUMBER_FORMAT));
-					return format.format(value); 
+					return format.format(value);
 				} catch (Exception ne) {
 					logger.warn("Could not format value as a decimal: ", value);
 					return value.toString();

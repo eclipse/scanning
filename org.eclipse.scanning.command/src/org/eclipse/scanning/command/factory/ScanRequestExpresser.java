@@ -93,4 +93,3 @@ class ScanRequestExpresser extends PyModelExpresser<ScanRequest<?>> {
 
 	}
 }
-

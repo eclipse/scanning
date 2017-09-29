@@ -31,7 +31,7 @@ import org.junit.Test;
  * Test the {@link TaskBean} class, which contains a queue of QueueAtoms, which
  * will form an active-queue when processed. This class only create the POJO.
  * Tests themselves in {@link AbstractAtomQueueTest}.
- * 
+ *
  * @author Michael Wharmby
  *
  */
@@ -78,7 +78,7 @@ public class TaskBeanTest extends AbstractBeanTest<TaskBean> { //extends Abstrac
 		//Check adding atoms to queue works
 		assertTrue("atomD addition failed - already present?", beanA.addAtom(atomD));
 		assertEquals("Queue size did not change after addition", queueSize+1, beanA.atomQueueSize());
-		
+
 		//Check adding nulls/identical atoms throws an expected error
 		try {
 			SubTaskAtom nullStA = null;
@@ -110,9 +110,9 @@ public class TaskBeanTest extends AbstractBeanTest<TaskBean> { //extends Abstrac
 		assertEquals("atomB not in the next position", atomB, beanB.viewNextAtom());
 		assertEquals("Queue has not reduced in size on removal", queueSize-1, beanB.atomQueueSize());
 	}
-	
+
 	/**
-	 * Test behaviour of queue in case {@link QueueAtom}s with UIDs (see 
+	 * Test behaviour of queue in case {@link QueueAtom}s with UIDs (see
 	 * {@link IdBean}) known not to be present are removed/otherwise requested.
 	 */
 	@Test
@@ -124,7 +124,7 @@ public class TaskBeanTest extends AbstractBeanTest<TaskBean> { //extends Abstrac
 			//Expected
 		}
 	}
-	
+
 	/**
 	 * Test recovery of {@link QueueAtom} index from a given UID.
 	 */
@@ -134,7 +134,7 @@ public class TaskBeanTest extends AbstractBeanTest<TaskBean> { //extends Abstrac
 		assertEquals("atomE expected at index 4 of beanB", 4, beanB.getQueuePosition(atomE.getUniqueId()));
 		assertEquals("atomB expected at index 1 of beanA", 1, beanA.getQueuePosition(atomB.getUniqueId()));
 	}
-	
+
 	/**
 	 * Test adding of {@link QueueAtoms} with duplicate UIDs fails.
 	 */
@@ -143,7 +143,7 @@ public class TaskBeanTest extends AbstractBeanTest<TaskBean> { //extends Abstrac
 		assertTrue("beanA should contain atomA, but doesn't", beanA.isAtomPresent(atomA));
 		assertFalse("beanA shouldn't contain atomD, but does", beanA.isAtomPresent(atomD));
 	}
-	
+
 	/**
 	 * Test calculation of runtime of queue from the {@link QueueAtom}s present.
 	 */

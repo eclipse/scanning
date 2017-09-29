@@ -16,18 +16,18 @@ import java.util.Arrays;
 import org.eclipse.scanning.api.malcolm.MalcolmTable;
 
 /**
- * 
+ *
  * Encapsulates a table array attribute as read from a malcolm device
- * 
+ *
  * @author Matt Taylor
  *
  */
 public class TableAttribute extends MalcolmAttribute<MalcolmTable> {
 	public static final String TABLE_ID = "malcolm:core/TableMeta:";
-	
+
 	private MalcolmTable tableValue;
 	private String[] headings;
-	
+
 	@Override
 	public MalcolmTable getValue() {
 		return tableValue;
@@ -69,5 +69,5 @@ public class TableAttribute extends MalcolmAttribute<MalcolmTable> {
 			return false;
 		return true;
 	}
-	
+
 }

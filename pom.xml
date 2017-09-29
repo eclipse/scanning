@@ -39,7 +39,7 @@
 		<module>org.eclipse.scanning.points</module>
 		<module>org.eclipse.scanning.sequencer</module>
 		<module>org.eclipse.scanning.server</module>
-		<module>org.eclipse.scanning.test</module>	
+		<module>org.eclipse.scanning.test</module>
 		<module>org.eclipse.scanning.connector.activemq</module>
 		<module>org.eclipse.scanning.connector.activemq.test</module>
 	</modules>
@@ -47,7 +47,7 @@
 	<properties>
 		<tycho-version>0.24.0</tycho-version>
 	</properties>
-	
+
 	<dependencies>
 	    <dependency>
 	      <groupId>junit</groupId>
@@ -56,7 +56,7 @@
 	      <scope>test</scope>
 	    </dependency>
     </dependencies>
-        
+
     <build>
       <plugins>
 		<plugin>
@@ -65,7 +65,7 @@
 			<version>${tycho-version}</version>
 			<extensions>true</extensions>
 		</plugin>
-		
+
 		<plugin>
 			<groupId>org.eclipse.tycho</groupId>
 			<artifactId>tycho-p2-repository-plugin</artifactId>
@@ -74,7 +74,7 @@
 				<includeAllDependencies>false</includeAllDependencies>
 			</configuration>
 		</plugin>
-		
+
         <!-- This configures the target platform and the supported architectures. -->
 		<plugin>
 			<groupId>org.eclipse.tycho</groupId>
@@ -97,8 +97,8 @@
 				</target>
 			</configuration>
 		</plugin>
-		   
-		<!--  Can run tests with 'mvn clean compile surefire:test -D -->       
+
+		<!--  Can run tests with 'mvn clean compile surefire:test -D -->
         <plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-surefire-plugin</artifactId>
@@ -111,12 +111,12 @@
 				  <exclude>org/eclipse/richbeans/**</exclude>
 				  <exclude>org/eclipse/dawnsci/**</exclude>
 	            </excludes>
-           		<includes>
+			<includes>
 		          <include>${test.includes}</include>
 			    </includes>
 			</configuration>
-  		  </plugin>   
-  		            
+		  </plugin>
+
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
@@ -129,8 +129,6 @@
           </plugin>
       </plugins>
    </build>
-   
-    
+
+
  </project>
-	
-	

@@ -20,16 +20,16 @@ import org.eclipse.scanning.api.event.IMessagingService;
 import org.eclipse.scanning.server.servlet.Services;
 
 /**
- * 
+ *
  * This application is used to start and stop data acquisition objects
  * inside an OSGi container. For instance one could start various
  * servlets for easily testing server functionality.
- * 
+ *
  * Arguments:
- * 
+ *
  * -xml   Simple spring file that creates objects
- * 
- * 
+ *
+ *
  * @author Matthew Gerring
  *
  */
@@ -41,12 +41,12 @@ public class Application implements IApplication {
 
 	@Override
 	public Object start(IApplicationContext context) throws Exception {
-			
+
 		this.latch   = new CountDownLatch(1);
 
 		final Map<?, ?>      args    = context.getArguments();
 		final String[] configuration = (String[])args.get("application.args");
-        
+
 		Map<String, String> conf = new HashMap<String, String>(7);
 		for (int i = 0; i < configuration.length; i++) {
 			final String pkey = configuration[i];
@@ -58,24 +58,24 @@ public class Application implements IApplication {
 				}
 			}
 		}
-		
+
 		if (conf.containsKey("startActiveMQ")) {
 			IMessagingService mservice = Services.getMessagingService();
 			String uri = System.getProperty("org.eclipse.scanning.broker.uri");
 			mservice.start(uri);
 		}
-		
+
 		PseudoSpringParser parser = new PseudoSpringParser();
 		this.objects = parser.parse(conf.get("xml"));
 		latch.await();
-		
+
 		return objects;
 	}
 
 
 	@Override
 	public void stop() {
-		
+
 		if (objects!=null) for (Object object : objects.values()) {
 			try {
 				Method disconnect = object.getClass().getMethod("disconnect");
@@ -92,6 +92,6 @@ public class Application implements IApplication {
 		}
 		latch.countDown();
 	}
-	
+
 
 }

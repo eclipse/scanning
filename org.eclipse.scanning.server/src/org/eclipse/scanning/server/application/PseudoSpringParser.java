@@ -50,21 +50,21 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- * 
+ *
  * Parses a spring file without making a dependency on spring.
  * Only supports a very limited subset of that which is available
- * in spring. 
- * 
+ * in spring.
+ *
  * @author Matthew Gerring
  *
  */
 @SuppressWarnings("deprecation")
 public class PseudoSpringParser implements ISpringParser {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(PseudoSpringParser.class);
-	
+
 	private static ComponentContext context;
-	
+
 	private File dir;
 
 	/**
@@ -72,7 +72,7 @@ public class PseudoSpringParser implements ISpringParser {
 	 * This means that the example has no dependency on a
 	 * particular spring version and can be part of the open
 	 * source project.
-	 * 
+	 *
 	 * @param path
 	 * @return
 	 * @throws Exception
@@ -85,18 +85,18 @@ public class PseudoSpringParser implements ISpringParser {
 		Document doc = getDocument(path);
 		return parse(doc);
 	}
-	
+
 	@Override
 	public void setDirectory(File dir) {
 		this.dir = dir;
 	}
-	
+
 	/**
 	 * Manually parse spring XML to create the objects.
 	 * This means that the example has no dependency on a
 	 * particular spring version and can be part of the open
 	 * source project.
-	 * 
+	 *
 	 * @param in
 	 * @return
 	 * @throws Exception
@@ -112,7 +112,7 @@ public class PseudoSpringParser implements ISpringParser {
 	    DocumentBuilder builder = factory.newDocumentBuilder();
 	    return builder.parse(new File(path));
 	}
-	
+
 	private Document getDocument(InputStream in) throws SAXException, IOException, ParserConfigurationException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder builder = factory.newDocumentBuilder();
@@ -120,62 +120,62 @@ public class PseudoSpringParser implements ISpringParser {
 	}
 
 	private Map<String, Object> parse(Document doc) throws Exception {
-		
+
 		Map<String, Object> objects = parseBeans(doc);
 		return objects;
 	}
 
 	private Map<String, Object> parseBeans(Document doc) throws Exception {
-		
-	    
+
+
 	    Map<String, Object>    objects = new HashMap<>();
 	    Map<String, NamedList> lists   = new HashMap<>();
 	    return parseBeans(doc, objects, lists);
 	}
-	
+
 	private Map<String, Object> parseBeans(Document doc, Map<String, Object> objects, Map<String, NamedList> lists) throws Exception {
-	    
+
 	    doc.getDocumentElement().normalize();
 		NodeList  nl = doc.getChildNodes().item(0).getChildNodes();
 	    for (int i = 0; i < nl.getLength(); i++) {
 			if (!(nl.item(i) instanceof Element)) continue;
-	    	Element element = (Element)nl.item(i);
-	    	
-	    	if ("bean".equals(element.getTagName())) {
-	    		parseBean(element, objects, lists);
-	    		continue;
-	    	}
-	    	if ("osgi:service".equals(element.getTagName())) continue; // Deal with later
-	    	
-	    	if ("import".equals(element.getTagName())) {
+		Element element = (Element)nl.item(i);
+
+		if ("bean".equals(element.getTagName())) {
+			parseBean(element, objects, lists);
+			continue;
+		}
+		if ("osgi:service".equals(element.getTagName())) continue; // Deal with later
+
+		if ("import".equals(element.getTagName())) {
 				String link = element.getAttributes().getNamedItem("resource").getNodeValue();
 				final File file = new File(dir, link); // No dir, no links!
 				Document child = getDocument(file.getAbsolutePath());
 				parseBeans(child, objects, lists);
-	    		continue;
-	    	}
-	    	
-	    	throw new Exception("Unrecognised element: "+element+" with tag "+element.getTagName());
+			continue;
+		}
+
+		throw new Exception("Unrecognised element: "+element+" with tag "+element.getTagName());
 	    }
-	    
-	    
+
+
 	    // We process the lists to wire together objects
 	    for (String id : lists.keySet()) {
-	    	final NamedList namedList  = lists.get(id);
+		final NamedList namedList  = lists.get(id);
 			final Object    object     = objects.get(id);
 			if (object!=null) {
 				final List<Object> listValue = getObjects(objects, namedList);
 				setValue(object, namedList.getName(), listValue, List.class);
 			}
 		}
-	    
+
 	    nl = doc.getElementsByTagName("osgi:service");
 	    if (nl!=null) for (int i = 0; i < nl.getLength(); i++) {
-	    	
-	    	Element service = (Element)nl.item(i);
+
+		Element service = (Element)nl.item(i);
 			final String ref = service.getAttributes().getNamedItem("ref").getNodeValue();
 	        final Object obj = objects.get(ref);
-	        
+
 			final String interfase = service.getAttributes().getNamedItem("interface").getNodeValue();
 			final Bundle bundle    = getBundle("org.eclipse.scanning.api");
 			final Class  clazz     = bundle!=null ? bundle.loadClass(interfase) : Class.forName(interfase);
@@ -200,7 +200,7 @@ public class PseudoSpringParser implements ISpringParser {
 	}
 
 	private Bundle getOSGiBundle(String symbolicName) {
-		
+
 		ServiceReference<PackageAdmin> ref = context.getBundleContext().getServiceReference(PackageAdmin.class);
 		PackageAdmin packageAdmin = context.getBundleContext().getService(ref);
 		if (packageAdmin == null)
@@ -218,18 +218,18 @@ public class PseudoSpringParser implements ISpringParser {
 	}
 
 	private void parseBean(Element bean, Map<String, Object> objects, Map<String, NamedList> lists) throws Exception {
-		
-    	if (!bean.hasChildNodes()) return;
-    	
+
+	if (!bean.hasChildNodes()) return;
+
 		final String className = bean.getAttributes().getNamedItem("class").getNodeValue();
-		
+
 		Node initNode = bean.getAttributes().getNamedItem("init-method");
 		final String init      = initNode!=null ? bean.getAttributes().getNamedItem("init-method").getNodeValue() : null;
-		
+
 		final String id = bean.getAttributes().getNamedItem("id").getNodeValue();
 
 		// Look for parameters
-		// bundle, broker, submitQueue, statusSet, statusTopic, durable;	
+		// bundle, broker, submitQueue, statusSet, statusTopic, durable;
 		NodeList props = bean.getElementsByTagName("property");
 		final Map<String,Object> conf = new HashMap<>();
 		for (int j = 0; j < props.getLength(); j++) {
@@ -273,7 +273,7 @@ public class PseudoSpringParser implements ISpringParser {
 		Object created = createObject(className, init, conf);
 		objects.put(id, created);
 	}
-	
+
 
 	private List<Object> getObjects(Map<String, Object> objects, NamedList namedList) {
 		final List<Object> ret = new ArrayList<>();
@@ -284,19 +284,19 @@ public class PseudoSpringParser implements ISpringParser {
 	}
 
 	private Object createObject(String className, String initMethod, Map<String, Object> conf) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, NoSuchMethodException, SecurityException, NoSuchFieldException {
-		
+
 		// Must have a bundle
 		String bundleName = (String)conf.remove("bundle");
 		if (bundleName==null) bundleName = "org.eclipse.scanning.server";
 		final Bundle bundle    = getBundle(bundleName);
-	
+
 		Class<?> clazz;
 		try {
 			clazz = bundle != null ? bundle.loadClass(className) : Class.forName(className);
 		} catch (java.lang.ClassNotFoundException ne) {
 			throw new ClassNotFoundException("Cannot find class "+className+" in bundle "+bundleName+". Bundle is "+bundle, ne);
 		}
-		
+
 		Object instance = clazz.newInstance();
 		for (String fieldName : conf.keySet()) {
 			final Object value      = getValue(conf, fieldName);
@@ -314,12 +314,12 @@ public class PseudoSpringParser implements ISpringParser {
 	}
 
 	private Object getValue(Map<String, Object> conf, String fieldName) {
-		
+
 		Object vObject = conf.get(fieldName);
 		if (!(vObject instanceof String)) return vObject; // It was a ref!
-		
+
 		String val = replaceProperties((String)vObject); // Insert any system properties that the user used.
-		
+
 		if ("true".equalsIgnoreCase(val)) {
 			return Boolean.TRUE;
 		} else if ("false".equalsIgnoreCase(val)) {
@@ -356,7 +356,7 @@ public class PseudoSpringParser implements ISpringParser {
 	private void setValue(Object instance, final String fieldName, final Object value, final Class<?> valueClass) throws NoSuchMethodException, SecurityException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
 		setValue(instance.getClass(), instance, fieldName, value, valueClass);
 	}
-	
+
 	private void setValue(final Class<?> clazz, Object instance, final String fieldName, Object value, Class<?> valueClass) throws NoSuchMethodException, SecurityException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
 		final String setterName = getSetterName(fieldName);
 		if (valueClass==null) valueClass = value.getClass();

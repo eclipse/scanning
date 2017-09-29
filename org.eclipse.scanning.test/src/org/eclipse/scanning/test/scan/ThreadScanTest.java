@@ -192,7 +192,7 @@ public class ThreadScanTest extends BrokerTest {
 			@Override
 			public void scanStateChanged(ScanEvent evt) {
 				ScanBean bean = evt.getBean();
-	   			if (bean.getDeviceState()==DeviceState.PAUSED) {
+				if (bean.getDeviceState()==DeviceState.PAUSED) {
 				    beans.add(bean);
 				}
 			}

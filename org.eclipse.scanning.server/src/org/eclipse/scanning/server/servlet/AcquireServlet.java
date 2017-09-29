@@ -23,7 +23,7 @@ import org.eclipse.scanning.api.event.scan.AcquireRequest;
  * A servlet to acquire data from a particular detector.
  */
 public class AcquireServlet extends AbstractResponderServlet<AcquireRequest> {
-	
+
 	public AcquireServlet() {
 		super(ACQUIRE_REQUEST_TOPIC, ACQUIRE_RESPONSE_TOPIC);
 	}

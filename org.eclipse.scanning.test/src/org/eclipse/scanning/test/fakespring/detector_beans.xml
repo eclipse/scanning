@@ -23,9 +23,9 @@
 		<property name="description" value="A Mandelbrot detector which is only used for testing"/>
 		<property name="icon"        value="org.eclipse.scanning.example/icons/mandelbrot.png"/> <!--  bundle must be on client for that, if it isn't a default icon is used -->
 	</bean>
-	
-	
-	
+
+
+
 	<!--  Dark Image Example -->
 	<bean id="darkImageModel" class="org.eclipse.scanning.example.detector.DarkImageModel">
 		<property name="name"          value="dkExmpl"/>
@@ -39,8 +39,8 @@
 		<property name="description" value="A detector which takes images at a frequency lower than the scan numbner to simulate a dark current reading."/>
 		<property name="icon"        value="org.eclipse.scanning.example/icons/darkcurrent.png"/> <!--  bundle must be on client for that, if it isn't a default icon is used -->
 	</bean>
-	
-	
+
+
 	<!--  Constant Velocity Example -->
 	<bean id="constantVelocityModel" class="org.eclipse.scanning.example.detector.ConstantVelocityModel">
 		<property name="name"           value="cvExmpl"/>
@@ -54,5 +54,5 @@
 		<property name="label"       value="Constant Velocity Example Detector"/>
 		<property name="description" value="A detector which runs line scans within the arbitrary outer scan which it is given."/>
 	</bean>
-	
+
 </beans>

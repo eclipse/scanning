@@ -1,17 +1,17 @@
 package org.eclipse.scanning.api.points.models;
 
 public class JythonArgument {
-	
+
 	public enum JythonArgumentType {
 		STRING, INTEGER, FLOAT;
 	}
 
 	private JythonArgumentType type;
 	private String             value;
-	
+
 	public JythonArgument() {
 	}
-	
+
 	public JythonArgument(String value, JythonArgumentType type) {
 		this();
 		this.value = value;

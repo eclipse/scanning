@@ -7,8 +7,8 @@ public class MockCountingPositionScannable extends MockScannable {
 	private final boolean returnPosition;
 
 	public MockCountingPositionScannable(String name, double position, boolean returnPosition) {
-    	super(name, position);
-    	this.returnPosition = returnPosition;
+	super(name, position);
+	this.returnPosition = returnPosition;
 	}
 
 	@Override
@@ -17,7 +17,7 @@ public class MockCountingPositionScannable extends MockScannable {
         Number ret = super.setPosition(value, loc);
         return returnPosition ? ret : null;
 	}
-	
+
 
 	@Override
 	public Number getPosition() {

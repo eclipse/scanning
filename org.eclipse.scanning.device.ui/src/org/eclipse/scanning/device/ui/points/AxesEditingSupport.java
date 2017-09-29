@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class AxesEditingSupport extends EditingSupport {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(AxesEditingSupport.class);
 
 	private IScannableDeviceService     cservice;
@@ -33,7 +33,7 @@ public class AxesEditingSupport extends EditingSupport {
 		this.cservice = cservice;
 		this.delegatingSelectionProvider = delegatingSelectionProvider;
 	}
-	
+
 	private AxesCellEditor editor;
 
 	@Override
@@ -44,10 +44,10 @@ public class AxesEditingSupport extends EditingSupport {
 			} catch (ScanningException e) {
 				logger.error("Problem reading scannable names", e);
 				return new TextCellEditor((Composite)getViewer().getControl()) {
-	        	    @Override
-	        		protected void doSetValue(Object value) {
-	        	    	super.doSetValue("Problem reading scannable names");
-	        	    }
+			    @Override
+				protected void doSetValue(Object value) {
+				super.doSetValue("Problem reading scannable names");
+			    }
 				};
 			}
 		}

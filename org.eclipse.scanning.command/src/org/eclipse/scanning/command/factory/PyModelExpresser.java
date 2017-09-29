@@ -18,7 +18,7 @@ import org.eclipse.scanning.command.PyExpressionNotImplementedException;
 
 /**
  * You must override at least one of the pyExpress(...) methods.
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T> the model for which we are expressing.

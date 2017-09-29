@@ -36,7 +36,7 @@ public class ProcessingException extends EventException {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3056159047121974655L;
 

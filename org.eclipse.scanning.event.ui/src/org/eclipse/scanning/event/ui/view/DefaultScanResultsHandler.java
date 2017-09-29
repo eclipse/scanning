@@ -21,7 +21,7 @@ import org.eclipse.ui.ide.FileStoreEditorInput;
 /**
  * Result handler for opening {@link ScanBean}s by opening their results files, as
  * returned by {@link ScanBean#getFilePath()}.
- * 
+ *
  * @author Matthew Dickie
  */
 public class DefaultScanResultsHandler implements IResultHandler<ScanBean> {
@@ -39,11 +39,11 @@ public class DefaultScanResultsHandler implements IResultHandler<ScanBean> {
 		if (scanBean.getFilePath() == null) {
 			return false;
 		}
-		
+
 		if (!scanBean.getStatus().isFinal() && !confirmOpen(scanBean)) {
 			return false;
 		}
-		
+
 		String filePath = scanBean.getFilePath();
 		IWorkbench workbench = PlatformUI.getWorkbench();
 		IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
@@ -51,26 +51,26 @@ public class DefaultScanResultsHandler implements IResultHandler<ScanBean> {
 		// Set the perspective to Data Browsing Perspective
 		// TODO FIXME When there is a general data viewing perspective from DAWN, use that.
 		workbench.showPerspective(DATA_PERSPECTIVE_ID, window);
-		String editorId = getEditorId(filePath); 
+		String editorId = getEditorId(filePath);
 		IEditorInput editorInput = getEditorInput(filePath);
 		IWorkbenchPage page = workbench.getActiveWorkbenchWindow().getActivePage();
 		page.openEditor(editorInput, editorId);
 		return true;
 	}
-	
+
 	public boolean confirmOpen(ScanBean bean) {
 		final Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
-//		return MessageDialog.openQuestion(shell, "'"+bean.getName()+"' incomplete.", 
+//		return MessageDialog.openQuestion(shell, "'"+bean.getName()+"' incomplete.",
 //					"The run of '"+bean.getName()+"' has not completed.\n" +
 //					"Would you like to try to open the results anyway?");
-		
+
 		// TODO: we currently do not open scan results for scans that have not finished as they cannot
 		// In future, we may wish to add a feature to support this in future. Talk to Jacob Filik
-		MessageDialog.openError(shell, "'"+bean.getName()+"' incomplete.", 
+		MessageDialog.openError(shell, "'"+bean.getName()+"' incomplete.",
 		"Cannot open scan results.\nThe run of '"+bean.getName()+"' has not completed.");
 		return false;
 	}
-	
+
 	private String getEditorId(String filePath) {
 		IEditorRegistry editorRegistry = PlatformUI.getWorkbench().getEditorRegistry();
 		IEditorDescriptor desc = editorRegistry.getDefaultEditor(filePath);
@@ -79,7 +79,7 @@ public class DefaultScanResultsHandler implements IResultHandler<ScanBean> {
 		}
 		return desc.getId();
 	}
-	
+
 	private IEditorInput getEditorInput(String filePath) {
 		final IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(new File(filePath));
 		return new FileStoreEditorInput(externalFile);

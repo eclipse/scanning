@@ -1,5 +1,5 @@
 # README
-This bundle is used to show a user interface submitting jobs to scan. 
+This bundle is used to show a user interface submitting jobs to scan.
 Do the following steps to use the example:
 
 1. Install and start an instance of activemq and start it

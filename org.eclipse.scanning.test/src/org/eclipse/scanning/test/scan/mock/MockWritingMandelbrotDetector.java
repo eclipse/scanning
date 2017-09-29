@@ -40,24 +40,24 @@ import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
  * A mock detector used for testing ONLY
- * 
+ *
  * This detector bypasses the NeXus API for writing things in the correct place
  * and hard codes a particular file path.
- * 
+ *
  * DO NOT COPY!
- * 
+ *
  */
 public class MockWritingMandelbrotDetector extends AbstractRunnableDevice<MockWritingMandlebrotModel> implements IWritableDetector<MockWritingMandlebrotModel> {
 
 	public enum OutputDimensions { ONE_D, TWO_D }
 
 	public static final String VALUE_NAME = "mandelbrot_value";
-	
+
 
 	private MockWritingMandlebrotModel      model;
 	private IDataset              toWrite;
 	private ILazyWriteableDataset writer;
-	
+
 	public MockWritingMandelbrotDetector() throws IOException {
 		super(null);
 		this.model = new MockWritingMandlebrotModel();
@@ -76,42 +76,42 @@ public class MockWritingMandelbrotDetector extends AbstractRunnableDevice<MockWr
 
 	@Override
 	public void configure(MockWritingMandlebrotModel model) throws ScanningException {
-		
+
 		this.model      = model;
 		setDeviceState(DeviceState.ARMED);
-		
+
 		// We make a lazy writeable dataset to write out the mandels.
 		final int[] shape = new int[]{model.getxSize(), model.getySize(), model.getRows(), model.getColumns()};
-		
+
 		try {
 			/**
 			 * @see org.eclipse.dawnsci.nexus.NexusFileTest.testLazyWriteStringArray()
-			 
+
 			  TODO FIXME Hack warning! This is not the way to write to NeXus.
 			  We are just doing this for the test!
-			  
+
 			  DO NOT COPY!
 			*/
-			NexusFile file = model.getFile();			
+			NexusFile file = model.getFile();
 			GroupNode par = file.getGroup("/entry1/instrument/detector", true); // DO NOT COPY!
 			writer = new LazyWriteableDataset(model.getName(), Dataset.FLOAT, shape, shape, shape, null); // DO NOT COPY!
-			
+
 			file.createData(par, writer); // DO NOT COPY!
-			
+
 		} catch (NexusException ne) {
 			throw new ScanningException("Cannot open file for writing!", ne);
 		}
-        
+
 	}
 
 	@Override
 	public void run(IPosition pos) throws ScanningException {
-		
+
 		final double a = (Double)pos.get(model.getxName());
 		final double b = (Double)pos.get(model.getyName());
 
 		double value = mandelbrot(a, b);
-		
+
 		if (model.getOutputDimensions() == OutputDimensions.ONE_D) {
 			toWrite = calculateJuliaSetLine(a, b, 0.0, 0.0, model.getMaxx(), model.getxSize()*model.getySize());
 		} else if (model.getOutputDimensions() == OutputDimensions.TWO_D) {
@@ -121,31 +121,31 @@ public class MockWritingMandelbrotDetector extends AbstractRunnableDevice<MockWr
 		mp.put("value", value);
 		IMetadata meta = new Metadata();
 		meta.initialize(mp);
-		toWrite.addMetadata(meta);	
+		toWrite.addMetadata(meta);
 	}
 
 	@Override
 	public boolean write(IPosition pos) throws ScanningException {
-		
+
 		/**
 		  TODO FIXME Hack warning! This is not the way to write to NeXus.
 		  We are just doing this for the test!
-		  
+
 		  DO NOT COPY!
 		*/
 		final int[] start = new int[]{pos.getIndex("x"), pos.getIndex("y"), 0, 0}; // DO NOT COPY!
 		final int[] stop  = new int[] {pos.getIndex("x")+1, pos.getIndex("y")+1, model.getRows(), model.getColumns()};
-		
+
 		SliceND slice = SliceND.createSlice(writer, start, stop); // DO NOT COPY!
 		try {
 			writer.setSlice(new IMonitor.Stub(), toWrite, slice); // DO NOT COPY!
 		} catch (Exception e) {
 			throw new ScanningException("Slice unable to write!", e); // DO NOT COPY!
 		}
-        
+
 		return true;
 	}
-	
+
 	@ScanFinally
 	public void close() {
 		writer = null;
@@ -166,7 +166,7 @@ public class MockWritingMandelbrotDetector extends AbstractRunnableDevice<MockWr
 			y = yStart + yIndex * yStep;
 			IDataset line = calculateJuliaSetLine(a, b, y, xStart, xStop, columns);
 			for (int x = 0; x < line.getSize(); x++) {
-				juliaSet.set(line.getObject(x), 0, 0, yIndex, x);	
+				juliaSet.set(line.getObject(x), 0, 0, yIndex, x);
 			}
 		}
 		return juliaSet;

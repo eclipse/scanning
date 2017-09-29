@@ -29,11 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ControlView extends ViewPart {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ControlView.class);
 
 	public static final String ID = "org.eclipse.scanning.device.ui.device.ControlView"; //$NON-NLS-1$
-	
+
 	// UI
 	private ControlTreeViewer viewer;
 
@@ -44,12 +44,12 @@ public class ControlView extends ViewPart {
 		Activator.getDefault().getPreferenceStore().setDefault(DevicePreferenceConstants.SHOW_CONTROL_TOOLTIPS, true);
 		this.stash = ServiceHolder.getStashingService().createStash("org.eclipse.scanning.device.ui.device.controls.json");
 	}
-	
+
 	@Override
     public void saveState(IMemento memento) {
-    	super.saveState(memento);
-    	try {
-    		stash.stash(viewer.getControlTree());
+	super.saveState(memento);
+	try {
+		stash.stash(viewer.getControlTree());
 		} catch (Exception e) {
 			logger.error("Problem stashing control factory!", e);
 		}
@@ -60,7 +60,7 @@ public class ControlView extends ViewPart {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
-		
+
 		try {
 			IScannableDeviceService cservice = ServiceHolder.getEventService().createRemoteService(new URI(CommandConstants.getScanningBrokerUri()), IScannableDeviceService.class);
 
@@ -70,11 +70,11 @@ public class ControlView extends ViewPart {
 				defaultTree.globalize();
 			}
 			viewer = new ControlTreeViewer(defaultTree, cservice); // Widget linked to hardware, use ControlViewerMode.INDIRECT_NO_SET_VALUE to edit without setting hardware.
-			
+
 			ControlTree stashedTree = stash.unstash(ControlTree.class); // Or null if couldn't
 			if (stashedTree!=null) stashedTree.build();
 			viewer.createPartControl(parent, stashedTree, getViewSite().getActionBars().getMenuManager(), getViewSite().getActionBars().getToolBarManager());
-		
+
 		    getSite().setSelectionProvider(viewer.getSelectionProvider());
 
 		} catch (Exception e) {
@@ -87,11 +87,11 @@ public class ControlView extends ViewPart {
 	public void setFocus() {
 		viewer.setFocus();
 	}
-	
+
 	@Override
 	public void dispose() {
 		super.dispose();
 		viewer.dispose();
 	}
-	
+
 }

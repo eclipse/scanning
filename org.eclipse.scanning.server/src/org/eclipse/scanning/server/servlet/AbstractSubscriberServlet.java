@@ -64,12 +64,12 @@ public abstract class AbstractSubscriberServlet<T> implements ISubscriberServlet
 	@PostConstruct    // Requires spring 3 or better
     public void connect() throws EventException, URISyntaxException {
 
-    	if (getResponseTopic()!=null) {
-    		publisher = eventService.createPublisher(new URI(getBroker()), getResponseTopic());
-    	}
+	if (getResponseTopic()!=null) {
+		publisher = eventService.createPublisher(new URI(getBroker()), getResponseTopic());
+	}
 
-    	subscriber = eventService.createSubscriber(new URI(getBroker()), getTopic());
-    	subscriber.addListener(new IBeanListener<T>() {
+	subscriber = eventService.createSubscriber(new URI(getBroker()), getTopic());
+	subscriber.addListener(new IBeanListener<T>() {
 			@Override
 			public void beanChangePerformed(BeanEvent<T> evt) {
 				try {
@@ -80,14 +80,14 @@ public abstract class AbstractSubscriberServlet<T> implements ISubscriberServlet
 				}
 			}
 		});
-     	logger.info("Started "+getClass().getSimpleName());
+	logger.info("Started "+getClass().getSimpleName());
     }
 
 	@Override
 	@PreDestroy
 	public void disconnect() throws EventException {
-    	subscriber.disconnect();
-    	if (publisher!=null) publisher.disconnect();
+	subscriber.disconnect();
+	if (publisher!=null) publisher.disconnect();
     }
 
 	public String getBroker() {

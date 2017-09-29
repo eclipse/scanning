@@ -28,19 +28,19 @@ import org.epics.pvdatabase.pva.ChannelProviderLocalFactory;
 public class EPICSv4ExampleDevice extends AbstractEPICSv4Device{
 
     public EPICSv4ExampleDevice(String deviceName) {
-    	super(deviceName);
+	super(deviceName);
     }
 
     @Override
 	public void start() throws Exception {
-    	PVDatabase master = PVDatabaseFactory.getMaster();
-    	ChannelProvider channelProvider = ChannelProviderLocalFactory.getChannelProviderLocal();
-    	pvRecord = DummyMalcolmRecord.create(recordName);
-    	pvRecord.setTraceLevel(traceLevel);
-    	master.addRecord(pvRecord);
-    	ServerContextImpl context = ServerContextImpl.startPVAServer(channelProvider.getProviderName(),0,true,System.out);
-    	latch.await();
-    	master.removeRecord(pvRecord);
-    	context.destroy();
+	PVDatabase master = PVDatabaseFactory.getMaster();
+	ChannelProvider channelProvider = ChannelProviderLocalFactory.getChannelProviderLocal();
+	pvRecord = DummyMalcolmRecord.create(recordName);
+	pvRecord.setTraceLevel(traceLevel);
+	master.addRecord(pvRecord);
+	ServerContextImpl context = ServerContextImpl.startPVAServer(channelProvider.getProviderName(),0,true,System.out);
+	latch.await();
+	master.removeRecord(pvRecord);
+	context.destroy();
     }
 }

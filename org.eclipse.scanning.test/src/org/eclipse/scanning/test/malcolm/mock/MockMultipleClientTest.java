@@ -21,7 +21,7 @@ import org.junit.Ignore;
 
 @Ignore("TODO Get this running but needs more work.")
 public class MockMultipleClientTest extends AbstractMultipleClientMalcolmTest {
-	
+
 	@Override
 	@Before
 	public void create() throws Exception {
@@ -36,7 +36,7 @@ public class MockMultipleClientTest extends AbstractMultipleClientMalcolmTest {
 		if (device!=null)     device.dispose();
 		((MockedMalcolmService)service).dispose();
 	}
-	
+
 	@Override
 	protected IMalcolmDevice createAdditionalConnection() throws Exception {
 		return service.getDevice("zebra");

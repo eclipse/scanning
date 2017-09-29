@@ -16,10 +16,10 @@ import org.eclipse.scanning.api.INameable;
 public class ControlEnumNode extends AbstractControl implements INameable {
 
 	private Enum value;
-	
+
 	public ControlEnumNode() {
 	}
-	
+
 	public ControlEnumNode(String parentName, String name, Enum value) {
 		setName(name);
 		setParentName(parentName);
@@ -42,5 +42,5 @@ public class ControlEnumNode extends AbstractControl implements INameable {
 	public void setValue(Enum value) {
 		this.value = value;
 	}
-	
+
 }

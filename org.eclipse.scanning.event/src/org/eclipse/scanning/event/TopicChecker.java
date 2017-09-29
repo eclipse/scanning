@@ -47,24 +47,24 @@ class TopicChecker<T extends INameable> {
 
 	public void checkPulse() throws EventException, InterruptedException {
 
-    	ISubscriber<IBeanListener<T>>	subscriber = eventService.createSubscriber(uri, topicName);
+	ISubscriber<IBeanListener<T>>	subscriber = eventService.createSubscriber(uri, topicName);
         ok = false;
 
         try {
              subscriber.addListener(new IBeanListener<T>() {
-        		@Override
+			@Override
 				public void beanChangePerformed(BeanEvent<T> evt) {
-        			T bean = evt.getBean();
-        			if (!consumerName.equals(bean.getName())) {
-        				return;
-        			}
-        			ok = true;
-        		}
-        		@Override
+				T bean = evt.getBean();
+				if (!consumerName.equals(bean.getName())) {
+					return;
+				}
+				ok = true;
+			}
+			@Override
 				public Class<T> getBeanClass() {
-        			return beanClass;
-        		}
-        	});
+				return beanClass;
+			}
+		});
 
 
             Thread.sleep(listenTime);
@@ -73,7 +73,7 @@ class TopicChecker<T extends INameable> {
 
 
         } finally {
-        	subscriber.disconnect();
+		subscriber.disconnect();
         }
 	}
 

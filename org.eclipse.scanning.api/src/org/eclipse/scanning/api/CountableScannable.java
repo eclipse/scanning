@@ -19,13 +19,13 @@ import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.scan.event.Location;
 
 /**
- * 
+ *
  * A scannable with the ability to record method counts.
- * 
+ *
  * This is primarily useful for testing and debugging it
- * means that a dependency on Mockhito is not required 
+ * means that a dependency on Mockhito is not required
  * in order to count method calls.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -49,7 +49,7 @@ public abstract class CountableScannable<T> extends AbstractScannable<T> {
 	public CountableScannable(IScannableDeviceService sservice) {
 		super(sservice);
 	}
-	
+
 	protected void count(StackTraceElement[] ste) {
 		String methodName = getMethodName(ste);
 		Integer count = counts.get(methodName);
@@ -57,29 +57,29 @@ public abstract class CountableScannable<T> extends AbstractScannable<T> {
 		count = count+1;
 		counts.put(methodName, count);
 	}
-	
+
 	public int getCount(String method) {
 		if (!counts.containsKey(method)) return 0;
 		return counts.get(method);
 	}
-	
-	protected static final String getMethodName ( StackTraceElement ste[] ) {  
-		   
-	    String methodName = "";  
-	    boolean flag = false;  
-	   
-	    for ( StackTraceElement s : ste ) {  
-	   
-	        if ( flag ) {  
-	   
-	            methodName = s.getMethodName();  
-	            break;  
-	        }  
-	        flag = s.getMethodName().equals( "getStackTrace" );  
-	    }  
-	    return methodName;  
+
+	protected static final String getMethodName ( StackTraceElement ste[] ) {
+
+	    String methodName = "";
+	    boolean flag = false;
+
+	    for ( StackTraceElement s : ste ) {
+
+	        if ( flag ) {
+
+	            methodName = s.getMethodName();
+	            break;
+	        }
+	        flag = s.getMethodName().equals( "getStackTrace" );
+	    }
+	    return methodName;
 	}
-	
+
 	public void resetCount() {
 		counts.clear();
 	}

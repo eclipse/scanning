@@ -25,7 +25,7 @@ import org.eclipse.ui.part.ViewPart;
 public abstract class EventConnectionView extends ViewPart {
 
 	protected Properties                        idProperties;
-	
+
 	protected String getRequestName() {
 		final String rName = getSecondaryIdAttribute("requestName");
 		if (rName != null) return rName;
@@ -47,7 +47,7 @@ public abstract class EventConnectionView extends ViewPart {
     protected URI getUri() throws Exception {
 		return new URI(getUriString());
 	}
-    
+
     protected String getUriString() {
 		final String uri = getSecondaryIdAttribute("uri");
 		if (uri != null) {
@@ -59,16 +59,16 @@ public abstract class EventConnectionView extends ViewPart {
 		}
 		return Activator.getJmsUri();
 	}
-  
+
     protected String getUserName() {
 		final String name = getSecondaryIdAttribute("userName");
 		if (name != null) return name;
 		return System.getProperty("user.name");
 	}
-   
+
     protected String getCommandPreference(String key) {
 		final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-    	return store.getString(key);
+	return store.getString(key);
     }
 
 	protected String getQueueName() {
@@ -76,7 +76,7 @@ public abstract class EventConnectionView extends ViewPart {
 		if (qName != null) return qName;
 		return "scisoft.default.STATUS_QUEUE";
 	}
-	
+
 	protected String getSubmissionQueueName() {
 		final String qName =  getSecondaryIdAttribute("submissionQueueName");
 		if (qName != null) return qName;
@@ -95,16 +95,16 @@ public abstract class EventConnectionView extends ViewPart {
 	public void setIdProperties(Properties properties) {
 		idProperties = properties;
 	}
-	
+
 	public static String createSecondaryId(final String beanBundleName, final String beanClassName, final String queueName, final String topicName, final String submissionQueueName) {
         return QueueViews.createSecondaryId(beanBundleName, beanClassName, queueName, topicName, submissionQueueName);
 	}
-	
+
 	public static String createSecondaryId(final String uri, final String beanBundleName, final String beanClassName, final String queueName, final String topicName, final String submissionQueueName) {
 		return QueueViews.createSecondaryId(uri, beanBundleName, beanClassName, queueName, topicName, submissionQueueName);
 	}
 
-	
+
 	protected String getSecondaryIdAttribute(String key) {
 		if (idProperties!=null) return idProperties.getProperty(key);
 		if (getViewSite()==null) return null;
@@ -116,15 +116,15 @@ public abstract class EventConnectionView extends ViewPart {
 
 	/**
 	 * String to be parsed to properties. In the form of key=value pairs
-	 * separated by semi colons. You may not use semi-colons in the 
+	 * separated by semi colons. You may not use semi-colons in the
 	 * keys or values. Keys and values are trimmed so extra spaces will be
 	 * ignored.
-	 * 
+	 *
 	 * @param secondId
-	 * @return map of values extracted from the 
+	 * @return map of values extracted from the
 	 */
 	protected static Properties parseString(String properties) {
-		
+
 		if (properties==null) return new Properties();
 		Properties props = new Properties();
 		final String[] split = properties.split(";");

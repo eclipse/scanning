@@ -103,15 +103,15 @@ class LineIterator extends AbstractScanPointIterator {
 			@SuppressWarnings("unchecked")
 			Scalar<Double> point = (Scalar<Double>) pyIterator.next();
 			value = point.getValue();
-        	final MapPosition mp = new MapPosition();
-        	for (String name : ((CollatedStepModel)model).getNames()) {
-           		mp.put(name, value);
-           		mp.putIndex(name, -1);
+		final MapPosition mp = new MapPosition();
+		for (String name : ((CollatedStepModel)model).getNames()) {
+			mp.put(name, value);
+			mp.putIndex(name, -1);
 			}
-        	next = mp;
+		next = mp;
 
         } else {
-        	next = pyIterator.next();
+		next = pyIterator.next();
         }
         if (next!=null && model!=null) {
 	        next.setExposureTime(model.getExposureTime()); // Usually 0

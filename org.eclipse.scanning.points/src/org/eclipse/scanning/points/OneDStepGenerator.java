@@ -42,7 +42,7 @@ class OneDStepGenerator extends AbstractGenerator<OneDStepModel> {
 		if (line != null) {
 			return new int[] { (int) Math.floor(line.getLength() / getModel().getStep()) + 1 };
 		}
-		
+
 		return super.getShape();
 	}
 

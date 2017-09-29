@@ -35,14 +35,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class QueueServicePluginTest extends BrokerTest {
-	
+
 	private static IQueueService queueService;
 	private static IQueueControllerService queueControl;
 //	private EventInfrastructureFactoryService infrastructureServ;
 //	private static String qRoot = "fake-queue-root";
-	
+
 	private DummyBean dummyBean;
-	
+
 	/*
 	 * These three methods are called by OSGi to configure services during a
 	 * plugin test - see OSGI-INF/queueServicePluginTest.xml
@@ -56,7 +56,7 @@ public class QueueServicePluginTest extends BrokerTest {
 	public static void setQueueControllerService(IQueueControllerService qcServ) {
 		ServicesHolder.setQueueControllerService(qcServ);
 	}
-	
+
 	@Before
 	public void setup() throws Exception {
 //		infrastructureServ = new EventInfrastructureFactoryService();
@@ -68,9 +68,9 @@ public class QueueServicePluginTest extends BrokerTest {
 		queueService = ServicesHolder.getQueueService();
 		queueControl = ServicesHolder.getQueueControllerService();
 		queueControl.startQueueService();
-		
+
 	}
-	
+
 	@After
 	public void tearDown() throws EventException {
 		QueueProcessFactory.initialize(); //Remove the registered processes
@@ -81,28 +81,28 @@ public class QueueServicePluginTest extends BrokerTest {
 	@Test
 	public void testRunningBean() throws EventException {
 		dummyBean = new DummyBean("Bob", 50);
-		
+
 		String jobQueueID = queueService.getJobQueueID();
-		
+
 		queueControl.submit(dummyBean, jobQueueID);
-		
+
 		try {
 			Thread.sleep(10000);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		IConsumer<QueueBean> jobConsumer = queueService.getJobQueue().getConsumer();
 		List<QueueBean> statusSet = jobConsumer.getStatusSet();
-		
+
 		for (Queueable bean : statusSet) {
 			if (bean.getUniqueId().equals(dummyBean.getUniqueId())) {
 				assertTrue(bean.getStatus().isFinal());
 				assertEquals(Status.COMPLETE, bean.getStatus());
 			}
 		}
-		
+
 	}
 
 }

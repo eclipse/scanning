@@ -16,7 +16,7 @@ import org.eclipse.scanning.api.annotation.Units;
 
 public class RandomOffsetGridModel extends GridModel {
 
-	
+
 	/**
 	 * The maximum allowed offset, as a percentage of fast axis step size
 	 */

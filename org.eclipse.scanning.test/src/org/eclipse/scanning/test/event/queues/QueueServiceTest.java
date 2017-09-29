@@ -39,16 +39,16 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class QueueServiceTest {
-	
+
 	private MockConsumer<DummyBean> mockCons;
 	private MockPublisher<ConsumerCommandBean> mockCmdPub;
 	private MockEventService mockEvServ;
-	
+
 	private IQueueService testQServ;
-	
+
 	private String qRoot;
 	private String uri;
-	
+
 	@Before
 	public void setUp() throws Exception {
 		mockEvServ = new MockEventService();
@@ -57,36 +57,36 @@ public class QueueServiceTest {
 		mockEvServ.setMockConsumer(mockCons);
 		mockEvServ.setMockCmdPublisher(mockCmdPub);
 		ServicesHolder.setEventService(mockEvServ);
-		
+
 		qRoot = IQueueService.DEFAULT_QUEUE_ROOT; //This is auto-configured, but need the variables for tests
 		uri = "file:///foo/bar";
-		
+
 		//Initialise the QueueService
 		testQServ = new QueueService(uri);
 		ServicesHolder.setQueueService(testQServ);
 		testQServ.init();
 	}
-	
+
 	@After
 	public void tearDown() throws Exception {
 		testQServ.disposeService();
 		testQServ = null;
-		
+
 		//Dispose of mocks
 		mockCons = null;
 		mockCmdPub = null;
 		mockEvServ = null;
-		
+
 		ServicesHolder.setEventService(null);
 		ServicesHolder.setQueueService(null);
-		
+
 		qRoot = null;
 		uri = null;
 	}
-	
+
 	/**
 	 * Test initialisation & starting of the service
-	 * @throws EventException 
+	 * @throws EventException
 	 */
 	@Test
 	public void testServiceInit() throws EventException {
@@ -104,10 +104,10 @@ public class QueueServiceTest {
 		assertEquals("Incorrect Command topic name", qRoot+IQueueService.COMMAND_TOPIC_SUFFIX, testQServ.getCommandTopicName());
 		assertTrue("Active-queue ID set should be an empty set", testQServ.getAllActiveQueueIDs().isEmpty());
 	}
-	
+
 	/**
 	 * Test clean-up of service
-	 * @throws EventException 
+	 * @throws EventException
 	 */
 	@Test
 	public void testServiceDisposal() throws EventException {
@@ -123,7 +123,7 @@ public class QueueServiceTest {
 		assertFalse("QueueService is active", testQServ.isActive());
 		assertEquals("Job-queue not disposed", null, testQServ.getJobQueue());
 		assertEquals("JobQueueID not nullified", null, testQServ.getJobQueueID());
-		
+
 		//Test service is in an unstartable state
 		try {
 			testQServ.start();
@@ -132,10 +132,10 @@ public class QueueServiceTest {
 			System.out.println("^---- Expected exception");
 		}
 	}
-	
+
 	/**
 	 * Testing starting of service
-	 * @throws EventException 
+	 * @throws EventException
 	 */
 	@Test
 	public void testServiceStart() throws EventException {
@@ -147,12 +147,12 @@ public class QueueServiceTest {
 		 * - not be callable if init not run
 		 */
 		assertEquals("Job-queue not started", QueueStatus.STARTED, testQServ.getJobQueue().getStatus());
-		assertTrue("QueueService not marked active", testQServ.isActive());	
+		assertTrue("QueueService not marked active", testQServ.isActive());
 	}
-	
+
 	/**
 	 * Test stopping of service
-	 * @throws EventException 
+	 * @throws EventException
 	 */
 	@Test
 	public void testServiceStop() throws EventException {
@@ -165,25 +165,25 @@ public class QueueServiceTest {
 		 * - stop job-queue
 		 * - mark service inactive
 		 */
-		
+
 		//Check graceful stop works
 		assertEquals("Active-queues remain after stopping", 0, testQServ.getAllActiveQueueIDs().size());
 		assertEquals("Job-queue still active", QueueStatus.STOPPED, testQServ.getJobQueue().getStatus());
 		assertFalse("Queue service still marked active", testQServ.isActive());
-				
+
 		//Check forceful stop works
 		testQServ.start();
 		String aqID = testQServ.registerNewActiveQueue();
-		
+
 		//Get IDs of consumers in preparation for analysis
 		List<UUID> consIDs = new ArrayList<>();
 		consIDs.add(testQServ.getActiveQueue(aqID).getConsumerID());
 		consIDs.add(testQServ.getJobQueue().getConsumerID());
-		
+
 		//And stop the queues
 		testQServ.startActiveQueue(aqID);
 		testQServ.stop(true);
-			
+
 		List<ConsumerCommandBean> cmds = mockCmdPub.getCmdBeans();
 		assertTrue("No command beans recorded", cmds.size() > 0);
 		assertEquals("Expecting two Killbeans (one for each queue)", 2, cmds.size());
@@ -192,13 +192,13 @@ public class QueueServiceTest {
 			assertTrue("Command bean "+i+"is not a KillBean", kb instanceof KillBean);
 			assertEquals("KillBean has incorrect consumer ID", kb.getConsumerId(), consIDs.get(i));
 		}
-		
+
 		assertFalse("Queue service still marked active", testQServ.isActive());
 	}
-	
+
 	/**
 	 * Test starting & stopping of a queue
-	 * @throws EventException 
+	 * @throws EventException
 	 */
 	@Test
 	public void testQueueStartStop() throws EventException {
@@ -213,15 +213,15 @@ public class QueueServiceTest {
 		String aqID = testQServ.registerNewActiveQueue();
 		IQueue<QueueAtom> activeQ = testQServ.getActiveQueue(aqID);
 		assertEquals("Active-queue not initialised", QueueStatus.INITIALISED, activeQ.getStatus());
-		
+
 		//Start queue & check it looks started
 		testQServ.startActiveQueue(aqID);
 		assertEquals("Active-queue not started", QueueStatus.STARTED, activeQ.getStatus());
-		
+
 		//Stop queue nicely & check it looks started
 		testQServ.stopActiveQueue(aqID, false);
 		assertEquals("Active-queue has wrong state", QueueStatus.STOPPED, activeQ.getStatus());
-		
+
 //TODO
 		//Restart queue & stop is forcefully
 		testQServ.startActiveQueue(aqID);
@@ -231,10 +231,10 @@ public class QueueServiceTest {
 		assertTrue("Last command bean is not a KillBean", cmds.get(cmds.size()-1) instanceof KillBean);
 		assertEquals("KillBean not killing the active-queue consumer", testQServ.getActiveQueue(aqID).getConsumerID(), cmds.get(cmds.size()-1).getConsumerId());
 	}
-	
+
 	/**
 	 * Test registration & deregistration of active-queues
-	 * @throws EventException 
+	 * @throws EventException
 	 */
 	@Test
 	public void testRegistration() throws EventException {
@@ -258,19 +258,19 @@ public class QueueServiceTest {
 		for (i = 0; i < activeQIDs.size(); i++) {
 			String[] idParts = activeQIDs.get(i).split("\\.");
 			assertEquals("ID should be in eight parts", 8, idParts.length);
-			
+
 			String[] qRootSlice = Arrays.copyOfRange(idParts, 0, 6);
 			String returnedQRoot = String.join(".", qRootSlice);
 			assertEquals("First six parts of active-queue ID should be queueRoot", qRoot, returnedQRoot);
-			
+
 			assertTrue("Middle part of active-queue ID should be of the form \"aq-1-111\" (was: "+idParts[6]+")", idParts[6].matches("aq-\\d-\\d\\d\\d"));
-			
+
 			assertEquals("Third part of active-queue ID should be suffix", "active-queue", idParts[7]);
 			for (int j = i+1; j < activeQIDs.size(); j++) {
 				assertFalse("Two active queues with the same name", activeQIDs.get(i).equals(activeQIDs.get(j)));
 			}
 		}
-		
+
 		//Check deregistration works
 		for (i = 0; i < activeQIDs.size()-1; i++) {
 			assertTrue("Active-queue "+activeQIDs.get(i)+" should be registered", testQServ.isActiveQueueRegistered(activeQIDs.get(i)));
@@ -294,7 +294,7 @@ public class QueueServiceTest {
 		} catch (EventException evEx) {
 			//Expected - doesn't throw a log message
 		}
-		
+
 		//Check queue registration not possible without start
 		testQServ.disposeService();
 		testQServ = new QueueService(qRoot, uri);

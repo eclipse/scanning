@@ -28,7 +28,7 @@ public interface IResponseCreator<T extends IdBean> {
 	/**
 	 * Override to allows events to be despatched asynchronously.
 	 * Useful for devices that can be cancelled for instance.
-	 * 
+	 *
 	 * @return
 	 */
 	default boolean isSynchronous() {

@@ -47,10 +47,10 @@ public class MappingScanTest extends BrokerTest{
 	@Before
 	public void createServices() throws Exception {
 
-		// We wire things together without OSGi here 
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		setUpNonOSGIActivemqMarshaller();
-		
+
 		eservice = new EventServiceImpl(new ActivemqConnectorService());
 		gservice = new PointGeneratorService();
 
@@ -62,16 +62,16 @@ public class MappingScanTest extends BrokerTest{
 
 	@After
 	public void disconnect() throws Exception {
-		
+
 		publisher.disconnect();
 		subscriber.disconnect();
 	}
 
 	/**
 	 * This test mimics a scan being run
-	 * 
+	 *
 	 * Eventually we will need a test running the sequencing system.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
@@ -122,7 +122,7 @@ public class MappingScanTest extends BrokerTest{
 		// Outer loop temperature, will be scan command driven when sequencer exists.
 		bean.setDeviceState(DeviceState.CONFIGURING);
 		publisher.broadcast(bean);
-		
+
 		int index = -1;
 		for (double temp = 273; temp < 283; temp++) {
 			bean.setPoint(ipoint);

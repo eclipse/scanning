@@ -8,14 +8,14 @@ import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.scan.models.ScanMetadata;
 
 public class MockSampleDescriptionService implements ISampleDescriptionService {
-	
+
 	private Map<Long, String> sampleIDNames;
 
 	@Override
 	public Map<Long, String> getSampleIdNames(String proposalCode, long proposalNumber) {
 		return sampleIDNames;
 	}
-	
+
 	public void setSampleIdNames(Map<Long, String> sampleIdNames) {
 		this.sampleIDNames = sampleIdNames;
 	}

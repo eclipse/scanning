@@ -29,7 +29,7 @@ import org.epics.pvmarshaller.marshaller.deserialisers.Deserialiser;
  *
  */
 public class NTScalarDeserialiser implements IPVStructureDeserialiser {
-		
+
 	private final String valueField = "value";
 	private final String numberTypeField = "dtype";
 	private final String choicesTagField = "choices";
@@ -41,7 +41,7 @@ public class NTScalarDeserialiser implements IPVStructureDeserialiser {
 
 	@Override
 	public Object fromPVStructure(Deserialiser deserialiser, PVStructure pvStructure) throws Exception {
-		
+
 		PVStructure metaStructure = pvStructure.getStructureField(metaField);
 		String metaId = metaStructure.getStructure().getID();
 		String description = metaStructure.getStringField(descriptionField).get();
@@ -50,62 +50,62 @@ public class NTScalarDeserialiser implements IPVStructureDeserialiser {
 		PVStringArray tagsArray = metaStructure.getSubField(PVStringArray.class, tagsField);
 		StringArrayData tagsArrayData = new StringArrayData();
 		tagsArray.get(0, tagsArray.getLength(), tagsArrayData);
-		
+
 		if (metaId.startsWith(ChoiceAttribute.CHOICE_ID)) {
 			ChoiceAttribute attribute = new ChoiceAttribute();
-			
+
 			attribute.setDescription(description);
 			attribute.setLabel(label);
 			attribute.setTags(tagsArrayData.data);
 			attribute.setWriteable(writeable);
 			attribute.setName(pvStructure.getFullName());
-			
+
 			PVStringArray choicesArray = metaStructure.getSubField(PVStringArray.class, choicesTagField);
 			StringArrayData choicesArrayData = new StringArrayData();
 			choicesArray.get(0, choicesArray.getLength(), choicesArrayData);
 			attribute.setChoices(choicesArrayData.data);
-			
+
 			String value = pvStructure.getStringField(valueField).get();
 			attribute.setValue(value);
 			return attribute;
 		} else if (metaId.startsWith(StringAttribute.STRING_ID)) {
 			StringAttribute attribute = new StringAttribute();
-			
+
 			attribute.setDescription(description);
 			attribute.setLabel(label);
 			attribute.setTags(tagsArrayData.data);
 			attribute.setWriteable(writeable);
 			attribute.setName(pvStructure.getFullName());
-			
+
 			String value = pvStructure.getStringField(valueField).get();
 			attribute.setValue(value);
 			return attribute;
 		} else if (metaId.startsWith(BooleanAttribute.BOOLEAN_ID)) {
 			BooleanAttribute attribute = new BooleanAttribute();
-			
+
 			attribute.setDescription(description);
 			attribute.setLabel(label);
 			attribute.setTags(tagsArrayData.data);
 			attribute.setWriteable(writeable);
 			attribute.setName(pvStructure.getFullName());
-			
+
 			boolean value = pvStructure.getBooleanField(valueField).get();
 			attribute.setValue(value);
 			return attribute;
 		} else if (metaId.startsWith(NumberAttribute.NUMBER_ID)) {
 			NumberAttribute attribute = new NumberAttribute();
-			
+
 			attribute.setDescription(description);
 			attribute.setLabel(label);
 			attribute.setTags(tagsArrayData.data);
 			attribute.setWriteable(writeable);
 			attribute.setName(pvStructure.getFullName());
-			
+
 			String numberType = metaStructure.getStringField(numberTypeField).get();
 			attribute.setDtype(numberType);
-			
+
 			PVField valuePVField = pvStructure.getSubField(valueField);
-			
+
 			// Use scalar deserialiser to get value. Class passed in can be null as it's only used
 			// to determine between String and char, and we 'know' it's a number here
 			Object value = deserialiser.getScalarDeserialiser().deserialise(valuePVField, null);
@@ -116,22 +116,22 @@ public class NTScalarDeserialiser implements IPVStructureDeserialiser {
 			} else {
 				throw new Exception(pvStructure.getFullName() + " has a number field that isn't a number");
 			}
-			
+
 			return attribute;
 		} else if (metaId.startsWith(HealthAttribute.HEALTH_ID)) {
 			HealthAttribute attribute = new HealthAttribute();
-			
+
 			attribute.setDescription(description);
 			attribute.setLabel(label);
 			attribute.setTags(tagsArrayData.data);
 			attribute.setWriteable(writeable);
 			attribute.setName(pvStructure.getFullName());
-			
+
 			String value = pvStructure.getStringField(valueField).get();
 			attribute.setValue(value);
 			return attribute;
-		} 
-		
+		}
+
 		throw new Exception("Unrecognised NTScalar type: " + metaId);
 	}
 }

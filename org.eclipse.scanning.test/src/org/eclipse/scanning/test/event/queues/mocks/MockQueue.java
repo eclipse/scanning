@@ -23,10 +23,10 @@ import org.eclipse.scanning.api.event.queues.beans.Queueable;
 
 @Deprecated
 public class MockQueue<T extends Queueable> implements IQueue<T> {
-	
+
 	private String queueID;
 	private IConsumer<T> cons;
-	
+
 	public MockQueue(String queueID, IConsumer<T> cons) {
 		this.queueID = queueID;
 		this.cons = cons;
@@ -46,7 +46,7 @@ public class MockQueue<T extends Queueable> implements IQueue<T> {
 	@Override
 	public void setStatus(QueueStatus status) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class MockQueue<T extends Queueable> implements IQueue<T> {
 	@Override
 	public void disconnect() throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -98,13 +98,13 @@ public class MockQueue<T extends Queueable> implements IQueue<T> {
 	@Override
 	public void start() throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void stop() throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

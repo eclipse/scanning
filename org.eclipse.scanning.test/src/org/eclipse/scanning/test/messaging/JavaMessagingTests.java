@@ -41,35 +41,35 @@ import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 /**
  * This is just for testing out messages with the server.
- * 
+ *
  * Make sure the example server is running when performing these!
  *
  */
 public class JavaMessagingTests extends BrokerTest {
-	
-	protected static URI uri;     
-	
+
+	protected static URI uri;
+
 	protected IRunnableDeviceService    dservice;
 	protected IEventService             eservice;
-	
+
 	@Before
 	public void setup() throws Exception {
 
 		uri = new URI("tcp://localhost:61616");
-		
+
 		setUpNonOSGIActivemqMarshaller();
 		eservice  = new EventServiceImpl(new ActivemqConnectorService());
 
 		dservice = eservice.createRemoteService(uri, IRunnableDeviceService.class); // Can make a RunnableDeviceService to obtain runnable devices.
 	}
-	
+
 	@Test
 	public void testGetDeviceNames() throws ScanningException {
-		
+
 		Collection<String> deviceNames;
 
 		deviceNames = dservice.getRunnableDeviceNames();
-		
+
 		System.out.println(deviceNames.toString());
 
 	}
@@ -98,9 +98,9 @@ public class JavaMessagingTests extends BrokerTest {
 				e.printStackTrace();
 			}
 		}
-		
+
 		System.out.println("\nNow for topics:");
-		
+
 		Set<ActiveMQTopic> topics = ds.getTopics();
 
 		for (ActiveMQTopic topic : topics) {
@@ -111,31 +111,31 @@ public class JavaMessagingTests extends BrokerTest {
 			}
 		}
 	}
-	
-	
+
+
 	@Test
 	public void testProducedMessage() throws Exception {
-		
+
 		MarshallerService marshaller = new MarshallerService(new PointsModelMarshaller());
 		DeviceRequest req = new DeviceRequest();
 		Collection<DeviceInformation<?>> devices = new ArrayList<DeviceInformation<?>>();
-		
+
 		System.out.println("First, no collection:");
 		System.out.println(marshaller.marshal(req));
-		
+
 		System.out.println("\nZero items in collection");
 		req.setDevices(devices);
 		System.out.println(marshaller.marshal(req));
-		
+
 		System.out.println("\nNow, with one DeviceInformation");
 		devices.add(new DeviceInformation<Object>("This is the first device name."));
 		System.out.println(marshaller.marshal(req));
-		
+
 		System.out.println("\nNow, with two DeviceInformation's");
 		devices.add(new DeviceInformation<Object>("This is the second device's name."));
 		System.out.println(marshaller.marshal(req));
 	}
-		
+
 	@Test
 	public void simpleSerialize() throws Exception {
 		Collection<DeviceInformation<?>> devices = new HashSet<DeviceInformation<?>>();

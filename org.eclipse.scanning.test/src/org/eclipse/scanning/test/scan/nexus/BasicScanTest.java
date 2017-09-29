@@ -56,56 +56,56 @@ import org.junit.Test;
 
 public class BasicScanTest extends NexusTest {
 
-	
+
     private IScannable<?>                  monitor;
 
     @Before
 	public void beforeTest() throws Exception {
 		monitor = connector.getScannable("monitor1");
 	}
-	
+
 	@Test
-	public void testBasicScan1D() throws Exception {	
+	public void testBasicScan1D() throws Exception {
 		test(null, null, 5);
 	}
-	
+
 	@Test
-	public void testBasicScan2D() throws Exception {	
+	public void testBasicScan2D() throws Exception {
 		test(null, null, 8, 5);
 	}
-	
+
 	@Test
-	public void testBasicScan3D() throws Exception {	
+	public void testBasicScan3D() throws Exception {
 		test(null, null, 5, 8, 5);
 	}
-	
+
 	@Test
-	public void testBasicScan1DWithMonitor() throws Exception {	
+	public void testBasicScan1DWithMonitor() throws Exception {
 		test(monitor, null, 5);
 	}
-	
+
 	/**
 	 * This is an important test, it showed a race condition
 	 * in the multi-threaded positioning, do not ignore :)
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
-	public void testBasicScan1DWithMonitorMultipleTimes() throws Exception {	
-		
+	public void testBasicScan1DWithMonitorMultipleTimes() throws Exception {
+
 		for (int i = 0; i < 5; i++) {
 			//System.out.println("Iteration "+i+":");
 			test(monitor, null, 5);
 		}
 	}
-	
+
 	@Test
-	public void testBasicScan2DWithMonitor() throws Exception {	
+	public void testBasicScan2DWithMonitor() throws Exception {
 		test(monitor, null, 8, 5);
 	}
-	
+
 	@Test
-	public void testBasicScan3DWithMonitor() throws Exception {	
+	public void testBasicScan3DWithMonitor() throws Exception {
 		test(monitor, null, 5, 8, 5);
 	}
 
@@ -121,7 +121,7 @@ public class BasicScanTest extends NexusTest {
 
 		checkNexusFile(scanner, shape);
 	}
-	
+
 	private int product(int[] shape) {
 		int total = 1;
 		for (int i : shape) total*=i;
@@ -129,34 +129,34 @@ public class BasicScanTest extends NexusTest {
 	}
 
 	protected void checkNexusFile(IRunnableDevice<ScanModel> scanner, int... sizes) throws Exception {
-		
+
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 
 		NXroot rootNode = getNexusRoot(scanner);
 		NXentry entry = rootNode.getEntry();
 		NXinstrument instrument = entry.getInstrument();
-		
+
 		// check the scan points have been written correctly
 		assertSolsticeScanGroup(entry, false, false, sizes);
-		
+
 		DataNode dataNode = null;
 		IDataset dataset = null;
 		int[] shape = null;
-		
+
 		// check metadata scannables
 		if (scanModel.getMonitors() != null) {
 			checkMetadataScannables(scanModel, instrument);
 		}
-		
+
 		final IPosition pos = scanModel.getPositionIterable().iterator().next();
 		final Collection<String> scannableNames = pos.getNames();
-		
+
 		List<IScannable<?>> perPoint  = scanModel.getMonitors() != null
                 ? scanModel.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT)
-                		.filter(scannable -> !scannable.getName().equals(SCANNABLE_NAME_SOLSTICE_SCAN_MONITOR)).collect(Collectors.toList())
+				.filter(scannable -> !scannable.getName().equals(SCANNABLE_NAME_SOLSTICE_SCAN_MONITOR)).collect(Collectors.toList())
                 : null;
         final boolean hasMonitor = perPoint != null && !perPoint.isEmpty();
- 		
+
 		String dataGroupName = hasMonitor ? perPoint.get(0).getName() : pos.getNames().get(0);
 		NXdata nxData = entry.getData(dataGroupName);
 		assertNotNull(nxData);
@@ -168,18 +168,18 @@ public class BasicScanTest extends NexusTest {
 		int[] defaultDimensionMappings = IntStream.range(0, sizes.length).toArray();
 		int i = -1;
 		for (String  scannableName : scannableNames) {
-			
+
 		    i++;
-			
+
 			NXpositioner positioner = instrument.getPositioner(scannableName);
 			assertNotNull(positioner);
-			
+
 			dataNode = positioner.getDataNode("value_set");
 			dataset = dataNode.getDataset().getSlice();
 			shape = dataset.getShape();
 			assertEquals(1, shape.length);
 			assertEquals(sizes[i], shape[0]);
-			
+
 			String nxDataFieldName = scannableName + "_value_set";
 			assertSame(dataNode, nxData.getDataNode(nxDataFieldName));
 			assertIndices(nxData, nxDataFieldName, i);
@@ -191,7 +191,7 @@ public class BasicScanTest extends NexusTest {
 			dataset = dataNode.getDataset().getSlice();
 			shape = dataset.getShape();
 			assertArrayEquals(sizes, shape);
-			
+
 			nxDataFieldName = scannableName + "_" + NXpositioner.NX_VALUE;
 			assertSame(dataNode, nxData.getDataNode(nxDataFieldName));
 			assertIndices(nxData, nxDataFieldName, defaultDimensionMappings);
@@ -209,14 +209,14 @@ public class BasicScanTest extends NexusTest {
 			NXpositioner positioner = instrument.getPositioner(metadataScannable.getName());
 			assertNotNull(positioner);
 			assertEquals(metadataScannable.getName(), positioner.getNameScalar());
-			
+
 			dataNode = positioner.getDataNode("value_set"); // TODO should not be here for metadata scannable
 			assertNotNull(dataNode);
 			dataset = DatasetUtils.sliceAndConvertLazyDataset(dataNode.getDataset());
 			assertEquals(1, dataset.getSize());
 			assertEquals(Dataset.FLOAT64, dataset.getDType());
 			assertEquals(10.0, dataset.getElementDoubleAbs(0), 1e-15);
-			
+
 			dataNode = positioner.getDataNode(NXpositioner.NX_VALUE);
 			assertNotNull(dataNode);
 			dataset = DatasetUtils.sliceAndConvertLazyDataset(dataNode.getDataset());
@@ -229,7 +229,7 @@ public class BasicScanTest extends NexusTest {
 	private IRunnableDevice<ScanModel> createStepScan(IScannable<?> monitor,
 			                                          IScannable<?> metadataScannable,
 			                                          int... size) throws Exception {
-		
+
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length];
 		// We add the outer scans, if any
 		for (int dim = size.length-1; dim>-1; dim--) {
@@ -242,9 +242,9 @@ public class BasicScanTest extends NexusTest {
 			final IPointGenerator<?> step = gservice.createGenerator(model);
 			gens[dim] = step;
 		}
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(gens);
-		
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
@@ -253,14 +253,14 @@ public class BasicScanTest extends NexusTest {
 			metadataScannable.setActivated(true);
 		}
 		smodel.setMonitors(monitor, metadataScannable);
-		
+
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());
 		System.out.println("File writing to " + smodel.getFilePath());
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override

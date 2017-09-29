@@ -54,11 +54,11 @@ import org.eclipse.scanning.sequencer.SubscanModerator;
  * A detector that can run alongside a malcolm device and writes data when the malcolm
  * device performs a point of the inner scan. This simulates a real device that received hardware
  * triggers when running alongside a malcolm device.
- * 
+ *
  * @author Matthew Dickie
  */
 public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel> extends AbstractRunnableDevice<T> implements INexusDevice<NXdetector>, IPositionListener {
-	
+
 	private DummyMalcolmDevice dummyMalcolmDevice;
 
 	private IPosition outerPoint = null;
@@ -66,21 +66,21 @@ public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel>
 	private Iterable<IPosition> innerPointsIterable;
 
 	private Iterator<IPosition> innerPointsIterator;
-	
+
 	private IDataset[] currentLineData = null;
 	private double[] currentLineIndex = null;
-	
+
 	private int scanRank = -1;
 	private int lineSize = -1;
-	
+
 	private int pointsInLineCount = 0;
-	
+
 	private double currentVal = 0.0; // Used as the current value to write
-	
+
 	private ILazyWriteableDataset data = null;
-	
+
 	private ILazyWriteableDataset count = null;
-	
+
 	@SuppressWarnings("unchecked")
 	public DummyMalcolmTriggeredDetector() throws ScanningException {
 		super(Services.getRunnableDeviceService());
@@ -88,18 +88,18 @@ public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel>
 		setDeviceState(DeviceState.READY);
 		setSupportedScanMode(ScanMode.HARDWARE);
 	}
-	
+
 	@Override
 	public void run(IPosition position) throws ScanningException, InterruptedException {
 		setDeviceState(DeviceState.RUNNING);
 	}
-	
+
 	@Override
 	public void validate(T model) throws ValidationException {
 		if (model instanceof INameable) {
 			INameable dmodel = (INameable)model;
 		    if (dmodel.getName()==null || dmodel.getName().length()<1) {
-		    	throw new ModelValidationException("The name must be set!", model, "name");
+			throw new ModelValidationException("The name must be set!", model, "name");
 		    }
 		    // don't validate exposure time. The malcolm device determines the exposure time
 		}
@@ -108,7 +108,7 @@ public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel>
 	@ScanStart
 	public void scanStart(ScanBean scanBean, SubscanModerator subscanModerator) throws ScanningException {
 		this.innerPointsIterable = subscanModerator.getInnerIterable();
-		
+
 		// We need to get the malcolm device so that we can listen to it as a position listener
 		// this simulates receving hardware triggers, so a real hardware triggered detector doesn't
 		// need to do this.
@@ -122,14 +122,14 @@ public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel>
 			}
 		}
 	}
-	
+
 	@ScanFinally
 	public void scanFinally() {
 		if (dummyMalcolmDevice != null) {
 			dummyMalcolmDevice.removePositionListener(this);
 		}
 		dummyMalcolmDevice = null;
-		
+
 		scanRank = -1;
 		lineSize = -1;
 		currentLineData = null;
@@ -139,37 +139,37 @@ public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel>
 		outerPoint = null;
 		data = null;
 	}
-	
+
 	@PostConfigure
 	public void postConfigure(ScanInformation scanInformation) throws Exception {
 		int[] shape = scanInformation.getShape();
 		this.scanRank = shape.length;
 		this.lineSize = shape[scanRank - 1];
 	}
-	
+
 	@PointStart
 	public void pointStart(IPosition outerPoint) {
 		this.outerPoint = outerPoint;
 		pointsInLineCount = 0;
 		innerPointsIterator = innerPointsIterable.iterator();
 		currentLineData = new IDataset[lineSize];
-		currentLineIndex = new double[lineSize]; 
+		currentLineIndex = new double[lineSize];
 	}
 
 	@Override
 	public NexusObjectProvider<NXdetector> getNexusProvider(NexusScanInfo info)
 			throws NexusException {
-		NXdetector detector = NexusNodeFactory.createNXdetector(); 
+		NXdetector detector = NexusNodeFactory.createNXdetector();
 		data = detector.initializeLazyDataset(NXdetector.NX_DATA, scanRank + 2, Double.class);
 		count = detector.initializeLazyDataset("sum", scanRank, Double.class);
-		
+
 		NexusObjectWrapper<NXdetector> nexusProvider = new NexusObjectWrapper<>(getName(), detector);
 		nexusProvider.setPrimaryDataFieldName(NXdetector.NX_DATA);
 		nexusProvider.addAdditionalPrimaryDataFieldName("sum");
-		
+
 		return nexusProvider;
 	}
-	
+
 	@Override
 	public void positionPerformed(PositionEvent evt) throws ScanningException {
 		hardwareTriggerReceived();
@@ -179,7 +179,7 @@ public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel>
 		currentLineData[pointsInLineCount] = Random.rand(64, 64); // a 64x64 image at each point in the scan
 		currentLineIndex[pointsInLineCount] = (currentVal++); // use the index as the actual value
 		pointsInLineCount++;
-		
+
 		if (pointsInLineCount == lineSize) {
 			pointsInLineCount = 0;
 			try {
@@ -190,7 +190,7 @@ public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel>
 			}
 		}
 	}
-	
+
 	public void writeLine() throws DatasetException {
 		// This could be done in a separate thread, which could be given references to the
 		// arrays currently pointed to by these member fields, while the actual member fields
@@ -198,12 +198,12 @@ public class DummyMalcolmTriggeredDetector<T extends DummyMalcolmTriggeredModel>
 		for (int i = 0; i < lineSize; i++) {
 			IPosition innerPosition = innerPointsIterator.next();
 			IPosition overallPosition = innerPosition.compound(outerPoint);
-			
+
 			writeData(data, overallPosition, DatasetFactory.createFromObject(currentLineData[i]));
 			writeData(count, overallPosition, DatasetFactory.createFromObject(currentLineIndex[i]));
 		}
 	}
-	
+
 	private void writeData(ILazyWriteableDataset dataset, IPosition position, IDataset dataToWrite) throws DatasetException {
 		IScanSlice slice = IScanRankService.getScanRankService().createScanSlice(position, dataToWrite.getShape());
 		SliceND sliceND = new SliceND(dataset.getShape(), dataset.getMaxShape(),

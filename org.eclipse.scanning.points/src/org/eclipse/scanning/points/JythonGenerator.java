@@ -15,7 +15,7 @@ public class JythonGenerator extends AbstractGenerator<JythonGeneratorModel> {
 	JythonGenerator() {
 		setLabel("Function");
 		setDescription("Uses a function to get the motor positions for the scan");
-		setIconPath("icons/scanner--function.png"); // This icon exists in the rendering bundle 
+		setIconPath("icons/scanner--function.png"); // This icon exists in the rendering bundle
 	}
 
 	@Override
@@ -33,8 +33,8 @@ public class JythonGenerator extends AbstractGenerator<JythonGeneratorModel> {
 
 		if (!Optional.ofNullable(model.getModuleName()).isPresent()) throw new ModelValidationException("The module name must be set!", model, "moduleName");
 		if (!Optional.ofNullable(model.getClassName()).isPresent()) throw new ModelValidationException("The class name must be set!", model, "className");
-		
+
         super.validateModel();
-        
+
 	}
 }

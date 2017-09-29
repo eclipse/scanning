@@ -23,7 +23,7 @@ import org.eclipse.scanning.sequencer.RunnableDeviceServiceImpl;
 import org.junit.Before;
 
 public class ScanPluginTest extends AbstractScanTest {
-	
+
 	private static IRunnableDeviceService  runnableDeviceService;
 	private static IPointGeneratorService generatorService;
 	private static IEventService     eventService;
@@ -38,16 +38,16 @@ public class ScanPluginTest extends AbstractScanTest {
 
 	@Before
 	public void setup() throws ScanningException {
-		
+
 		eservice  = ScanPluginTest.eventService;
 		connector = new MockScannableConnector(eservice.createPublisher(uri, EventConstants.POSITION_TOPIC));
 		dservice  = ScanPluginTest.runnableDeviceService;
 		gservice  = ScanPluginTest.generatorService;
-		
+
 		assertNotNull(runnableDeviceService);
 		assertNotNull(generatorService);
 		assertNotNull(eventService);
-		
+
 		if (dservice instanceof RunnableDeviceServiceImpl) {
 			((RunnableDeviceServiceImpl)dservice).setDeviceConnectorService(connector);
 		}
@@ -68,6 +68,6 @@ public class ScanPluginTest extends AbstractScanTest {
 	public static void setGeneratorService(IPointGeneratorService generatorService) {
 		ScanPluginTest.generatorService = generatorService;
 	}
-	
-	
+
+
 }

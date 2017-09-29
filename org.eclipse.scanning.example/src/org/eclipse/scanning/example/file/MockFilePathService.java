@@ -16,26 +16,26 @@ import java.io.File;
 import org.eclipse.scanning.api.scan.IFilePathService;
 
 public class MockFilePathService implements IFilePathService {
-	
+
 	private final File dir;
 	private String mostRecentPath;
 	public MockFilePathService() {
 		dir = new File(System.getProperty("java.io.tmpdir"));
 	}
-	
+
 	@Override
 	public String getNextPath(String template) throws Exception {
 		if (template==null) template = "";
 		mostRecentPath = getUnique(dir, "Scan-"+template, "nxs").getAbsolutePath();
 		return mostRecentPath;
 	}
-	
+
 	@Override
 	public String createFolderForLinkedFiles(String filename) throws Exception {
 		String bareFilename = getBareFilename(filename);
 		File newDir = new File(dir, bareFilename);
 		newDir.mkdir();
-		
+
 		return newDir.toString();
 	}
 
@@ -50,7 +50,7 @@ public class MockFilePathService implements IFilePathService {
 
 	/**
 	 * Generates a unique file of the name template or template+an integer
-	 * 
+	 *
 	 * @param dir
 	 * @param template
 	 * @param ext
@@ -110,7 +110,7 @@ public class MockFilePathService implements IFilePathService {
 	public String getProcessingTemplatesDir() {
 		return new File(getPersistenceDir(), "processingTemplates").toString();
 	}
-	
+
 	private static int scanNumber = 0;
 
 	@Override

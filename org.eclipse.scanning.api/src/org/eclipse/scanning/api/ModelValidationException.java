@@ -31,7 +31,7 @@ public class ModelValidationException extends ValidationException {
 		super(message);
 		this.model      = model;
 		this.fieldNames = fieldNames;
-		
+
 		boolean fieldFound = false;
 		List<String> fields = Arrays.asList(fieldNames);
 		if (fieldNames!=null && fieldNames.length>0) for (Field method : getFields(model)) {
@@ -42,7 +42,7 @@ public class ModelValidationException extends ValidationException {
 		}
 		if (!fieldFound) throw new RuntimeException("No field(s) '"+Arrays.toString(fieldNames)+"' has been found in Class "+model.getClass().getSimpleName());
 	}
-	
+
 	public ModelValidationException(Exception e) {
 		super(e);
 	}
@@ -51,7 +51,7 @@ public class ModelValidationException extends ValidationException {
 		List<Field> fields = new ArrayList<>();
 		Class<? extends Object> cls = model.getClass();
 
-		while (!cls.equals(Object.class)) { 
+		while (!cls.equals(Object.class)) {
 			fields.addAll(Arrays.asList(cls.getDeclaredFields()));
 			cls = cls.getSuperclass();
 		}

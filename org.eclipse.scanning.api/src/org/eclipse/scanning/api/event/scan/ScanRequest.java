@@ -31,11 +31,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A class to encapsulate minimal information required to run a scan.
- * 
+ *
  * For instance the JSON string of this class could be used on B23
- * 
+ *
  * The class automatically assigns a unique id for the run.
- * 
+ *
  * @author Matthew Gerring
  * @param <T> must be type of region that the regions correspond to. For instance IROI for any region type or IRectangularROI is all known to be rectangular.
  *
@@ -44,29 +44,29 @@ public class ScanRequest<T> implements Serializable {
 	private static Logger logger = LoggerFactory.getLogger(ScanRequest.class);
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 456095444930240261L;
 
 	/**
-	 * The models for generating the points for a scan 
+	 * The models for generating the points for a scan
 	 * The models must be in the same nested order that the
 	 * compound scan will be generated as.
-	 * 
+	 *
 	 * e.g. a StepModel
 	 */
 	private CompoundModel<T> compoundModel;
 
-	/** 
+	/**
 	 * The names of the detectors to use in the scan, may be null.
 	 */
 	private Map<String, Object> detectors;
-	
+
 	/**
 	 * The names of monitors in the scan, may be null.
 	 */
 	private Collection<String> monitorNames;
-	
+
 	/**
 	 * The sample data which the user entered (if any) which determines
 	 */
@@ -77,17 +77,17 @@ public class ScanRequest<T> implements Serializable {
 	 * scan command, chemical formula etc., grouped by type.
 	 */
 	private List<ScanMetadata> scanMetadata; // TODO use EnumMap instead of list?
-	
+
 	/**
 	 * Part or all of the file path to be used for this scan.
 	 */
 	private String filePath;
-	
+
 	/**
 	 * The start position or null if there is no start position to move to.
 	 */
 	private IPosition start;
-	
+
 	/**
 	 * The script run before the data collection but after the start position has been set.
 	 */
@@ -98,8 +98,8 @@ public class ScanRequest<T> implements Serializable {
 	 * The end position or null if there is no start position to move to.
 	 */
 	private IPosition end;
-	
-	
+
+
 	/**
 	 * The script run after the data collection but before the end position has been set.
 	 */
@@ -107,26 +107,26 @@ public class ScanRequest<T> implements Serializable {
 	private ScriptResponse<?> afterResponse;
 
 	/**
-	 * Set to ignore processing of this request if the request has been 
+	 * Set to ignore processing of this request if the request has been
 	 * prepared for a specific server. For instance in the case where the client
 	 * has build a legal scan request for a given beamline, it will not want this
 	 * request preprocessed.
-	 * 
+	 *
 	 * Default is false.
 	 */
 	private boolean ignorePreprocess;
-	
+
 	public ScanRequest() {
 
 	}
-	
+
 	public ScanRequest(IScanPathModel m, String filePath, String... monitorNames) {
 		super();
 		this.compoundModel = new CompoundModel<T>(m);
 		this.monitorNames = Arrays.asList(monitorNames);
 		this.filePath = filePath;
 	}
-	
+
 	public ScanRequest(IScanPathModel m, T region, String filePath, String... monitorNames) {
 		this(m, filePath, monitorNames);
 		compoundModel.setRegions(Arrays.asList(new ScanRegion<T>(region, m.getScannableNames())));
@@ -148,7 +148,7 @@ public class ScanRequest<T> implements Serializable {
 		logger.info("setMonitorNames({}) was {} ({})", monitorNames, this.monitorNames, this);
 		this.monitorNames = monitorNames;
 	}
-	
+
 	public String getFilePath() {
 		return filePath;
 	}
@@ -322,15 +322,15 @@ public class ScanRequest<T> implements Serializable {
 	public void setAfterResponse(ScriptResponse<?> afterResponse) {
 		this.afterResponse = afterResponse;
 	}
-	
+
 	public List<ScanMetadata> getScanMetadata() {
 		return scanMetadata;
 	}
-	
+
 	public void setScanMetadata(List<ScanMetadata> scanMetadata) {
 		this.scanMetadata = scanMetadata;
 	}
-	
+
 	public void addScanMetadata(ScanMetadata scanMetadata) {
 		if (this.scanMetadata == null) {
 			this.scanMetadata = new ArrayList<>();

@@ -9,12 +9,12 @@
             http://www.springframework.org/schema/osgi
             http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 
-	<!--  
+	<!--
 	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-	Testing/example only section config do not copy to production. 
+	Testing/example only section config do not copy to production.
 	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	-->
-	
+
 	<bean id="Control_Factory" class="org.eclipse.scanning.api.scan.ui.ControlTree" init-method="globalize">
 		<property name="name" value="Control Factory" />
 	</bean>
@@ -38,7 +38,7 @@
 			</list>
 		</property>
 	</bean>
-	
+
 	<bean id="x" class="org.eclipse.scanning.api.scan.ui.ControlNode" init-method="add" >
 		<property name="displayName" value="Stage X" />
 		<property name="scannableName" value="x" />
@@ -59,7 +59,7 @@
 		<property name="scannableName" value="T" />
 		<property name="increment" value="1" />
 	</bean>
-	
+
 	<!--  End testing/example only-->
 
 </beans>

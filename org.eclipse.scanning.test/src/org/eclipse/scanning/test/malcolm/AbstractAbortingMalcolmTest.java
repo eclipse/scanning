@@ -98,7 +98,7 @@ public abstract class AbstractAbortingMalcolmTest extends AbstractMalcolmTest {
 		device.abort();
 
         if (device.getDeviceState()!=DeviceState.ABORTED) {
-        	throw new Exception("State was not aborted after abort!");
+		throw new Exception("State was not aborted after abort!");
         }
 
 		if (exceptions.size()>0) throw exceptions.get(0);
@@ -113,7 +113,7 @@ public abstract class AbstractAbortingMalcolmTest extends AbstractMalcolmTest {
 		device.abort();
 
         if (device.getDeviceState()!=DeviceState.ABORTED) {
-        	throw new Exception("State was not aborted after abort!");
+		throw new Exception("State was not aborted after abort!");
         }
 
 	}
@@ -125,7 +125,7 @@ public abstract class AbstractAbortingMalcolmTest extends AbstractMalcolmTest {
         zebra.abort();
 
         if (zebra.getDeviceState()!=DeviceState.ABORTED) {
-        	throw new Exception("State was not aborted after abort!");
+		throw new Exception("State was not aborted after abort!");
         }
 	}
 

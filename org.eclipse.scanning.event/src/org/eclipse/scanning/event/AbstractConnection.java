@@ -30,23 +30,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class AbstractConnection {
-	
+
 	protected static Logger logger = LoggerFactory.getLogger(AbstractConnection.class);
 
 	protected final URI              uri;
 	protected String                 topicName;
-	
+
 	protected String                 submitQueueName  = IEventService.SUBMISSION_QUEUE;
 	protected String                 statusQueueName  = IEventService.STATUS_SET;
 	protected String                 statusTopicName  = IEventService.STATUS_TOPIC;
 	protected String                 commandTopicName = IEventService.CMD_TOPIC;
 
 	protected IEventConnectorService service;
-	
+
 	protected QueueConnection        connection;
 	protected QueueSession           qSession;
 	protected Session                session;
-	
+
 	private boolean disconnected;
 
 	AbstractConnection(URI uri, String topic, IEventConnectorService service) {
@@ -54,7 +54,7 @@ class AbstractConnection {
 		this.topicName = topic;
 		this.service = service;
 	}
-	
+
 	AbstractConnection(URI uri, String submitQName, String statusQName, String statusTName, String commandTName, IEventConnectorService service) {
 		this.uri = uri;
 		this.submitQueueName = submitQName;
@@ -63,71 +63,71 @@ class AbstractConnection {
 		this.commandTopicName = commandTName;
 		this.service = service;
 	}
-	
+
 	public IEventConnectorService getConnectorService() {
 		return service;
 	}
-	
+
 	/**
 	 * Deals with reconnecting or if broker gone down, fails
-	 * 
+	 *
 	 * @param topicName
 	 * @return
 	 * @throws JMSException
 	 */
 	protected Topic createTopic(String topicName) throws JMSException {
-		
+
 		// Deals with reconnecting or if broker gone down, fails
 		try {
 			if (connection==null) createConnection();
 			if (session == null)  createSession();
-			
+
 			return session.createTopic(topicName);
-			
+
 		} catch (Exception ne) {
 			createConnection();
 			createQSession();
-			
+
 			return (session!=null) ? session.createTopic(topicName) : null;
 		}
 	}
-	
+
 	/**
 	 * Deals with reconnecting or if broker gone down, fails
-	 * 
+	 *
 	 * @param queueName
 	 * @return
 	 * @throws JMSException
 	 */
 	protected Queue createQueue(String queueName) throws JMSException {
-		
+
 		// Deals with reconnecting or if broker gone down, fails
 		try {
 			if (connection==null) createConnection();
 			if (qSession == null) createQSession();
-			
+
 			return qSession.createQueue(queueName);
-			
+
 		} catch (Exception ne) {
 			createConnection();
 			createQSession();
-			
+
 			return qSession.createQueue(queueName);
 		}
 	}
 
-	
+
 	protected void createSession() throws JMSException {
 		this.session      = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	}
-	
+
 	private void createQSession() throws JMSException {
 		this.qSession     = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 	}
 
 	protected void createConnection() throws JMSException {
 		Object factory = service.createConnectionFactory(uri);
-		QueueConnectionFactory connectionFactory = (QueueConnectionFactory)factory;		
+		QueueConnectionFactory connectionFactory = (QueueConnectionFactory)factory;
 		this.connection = connectionFactory.createQueueConnection();
 		connection.start();
 	}
@@ -137,10 +137,10 @@ class AbstractConnection {
 			if (connection!=null)        connection.close();
 			if (session!=null)           session.close();
 			if (qSession!=null)          qSession.close();
-			
+
 		} catch (JMSException ne) {
 			logger.error("Internal error - unable to close connection!", ne);
-		
+
 		} finally {
 			connection = null;
 			session = null;
@@ -246,9 +246,9 @@ class AbstractConnection {
 	public void setCommandTopicName(String terminateTopicName) {
 		this.commandTopicName = terminateTopicName;
 	}
-	
+
 	protected boolean isSame(Object qbean, Object bean) {
-		
+
 		Object id1 = getUniqueId(qbean);
 		if (id1==null) return qbean.equals(bean); // Probably it won't because we are updating it but they might have transient fields.
 
@@ -259,11 +259,11 @@ class AbstractConnection {
 	}
 
 	private Object getUniqueId(Object bean) {
-		
+
 		if (bean instanceof StatusBean) {
 			return ((StatusBean)bean).getUniqueId();
 		}
-		
+
 		Object value = null;
 		try {
 			Method method = bean.getClass().getDeclaredMethod("getUniqueId");
@@ -276,7 +276,7 @@ class AbstractConnection {
 				value = null;
 			}
 		}
-		
+
 		return value;
 	}
 

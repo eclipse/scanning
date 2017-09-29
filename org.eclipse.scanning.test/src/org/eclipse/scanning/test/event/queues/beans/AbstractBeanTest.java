@@ -29,20 +29,20 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test the that given POJO is correctly serialised by the JSON 
+ * Test the that given POJO is correctly serialised by the JSON
  * {@link IMarshaller}.
- * 
+ *
  * @author Michael Wharmby
  *
  * @param <S> POJO type to be serialised.
  */
 public abstract class AbstractBeanTest<S extends Queueable> {
-	
+
 	protected S beanA, beanB;
-	
-	
+
+
 	private IMarshallerService jsonMarshaller;
-	
+
 	@Before
 	public void before() {
 		jsonMarshaller = new MarshallerService(
@@ -53,10 +53,10 @@ public abstract class AbstractBeanTest<S extends Queueable> {
 				);
 
 	}
-	
+
 	@Test
 	public void testSerialization() throws Exception {
-		
+
 		String jsonA = null, jsonB = null;
 		try {
 			jsonA = jsonMarshaller.marshal(beanA);
@@ -65,7 +65,7 @@ public abstract class AbstractBeanTest<S extends Queueable> {
 		}
 		S deSerBean = jsonMarshaller.unmarshal(jsonA, null);
 		assertTrue("De-serialized bean differs from serialized", deSerBean.equals(beanA));
-		
+
 		try {
 			jsonB = jsonMarshaller.marshal(beanB);
 		} catch(Exception e) {

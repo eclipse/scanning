@@ -34,11 +34,11 @@ import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Class to test the topic and queue values, for use by Python examples.
- * 
+ *
  * NOTE: Change Python messaging examples accordingly, if any of these
  * tests fail. The 'examples' package can be found in:
  * org.eclipse.scanning.example.messaging/scripts
- * 
+ *
  * @author Martin Gaughran
  *
  */
@@ -47,33 +47,33 @@ public class TopicAndQueueNameTest {
 
     @Parameters
     public static Collection<String[]> data() {
-        return Arrays.asList(new String[][] {     
-        	{"STATUS_TOPIC", "org.eclipse.scanning.status.topic", STATUS_TOPIC}, 
-        	{"SUBMISSION_QUEUE", "org.eclipse.scanning.submission.queue", SUBMISSION_QUEUE},
-        	{"STATUS_SET", "org.eclipse.scanning.status.set", STATUS_SET},
-        	{"DEVICE_REQUEST_TOPIC", "org.eclipse.scanning.request.device.topic", DEVICE_REQUEST_TOPIC},
-        	{"DEVICE_RESPONSE_TOPIC", "org.eclipse.scanning.response.device.topic", DEVICE_RESPONSE_TOPIC},
-        	{"POSITION_TOPIC", "org.eclipse.scanning.request.position.topic", POSITION_TOPIC},
-        	{"POSITIONER_REQUEST_TOPIC", "org.eclipse.scanning.request.positioner.topic", POSITIONER_REQUEST_TOPIC},
-        	{"POSITIONER_RESPONSE_TOPIC", "org.eclipse.scanning.response.positioner.topic", POSITIONER_RESPONSE_TOPIC},
-        	{"ACQUIRE_REQUEST_TOPIC", "org.eclipse.scanning.request.acquire.topic", ACQUIRE_REQUEST_TOPIC},
-        	{"ACQUIRE_RESPONSE_TOPIC", "org.eclipse.scanning.response.acquire.topic", ACQUIRE_RESPONSE_TOPIC}
+        return Arrays.asList(new String[][] {
+		{"STATUS_TOPIC", "org.eclipse.scanning.status.topic", STATUS_TOPIC},
+		{"SUBMISSION_QUEUE", "org.eclipse.scanning.submission.queue", SUBMISSION_QUEUE},
+		{"STATUS_SET", "org.eclipse.scanning.status.set", STATUS_SET},
+		{"DEVICE_REQUEST_TOPIC", "org.eclipse.scanning.request.device.topic", DEVICE_REQUEST_TOPIC},
+		{"DEVICE_RESPONSE_TOPIC", "org.eclipse.scanning.response.device.topic", DEVICE_RESPONSE_TOPIC},
+		{"POSITION_TOPIC", "org.eclipse.scanning.request.position.topic", POSITION_TOPIC},
+		{"POSITIONER_REQUEST_TOPIC", "org.eclipse.scanning.request.positioner.topic", POSITIONER_REQUEST_TOPIC},
+		{"POSITIONER_RESPONSE_TOPIC", "org.eclipse.scanning.response.positioner.topic", POSITIONER_RESPONSE_TOPIC},
+		{"ACQUIRE_REQUEST_TOPIC", "org.eclipse.scanning.request.acquire.topic", ACQUIRE_REQUEST_TOPIC},
+		{"ACQUIRE_RESPONSE_TOPIC", "org.eclipse.scanning.response.acquire.topic", ACQUIRE_RESPONSE_TOPIC}
            });
     }
-    
+
     private String name;
     private String expected;
     private String actual;
 
     public TopicAndQueueNameTest(String name, String expected, String actual) {
-    	this.name= name;
-    	this.expected= expected;
-    	this.actual = actual;
+	this.name= name;
+	this.expected= expected;
+	this.actual = actual;
     }
-	
+
 	@Test
 	public void testTopicOrQueueValue() throws Exception {
 		assertTrue(name + " is different. Please change Python examples.", expected.equals(actual));
 	}
-	
+
 }

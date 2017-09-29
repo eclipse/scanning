@@ -17,10 +17,10 @@ import org.eclipse.scanning.server.servlet.AbstractConsumerServlet;
 /**
  * A servlet to do any x-ray centering based on the information provided
  * in a XcenBean.
- * 
+ *
      Spring config started, for instance:
     <pre>
-    
+
     {@literal <bean id="xcenServlet" class="org.eclipse.scanning.example.xcen.consumer.XcenServlet" init-method="connect">}
     {@literal    <property name="broker"      value="tcp://localhost:61616" />}
     {@literal    <property name="submitQueue" value="dataacq.xcen.SUBMISSION_QUEUE" />}
@@ -28,12 +28,12 @@ import org.eclipse.scanning.server.servlet.AbstractConsumerServlet;
     {@literal    <property name="statusTopic" value="dataacq.xcen.STATUS_TOPIC" />}
     {@literal    <property name="durable"     value="true" />}
     {@literal </bean>}
-     
+
     </pre>
-    
+
     FIXME Add security via activemq layer. Anyone can run this now.
 
- * 
+ *
  * @author Matthew Gerring
  *
  */

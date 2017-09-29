@@ -64,7 +64,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class XcenView extends ViewPart {
-	
+
 	private IEventService service;
 
 	public XcenView() {
@@ -72,9 +72,9 @@ public class XcenView extends ViewPart {
 	}
 
 	public static final String ID = "org.eclipse.scanning.example.xcen.ui.views.XcenView"; //$NON-NLS-1$
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(XcenView.class);
-	
+
 	private ISubscriber<IBeanListener<XcenBean>> topicMonitor;
 
 	/**
@@ -84,26 +84,26 @@ public class XcenView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		Composite container = new Composite(parent, SWT.NONE);
-		
+
 		container.setLayout(new GridLayout(2, false));
-		
+
 		Label label = new Label(container, SWT.NONE);
 		label.setText("Visit");
-		
+
 		final Text visit = new Text(container, SWT.NONE|SWT.BORDER);
 		visit.setText("nt5073-40");
 		visit.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-	
+
 		label = new Label(container, SWT.NONE);
 		label.setText("Collection");
-		
+
 		final Text collection = new Text(container, SWT.NONE|SWT.BORDER);
 		collection.setText("sapA-x56_A");
 		collection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		label = new Label(container, SWT.NONE);
 		label.setText("Add grid (optional)");
-		
+
 		Button grid = new Button(container, SWT.PUSH);
 		grid.setImage(XcenActivator.getImageDescriptor("icons/plot-tool-box-grid.png").createImage()); // Small memory leak possible.
 		grid.addSelectionListener(new SelectionAdapter() {
@@ -117,13 +117,13 @@ public class XcenView extends ViewPart {
 
 		label = new Label(container, SWT.NONE);
 		label.setText("Execute Centering");
-		
+
 		Button go = new Button(container, SWT.PUSH);
 		go.setImage(XcenActivator.getImageDescriptor("icons/ruby.png").createImage()); // Small memory leak possible.
 		gd = new GridData(SWT.LEFT, SWT.FILL, false, false);
 		gd.widthHint = 100;
 		go.setLayoutData(gd);
-		
+
 		go.addSelectionListener(new SelectionAdapter() {
 			public void widgetSelected(SelectionEvent e) {
 				try {
@@ -133,29 +133,29 @@ public class XcenView extends ViewPart {
 				}
 			}
 		});
-		
+
 		final Label sep = new Label(container, SWT.SEPARATOR|SWT.HORIZONTAL);
 		sep.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		
+
 		label = new Label(container, SWT.NONE);
 		label.setText("Centering Run");
-		
+
 		final Label centeringValue = new Label(container, SWT.NONE);
 		centeringValue.setText("");
 		centeringValue.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-	
+
 		// TODO Hook up value into box.
 		Map<String, ScaleBox> boxes = createBoxes(container, "x", "y", "z");
 
 		createActions();
 		initializeToolBar();
 		initializeMenu();
-		
+
 		createCenteringListener(centeringValue, boxes);
 	}
-	
+
 	private void createCenteringListener(final Label centeringValue, final Map<String, ScaleBox> boxes) {
-		
+
 		// We listen to the topic and when a complete bean comes through, we take this
 		// as the current center for the UI
 		// Use job because connection might timeout.
@@ -187,21 +187,21 @@ public class XcenView extends ViewPart {
 						}
 					});
 			        return Status.OK_STATUS;
-			        
+
 				} catch (Exception ne) {
 					logger.error("Cannot listen to topic changes because command server is not there", ne);
 			        return Status.CANCEL_STATUS;
 				}
 			}
-			
-			
+
+
 		};
-		
+
 		topicJob.setPriority(Job.INTERACTIVE);
 		topicJob.setSystem(true);
 		topicJob.setUser(false);
 		topicJob.schedule();
-		
+
 	}
 
 	private void createGrid() {
@@ -222,15 +222,15 @@ public class XcenView extends ViewPart {
 	}
 
 	private void submitCentering(String visit, String collection) throws Exception {
-		
+
 		XcenBean submit = new XcenBean();
-		
+
 		final DateFormat format = new SimpleDateFormat("  (hh:mm:ss)");
 		submit.setName(collection+format.format(new Date()));
 		submit.setBeamline("i04-1"); // TODO Hard coded!
 		submit.setVisit(visit);
 		submit.setCollection(collection);
-		
+
 		IPlottingSystem<Composite> system = getPlottingSystem();
 		if (system!=null) {
 			final Collection<IRegion> grids = system.getRegions(RegionType.GRID);
@@ -244,14 +244,14 @@ public class XcenView extends ViewPart {
 				setROIs(submit, rois);
 			}
 		}
-	        
+
 		final ISubmitter<XcenBean> factory = service.createSubmitter(new URI(Activator.getJmsUri()), "dataacq.xcen.SUBMISSION_QUEUE");
 		factory.setStatusTopicName("dataacq.xcen.STATUS_TOPIC");
 		factory.submit(submit, true);
 
 		showQueue();
-	}	
-	
+	}
+
 	public void setROIs(XcenBean submit, GridROI... g) throws Exception {
 		if (g == null) {
 			submit.setGrids(null);
@@ -266,9 +266,9 @@ public class XcenView extends ViewPart {
 
 
 	private void showQueue() throws Exception {
-		
+
 		IViewReference[] refs = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getViewReferences();
-		
+
 		boolean foundStatus = false;
 		for (IViewReference vr : refs) {
 			if (StatusQueueView.ID.equals(vr.getId())) foundStatus = true;
@@ -283,23 +283,23 @@ public class XcenView extends ViewPart {
 			}
 		}
 	}
-	
+
 	private Map<String, ScaleBox> createBoxes(Composite container, String... names) {
-		
+
 		final Map<String, ScaleBox> boxes = new HashMap<String, ScaleBox>(3);
 		for (String name : names) {
 			Label label = new Label(container, SWT.NONE);
 			label.setText(name);
-			
+
 			final ScaleBox data = new ScaleBox(container, SWT.NONE);
 			data.setUnit("µm");
 			data.setValue(0d);
 			data.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 			data.setEnabled(false);
-			
+
 			boxes.put(name, data);
 		}
-		
+
 		return boxes;
 	}
 
@@ -309,7 +309,7 @@ public class XcenView extends ViewPart {
 	private void createActions() {
 		// Create the actions
 	}
-	
+
 	public void dispose() {
 		super.dispose();
 		if (topicMonitor!=null) {

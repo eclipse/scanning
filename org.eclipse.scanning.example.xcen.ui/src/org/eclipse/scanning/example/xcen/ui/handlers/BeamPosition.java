@@ -12,17 +12,17 @@
 package org.eclipse.scanning.example.xcen.ui.handlers;
 
 /**
- * 
+ *
  * A bean that we autogenerate user interface from
  * in order to edit the beam center.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class BeamPosition {
-	
+
 	public BeamPosition() {
-		
+
 	}
 
 	public BeamPosition(double x, double y) {

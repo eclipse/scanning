@@ -47,7 +47,7 @@ public class PreprocessTest {
 
 	@Test
 	public void testSimplePreprocess() throws Exception {
-		
+
 		ScanRequest<?> req = createStepRequest();
 		req = preprocessor.preprocess(req);
 		assertNotNull(req);
@@ -55,10 +55,10 @@ public class PreprocessTest {
 		StepModel step = (StepModel)req.getCompoundModel().getModels().toArray()[0];
 		assertTrue(step.getName().equals("xfred"));
 	}
-	
+
 	@Test
 	public void testGridPreprocess() throws Exception {
-		
+
 		ScanRequest<?> req = createGridRequest();
 		req = preprocessor.preprocess(req);
 		assertNotNull(req);
@@ -67,29 +67,29 @@ public class PreprocessTest {
 		assertTrue(grid.getFastAxisName().equals("xfred"));
 		assertTrue(grid.getSlowAxisName().equals("yfred"));
 	}
-	
+
 	@Test
 	public void testGridStepPreprocess() throws Exception {
-		
+
 		ScanRequest<?> req = createStepGridRequest(5);
 		req = preprocessor.preprocess(req);
 		assertNotNull(req);
 
-		// TODO 
+		// TODO
 	}
 
 	@Test
 	public void testMalcolmPreprocess() throws Exception {
-		
+
 		ScanRequest<?> req = createMalcolmRequest();
 		req = preprocessor.preprocess(req);
 		assertNotNull(req);
 
-		// TODO 
+		// TODO
 	}
-	
+
 	private ScanRequest<?> createStepRequest() throws IOException {
-		
+
 		final ScanRequest<?> req = new ScanRequest<IROI>();
 		req.setCompoundModel(new CompoundModel(new StepModel("fred", 0, 9, 1)));
 		req.setMonitorNames(Arrays.asList("monitor"));
@@ -103,8 +103,8 @@ public class PreprocessTest {
 	}
 
 	private ScanRequest<?> createStepGridRequest(int outerScanNum) throws IOException {
-		
-		
+
+
 		final ScanRequest<?> req = new ScanRequest<IROI>();
 		// Create a grid scan model
 		BoundingBox box = new BoundingBox();
@@ -128,11 +128,11 @@ public class PreprocessTest {
 		models.add(gmodel);
 		req.setCompoundModel(new CompoundModel(models));
 		req.setMonitorNames(Arrays.asList("monitor"));
-		
+
 		final File tmp = File.createTempFile("scan_servlet_test", ".nxs");
 		tmp.deleteOnExit();
 		req.setFilePath(tmp.getAbsolutePath()); // TODO This will really come from the scan file service which is not written.
-		
+
 		// 2 detectors
 		final MandelbrotModel mandyModel = new MandelbrotModel();
 		mandyModel.setName("mandelbrot");
@@ -140,7 +140,7 @@ public class PreprocessTest {
 		mandyModel.setImaginaryAxisName("yNex");
 		mandyModel.setExposureTime(0.01);
 		req.putDetector("mandelbrot", mandyModel);
-		
+
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
 		dmodel.setExposureTime(0.01);
@@ -150,7 +150,7 @@ public class PreprocessTest {
 	}
 
 	private ScanRequest<?> createGridRequest() throws IOException {
-		
+
 		final ScanRequest<?> req = new ScanRequest<IROI>();
 		// Create a grid scan model
 		BoundingBox box = new BoundingBox();
@@ -168,26 +168,26 @@ public class PreprocessTest {
 
 		req.setCompoundModel(new CompoundModel(gmodel));
 		req.setMonitorNames(Arrays.asList("monitor"));
-		
+
 		final File tmp = File.createTempFile("scan_servlet_test", ".nxs");
 		tmp.deleteOnExit();
 		req.setFilePath(tmp.getAbsolutePath()); // TODO This will really come from the scan file service which is not written.
-		
+
 		final MandelbrotModel mandyModel = new MandelbrotModel();
 		mandyModel.setName("mandelbrot");
 		mandyModel.setRealAxisName("xNex");
 		mandyModel.setImaginaryAxisName("yNex");
 		req.putDetector("mandelbrot", mandyModel);
-		
+
 		return req;
 	}
 
 	private ScanRequest<?> createMalcolmRequest() throws Exception {
-		
+
 		final ScanRequest<?> req = new ScanRequest<IROI>();
 		req.setCompoundModel(new CompoundModel(new StepModel("temperature", 0, 9, 1)));
 		req.setMonitorNames(Arrays.asList("monitor"));
-		
+
 		final File tmp = File.createTempFile("scan_servlet_test_malc", ".nxs");
 		tmp.deleteOnExit();
 		req.setFilePath(tmp.getAbsolutePath()); // TODO This will really come from the scan file service which is not written.
@@ -200,20 +200,20 @@ public class PreprocessTest {
 
 		return req;
 	}
-	
+
 	private void fillParameters(Map<String, Object> config, long configureSleep, int imageCount) throws Exception {
-		
+
 		// Params for driving mock mode
 		config.put("nframes", imageCount); // IMAGE_COUNT images to write
 		config.put("shape", new int[]{64,64});
-		
+
 		final File temp = File.createTempFile("testingFile", ".hdf5");
 		temp.deleteOnExit();
 		config.put("file", temp.getAbsolutePath());
-		
+
 		// The exposure is in seconds
 		config.put("exposure", 0.5);
-		
+
 		double csleep = configureSleep/1000d;
 		if (configureSleep>0) config.put("configureSleep", csleep); // Sleeps during configure
 

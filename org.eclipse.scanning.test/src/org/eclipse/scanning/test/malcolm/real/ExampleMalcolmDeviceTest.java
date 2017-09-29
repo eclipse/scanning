@@ -66,7 +66,7 @@ public class ExampleMalcolmDeviceTest {
 	public void configureAndRunDummyMalcolm() throws Exception {
 
 		try {
-	
+
 			// The real service, get it from OSGi outside this test!
 			// Not required in OSGi mode (do not add this to your real code GET THE SERVICE FROM OSGi!)
 			this.service = new MalcolmService(new EpicsV4ConnectorService(), null);
@@ -82,12 +82,12 @@ public class ExampleMalcolmDeviceTest {
 			List<IROI> regions = new LinkedList<>();
 			regions.add(new CircularROI(2, 0, 0));
 			regions.add(new CircularROI(4, -1, -2));
-			
+
 			IPointGeneratorService pgService = new PointGeneratorService();
 			IPointGenerator<SpiralModel> temp = pgService.createGenerator(
 					new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
 			IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
-			
+
 			EPICSv4ExampleModel pmac1 = new EPICSv4ExampleModel();
 			pmac1.setExposureTime(23.1);
 			pmac1.setFileDir("/path/to/ixx-1234");
@@ -95,7 +95,7 @@ public class ExampleMalcolmDeviceTest {
 			// Set the generator on the device
 			// Cannot set the generator from @PreConfigure in this unit test.
 			((AbstractMalcolmDevice<?>)modelledDevice).setPointGenerator(scan);
-			
+
 			// Call configure
 			modelledDevice.configure(pmac1);
 
@@ -145,7 +145,7 @@ public class ExampleMalcolmDeviceTest {
 					completedStepsFound = true;
 				} else if (ma.getName().equals("layout")) {
 					layoutFound = true;
-				} 
+				}
 			}
 
 			assertTrue(stateFound);
@@ -207,14 +207,14 @@ public class ExampleMalcolmDeviceTest {
 			} else {
 				fail("health value was expected to be a HealthAttribute but wasn't");
 			}
-			
+
 			// Get a specific table attribute (full attribute)
 			Object datasetsAttributeValue = modelledDevice.getAttribute("datasets");
 			if (datasetsAttributeValue instanceof TableAttribute) {
 				TableAttribute datasetAttributeValueTable = (TableAttribute) datasetsAttributeValue;
 				assertEquals("datasets", datasetAttributeValueTable.getName());
 				MalcolmTable malcolmTable = datasetAttributeValueTable.getValue();
-				
+
 				assertEquals(4, malcolmTable.getHeadings().size());
 				assertEquals("detector", malcolmTable.getHeadings().get(0));
 				assertEquals("filename", malcolmTable.getHeadings().get(1));
@@ -227,7 +227,7 @@ public class ExampleMalcolmDeviceTest {
 			} else {
 				fail("datasets value was expected to be a TableAttribute but wasn't");
 			}
-			
+
 			// Check seek method works
 			modelledDevice.seek(4);
 
@@ -260,9 +260,9 @@ public class ExampleMalcolmDeviceTest {
 			Structure circularRoiStructure = FieldFactory.getFieldCreate().createFieldBuilder().
 					addArray("centre", ScalarType.pvDouble).
 					add("radius", ScalarType.pvDouble).
-					setId("scanpointgenerator:roi/CircularROI:1.0").					
+					setId("scanpointgenerator:roi/CircularROI:1.0").
 					createStructure();
-			
+
 			Structure excluderStructure = FieldFactory.getFieldCreate().createFieldBuilder().
 					addArray("axes", ScalarType.pvString).
 					addArray("rois", union).
@@ -287,7 +287,7 @@ public class ExampleMalcolmDeviceTest {
 			spiralGeneratorPVStructure.getBooleanField("alternate").put(false);
 			spiralGeneratorPVStructure.getDoubleField("radius").put(7.632168761236874);
 
-			
+
 			PVStructure configurePVStructure = PVDataFactory.getPVDataCreate().createPVStructure(configureStructure);
 			PVUnion pvu1 = PVDataFactory.getPVDataCreate().createPVVariantUnion();
 			pvu1.set(spiralGeneratorPVStructure);
@@ -300,7 +300,7 @@ public class ExampleMalcolmDeviceTest {
 			String[] scannables = new String[] {"stage_x", "stage_y"};
 			scannablesVal.put(0, scannables.length, scannables, 0);
 			PVUnionArray rois = expectedExcluderPVStructure.getSubField(PVUnionArray.class, "rois");
-			
+
 			PVStructure expectedROIPVStructure1 = PVDataFactory.getPVDataCreate().createPVStructure(circularRoiStructure);
 			PVDoubleArray cr1CentreVal = expectedROIPVStructure1.getSubField(PVDoubleArray.class, "centre");
 			double[] cr1Centre = new double[] {0, 0};
@@ -346,7 +346,7 @@ public class ExampleMalcolmDeviceTest {
 
 			assertEquals(runStructure, runCall.getStructure());
 			assertEquals(runPVStructure, runCall);
-			
+
 			// seek
 			PVStructure seekCall = rpcCalls.get("pause");
 

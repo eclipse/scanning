@@ -18,9 +18,9 @@ public class CommandInitializer extends AbstractPreferenceInitializer {
 
 	@Override
 	public void initializeDefaultPreferences() {
-		
+
 		final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-		
+
 		// TODO This is not the final URI
 		store.setDefault(CommandConstants.JMS_URI,          CommandConstants.DEFAULT_JMS_URI);
 		store.setDefault(CommandConstants.DIR_CHECKING_URI, CommandConstants.DEFAULT_CHECKING_URI);

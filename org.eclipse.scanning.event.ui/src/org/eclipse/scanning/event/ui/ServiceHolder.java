@@ -65,7 +65,7 @@ public class ServiceHolder {
 	public void start(BundleContext context) {
 		ServiceHolder.context = context;
 	}
-	
+
 	private static <T> T getService(Class<T> clazz) {
 		if (context == null) return null;
 		try {

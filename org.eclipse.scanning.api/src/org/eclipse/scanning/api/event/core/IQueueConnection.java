@@ -16,14 +16,14 @@ import java.util.List;
 import org.eclipse.scanning.api.event.EventException;
 
 public interface IQueueConnection<T> extends IQueueReader<T> {
-	
+
 	/**
 	 * The string to define the queue for storing status of scans.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getStatusSetName();
-	
+
 	/**
 	 * The string to define the queue for storing status of scans.
 	 * @param topic
@@ -33,11 +33,11 @@ public interface IQueueConnection<T> extends IQueueReader<T> {
 
 	/**
 	 * The string to define the queue for submitting scan objects to.
-	 * 
+	 *
 	 * @return
 	 */
 	public String getSubmitQueueName();
-	
+
 	/**
 	 * The string to define the queue for submitting scan objects to.
 	 * @throws EventException
@@ -50,7 +50,7 @@ public interface IQueueConnection<T> extends IQueueReader<T> {
 	 *   If field is set, it will be used to order the beans in the list by making a comparitor using it.
 	 */
 	public List<T> getQueue(String queueName, String fieldName) throws EventException;
-	
+
 	/**
 	 * This method will purge the queue
 	 * USE WITH CAUTION
@@ -62,15 +62,15 @@ public interface IQueueConnection<T> extends IQueueReader<T> {
 	 * It removes very old runs or those which are in a final failed state.
 	 */
 	public void cleanQueue(String queueName) throws EventException;
-	
+
 	/**
 	 * Tries to reorder the bean in the submission queue if it is
-	 * still there. If the bean has been moved to the status set, 
-	 * it will not be moved 
-	 * 
+	 * still there. If the bean has been moved to the status set,
+	 * it will not be moved
+	 *
 	 * A pause will automatically be done while the bean
 	 * is removed.
-	 * 
+	 *
 	 * @param bean
 	 * @param queueName
 	 * @param amount
@@ -81,29 +81,29 @@ public interface IQueueConnection<T> extends IQueueReader<T> {
 
 	/**
 	 * Tries to remove the bean from the submission queue if it is
-	 * still there. If the bean has been moved to the status set, 
-	 * it will not be removed 
-	 * 
+	 * still there. If the bean has been moved to the status set,
+	 * it will not be removed
+	 *
 	 * NOTE This method can end up reordering the items.
 	 * A pause will automatically be done while the bean
 	 * is removed.
-	 * 
+	 *
 	 * @param bean
 	 * @param queueName
 	 * @return
 	 * @throws EventException
 	 */
 	boolean remove(T bean, String queueName) throws EventException;
-	
-	
+
+
 	/**
 	 * Tries to replace the bean from the submission queue if it is
-	 * still there. If the bean has been moved to the status set, 
-	 * it will not be replaced. 
-	 * 
+	 * still there. If the bean has been moved to the status set,
+	 * it will not be replaced.
+	 *
 	 * A pause will automatically be done while the bean
 	 * is replaced.
-	 * 
+	 *
 	 * @param bean
 	 * @param queueName
 	 * @return

@@ -25,22 +25,22 @@ public class XcenPerspective implements IPerspectiveFactory {
 		addFastViews(layout);
 		addViewShortcuts(layout);
 		addPerspectiveShortcuts(layout);
-		
+
 		layout.setEditorAreaVisible(false);
 		layout.addView("org.eclipse.scanning.example.xcen.ui.views.XcenDiagram", IPageLayout.LEFT, 0.40f, IPageLayout.ID_EDITOR_AREA);
 		layout.addView("org.eclipse.scanning.example.xcen.ui.views.XcenView", IPageLayout.RIGHT, 0.60f, IPageLayout.ID_EDITOR_AREA);
-		
+
 		/*
-		    -submit dataacq.xcen.SUBMISSION_QUEUE 
-		    -topic dataacq.xcen.STATUS_TOPIC 
-		    -status dataacq.xcen.STATUS_QUEUE 
+		    -submit dataacq.xcen.SUBMISSION_QUEUE
+		    -topic dataacq.xcen.STATUS_TOPIC
+		    -status dataacq.xcen.STATUS_QUEUE
 		    -bundle org.eclipse.scanning.example.xcen
 		    -consumer org.eclipse.scanning.example.xcen.consumer.XcenConsumer
 		 */
 		IFolderLayout folderLayout = layout.createFolder("folder", IPageLayout.BOTTOM, 0.5f, "org.eclipse.scanning.example.xcen.ui.views.XcenView");
 		folderLayout.addView(XcenServices.getQueueViewSecondaryId());
 		folderLayout.addView("org.eclipse.scanning.event.ui.consumerView");
-		
+
 	}
 
 	/**

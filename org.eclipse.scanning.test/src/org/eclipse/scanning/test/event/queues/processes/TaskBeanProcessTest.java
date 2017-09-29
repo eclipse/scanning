@@ -42,11 +42,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class TaskBeanProcessTest {
-	
+
 	private TaskBean tBe;
 	private QueueProcess<TaskBean, Queueable> tBeProc;
 	private ProcessTestInfrastructure pti;
-	
+
 	private static QueueService qServ;
 	private static MockConsumer<Queueable> mockCons;
 	private static MockPublisher<QueueAtom> mockPub;
@@ -54,7 +54,7 @@ public class TaskBeanProcessTest {
 	private static MockSubmitter<QueueAtom> mockSub;
 	private static MockEventService mockEvServ;
 	private static IQueueControllerService controller;
-	
+
 	@BeforeClass
 	public static void setUpClass() throws EventException {
 		//Configure the processor Mock queue infrastructure
@@ -69,7 +69,7 @@ public class TaskBeanProcessTest {
 		mockEvServ.setMockCmdPublisher(mockCmdPub);
 		mockEvServ.setMockSubmitter(mockSub);
 		ServicesHolder.setEventService(mockEvServ);
-		
+
 		//This is a real queue service, so we have to do some set up
 		qServ = new QueueService("fake-qserv", "file:///foo/bar");
 		qServ.init();
@@ -78,28 +78,28 @@ public class TaskBeanProcessTest {
 		controller = qServ;
 		ServicesHolder.setQueueControllerService(controller);
 	}
-	
+
 	@AfterClass
 	public static void tearDownClass() throws EventException {
 		ServicesHolder.setQueueControllerService(null);
 		controller = null;
-		
+
 		ServicesHolder.setEventService(null);
 		mockEvServ = null;
 		mockPub = null;
 		mockCons = null;
 		mockSub = null;
-		
+
 		ServicesHolder.setQueueService(null);
 		qServ.disposeService();
 		qServ = null;
 		controller = null;
 	}
-	
+
 	@Before
 	public void setUp() throws EventException {
 		pti = new ProcessTestInfrastructure();
-		
+
 		//Create test atom & process
 		tBe = new TaskBean(null, "Test queue sub task bean");
 		tBe.setBeamline("I15-1(test)");
@@ -111,27 +111,27 @@ public class TaskBeanProcessTest {
 		tBe.addAtom(atomA);
 		tBe.addAtom(atomB);
 		tBe.addAtom(atomC);
-		
+
 		tBeProc = new TaskBeanProcess<>(tBe, pti.getPublisher(), false);
-		
+
 		//Reset queue architecture
 		mockSub.resetSubmitter();
 		mockPub.resetPublisher();
 	}
-	
+
 	@After
 	public void tearDown() {
 		pti = null;
 		mockEvServ.clearRegisteredConsumers();
 	}
-	
+
 	/**
 	 * After execution:
 	 * - first bean in statPub should be Status.RUNNING
 	 * - last bean in statPub should be Status.COMPLETE and 100%
 	 * - status publisher should have: 1 RUNNING bean and 1 COMPLETE bean
 	 * - child active-queue should be deregistered from QueueService
-	 * 
+	 *
 	 * N.B. This is *NOT* an integration test, so beans don't get run.
 	 *      It only checks the processor behaves as expected
 	 */
@@ -140,22 +140,22 @@ public class TaskBeanProcessTest {
 		pti.executeProcess(tBeProc, tBe, true);
 		pti.waitForExecutionEnd(10000l);
 		pti.checkLastBroadcastBeanStatuses(Status.COMPLETE, false);
-		
+
 		//These are the statuses & percent completes reported by the processor as it sets up the run
 		Status[] reportedStatuses = new Status[]{Status.RUNNING, Status.RUNNING,
 				Status.RUNNING, Status.RUNNING};
-		Double[] reportedPercent = new Double[]{0d, 1d, 
+		Double[] reportedPercent = new Double[]{0d, 1d,
 				4d, 5d};
-		
+
 		pti.checkFirstBroadcastBeanStatuses(reportedStatuses, reportedPercent);
 		pti.checkLastBroadcastBeanStatuses(Status.COMPLETE, true);
-		
+
 		pti.checkSubmittedBeans(mockSub, ((TaskBeanProcess<Queueable>) tBeProc).getAtomQueueProcessor().getActiveQueueID());
 
 		//Child queue should be removed after execution
 		assertEquals("Active queues still registered after terminate", 0, qServ.getAllActiveQueueIDs().size());
 	}
-	
+
 	/**
 	 * On terminate:
 	 * - first bean in statPub should be Status.RUNNING
@@ -171,27 +171,27 @@ public class TaskBeanProcessTest {
 		pti.waitToTerminate(100l, true);
 		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
-		
+
 		//TODO Should this be the message or the queue-message?
 		assertEquals("Wrong message set after termination.", "Job-queue was requested to abort before completion", pti.getLastBroadcastBean().getMessage());
-		
+
 		pti.checkConsumersStopped(mockEvServ, qServ);
-		
+
 		//Termination should remove the child queue
 		assertEquals("Active queues still registered after terminate", 0, qServ.getAllActiveQueueIDs().size());
 	}
-	
+
 //	@Test
 	public void testPauseResume() throws Exception {
 		//TODO!
 	}
-	
+
 	/**
 	 * On failure:
 	 * - first bean in statPub should be Status.RUNNING
 	 * - last bean in statPub should Status.FAILED and not be 100% complete
 	 * - message with details of failure should be set on bean
-	 * - the consumer we're running the TaskBean on should have received a 
+	 * - the consumer we're running the TaskBean on should have received a
 	 *   REQUEST_PAUSE command
 	 * - child active-queue should be deregistered from QueueService
 	 */
@@ -204,17 +204,17 @@ public class TaskBeanProcessTest {
 		tBeProc.getProcessLatch().countDown();
 		//Need to give the post-match analysis time to run
 		Thread.sleep(10);
-		
+
 		/*
-		 * FAILED is always going to happen underneath- i.e. process will be 
+		 * FAILED is always going to happen underneath- i.e. process will be
 		 * running & suddenly latch will be counted down.
-		 * 
+		 *
 		 * QueueListener sets the message and queueMessage.
-		 * We need to set this bean's status to FAILED and pause the consumer 
+		 * We need to set this bean's status to FAILED and pause the consumer
 		 * to stop running any more beans until the user is happy.
 		 */
 		pti.checkLastBroadcastBeanStatuses(Status.FAILED, false);
-		
+
 		//Check we sent a pause instruction to the job-queue consumer
 		List<ConsumerCommandBean> cmdBeans = mockCmdPub.getCmdBeans();
 		long timeout = 1000;
@@ -231,7 +231,7 @@ public class TaskBeanProcessTest {
 		} else {
 			fail("Last published bean was not a PauseBean");
 		}
-		
+
 		//After fail child queue should be deregistered
 		assertEquals("Active queues still registered after terminate", 0, qServ.getAllActiveQueueIDs().size());
 	}

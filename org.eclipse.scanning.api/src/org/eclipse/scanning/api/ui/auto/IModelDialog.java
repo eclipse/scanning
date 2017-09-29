@@ -17,7 +17,7 @@ import java.io.Serializable;
  * <pre>
  * Example:
  * <code>
- * 
+ *
 	IModelDialog<SampleData> dialog = interfaceService.createModelDialog(getViewSite().getShell());
 	dialog.setPreamble("Please define the sample data.");
 	dialog.create();
@@ -31,8 +31,8 @@ import java.io.Serializable;
 	}
  * </code>
  * </pre>
- * 
- * 
+ *
+ *
  * @author Matthew Gerring
  *
  * @param <T> The model that the dialog edits
@@ -54,7 +54,7 @@ public interface IModelDialog<T extends Serializable> {
 	 */
 	public static final int CANCEL = 1;
 
-	
+
 	/**
 	 * The model which we are editing
 	 * @param model
@@ -62,7 +62,7 @@ public interface IModelDialog<T extends Serializable> {
 	 */
 	void setModel(T model) throws InterfaceInvalidException;
 
-	
+
 	/**
 	 * The model which we are editing
 	 * @param model
@@ -71,33 +71,33 @@ public interface IModelDialog<T extends Serializable> {
 
 
 	/**
-	 * Set the introduction to the model editor, used to help the user orientate what 
+	 * Set the introduction to the model editor, used to help the user orientate what
 	 * they are doing, optional.
 	 * @param preamble
 	 */
 	void setPreamble(String preamble);
-	
+
 	/**
 	 * Call to create the Shell that the user interface will be shown on.
 	 * This is required before setSize(...) and setText(...) are used.
 	 */
 	void create();
-	
+
 	/**
 	 * Size of the dialog
 	 * @param width
 	 * @param height
 	 */
 	void setSize(int width, int height); // As needed
-	
+
 	/**
 	 * Titlebar of the dialog shell
 	 * @param label
 	 */
 	void setText(String label);
-	
+
 	/**
-	 * Call 
+	 * Call
 	 * @return OK(0) if okay, CANCEL(1) if Cancelled
 	 */
 	int open();

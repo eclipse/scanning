@@ -56,14 +56,14 @@ import org.eclipse.scanning.api.points.models.StaticModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 
 public class PointGeneratorService implements IPointGeneratorService {
-		
+
 	@SuppressWarnings("rawtypes")
 	private static final Map<Class<? extends IScanPathModel>, Class<? extends IPointGenerator>> generators;
 	private static final Map<String,   GeneratorInfo>                                           info;
-	
+
 	// Use a factory pattern to register the types.
 	// This pattern can always be replaced by extension points
-	// to allow point generators to be dynamically registered. 
+	// to allow point generators to be dynamically registered.
 	static {
 		System.out.println("Starting generator service");
 		@SuppressWarnings("rawtypes")
@@ -85,7 +85,7 @@ public class PointGeneratorService implements IPointGeneratorService {
 		gens.put(SpiralModel.class,           SpiralGenerator.class);
 		gens.put(LissajousModel.class,        LissajousGenerator.class);
 		gens.put(JythonGeneratorModel.class,  JythonGenerator.class);
-		
+
 		Map<String,   GeneratorInfo> tinfo = new TreeMap<>();
 		fillStaticGeneratorInfo(gens, tinfo);
 
@@ -94,11 +94,11 @@ public class PointGeneratorService implements IPointGeneratorService {
 		} catch (CoreException e) {
 			e.printStackTrace(); // Static block, intentionally do not use logging.
 		}
-		
+
 		generators = Collections.unmodifiableMap(gens);
 		info       = Collections.unmodifiableMap(tinfo);
 	}
-	
+
 	public Map<Class<? extends IScanPathModel>, Class<? extends IPointGenerator>> getGenerators() {
 		return generators;
 	}
@@ -114,7 +114,7 @@ public class PointGeneratorService implements IPointGeneratorService {
 			}
 			gen.setModel(model);
 			return gen;
-			
+
 		} catch (GeneratorException g) {
 			throw g;
 		} catch (Exception ne) {
@@ -123,22 +123,22 @@ public class PointGeneratorService implements IPointGeneratorService {
 	}
 
 	private <T, R> void setBounds(T model, List<R> regions) {
-		
+
 		IRectangularROI rect = ((IROI)regions.get(0)).getBounds();
 		for (R roi : regions) {
 			rect = rect.bounds((IROI)roi);
 		}
-		
+
 		if (model instanceof IBoundingBoxModel) {
 			IBoundingBoxModel bbm = (IBoundingBoxModel) model;
 			if (bbm.getBoundingBox() != null) {
 				IRectangularROI modelsROI = new RectangularROI(
-						bbm.getBoundingBox().getFastAxisStart(), 
+						bbm.getBoundingBox().getFastAxisStart(),
 						bbm.getBoundingBox().getSlowAxisStart(),
-		                bbm.getBoundingBox().getFastAxisLength(), 
+		                bbm.getBoundingBox().getFastAxisLength(),
 		                bbm.getBoundingBox().getSlowAxisLength(),
 		                0);
-				
+
 				rect = rect.bounds(modelsROI);
 			}
 			BoundingBox box = new BoundingBox();
@@ -169,27 +169,27 @@ public class PointGeneratorService implements IPointGeneratorService {
 			} catch (Exception e) {
 				e.printStackTrace();
 				continue;
-			} 
+			}
 		}
 	}
 
 	private static void readExtensions(Map<Class<? extends IScanPathModel>, Class<? extends IPointGenerator>> gens,
 			                           Map<String,   GeneratorInfo> tids) throws CoreException {
-		
+
 		if (Platform.getExtensionRegistry()!=null) {
 			final IConfigurationElement[] eles = Platform.getExtensionRegistry().getConfigurationElementsFor("org.eclipse.scanning.api.generator");
 			for (IConfigurationElement e : eles) {
 				final IPointGenerator    gen = (IPointGenerator)e.createExecutableExtension("class");
 				final IScanPathModel     mod = (IScanPathModel)e.createExecutableExtension("model");
-				
+
 				gens.put(mod.getClass(), gen.getClass());
-				
+
 				final GeneratorInfo info = new GeneratorInfo();
 				info.setModelClass(mod.getClass());
 				info.setGeneratorClass(gen.getClass());
 				info.setLabel(e.getAttribute("label"));
 				info.setDescription(e.getAttribute("description"));
-				
+
 				String id = e.getAttribute("id");
 				tids.put(id, info);
 			}
@@ -197,9 +197,9 @@ public class PointGeneratorService implements IPointGeneratorService {
 	}
 
 	private List<IPointContainer> wrap(Collection<?> regions) throws GeneratorException {
-		
+
 		if (regions==null || regions.isEmpty()) return null;
-		
+
 		List<IPointContainer> ret = new ArrayList<>();
 		for (Object region : regions) {
 			IPointContainer container = null;
@@ -223,7 +223,7 @@ public class PointGeneratorService implements IPointGeneratorService {
 		}
 		return ret;
 	}
-	
+
 	@Override
 	public IPointGenerator<?> createCompoundGenerator(IPointGenerator<?>... generators) throws GeneratorException {
 		return new CompoundGenerator(generators);
@@ -244,7 +244,7 @@ public class PointGeneratorService implements IPointGeneratorService {
 			if (ginfo.getLabel()!=null) gen.setLabel(ginfo.getLabel());
 			if (ginfo.getDescription()!=null) gen.setDescription(ginfo.getDescription());
 			return gen;
-			
+
 		} catch (IllegalAccessException | InstantiationException ne) {
 			throw new GeneratorException(ne);
 		}
@@ -252,7 +252,7 @@ public class PointGeneratorService implements IPointGeneratorService {
 
 	@Override
 	public IPointGenerator<?> createCompoundGenerator(CompoundModel<?> cmodel) throws GeneratorException {
-		
+
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[cmodel.getModels().size()];
 		int index = 0;
 		for (Object model : cmodel.getModels()) {
@@ -266,13 +266,13 @@ public class PointGeneratorService implements IPointGeneratorService {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <R> List<R> findRegions(Object model, Collection<ScanRegion<R>> sregions) throws GeneratorException {
-		
+
 		if (sregions==null) return null;
-		
+
         final List<R> regions = new ArrayList<R>(); // Order should not be important but some tests assume it
 		final Collection<String> names = AbstractPointsModel.getScannableNames(model);
 		for (ScanRegion<R> region : sregions) {
-			// A region with no scannables is considered to act on all 
+			// A region with no scannables is considered to act on all
 			List<String> scannables = region.getScannables();
 			if (scannables==null || scannables.containsAll(names)) {
 				regions.add((R)region.getRoi());
@@ -287,7 +287,7 @@ public class PointGeneratorService implements IPointGeneratorService {
 	}
 
 	private boolean findNamesAsEntry(List<String> scannables, Collection<String> names) {
-		
+
 		NAME_LOOP: for (String name : names) {
 			String regex = "/entry/.+/"+name+"_value_set";
 			for (String scannableName : scannables) {

@@ -41,20 +41,20 @@ public class TypeEditingSupport extends EditingSupport {
 	    final List<String> items  = Arrays.asList(values).stream().map(value -> value.getLabel()).collect(Collectors.toList());
 
 		CComboCellEditor cellEd = new CComboCellEditor((Composite)getViewer().getControl(), items.toArray(new String[items.size()])) {
-    	    @Override
+	    @Override
 			protected void doSetValue(Object value) {
                 if (value instanceof Enum) value = ((Enum) value).ordinal();
                 super.doSetValue(value);
-    	    }
-    		@Override
+	    }
+		@Override
 			protected Object doGetValue() {
-    			Integer ordinal = (Integer)super.doGetValue();
-    			try {
-    			    return values[ordinal];
-    			} catch (IndexOutOfBoundsException ne) {
-    				return values[0];
-    			}
-    		}
+			Integer ordinal = (Integer)super.doGetValue();
+			try {
+			    return values[ordinal];
+			} catch (IndexOutOfBoundsException ne) {
+				return values[0];
+			}
+		}
 		};
 
 		return cellEd;

@@ -15,4 +15,3 @@ Import-Package: javax.jms,
  org.apache.activemq,
  org.apache.activemq.broker,
  org.apache.activemq.usage
-

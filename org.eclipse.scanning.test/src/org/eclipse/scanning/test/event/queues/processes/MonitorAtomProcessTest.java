@@ -37,29 +37,29 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class MonitorAtomProcessTest {
-	
+
 	//Infrastructure
 	private ProcessTestInfrastructure pti;
-	
+
 	@Before
 	public void setUp() throws EventException {
-		
+
 		pti = new ProcessTestInfrastructure(750);
-		
+
 		ServicesHolder.setNexusFileFactory(new NexusFileFactoryHDF5());
 		ServicesHolder.setScannableDeviceService(new MockScannableConnector(null));
 		ServicesHolder.setFilePathService(new MockFilePathService());
 	}
-	
+
 	@After
 	public void tearDown() {
 		ServicesHolder.setNexusFileFactory(null);
 		ServicesHolder.setScannableDeviceService(null);
 		ServicesHolder.setFilePathService(null);
-		
+
 		pti = null;
 	}
-	
+
 	/**
 	 * After execution:
 	 * - first bean in statPub should be Status.RUNNING
@@ -71,29 +71,29 @@ public class MonitorAtomProcessTest {
 		MonitorAtom monAt = new MonitorAtom("getTC1", "thermocouple1");
 		monAt.setName("Monitor thermocouple1");
 		MonitorAtomProcess<Queueable> monAtProc = new MonitorAtomProcess<>(monAt, pti.getPublisher(), false);
-		
+
 		pti.executeProcess(monAtProc, monAt);
 		pti.waitForExecutionEnd(10000l);
 		pti.checkLastBroadcastBeanStatuses(Status.COMPLETE, false);
-		
+
 		assertEquals("Incorrect message after execute", "Successfully stored current value of 'thermocouple1'", pti.getLastBroadcastBean().getMessage());
-		
+
 		assertEquals(monAt.getRunDirectory(), new File(monAt.getFilePath()).getParent());
-		
+
 		final File file = new File(monAt.getFilePath());
 		assertTrue(file.exists());
-		
+
 		INexusFileFactory factory = ServicesHolder.getNexusFileFactory();
 		NexusFile nfile = factory.newNexusFile(file.getAbsolutePath());
 		nfile.openToRead();
-		
+
 		// TODO Should probably check data written.
 		final DataNode node = nfile.getData(monAt.getDataset());
 		assertNotNull(node);
-		
+
 		nfile.close();
 	}
-	
+
 	/**
 	 * On terminate:
 	 * - first bean in statPub should be Status.RUNNING
@@ -101,7 +101,7 @@ public class MonitorAtomProcessTest {
 	 * - status publisher should have a TERMINATED bean
 	 * - termination message should be set on the bean
 	 * - IPositioner should have received an abort command
-	 * 
+	 *
 	 */
 //	@Ignore("Intermittent failures on Travis.") //TODO 05.07.2017 Stability improved on local machine
 	@Test
@@ -109,12 +109,12 @@ public class MonitorAtomProcessTest {
 		MonitorAtom monAt = new MonitorAtom("getTC1", "thermocouple1");
 		monAt.setName("Monitor thermocouple1");
 		MonitorAtomProcess<Queueable> monAtProc = new MonitorAtomProcess<>(monAt, pti.getPublisher(), false);
-		
+
 		pti.executeProcess(monAtProc, monAt,false, false);
 		pti.waitToTerminate(2l);
 		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
-		
+
 		Thread.sleep(100);
 //		TODO This is probably not a good way to test this as we can't guarantee what stage the terminate happens at
 //		assertEquals("Incorrect message after terminate", "Get value of 'thermocouple1' aborted (requested)", pti.getLastBroadcastBean().getMessage());
@@ -124,12 +124,12 @@ public class MonitorAtomProcessTest {
 			assertFalse("Nexus file not deleted during cleanup", new File(termAt.getFilePath()).exists());
 		}
 	}
-	
+
 //	@Test
 	public void testPauseResume() throws Exception {
 		//TODO!
 	}
-	
+
 	/**
 	 * On failure:
 	 * - first bean in statPub should be Status.RUNNING
@@ -142,22 +142,22 @@ public class MonitorAtomProcessTest {
 		MonitorAtom failAtom = new MonitorAtom("error", null);
 		failAtom.setName("Error Causer");
 		MonitorAtomProcess<Queueable> monAtProc = new MonitorAtomProcess<>(failAtom, pti.getPublisher(), false);
-		
+
 		pti.executeProcess(monAtProc, failAtom);
 		//Fail happens automatically since using MockDev.Serv.
 		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.FAILED, false);
-		
+
 		StatusBean lastBean = pti.getLastBroadcastBean();
-		
+
 //TODO Tried to do this elegantly. If doesn't work - throws a SecurityException due to incorrect signing of hamcrest matcher classes. Works fine locally; fails on travis
 //		assertThat("Fail message is wrong", lastBean.getMessage(), anyOf(equalTo("Processing MonitorAtom 'Error Causer' failed with: 'Failed to get monitor with the name 'null''"),
 //				equalTo("Failed to get monitor with the name 'null'")));
-		if (!(lastBean.getMessage().equals("Processing MonitorAtom 'Error Causer' failed with: 'Failed to get monitor with the name 'null''") || 
+		if (!(lastBean.getMessage().equals("Processing MonitorAtom 'Error Causer' failed with: 'Failed to get monitor with the name 'null''") ||
 				lastBean.getMessage().equals("Failed to get monitor with the name 'null'"))) {
 			fail("Fail message is wrong");
 		}
-		
+
 	}
 
 }

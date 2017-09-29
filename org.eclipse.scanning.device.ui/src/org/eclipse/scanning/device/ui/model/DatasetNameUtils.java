@@ -27,7 +27,7 @@ import org.eclipse.scanning.device.ui.ServiceHolder;
 
 class DatasetNameUtils {
 
-	
+
 	public static Map<String, int[]> getDatasetInfo(String path) {
 		IMetadata meta;
 		final Map<String, int[]>     names  = new HashMap<String, int[]>();
@@ -36,45 +36,45 @@ class DatasetNameUtils {
 		} catch (Exception e) {
 			return names;
 		}
-        
+
         if (meta!=null && !meta.getDataNames().isEmpty()){
-        	for (String name : meta.getDataShapes().keySet()) {
-        		int[] shape = meta.getDataShapes().get(name);
-        		if (shape != null) {
-        			//squeeze to get usable rank
-        			int[] ss = squeezeShape(shape, false);
+		for (String name : meta.getDataShapes().keySet()) {
+			int[] shape = meta.getDataShapes().get(name);
+			if (shape != null) {
+				//squeeze to get usable rank
+				int[] ss = squeezeShape(shape, false);
 					names.put(name, shape);
-        		} else {
-        			//null shape is a bad sign
-        			names.clear();
-        			break;
-        		}
-        	}
+			} else {
+				//null shape is a bad sign
+				names.clear();
+				break;
+			}
+		}
         }
-        
+
         if (names.isEmpty()) {
-        	IDataHolder dataHolder;
+		IDataHolder dataHolder;
 			try {
 				dataHolder = ServiceHolder.getLoaderService().getData(path, null);
 			} catch (Exception e) {
 				return names;
 			}
-        	if (dataHolder!=null) for (String name : dataHolder.getNames()) {
-        		if (name.contains("Image Stack")) continue;
-        		if (!names.containsKey(name)) {
+		if (dataHolder!=null) for (String name : dataHolder.getNames()) {
+			if (name.contains("Image Stack")) continue;
+			if (!names.containsKey(name)) {
 
-        			int[] shape = dataHolder.getLazyDataset(name).getShape();
-        			int[] ss = squeezeShape(shape, false);
+				int[] shape = dataHolder.getLazyDataset(name).getShape();
+				int[] ss = squeezeShape(shape, false);
 					names.put(name, shape);
-        		}
-        	}
+			}
+		}
         }
 	    return sortedByRankThenLength(names);
 	}
-	
+
 	/**
 	 * Remove dimensions of 1 in given shape - from both ends only, if true
-	 * 
+	 *
 	 * @param oshape
 	 * @param onlyFromEnds
 	 * @return newly squeezed shape (or original if unsqueezed)
@@ -135,29 +135,29 @@ class DatasetNameUtils {
 
 		return newDims;
 	}
-	
+
 	private static Map<String, int[]> sortedByRankThenLength(Map<String, int[]> map) {
-		
+
 		List<Entry<String, int[]>> ll = new LinkedList<Entry<String, int[]>>(map.entrySet());
-		
+
 		Collections.sort(ll, new Comparator<Entry<String, int[]>>() {
 
 			@Override
 			public int compare(Entry<String, int[]> o1, Entry<String, int[]> o2) {
 				int val = Integer.compare(o2.getValue().length, o1.getValue().length);
-				
+
 				if (val == 0) val = Integer.compare(o1.getKey().length(), o2.getKey().length());
-				
+
 				return val;
 			}
 		});
-		
+
 		Map<String, int[]> lhm = new LinkedHashMap<String, int[]>();
-		
+
 		for (Entry<String, int[]> e : ll) lhm.put(e.getKey(), e.getValue());
-		
+
 		return lhm;
-		
+
 	}
-	
+
 }

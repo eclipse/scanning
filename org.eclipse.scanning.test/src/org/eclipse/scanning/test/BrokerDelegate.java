@@ -21,7 +21,7 @@ import org.apache.activemq.usage.SystemUsage;
 
 public class BrokerDelegate {
 
-	private URI           uri;     
+	private URI           uri;
 	private BrokerService service;
 
 	public void start() throws Exception {
@@ -29,7 +29,7 @@ public class BrokerDelegate {
 		System.setProperty("org.eclipse.scanning.broker.uri", uri.toString());
         service = new BrokerService();
         service.addConnector(uri);
-        service.setPersistent(false); 
+        service.setPersistent(false);
         SystemUsage systemUsage = service.getSystemUsage();
         systemUsage.getStoreUsage().setLimit(1024 * 1024 * 8);
         systemUsage.getTempUsage().setLimit(1024 * 1024 * 8);
@@ -39,14 +39,14 @@ public class BrokerDelegate {
 	}
 
 	public void stop() throws Exception {
-		
+
 		if (service!=null) {
 			service.stop();
 			service.waitUntilStopped();
 			service = null;
 		}
 	}
-	
+
 	public URI getUri() {
 		return uri;
 	}
@@ -55,7 +55,7 @@ public class BrokerDelegate {
 		this.uri = uri;
 	}
 
-	
+
 	private static URI createUri() {
 		try {
 			return new URI("tcp://localhost:"+getFreePort());
@@ -70,7 +70,7 @@ public class BrokerDelegate {
 		return getFreePort(start);
 	}
 
-	
+
 	private static int getFreePort(final int startPort) {
 
 	    int port = startPort;

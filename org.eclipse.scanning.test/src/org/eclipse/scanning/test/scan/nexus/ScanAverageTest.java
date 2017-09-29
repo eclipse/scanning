@@ -31,80 +31,80 @@ import org.junit.Test;
 public class ScanAverageTest extends NexusTest {
 
 	private IRunnableDevice<?> imagedetector, linedetector;
-	
+
 	@Before
 	public void before() throws ScanningException {
-		
-		MandelbrotModel model = createMandelbrotModel();		
+
+		MandelbrotModel model = createMandelbrotModel();
 		imagedetector = dservice.createRunnableDevice(model);
 		assertNotNull(imagedetector);
-		
+
 		linedetector = dservice.createRunnableDevice(new RandomLineModel());
 		assertNotNull(linedetector);
-		
+
 		RunnableDeviceServiceImpl impl = (RunnableDeviceServiceImpl)dservice;
 		impl._register(SlicingModel.class, AveragingSlicingDevice.class);
-		
+
 	}
 
-	@Test 
+	@Test
 	public void testLineNoAveraging() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, false, 2, 2);
 		scanner.run(null);
 	}
-	
-	@Test 
+
+	@Test
 	public void testLineAveraging() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, true, 2, 2);
 		scanner.run(null);
-	
+
 		checkAveraging(scanner, 2, 2);
 	}
-	
-	@Test 
+
+	@Test
 	public void testLineAveragingDifferentSize() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, true, 3, 1);
 		scanner.run(null);
-	
+
 		checkAveraging(scanner, 3, 1);
-	}	
-	
+	}
+
 	@Test(expected=AssertionError.class)
 	public void testLineAveragingBadSizeCheck() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, true, 2, 2);
 		scanner.run(null);
 		checkAveraging(scanner, 3, 1);
-	}	
+	}
 
-	
-	@Test 
+
+	@Test
 	public void testImageNoAveraging() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(imagedetector, 2, false, 2, 2);
 		scanner.run(null);
 	}
 
-	@Test 
+	@Test
 	public void testImageAveraging() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(imagedetector, 2, true, 2, 2);
 		scanner.run(null);
-	
+
 		checkAveraging(scanner, 2, 2);
 	}
 
 	private IRunnableDevice<ScanModel> createScanner(IRunnableDevice<?> device, int dataRank, boolean doAveraging, int... shape) throws Exception {
-		
+
 		ScanModel smodel = createGridScanModel(device, output, true, shape);
 		if (doAveraging) {
 			SlicingModel model = new SlicingModel();
@@ -122,9 +122,9 @@ public class ScanAverageTest extends NexusTest {
 	}
 
 	private void checkAveraging(IRunnableDevice<ScanModel> scanner, int... scanShape) throws Exception {
-		
+
 		SlicingModel model = (SlicingModel)scanner.getModel().getDetectors().get(1).getModel();
-		
+
 		ILoaderService lservice = ServiceHolder.getLoaderService();
 		IDataHolder    holder   = lservice.getData(model.getDataFile(), new IMonitor.Stub());
 
@@ -132,7 +132,7 @@ public class ScanAverageTest extends NexusTest {
 		ILazyDataset av   = holder.getLazyDataset("/entry/instrument/"+model.getDetectorName()+AveragingSlicingDevice.AVERAGE_QUALIFIER+"/data");
 
 		assertTrue(Arrays.equals(scanShape, av.getShape()));
-		
+
 		final PositionIterator it = new PositionIterator(scanShape);
 		while(it.hasNext()) {
 			int[] pos = it.getPos();
@@ -144,16 +144,16 @@ public class ScanAverageTest extends NexusTest {
 			IDataset image = data.getSlice(islice);
 			double mean1 = (Double)image.squeeze().mean();
 			double mean2 = DatasetUtils.convertToDataset(av.getSlice(aslice)).getDouble();
-          
+
 			assertEquals(mean1, mean2, 0.00001);
 		}
 	}
 
 	protected int[] getDataShape(int dataRank, ILazyDataset data) {
-		
-  		int[] dshape = new int[data.getRank()];
-  		Arrays.fill(dshape, 1);
-  		
+
+		int[] dshape = new int[data.getRank()];
+		Arrays.fill(dshape, 1);
+
 		for (int i = dataRank; i > 0; i--) {
 			dshape[dshape.length-i] = data.getShape()[data.getShape().length-i];
 		}

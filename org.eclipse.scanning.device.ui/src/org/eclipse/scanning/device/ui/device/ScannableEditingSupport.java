@@ -24,11 +24,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class ScannableEditingSupport extends EditingSupport {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ScannableEditingSupport.class);
 	private ModelFieldEditorFactory factory;
 	private IScannableDeviceService cservice;
-	
+
 	public ScannableEditingSupport(ColumnViewer viewer) {
 		super(viewer);
 		this.factory = new ModelFieldEditorFactory();
@@ -59,18 +59,18 @@ class ScannableEditingSupport extends EditingSupport {
 
 	@Override
 	protected void setValue(Object element, Object value) {
-		
+
 		String name = (String)value;
 		IScannable<?> oscannable = (IScannable<?>)element;
-		
+
 		try {
 			IScannable<?> nscannable = cservice.getScannable(name);
 			ScannableContentProvider prov = (ScannableContentProvider)getViewer().getContentProvider();
 			prov.replace(oscannable, nscannable);
-			
+
 		} catch (ScanningException e) {
 			e.printStackTrace();
 		}
-		
+
 	}
 }

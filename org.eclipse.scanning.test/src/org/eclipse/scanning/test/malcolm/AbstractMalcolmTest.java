@@ -160,7 +160,7 @@ public abstract class AbstractMalcolmTest {
 			@Override
 			public void eventPerformed(MalcolmEvent<MalcolmEventBean> e) {
 				MalcolmEventBean bean = e.getBean();
-	   			if (bean.getDeviceState()==DeviceState.PAUSED) {
+				if (bean.getDeviceState()==DeviceState.PAUSED) {
 				    beans.add(bean);
 				}
 			}
@@ -212,54 +212,54 @@ public abstract class AbstractMalcolmTest {
 
         final List<Integer> usedThreads = new ArrayList<>();
         for (int i = 0; i < threadcount; i++) {
-        	final Integer current = i;
-        	Thread thread = new Thread(new Runnable() {
-        		@Override
+		final Integer current = i;
+		Thread thread = new Thread(new Runnable() {
+			@Override
 				public void run() {
-        			try {
-        				IMalcolmDevice sdevice = separateDevice ? createAdditionalConnection() : device;
-        				System.out.println("Running thread Thread"+current+". Device = "+sdevice.getName());
-        				checkPauseResume(sdevice, 1000, true);
+				try {
+					IMalcolmDevice sdevice = separateDevice ? createAdditionalConnection() : device;
+					System.out.println("Running thread Thread"+current+". Device = "+sdevice.getName());
+					checkPauseResume(sdevice, 1000, true);
 
-        			} catch(MalcolmDeviceOperationCancelledException mdoce) {
-        				mdoce.printStackTrace();
-        				usedThreads.add(current);
-        				exceptions.add(mdoce);
+				} catch(MalcolmDeviceOperationCancelledException mdoce) {
+					mdoce.printStackTrace();
+					usedThreads.add(current);
+					exceptions.add(mdoce);
 
-        			} catch (Exception e) {
-        				e.printStackTrace();
-        				exceptions.add(e);
-        			}
-        		}
-        	}, "Thread"+i);
+				} catch (Exception e) {
+					e.printStackTrace();
+					exceptions.add(e);
+				}
+			}
+		}, "Thread"+i);
 
-        	thread.setPriority(9);
-        	if (sleepTime>0) {
-        		thread.setDaemon(true); // Otherwise we are running them in order anyway
-        	}
-        	thread.start();
-        	System.out.println("Started thread Thread"+i);
+		thread.setPriority(9);
+		if (sleepTime>0) {
+			thread.setDaemon(true); // Otherwise we are running them in order anyway
+		}
+		thread.start();
+		System.out.println("Started thread Thread"+i);
 
-        	if (sleepTime>0) {
-        		Thread.sleep(sleepTime);
-        	} else{
-        		Thread.sleep(100);
-        		thread.join();
-        	}
+		if (sleepTime>0) {
+			Thread.sleep(sleepTime);
+		} else{
+			Thread.sleep(100);
+			thread.join();
+		}
         }
 
         if (expectExceptions && exceptions.size()>0) return device; // Pausing failed as expected
 
         // Wait for end of run for 30 seconds, otherwise we carry on (test will then likely fail)
         if (doLatch && device.getDeviceState()!=DeviceState.READY) {
-        	device.latch(30, TimeUnit.SECONDS, DeviceState.RUNNING, DeviceState.PAUSED, DeviceState.SEEKING); // Wait until not running.
+		device.latch(30, TimeUnit.SECONDS, DeviceState.RUNNING, DeviceState.PAUSED, DeviceState.SEEKING); // Wait until not running.
         }
 
 		if (exceptions.size()>0) throw exceptions.get(0);
 		if (doLatch) { // If we waited we can check it completed, otherwise it is probably still going.
 			if (device.getDeviceState()!=DeviceState.READY) throw new Exception("The state at the end of the pause/resume cycle(s) must be "+DeviceState.READY);
 			int expectedThreads = usedThreads.size() > 0 ? usedThreads.get(0) : threadcount;
-	 		// TODO Sometimes too many pause events come from the real malcolm connection.
+			// TODO Sometimes too many pause events come from the real malcolm connection.
 			if (beans.size()<expectedThreads) throw new Exception("The pause event was not encountered the correct number of times! Found "+beans.size()+" required "+expectedThreads);
 		}
 

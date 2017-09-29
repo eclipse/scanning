@@ -58,7 +58,7 @@ public class DeviceServlet extends AbstractResponderServlet<DeviceRequest> {
 		responder = eventService.createResponder(new URI(broker), requestTopic, responseTopic);
 		responder.setBeanClass(DeviceRequest.class);
 		responder.setResponseCreator(createResponseCreator());
-     	logger.info("Started "+getClass().getSimpleName()+" using bean "+responder.getBeanClass());
+	logger.info("Started "+getClass().getSimpleName()+" using bean "+responder.getBeanClass());
 	}
 
 	@Override

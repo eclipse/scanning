@@ -60,17 +60,17 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 
 		try {
 		    if (getTopicName()!=null) {
-		    	if (scanProducer==null) {
-		    		scanProducer = createProducer(getTopicName());
-		    	}
+			if (scanProducer==null) {
+				scanProducer = createProducer(getTopicName());
+			}
 		    }
 		    try {
 			    if (queueName!=null) {
-			    	updateSet(bean);
+				updateSet(bean);
 			    }
 		    } catch (Throwable notFatal) {
-		    	// Updating the set is not a fatal error
-		    	logger.error("Did not update the set", notFatal);
+			// Updating the set is not a fatal error
+			logger.error("Did not update the set", notFatal);
 		    }
 			if (getTopicName()!=null) {
 				send(scanProducer, bean, Constants.getPublishLiveTime());
@@ -177,8 +177,8 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 								return;
 							}
 
-			        		logger.warn("Event publisher heartbeat connection to "+uri+" lost.");
-			        		logger.warn("We will check every 2 seconds for 24 hours, until it comes back.");
+						logger.warn("Event publisher heartbeat connection to "+uri+" lost.");
+						logger.warn("We will check every 2 seconds for 24 hours, until it comes back.");
 
 							continue;
 						}
@@ -337,11 +337,11 @@ class PublisherImpl<T> extends AbstractConnection implements IPublisher<T> {
 	protected boolean isSame(Object qbean, Object bean) {
 
         if (qbean instanceof PauseBean && bean instanceof PauseBean) {
-        	PauseBean q = (PauseBean)qbean;
-        	PauseBean b = (PauseBean)bean;
+		PauseBean q = (PauseBean)qbean;
+		PauseBean b = (PauseBean)bean;
 
-        	if (q.getConsumerId()!=null && q.getConsumerId().equals(b.getConsumerId())) return true;
-        	if (q.getQueueName()!=null  && q.getQueueName().equals(b.getQueueName()))   return true;
+		if (q.getConsumerId()!=null && q.getConsumerId().equals(b.getConsumerId())) return true;
+		if (q.getQueueName()!=null  && q.getQueueName().equals(b.getQueueName()))   return true;
         }
 		return super.isSame(qbean, bean);
 	}

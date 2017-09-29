@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 
 /**
  * Specify the tooltip to add to a GUI widget
- * 
+ *
  * @author Colin Palmer
  */
 @Retention(RetentionPolicy.RUNTIME)

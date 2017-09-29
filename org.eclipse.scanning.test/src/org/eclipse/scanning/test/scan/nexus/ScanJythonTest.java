@@ -32,80 +32,80 @@ import org.junit.Test;
 public class ScanJythonTest extends NexusTest {
 
 	private IRunnableDevice<?> imagedetector, linedetector;
-	
+
 	@Before
 	public void before() throws ScanningException {
-		
-		MandelbrotModel model = createMandelbrotModel();		
+
+		MandelbrotModel model = createMandelbrotModel();
 		imagedetector = dservice.createRunnableDevice(model);
 		assertNotNull(imagedetector);
-		
+
 		linedetector = dservice.createRunnableDevice(new RandomLineModel());
 		assertNotNull(linedetector);
-		
+
 		RunnableDeviceServiceImpl impl = (RunnableDeviceServiceImpl)dservice;
 		impl._register(SlicingModel.class, AveragingSlicingDevice.class);
-		
+
 	}
 
-	@Test 
+	@Test
 	public void testLineNoAveraging() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, false, 2, 2);
 		scanner.run(null);
 	}
-	
-	@Test 
+
+	@Test
 	public void testLineAveraging() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, true, 2, 2);
 		scanner.run(null);
-	
+
 		checkMax(scanner, 2, 2);
 	}
-	
-	@Test 
+
+	@Test
 	public void testLineAveragingDifferentSize() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, true, 3, 1);
 		scanner.run(null);
-	
+
 		checkMax(scanner, 3, 1);
-	}	
-	
+	}
+
 	@Test(expected=AssertionError.class)
 	public void testLineAveragingBadSizeCheck() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(linedetector, 1, true, 2, 2);
 		scanner.run(null);
 		checkMax(scanner, 3, 1);
-	}	
+	}
 
-	
-	@Test 
+
+	@Test
 	public void testImageNoAveraging() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(imagedetector, 2, false, 2, 2);
 		scanner.run(null);
 	}
 
-	@Test 
+	@Test
 	public void testImageAveraging() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createScanner(imagedetector, 2, true, 2, 2);
 		scanner.run(null);
-	
+
 		checkMax(scanner, 2, 2);
 	}
 
 	private IRunnableDevice<ScanModel> createScanner(IRunnableDevice<?> device, int dataRank, boolean doAveraging, int... shape) throws Exception {
-		
+
 		ScanModel smodel = createGridScanModel(device, output, true, shape);
 		if (doAveraging) {
 			JythonModel model = new JythonModel();
@@ -117,7 +117,7 @@ public class ScanJythonTest extends NexusTest {
 			model.setModuleName("functions");
 			model.setClassName("MaxFunction");
 			model.setOutputRank(1);
-			
+
 			IRunnableDevice<SlicingModel> script =  dservice.createRunnableDevice(model, null);
 			final List<IRunnableDevice<?>> detectors = new ArrayList<>(smodel.getDetectors());
 			detectors.add(script);
@@ -127,9 +127,9 @@ public class ScanJythonTest extends NexusTest {
 	}
 
 	private void checkMax(IRunnableDevice<ScanModel> scanner, int... scanShape) throws Exception {
-		
+
 		JythonModel model = (JythonModel)scanner.getModel().getDetectors().get(1).getModel();
-		
+
 		ILoaderService lservice = ServiceHolder.getLoaderService();
 		IDataHolder    holder   = lservice.getData(model.getDataFile(), new IMonitor.Stub());
 
@@ -137,7 +137,7 @@ public class ScanJythonTest extends NexusTest {
 		ILazyDataset av   = holder.getLazyDataset("/entry/instrument/"+model.getDetectorName()+"_"+model.getName()+"/data");
 
 		assertTrue(Arrays.equals(scanShape, av.getShape()));
-		
+
 		final PositionIterator it = new PositionIterator(scanShape);
 		while(it.hasNext()) {
 			int[] pos = it.getPos();
@@ -149,16 +149,16 @@ public class ScanJythonTest extends NexusTest {
 			IDataset image = data.getSlice(islice);
 			double max1 = (Double)image.max(false, false);
 			double max2 = DatasetUtils.convertToDataset(av.getSlice(aslice)).getDouble();
-          
+
 			assertEquals(max1, max2, 0.00001);
 		}
 	}
 
 	protected int[] getDataShape(int dataRank, ILazyDataset data) {
-		
-  		int[] dshape = new int[data.getRank()];
-  		Arrays.fill(dshape, 1);
-  		
+
+		int[] dshape = new int[data.getRank()];
+		Arrays.fill(dshape, 1);
+
 		for (int i = dataRank; i > 0; i--) {
 			dshape[dshape.length-i] = data.getShape()[data.getShape().length-i];
 		}

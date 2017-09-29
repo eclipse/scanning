@@ -14,7 +14,7 @@ package org.eclipse.scanning.api.ui.auto;
 public class InterfaceInvalidException extends Exception {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -8741038493600761528L;
 

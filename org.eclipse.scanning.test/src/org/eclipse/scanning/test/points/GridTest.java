@@ -325,7 +325,7 @@ public class GridTest extends AbstractGeneratorTest {
 		checkPoints(pointList);
 		GeneratorUtil.testGeneratorPoints(gen, 20, 20);
 	}
-	
+
 	@Test
 	public void testGridWrtCompound() throws Exception {
 
@@ -360,7 +360,7 @@ public class GridTest extends AbstractGeneratorTest {
 		assertEquals(400, gen.size());
 		assertEquals(2, gen.getRank());
 		assertArrayEquals(new int[] { 20, 20 }, gen.getShape());
-		
+
 		Iterator<IPosition> it = gen.iterator();
 		List<IPosition> pointList = new ArrayList<>();
 		while (it.hasNext()) pointList.add(it.next());
@@ -413,7 +413,7 @@ public class GridTest extends AbstractGeneratorTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 //		GeneratorUtil.testGeneratorPoints(gen); // Rounding error in here causing test to fail
@@ -459,15 +459,15 @@ public class GridTest extends AbstractGeneratorTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
-	
+
 	private void checkPoints(List<IPosition> pointList) {
-		
+
 		// Check correct number of points
 		assertEquals(20 * 20, pointList.size());
 
@@ -481,7 +481,7 @@ public class GridTest extends AbstractGeneratorTest {
 			assertEquals(i-20, pointList.get(i).getIndex("x"));
 			assertEquals(1, pointList.get(i).getIndex("y"));
 		}
-		
+
 		assertEquals(0.075, pointList.get(0).getValue("Y"), 1e-8);
 
 		assertEquals(0.075 + 3 * (3.0 / 20.0), pointList.get(3).getValue("X"), 1e-8);

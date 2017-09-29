@@ -453,18 +453,18 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 		init();
 
 		while(isActive()) {
-        	try {
+		try {
 	            boolean ok = consume();
 	            if (!ok) break;
 
-        	} catch (Throwable ne) {
-        		boolean stayAlive = processException(ne);
-        		if (stayAlive) {
-        			continue;
-        		} else {
-        			break;
-        		}
-        	}
+		} catch (Throwable ne) {
+			boolean stayAlive = processException(ne);
+			if (stayAlive) {
+				continue;
+			} else {
+				break;
+			}
+		}
 
 		}
 	}
@@ -500,21 +500,21 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 		if (!isActive()) return false; // Might have pasued for a long time.
 
 		// Consumes messages from the queue.
-    	Message m = getMessage(uri, getSubmitQueueName());
+	Message m = getMessage(uri, getSubmitQueueName());
         if (m!=null) {
-        	waitTime = 0; // We got a message
+		waitTime = 0; // We got a message
 
-        	// TODO FIXME Check if we have the max number of processes
-        	// exceeded and wait until we don't...
+		// TODO FIXME Check if we have the max number of processes
+		// exceeded and wait until we don't...
 
-        	TextMessage t = (TextMessage)m;
+		TextMessage t = (TextMessage)m;
 
-        	final String json  = t.getText();
+		final String json  = t.getText();
 
 			@SuppressWarnings("unchecked")
 			final U bean   = (U) service.unmarshal(json, getBeanClass());
 
-        	executeBean(bean);
+		executeBean(bean);
         }
         return true;
 	}
@@ -590,19 +590,19 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 		if (!isActive()) throw new Exception("The consumer is not active and cannot be paused!");
 
 		// Check the locking using a condition
-    	if(!lock.tryLock(1, TimeUnit.SECONDS)) {
-    		throw new EventException("Internal Error - Could not obtain lock to run device!");
-    	}
-    	try {
-    		if (!isActive()) throw new Exception("The consumer is not active and cannot be paused!");
-       	    if (awaitPaused) {
-       	    	setActive(false);
-        		paused.await(); // Until unpaused
-       	    	setActive(true);
-       	    }
-    	} finally {
-    		lock.unlock();
-    	}
+	if(!lock.tryLock(1, TimeUnit.SECONDS)) {
+		throw new EventException("Internal Error - Could not obtain lock to run device!");
+	}
+	try {
+		if (!isActive()) throw new Exception("The consumer is not active and cannot be paused!");
+	    if (awaitPaused) {
+		setActive(false);
+			paused.await(); // Until unpaused
+		setActive(true);
+	    }
+	} finally {
+		lock.unlock();
+	}
 
 	}
 

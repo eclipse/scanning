@@ -7,10 +7,10 @@ import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 
 public final class SubTaskAtomAssembler extends AbstractBeanAssembler<SubTaskAtom> {
-	
+
 	private AtomQueueBuilder<SubTaskAtom, QueueAtom> atomQueueBuider;
 	private ExperimentConfiguration config;
-	
+
 	public SubTaskAtomAssembler(IQueueBeanFactory queueBeanFactory) {
 		super(queueBeanFactory);
 		atomQueueBuider = new AtomQueueBuilder<>(queueBeanFactory, SubTaskAtom.class);
@@ -22,7 +22,7 @@ public final class SubTaskAtomAssembler extends AbstractBeanAssembler<SubTaskAto
 		atom.setBeamline(model.getBeamline());
 		atom.setRunTime(model.getRunTime());
 		atom.setModel(false);
-		
+
 		SubTaskAtom subTask = atomQueueBuider.populateAtomQueue(model, atom, config);
 		config = null;
 		return subTask;

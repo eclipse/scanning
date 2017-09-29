@@ -28,19 +28,19 @@ public class EPICSv4EvilDevice extends AbstractEPICSv4Device {
 
 
     public EPICSv4EvilDevice(String deviceName) {
-    	super(deviceName);
+	super(deviceName);
     }
 
     @Override
 	public void start() throws InterruptedException, PVAException {
-    	PVDatabase master = PVDatabaseFactory.getMaster();
+	PVDatabase master = PVDatabaseFactory.getMaster();
 
-    	pvRecord = DummyMalcolmRecord.create(recordName);
-    	pvRecord.setTraceLevel(traceLevel);
-    	master.addRecord(pvRecord);
-    	ServerContextImpl context = ServerContextImpl.startPVAServer("evil",0,true,System.out);
-    	latch.await();
-    	master.removeRecord(pvRecord);
-    	context.destroy();
+	pvRecord = DummyMalcolmRecord.create(recordName);
+	pvRecord.setTraceLevel(traceLevel);
+	master.addRecord(pvRecord);
+	ServerContextImpl context = ServerContextImpl.startPVAServer("evil",0,true,System.out);
+	latch.await();
+	master.removeRecord(pvRecord);
+	context.destroy();
     }
  }

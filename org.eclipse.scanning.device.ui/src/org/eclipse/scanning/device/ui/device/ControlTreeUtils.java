@@ -20,20 +20,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ControlTreeUtils {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ControlTreeUtils.class);
 
-	/** 
+	/**
 	 * We ensure that the xml is parsed, if any
 	 * Hopefully this has already been done by
 	 * the client spring xml configuration but
 	 * if not we check if there is an xml argument
 	 * here and attempt to load its path.
 	 * This step is done for testing and to make
-	 * the example client work. 
+	 * the example client work.
 	 **/
 	public static final ControlTree parseDefaultXML() {
-		
+
 		if (ControlTree.getInstance()!=null) return ControlTree.getInstance();
 		String[] args = Platform.getApplicationArgs();
 		for (int i = 0; i < args.length; i++) {
@@ -52,7 +52,7 @@ public class ControlTreeUtils {
 		return ControlTree.getInstance();
 	}
 
-    
+
 	public static final <T> T clone(T tree) throws Exception {
 		IMarshallerService mservice = ServiceHolder.getMarshallerService();
 		String      json = mservice.marshal(tree);

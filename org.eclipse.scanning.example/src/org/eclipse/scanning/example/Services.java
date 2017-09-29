@@ -28,7 +28,7 @@ public class Services {
 	private static IScannableDeviceService scannableDeviceService;
 	private static IPointGeneratorService pointGeneratorService;
 
-	
+
 	private static <T> T getService(Class<T> clazz) {
 		if (context == null) return null;
 		try {
@@ -56,12 +56,12 @@ public class Services {
 	public static void setEventService(IEventService eventService) {
 		Services.eventService = eventService;
 	}
-	
+
 	public static IPointGeneratorService getPointGeneratorService() {
 		if (pointGeneratorService==null) pointGeneratorService = getService(IPointGeneratorService.class);
 		return pointGeneratorService;
 	}
-	
+
 	public static void setPointGeneratorService(IPointGeneratorService pointGeneratorService) {
 		Services.pointGeneratorService = pointGeneratorService;
 	}
@@ -79,7 +79,7 @@ public class Services {
 		this.context = context;
 		current = this;
 	}
-	
+
 	public void stop() {
 		current = null;
 	}

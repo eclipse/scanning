@@ -38,142 +38,142 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class SubscanModeratorTest {
-	
+
 	protected static IPointGeneratorService  gservice;
 
 	@BeforeClass
 	public static void setServices() throws Exception {
 		gservice    = new PointGeneratorService();
 	}
-	
+
 	@Test
 	public void testSimpleWrappedScan() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		GridModel gmodel = new GridModel("x", "y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setFastAxisPoints(5);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(new StepModel("T", 290, 300, 2), gmodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[]{"x", "y"});
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 		IPointGenerator<?> moderated = (IPointGenerator<?>)moderator.getOuterIterable();
-		
+
 		assertEquals(6, moderated.size());
 		assertEquals(1, moderator.getInnerModels().size());
 	}
-	
+
 	@Test
 	public void testSimpleWrappedScanSubscanOutside() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		GridModel gmodel = new GridModel("x", "y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setFastAxisPoints(5);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(gmodel, new StepModel("T", 290, 300, 2)));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[]{"x", "y"});
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 		IPointGenerator<?> moderated = (IPointGenerator<?>)moderator.getOuterIterable();
-		
+
 		assertEquals(150, moderated.size());
 		assertEquals(2, moderator.getOuterModels().size());
 		assertEquals(0, moderator.getInnerModels().size());
 	}
 
-	
+
 	@Test
 	public void testSubscanOnlyScan() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		GridModel gmodel = new GridModel("x", "y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setFastAxisPoints(5);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(gmodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[]{"x", "y"});
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 		IPointGenerator<?> moderated = (IPointGenerator<?>)moderator.getOuterIterable();
-		
+
 		assertEquals(1, moderated.size());
 		assertEquals(0, moderator.getOuterModels().size());
 		assertEquals(1, moderator.getInnerModels().size());
 	}
-	
+
 	@Test
 	public void testNoSubscanDevice1() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		GridModel gmodel = new GridModel("x", "y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setFastAxisPoints(5);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(gmodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final MandelbrotModel mmodel = new MandelbrotModel();
 		final MandelbrotDetector det = new MandelbrotDetector();
 		det.setModel(mmodel);
-			
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 		IPointGenerator<?> moderated = (IPointGenerator<?>)moderator.getOuterIterable();
-		
+
 		assertEquals(25, moderated.size());
 		assertNull(moderator.getOuterModels());
 		assertNull(moderator.getInnerModels());
 	}
-	
+
 	@Test
 	public void testNoSubscanDevice2() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		GridModel gmodel = new GridModel("x", "y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setFastAxisPoints(5);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(new StepModel("T", 290, 300, 2), gmodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final MandelbrotModel mmodel = new MandelbrotModel();
 		final MandelbrotDetector det = new MandelbrotDetector();
 		det.setModel(mmodel);
-			
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 		IPointGenerator<?> moderated = (IPointGenerator<?>)moderator.getOuterIterable();
-		
+
 		assertEquals(150, moderated.size());
 		assertNull(moderator.getOuterModels());
 		assertNull(moderator.getInnerModels());
@@ -182,31 +182,31 @@ public class SubscanModeratorTest {
 
 	@Test
 	public void testDifferentAxes1() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		GridModel gmodel = new GridModel("x", "y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setFastAxisPoints(5);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(gmodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[]{"p", "y"});
-			
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 
 		assertEquals(1, moderator.getOuterModels().size());
 		assertEquals(0, moderator.getInnerModels().size());
-		
+
 		IPointGenerator<?> outer = (IPointGenerator<?>)moderator.getOuterIterable();
 		assertEquals(25, outer.size());
-		
+
 		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
 		assertEquals(1, inner.size());
 		Iterator<IPosition> innerIter = inner.iterator();
@@ -215,26 +215,26 @@ public class SubscanModeratorTest {
 		assertTrue(innerPos.getValues().isEmpty());
 		assertFalse(innerIter.hasNext());
 	}
-	
+
 	@Test
 	public void testDifferentAxes2() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		GridModel gmodel = new GridModel("x", "y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setFastAxisPoints(5);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(new StepModel("T", 290, 300, 2), gmodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[]{"p", "y"});
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 
 		IPointGenerator<?> outer = (IPointGenerator<?>)moderator.getOuterIterable();
@@ -242,7 +242,7 @@ public class SubscanModeratorTest {
 
 		assertEquals(2, moderator.getOuterModels().size());
 		assertEquals(0, moderator.getInnerModels().size());
-		
+
 		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
 		assertEquals(1, inner.size());
 		Iterator<IPosition> innerIter = inner.iterator();
@@ -251,26 +251,26 @@ public class SubscanModeratorTest {
 		assertTrue(innerPos.getValues().isEmpty());
 		assertFalse(innerIter.hasNext());
 	}
-	
+
 	@Test
 	public void testEmptyAxes() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		GridModel gmodel = new GridModel("x", "y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setFastAxisPoints(5);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(new StepModel("T", 290, 300, 2), gmodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[0]);
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 
 		IPointGenerator<?> outer = (IPointGenerator<?>)moderator.getOuterIterable();
@@ -288,31 +288,31 @@ public class SubscanModeratorTest {
 		assertTrue(innerPos.getValues().isEmpty());
 		assertFalse(innerIter.hasNext());
 	}
-	
+
 	@Test
 	public void testDifferentAxes3() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		GridModel gmodel = new GridModel("p", "y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setFastAxisPoints(5);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(new StepModel("T", 290, 300, 2), gmodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[]{"x", "y"});
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 
 		IPointGenerator<?> outer = (IPointGenerator<?>)moderator.getOuterIterable();
 		assertEquals(150, outer.size());
-		
+
 		assertEquals(2, moderator.getOuterModels().size());
 		assertEquals(0, moderator.getInnerModels().size());
 
@@ -325,34 +325,34 @@ public class SubscanModeratorTest {
 		assertTrue(innerPos.getValues().isEmpty());
 		assertFalse(innerIter.hasNext());
 	}
-	
+
 	@Test
 	public void testNestedAxes() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		GridModel gmodel = new GridModel("p", "y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setFastAxisPoints(5);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(new StepModel("p", 290, 300, 2), gmodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[]{"p", "y"});
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
-		
+
 		IPointGenerator<?> outer = (IPointGenerator<?>)moderator.getOuterIterable();
 		assertEquals(1, outer.size());
-		
+
 		assertEquals(0, moderator.getOuterModels().size());
 		assertEquals(2, moderator.getInnerModels().size());
-		
+
 		// check that the outer iterator has a single static position
 		Iterator<IPosition> outerIter = outer.iterator();
 		IPosition outerPos = outerIter.next();
@@ -363,50 +363,50 @@ public class SubscanModeratorTest {
 
 	@Test
 	public void testSimpleWrappedScanSpiral() throws Exception {
-		
+
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		SpiralModel gmodel = new SpiralModel("p", "y");
 		gmodel.setScale(2d);
-		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));	
-		
+		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
+
 		cmodel.setModels(Arrays.asList(new StepModel("T", 290, 300, 2), gmodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[]{"p", "y"});
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 		IPointGenerator<?> outer = (IPointGenerator<?>)moderator.getOuterIterable();
 		assertEquals(6, outer.size());
-		
+
 		assertEquals(1, moderator.getOuterModels().size());
 		assertEquals(1, moderator.getInnerModels().size());
 	}
-	
+
 	@Test
 	public void testStaticScan() throws Exception {
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		StaticModel smodel = new StaticModel();
-		
+
 		cmodel.setModels(Arrays.asList(smodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[0]);
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 
 		assertEquals(0, moderator.getOuterModels().size());
 		assertEquals(1, moderator.getInnerModels().size());
-		
+
 		IPointGenerator<?> outer = (IPointGenerator<?>) moderator.getOuterIterable();
 		assertEquals(1, outer.size());
 		Iterator<IPosition> outerIter = outer.iterator();
@@ -414,7 +414,7 @@ public class SubscanModeratorTest {
 		assertTrue(outerPos.getNames().isEmpty());
 		assertTrue(outerPos.getValues().isEmpty());
 		assertFalse(outerIter.hasNext());
-		
+
 		// check that the inner iterator has a single static position
 		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
 		assertEquals(1, inner.size());
@@ -429,18 +429,18 @@ public class SubscanModeratorTest {
 	public void testStaticScan2() throws Exception {
 		// the malcolm device's axesToMove is not empty
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		StaticModel smodel = new StaticModel();
-		
+
 		cmodel.setModels(Arrays.asList(smodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[] { "x", "y" });
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 
 		IPointGenerator<?> outer = (IPointGenerator<?>) moderator.getOuterIterable();
@@ -450,7 +450,7 @@ public class SubscanModeratorTest {
 		assertTrue(outerPos.getNames().isEmpty());
 		assertTrue(outerPos.getValues().isEmpty());
 		assertFalse(outerIter.hasNext());
-		
+
 		// check that the inner iterator has a single static position
 		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
 		assertEquals(1, inner.size());
@@ -465,23 +465,23 @@ public class SubscanModeratorTest {
 	public void testStaticScanWithOuterScan() throws Exception {
 		// the malcolm device's axesToMove is not empty
 		CompoundModel cmodel = new CompoundModel<>();
-		
+
 		StaticModel smodel = new StaticModel();
-		
+
 		cmodel.setModels(Arrays.asList(new StepModel("T", 290, 300, 2), smodel));
-		
+
 		IPointGenerator<?> gen = gservice.createCompoundGenerator(cmodel);
-		
+
 		final DummyMalcolmModel tmodel = new DummyMalcolmModel();
 		final DummyMalcolmDevice det = new DummyMalcolmDevice();
 		det.setModel(tmodel);
 		det.setAttributeValue("axesToMove", new String[] { "x", "y" });
-		
+
 		SubscanModerator moderator = new SubscanModerator(gen, Arrays.asList(det), gservice);
 
 		IPointGenerator<?> outer = (IPointGenerator<?>) moderator.getOuterIterable();
 		assertEquals(6, outer.size());
-		
+
 		// check that the inner iterator has a single static position
 		IPointGenerator<?> inner = (IPointGenerator<?>) moderator.getInnerIterable();
 		assertEquals(1, inner.size());
@@ -491,5 +491,5 @@ public class SubscanModeratorTest {
 		assertTrue(innerPos.getValues().isEmpty());
 		assertFalse(innerIter.hasNext());
 	}
-	
+
 }

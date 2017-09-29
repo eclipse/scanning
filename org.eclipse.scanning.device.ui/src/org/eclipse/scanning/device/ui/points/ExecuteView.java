@@ -353,7 +353,7 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 				if (part==null) continue;
                 CompoundModel<IROI> cm = part.getAdapter(CompoundModel.class);
                 if (cm !=null) {
-                	modelAdaptable = part;
+			modelAdaptable = part;
                 }
 			}
 		}
@@ -434,106 +434,106 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 			ScanRequest<IROI> req = createScanRequest();
 			if (monitor.isCanceled()) return;
 			if (req==null) {
-	    		StyledString styledString = new StyledString();
-	    		String name = modelAdaptable != null && modelAdaptable instanceof IWorkbenchPart ? ((IWorkbenchPart)modelAdaptable).getTitle() : "Scan Editor";
-	        	styledString.append("Please create a model using '"+name+"'", StyledString.COUNTER_STYLER);
+			StyledString styledString = new StyledString();
+			String name = modelAdaptable != null && modelAdaptable instanceof IWorkbenchPart ? ((IWorkbenchPart)modelAdaptable).getTitle() : "Scan Editor";
+			styledString.append("Please create a model using '"+name+"'", StyledString.COUNTER_STYLER);
 	            setThreadSafeText(text, styledString);
 	            return;
 			}
 	        CompoundModel<IROI> cm = req.getCompoundModel();
 	        if (cm != null) {
-	        	// Validate
-	        	vservice.validate(cm);
+			// Validate
+			vservice.validate(cm);
 				setThreadSafeEnabled(true);
 
-	    		StyledString styledString = new StyledString();
+			StyledString styledString = new StyledString();
 
-	        	// Create generator for points
+			// Create generator for points
 				if (monitor.isCanceled()) return;
-	        	final IPointGenerator<?> gen = pservice.createCompoundGenerator(cm);
-	        	styledString.append("A scan of ");
-	        	styledString.append((new DecimalFormat()).format(gen.size()), StyledString.COUNTER_STYLER);
-	        	styledString.append(" points, scanning motors: ");
-	        	styledString.append(getMotorNames(gen), FontStyler.BOLD);
+			final IPointGenerator<?> gen = pservice.createCompoundGenerator(cm);
+			styledString.append("A scan of ");
+			styledString.append((new DecimalFormat()).format(gen.size()), StyledString.COUNTER_STYLER);
+			styledString.append(" points, scanning motors: ");
+			styledString.append(getMotorNames(gen), FontStyler.BOLD);
 
-	        	if (Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_SCAN_INFO)) {
+			if (Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_SCAN_INFO)) {
 			        IPosition start = req.getStart();
 			        if (start!=null) {
 						if (monitor.isCanceled()) return;
-			        	styledString.append("\nStart: "+start);
+					styledString.append("\nStart: "+start);
 			        }
 
 			        ScriptRequest before = req.getBefore();
 			        if (before!=null) {
 						if (monitor.isCanceled()) return;
-			        	styledString.append("\nBefore: ");
-			        	styledString.append(before.toString(), StyledString.DECORATIONS_STYLER);
+					styledString.append("\nBefore: ");
+					styledString.append(before.toString(), StyledString.DECORATIONS_STYLER);
 			        }
 
 					if (monitor.isCanceled()) return;
-		        	styledString.append("\nScan: ");
-		        	styledString.append(getModelNames(cm), StyledString.DECORATIONS_STYLER);
+				styledString.append("\nScan: ");
+				styledString.append(getModelNames(cm), StyledString.DECORATIONS_STYLER);
 
 			        ScriptRequest after = req.getAfter();
 			        if (after!=null) {
 						if (monitor.isCanceled()) return;
-			        	styledString.append("\nAfter: ");
-			        	styledString.append(after.toString(), StyledString.DECORATIONS_STYLER);
+					styledString.append("\nAfter: ");
+					styledString.append(after.toString(), StyledString.DECORATIONS_STYLER);
 			        }
 			        IPosition end = req.getEnd();
 			        if (end!=null) {
 						if (monitor.isCanceled()) return;
-			        	styledString.append("\nEnd: "+end);
+					styledString.append("\nEnd: "+end);
 			        }
 
 					if (monitor.isCanceled()) return;
-		        	styledString.append("\nDetectors: ");
-		        	styledString.append(getDetectorNames(), FontStyler.BOLD);
+				styledString.append("\nDetectors: ");
+				styledString.append(getDetectorNames(), FontStyler.BOLD);
 
 					if (monitor.isCanceled()) return;
-		        	styledString.append("\nRegions: ");
-		        	styledString.append(getScanRegions(cm.getRegions()), StyledString.QUALIFIER_STYLER);
+				styledString.append("\nRegions: ");
+				styledString.append(getScanRegions(cm.getRegions()), StyledString.QUALIFIER_STYLER);
 
 					if (monitor.isCanceled()) return;
-		        	styledString.append("\nMonitors: ");
-		        	styledString.append(getMonitorNames(), StyledString.DECORATIONS_STYLER);
+				styledString.append("\nMonitors: ");
+				styledString.append(getMonitorNames(), StyledString.DECORATIONS_STYLER);
 
 					if (monitor.isCanceled()) return;
-		        	if (sampleData!=null && sampleData.getName()!=null && sampleData.getName().length()>0) {
-			        	styledString.append("\nSample: ");
-			        	styledString.append(sampleData.getName(), StyledString.QUALIFIER_STYLER);
-		        	}
-	        	}
+				if (sampleData!=null && sampleData.getName()!=null && sampleData.getName().length()>0) {
+					styledString.append("\nSample: ");
+					styledString.append(sampleData.getName(), StyledString.QUALIFIER_STYLER);
+				}
+			}
 
-	        	if (Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_SCAN_CMD)) {
-	        		try {
-	        			final IParserService pyService = ServiceHolder.getParserService();
-	        			boolean verbose = Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_VERBOSE_SCAN_CMD);
-		        		final String cmd = pyService.getCommand(req, verbose);
-			        	styledString.append("\n\nScan Command:\n");
-			        	styledString.append(cmd, FontStyler.CODE);
-	        		} catch (Exception ne) {
-	        			styledString.append("\n\nCannot print scan command: '"+IParserService.class.getSimpleName()+"' is misconfigured! Ask you support representative to ensure it is there.");
-	        			styledString.append("\n"+ne.toString());
-	        			logger.error("Cannot parse a scan request", ne);
-	        		}
-	        	}
+			if (Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_SCAN_CMD)) {
+				try {
+					final IParserService pyService = ServiceHolder.getParserService();
+					boolean verbose = Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_VERBOSE_SCAN_CMD);
+					final String cmd = pyService.getCommand(req, verbose);
+					styledString.append("\n\nScan Command:\n");
+					styledString.append(cmd, FontStyler.CODE);
+				} catch (Exception ne) {
+					styledString.append("\n\nCannot print scan command: '"+IParserService.class.getSimpleName()+"' is misconfigured! Ask you support representative to ensure it is there.");
+					styledString.append("\n"+ne.toString());
+					logger.error("Cannot parse a scan request", ne);
+				}
+			}
 	            setThreadSafeText(text, styledString);
 
 	            String timeString = "";
-	        	if (Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_SCAN_TIME)) {
+			if (Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_SCAN_TIME)) {
 
-	        		try {
-	        			final ScanEstimator estimator = new ScanEstimator(ServiceHolder.getGeneratorService(), req);
-	        			long time = estimator.getEstimatedScanTime();
-	        			Format format = (time<HOUR_IN_MS) ? new SimpleDateFormat("mm'm' ss's'") : new SimpleDateFormat("h'h' mm'm' ss's'");
-	        			timeString = "   "+format.format(new Date(time));
-	        		} catch (Exception ne) {
-	        			timeString = ne.getMessage();
-	        		}
-	        	}
-	        	setThreadSafeLabel(timeEstimate, timeString);
- 	        }
+				try {
+					final ScanEstimator estimator = new ScanEstimator(ServiceHolder.getGeneratorService(), req);
+					long time = estimator.getEstimatedScanTime();
+					Format format = (time<HOUR_IN_MS) ? new SimpleDateFormat("mm'm' ss's'") : new SimpleDateFormat("h'h' mm'm' ss's'");
+					timeString = "   "+format.format(new Date(time));
+				} catch (Exception ne) {
+					timeString = ne.getMessage();
+				}
+			}
+			setThreadSafeLabel(timeEstimate, timeString);
+	        }
 		} catch (ModelValidationException ne) {
 			setThreadSafeEnabled(false);
 			setThreadSafeText(text, ne.getMessage());
@@ -575,61 +575,61 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 	}
 	private void setThreadSafeText(StyledText text, StyledString styledString) {
 		if (text.isDisposed()) return;
-    	text.getDisplay().syncExec(new Runnable() {
-    		@Override
+	text.getDisplay().syncExec(new Runnable() {
+		@Override
 			public void run() {
-    			if (text.isDisposed()) return;
-	        	text.setText(styledString.toString());
-	        	text.setStyleRanges(styledString.getStyleRanges());
-    		}
-    	});
+			if (text.isDisposed()) return;
+			text.setText(styledString.toString());
+			text.setStyleRanges(styledString.getStyleRanges());
+		}
+	});
     }
 	private void setThreadSafeLabel(Label label, String message) {
 		if (label.isDisposed()) return;
 		label.getDisplay().syncExec(new Runnable() {
-    		@Override
+		@Override
 			public void run() {
-    			if (label.isDisposed()) return;
-    			label.setText(message);
-    		}
-    	});
+			if (label.isDisposed()) return;
+			label.setText(message);
+		}
+	});
     }
 
 	private String getScanRegions(Collection<ScanRegion<IROI>> regions) {
 
 		final StringBuilder buf = new StringBuilder();
 		if (regions==null) return "None";
-     	for (Iterator<ScanRegion<IROI>> it = regions.iterator(); it.hasNext();) {
-    		ScanRegion<IROI> region = it.next();
-    		buf.append(region);
-    		if(it.hasNext()) buf.append(",");
-    		buf.append(" ");
-    	}
-    	if (buf.length()>0) return buf.toString();
-    	return "None";
- 	}
+	for (Iterator<ScanRegion<IROI>> it = regions.iterator(); it.hasNext();) {
+		ScanRegion<IROI> region = it.next();
+		buf.append(region);
+		if(it.hasNext()) buf.append(",");
+		buf.append(" ");
+	}
+	if (buf.length()>0) return buf.toString();
+	return "None";
+	}
 
 	private String getDetectorNames() throws Exception {
 
 		Collection<DeviceInformation<?>> infos = getDeviceInformation();
 		Collection<DeviceInformation<?>> activated = new ArrayList<>();
-    	for (Iterator<DeviceInformation<?>> it = infos.iterator(); it.hasNext();) {
+	for (Iterator<DeviceInformation<?>> it = infos.iterator(); it.hasNext();) {
 			DeviceInformation<?> deviceInformation = it.next();
 			if (deviceInformation.isActivated()) activated.add(deviceInformation);
-    	}
+	}
 
 		final StringBuilder buf = new StringBuilder();
-    	for (Iterator<DeviceInformation<?>> it = activated.iterator(); it.hasNext();) {
-    		DeviceInformation<?> info = it.next();
-    		IRunnableDevice<Object> device = dservice.getRunnableDevice(info.getName());
-    		device.validate(info.getModel());
-    		buf.append(info.getName());
-    		if(it.hasNext()) buf.append(",");
-    		buf.append(" ");
-    	}
+	for (Iterator<DeviceInformation<?>> it = activated.iterator(); it.hasNext();) {
+		DeviceInformation<?> info = it.next();
+		IRunnableDevice<Object> device = dservice.getRunnableDevice(info.getName());
+		device.validate(info.getModel());
+		buf.append(info.getName());
+		if(it.hasNext()) buf.append(",");
+		buf.append(" ");
+	}
 
-    	if (buf.length()>0) return buf.toString();
-    	return "None";
+	if (buf.length()>0) return buf.toString();
+	return "None";
 	}
 
 	private Map<String,Object> getDetectors() throws Exception {
@@ -637,16 +637,16 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		Map<String,Object> detectors = new HashMap<>();
 		Collection<DeviceInformation<?>> infos = getDeviceInformation();
 		Collection<DeviceInformation<?>> activated = new ArrayList<>();
-    	for (Iterator<DeviceInformation<?>> it = infos.iterator(); it.hasNext();) {
+	for (Iterator<DeviceInformation<?>> it = infos.iterator(); it.hasNext();) {
 			DeviceInformation<?> deviceInformation = it.next();
 			if (deviceInformation.isActivated()) activated.add(deviceInformation);
-    	}
-    	for (Iterator<DeviceInformation<?>> it = activated.iterator(); it.hasNext();) {
-    		DeviceInformation<?> info = it.next();
-    		detectors.put(info.getName(), info.getModel());
-    	}
+	}
+	for (Iterator<DeviceInformation<?>> it = activated.iterator(); it.hasNext();) {
+		DeviceInformation<?> info = it.next();
+		detectors.put(info.getName(), info.getModel());
+	}
 
-    	return detectors;
+	return detectors;
 	}
 
 	private List<String> getMonitors() throws Exception {
@@ -665,12 +665,12 @@ public class ExecuteView extends ViewPart implements ISelectionListener {
 		if (mons==null || mons.isEmpty()) return "None";
 
 		final StringBuilder buf = new StringBuilder();
-    	for (Iterator<String> it = mons.iterator(); it.hasNext();) {
-    		String name = it.next();
-    		buf.append(name);
-    		if(it.hasNext()) buf.append(",");
-    		buf.append(" ");
-    	}
+	for (Iterator<String> it = mons.iterator(); it.hasNext();) {
+		String name = it.next();
+		buf.append(name);
+		if(it.hasNext()) buf.append(",");
+		buf.append(" ");
+	}
         return buf.toString();
 	}
 

@@ -27,30 +27,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class QueueBeanFactory implements IQueueBeanFactory {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(QueueBeanFactory.class);
-	
+
 	private Map<QueueValue<String>, QueueAtom> queueAtomModelRegistry;
 	private Map<QueueValue<String>, TaskBean> taskBeanModelRegistry;
-	
+
 	private Map<Class<? extends Queueable>, IBeanAssembler<? extends Queueable>> beanAssemblers;
-	
+
 	@SuppressWarnings("rawtypes")
 	private Map<QueueValue<String>, IQueueValue> globalValueRegistry;
 	/*
 	 * Global value IQueueValues are expected to have a ? type argument.
-	 * Having this registry with rawtype IQueueValue means we don't get a 
+	 * Having this registry with rawtype IQueueValue means we don't get a
 	 * compile error for the {@link #unregisterOperation}
 	 */
-	
+
 	private QueueValue<String> defaultTaskBeanShortName;
 	private boolean explicitDefaultTaskBean = false;
-	
+
 	public QueueBeanFactory() {
 		queueAtomModelRegistry = new HashMap<>();
 		taskBeanModelRegistry = new HashMap<>();
 		globalValueRegistry = new HashMap<>();
-		
+
 		beanAssemblers = new HashMap<>();
 		beanAssemblers.put(MonitorAtom.class, new MonitorAtomAssembler(this));
 		beanAssemblers.put(PositionerAtom.class, new PositionerAtomAssembler(this));
@@ -58,7 +58,7 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		beanAssemblers.put(SubTaskAtom.class, new SubTaskAtomAssembler(this));
 		beanAssemblers.put(TaskBean.class, new TaskBeanAssembler(this));
 	}
-	
+
 	/**
 	 * Generic method to register an element in one of the registries.
 	 * @param key String reference name
@@ -73,13 +73,13 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		}
 		registry.put(key, value);
 	}
-	
+
 	/**
 	 * Generic method to remove an element from one of the registries.
 	 * @param key String reference name
 	 * @param registry Map registry to remove element from
 	 * @param clazz Class type of the element to be removed
-	 * @throws QueueModelException if the reference is not registered 
+	 * @throws QueueModelException if the reference is not registered
 	 */
 	private <V> void unregisterOperation(QueueValue<String> key, Map<QueueValue<String>, V> registry, Class<V> clazz) throws QueueModelException {
 		if (registry.containsKey(key)) {
@@ -107,9 +107,9 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		//Variable=true because we're going to look for QueueValues with variable=true in other code
 		QueueValue<String> taskShortName = new QueueValue<>(task.getShortName(), true);
 		registerOperation(taskShortName, task, taskBeanModelRegistry);
-		
+
 		/*
-		 * Decide whether we should set the default TaskbeanModel by 
+		 * Decide whether we should set the default TaskbeanModel by
 		 * implication or not...
 		 */
 		if (taskBeanModelRegistry.size() == 1) {
@@ -119,7 +119,7 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 				defaultTaskBeanShortName = null;
 		}
 		/*
-		 * Otherwise an explicit default has been set and we should leave the 
+		 * Otherwise an explicit default has been set and we should leave the
 		 * current default TaskBean model alone
 		 */
 	}
@@ -144,7 +144,7 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		//Variable=true because we're going to look for QueueValues with variable=true in other code
 		unregisterOperation(new QueueValue<String>(valueName, true), globalValueRegistry, IQueueValue.class);
 	}
-	
+
 	@Override
 	public IQueueValue<?> getGlobalValue(QueueValue<String> reference) throws QueueModelException {
 		if (globalValueRegistry.containsKey(reference)) {
@@ -187,7 +187,7 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 		IBeanAssembler<TaskBean> beanAss = (IBeanAssembler<TaskBean>) beanAssemblers.get(TaskBean.class);
 		return beanAss.assemble(tbModel, config);
 	}
-	
+
 	@Override
 	public void setDefaultTaskBeanModel(String reference) {
 		defaultTaskBeanShortName = new QueueValue<String>(reference, true);
@@ -207,5 +207,5 @@ public class QueueBeanFactory implements IQueueBeanFactory {
 	public List<QueueValue<String>> getTaskBeanRegister() {
 		return new ArrayList<>(taskBeanModelRegistry.keySet());
 	}
-	
+
 }

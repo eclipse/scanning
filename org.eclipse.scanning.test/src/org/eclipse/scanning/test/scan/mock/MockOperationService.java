@@ -35,13 +35,13 @@ public class MockOperationService implements IOperationService {
 
 	@Override
 	public void execute(IOperationContext context) throws OperationException {
-		
+
 		try {
 			for (IOperation op : context.getSeries()) op.init();
 			MockSeriesRunner runner = new MockSeriesRunner();
 			runner.init(context);
 			runner.execute();
-			
+
 		} catch (OperationException o) {
 			throw o;
 		} catch (Exception e) {

@@ -37,9 +37,9 @@ import org.eclipse.scanning.api.event.scan.ScanRequest;
  * IRunnableDevice scanner = sservice.createScanner();<br>
  * scanner.configure(...);<br>
  * scanner.run();<br>
- * 
+ *
  * </code></usage>
- * 
+ *
  * @see http://confluence.diamond.ac.uk/pages/viewpage.action?spaceKey=MAP&title=discussion+item%3A+generality+of+continuous+scans
  * @author Matthew Gerring
  * @author Nic Bricknell
@@ -56,18 +56,18 @@ public interface IParserService {
 	 * IParserResult<?> parser = pservice.createParser("scan dcm 1 5 1 spiral(loops=720,expand%=10,rot=ccw,start=perip) detector 0.1");
 	 * Object xmodel = parser.getModel("dcm");
 	 * Object smodel = parser.getModel("spiral");
-	 * 
+	 *
 	 * @param scan
 	 * @return
 	 */
 	<T> IParserResult<T> createParser(String scan) throws ParsingException;
-	
+
 	/**
 	 * Get the scan command for a given scan request which would be submitted to the server.
 	 * @param req
 	 * @param verbose
 	 * @return a command that should work in the python console.
-	 * @throws an exception. This can often happen if features of the scan not supported in the python command are used. 
+	 * @throws an exception. This can often happen if features of the scan not supported in the python command are used.
 	 * For instance generators which do not have a working alternative.
 	 */
 	<T> String getCommand(ScanRequest<T> req, boolean verbose) throws Exception;

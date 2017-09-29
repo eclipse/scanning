@@ -31,8 +31,8 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
  * position by level.
  * <p>
  * Implementations of this class should be immutable where possible. Where this is not
- * possible they should not be modified once they have been fully initialized. 
- * 
+ * possible they should not be modified once they have been fully initialized.
+ *
  * @see IRunnableDeviceService
  * @see org.eclipse.scanning.api.scan.event.IPositioner
  *
@@ -40,7 +40,7 @@ import org.eclipse.scanning.api.device.IRunnableDeviceService;
  *
  */
 public interface IPosition {
-	
+
 	/**
 	 * The number of named scalars in this position
 	 * @return
@@ -50,74 +50,74 @@ public interface IPosition {
 	/**
 	 * The names of all the scalars set for this position.
 	 * For instance 'x' and 'y' for a map or 'Temperature'
-	 * <em>Note to implementers:</em> should never return <code>null</code> 
-	 * 
+	 * <em>Note to implementers:</em> should never return <code>null</code>
+	 *
 	 * @return name of scalars
 	 */
 	List<String> getNames();
 
 	/**
 	 * Get the data index of this point for a given scan dimension.
-	 * 
-	 * For instance 
-	 * 
+	 *
+	 * For instance
+	 *
 	 * @param dimension
 	 * @return
 	 */
 	int getIndex(int dimension);
-	
-	/** 
-	 * Get the index of the data for instance in a scan of temperature from 290 to 300 step 1,
-	 * the indices will be 0-10.
-	 * 
-	 * If one dimension has more than one motor with it, for instance x and y in a line scan,
-	 * both getIndex("x") and getIndex("y") return the same value.
-	 * 
-	 * @return
-	 */
-	int getIndex(String name); 
 
 	/**
-	 * The value of a named position. For instance get("X") to return the value of the 
+	 * Get the index of the data for instance in a scan of temperature from 290 to 300 step 1,
+	 * the indices will be 0-10.
+	 *
+	 * If one dimension has more than one motor with it, for instance x and y in a line scan,
+	 * both getIndex("x") and getIndex("y") return the same value.
+	 *
+	 * @return
+	 */
+	int getIndex(String name);
+
+	/**
+	 * The value of a named position. For instance get("X") to return the value of the
 	 * X IScannable double.
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
 	Object get(String name);
-	
+
 	/**
 	 * Same as ((Number)get(name)).doubleValue()
 	 * Available for convenience
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 */
 	default double getValue(String name) {
 		return ((Number)get(name)).doubleValue();
 	}
-	
+
 	/**
-	 * Creates a composite position with the values of this position 
+	 * Creates a composite position with the values of this position
 	 * and the values of the passed in position. The passed in position
 	 * is assumed to be the parent in the scan.
-	 * 
+	 *
 	 * This position's values take precedence if the names conflict.
 	 * It is like an implementation of Map where the putAll does not
 	 * overwrite.
-	 * 
+	 *
 	 * NOTE The scan names are not calculated on the call to compound
 	 * because maintaining the list of names in each dimension is inefficient
-	 * to calculate for each point (they do not change). Instead the names are 
+	 * to calculate for each point (they do not change). Instead the names are
 	 * created once and set into the position using setDimensionNames(...)
 	 * available on abstract position. If generators producing positions
-	 * are to be used within a cponound generator 
-	 * 
+	 * are to be used within a cponound generator
+	 *
 	 * @param parent
 	 * @return
 	 */
 	IPosition compound(IPosition parent);
-	
+
 	/**
 	 * The step where the position was in a scan, if it is a position being
 	 * generated from a scan. If not the value will be -1
@@ -126,34 +126,34 @@ public interface IPosition {
 	default int getStepIndex() {
 		return -1;
 	}
-	
+
 	/**
 	 * The step where the position was in a scan, if it is a position being
 	 * generated from a scan. If not the value will be -1
 	 * @param step
 	 */
 	default void setStepIndex(int step) {
-		return; 
+		return;
 	}
-	
+
 	/**
 	 * Most scans have rank 1 event though they move more
 	 * motors line a line scan or a spiral scan. As scans are
 	 * aggregated these scan dimensions sum together.
-	 * 
+	 *
 	 * Some scans start out as having two dimensions like a grid
 	 * or raster scan.
-	 * 
+	 *
 	 * @return
 	 */
 	int getScanRank();
-	
+
 	/**
 	 * It is not required of an IPosition to provide getValues() but it
 	 * may do so to avoid a new map being built up. Implement this method
 	 * to ensure that your position runs faster. The default implementation
 	 * works.
-	 * 
+	 *
 	 * @see org.eclipse.scanning.api.points.MapPosition#getValues()
 	 * @see org.eclipse.scanning.api.points.Point#getValues()
 	 * @return
@@ -169,7 +169,7 @@ public interface IPosition {
 	 * may do so to avoid a new map being built up. Implement this method
 	 * to ensure that your position runs faster. The default implementation
 	 * works.
-	 * 
+	 *
 	 * @see org.eclipse.scanning.api.points.MapPosition#getIndices()
 	 * @see org.eclipse.scanning.api.points.Point#getIndices()
 	 * @return
@@ -179,10 +179,10 @@ public interface IPosition {
 		for (String name : getNames()) indices.put(name, getIndex(name));
 		return indices;
 	}
-	
+
 	/**
 	 * Get the exposure time to be used for the detector, in seconds.
-	 * 
+	 *
 	 * Exposure time is normally set before a 2D scan however for energy scans bands
 	 * of different energies can be created each with a different step increment and
 	 * potentially different exposure time. It is not possible to set different detectors
@@ -193,10 +193,10 @@ public interface IPosition {
 	 * no change is made to the detector's exposure time setting.
 	 */
 	public double getExposureTime();
-	
+
 	/**
-	 * Call to set the time 
-	 * 
+	 * Call to set the time
+	 *
 	 * Exposure time is normally set before a 2D scan however for energy scans bands
 	 * of different energies can be created each with a different step increment and
 	 * potentially different exposure time. It is not possible to set different detectors

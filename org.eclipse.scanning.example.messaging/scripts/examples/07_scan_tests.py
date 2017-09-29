@@ -25,7 +25,7 @@ print_scan_file_status(tempfile)
 
 
 class StatusQueueHandler(object):
-    
+
     def on_message(self, headers, data):
         status = data['status']
         if (status == "SUBMITTED"):
@@ -33,27 +33,27 @@ class StatusQueueHandler(object):
 
 
 class StatusTopicHandler(object):
-    
+
     def on_message(self, headers, data):
         global latest_message
         latest_message = data
-        
+
         pc = data['percentComplete']
-        
+
         print("Percentage complete: " + str(pc) + "%")
 #         pprint(data)
-    
+
         if (data['status'] == "COMPLETE"):
             print(data['message'])
             print(data['position'])
             print_scan_file_status(tempfile)
-        
+
         if (data['status'] == "TERMINATED"):
             print("Terminated.")
 
 
 class PositionerResponseHandler(object):
-    
+
     def on_message(self, headers, data):
 #         pprint(data)
         print("Positioner movement: " + str(data['position']))
@@ -147,7 +147,7 @@ def create_request(new_status):
     msg = latest_message
     msg['previousStatus'] = msg['status']
     msg['status'] = new_status
-    return msg 
+    return msg
 
 
 # This is a list of requests to make during my test run.

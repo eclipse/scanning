@@ -60,14 +60,14 @@ public interface IPointGeneratorService {
 	 * Used to create a point generator of a given type.
 	 * <p>
 	 * Convenience implementation when using only one region of interest
-	 * 
+	 *
 	 * <p>
 	 * If the model has a bounding box, it will be extended automatically to
-	 * include the IROI defined. If this is not required, the bounding box of 
+	 * include the IROI defined. If this is not required, the bounding box of
 	 * the model must be manually changed to either reflect this ROI's bounds
 	 * or nullified (in which case the BoundingBox will be set to that which
 	 * encompasses all IROIs.
-	 * 
+	 *
 	 * @param model
 	 * @param region which implements IPointContainer (most useful) or IROI (less useful because IROI is in the data coordinates, no the motor coordinates)
 	 * @return
@@ -80,11 +80,11 @@ public interface IPointGeneratorService {
 	 * Used to create a point generator of a given type
 	 * <p>
 	 * If the model has a bounding box, it will be extended automatically to
-	 * include the IROI defined. If this is not required, the bounding box of 
+	 * include the IROI defined. If this is not required, the bounding box of
 	 * the model must be manually changed to either reflect this ROI's bounds
 	 * or nullified (in which case the BoundingBox will be set to that which
 	 * encompasses all IROIs.
-	 * 
+	 *
 	 * @param model
 	 * @param regions a reference to zero or more IROIs for instance
 	 * @return
@@ -94,16 +94,16 @@ public interface IPointGeneratorService {
 	/**
 	 * Create a nested or compound generator.
 	 * Each generator in the varargs argument is another level to the loop.
-	 * 
+	 *
 	 * @param generators
 	 * @return
 	 * @throws GeneratorException
 	 */
 	IPointGenerator<?> createCompoundGenerator(IPointGenerator<?>... generators) throws GeneratorException;
-	
+
 	/**
 	 * Create a nested or compound generator from a list of models.
-	 * 
+	 *
 	 * @param cmodel
 	 * @return
 	 * @throws GeneratorException
@@ -111,7 +111,7 @@ public interface IPointGeneratorService {
 	IPointGenerator<?> createCompoundGenerator(CompoundModel<?> cmodel) throws GeneratorException;
 
 	/**
-	 * 
+	 *
 	 * @param cmodel
 	 * @param models
 	 * @return
@@ -129,7 +129,7 @@ public interface IPointGeneratorService {
 	 * Creates a generator by id which has an model associated with it.
 	 * The model may either be retrieved and have fields set or the generator
 	 * may have a new model set in it.
-	 * 
+	 *
 	 * @param id
 	 * @return
 	 */

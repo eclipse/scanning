@@ -18,7 +18,7 @@ import org.eclipse.scanning.api.scan.rank.IScanSlice;
 import org.eclipse.scanning.jython.JythonObjectFactory;
 
 public class JythonDevice extends SlicingRunnableDevice<JythonModel>  implements INexusDevice<NXdetector> {
-	
+
 	private JythonObjectFactory<IJythonFunction> factory;
 	private ILazyWriteableDataset processed;
 	private NexusScanInfo info;
@@ -31,12 +31,12 @@ public class JythonDevice extends SlicingRunnableDevice<JythonModel>  implements
 
 	@Override
 	boolean process(SliceDeviceContext context) throws ScanningException {
-		
+
 		processed.setChunking(info.createChunk(getDataShape(context.getData())));
 
 		IJythonFunction jython = factory.createObject();
 		IDataset ret = jython.process(context.getSlice());
-		
+
 		IScanSlice sslice  = IScanRankService.getScanRankService().createScanSlice(context.getLocation(), ret.getShape());
 		SliceND    slicenD = new SliceND(processed.getShape(), processed.getMaxShape(), sslice.getStart(), sslice.getStop(), sslice.getStep());
 		try {
@@ -44,25 +44,25 @@ public class JythonDevice extends SlicingRunnableDevice<JythonModel>  implements
 		} catch (DatasetException e) {
 			throw new ScanningException(e);
 		}
-		
+
 		return true;
 	}
-	
+
 	@Override
 	public NexusObjectProvider<NXdetector> getNexusProvider(NexusScanInfo info) throws NexusException {
-		
+
 		final NXdetector detector = NexusNodeFactory.createNXdetector();
-		
+
 		this.processed = detector.initializeLazyDataset(NXdetector.NX_DATA, info.getRank()+(getModel().getOutputRank()-1), Double.class);
-		this.info      = info;		
-		
+		this.info      = info;
+
 		Attributes.registerAttributes(detector, this);
 
 		NexusObjectWrapper<NXdetector> nexusProvider = new NexusObjectWrapper<NXdetector>(getModel().getDetectorName()+"_"+getModel().getName(), detector);
 
 		// Add all fields for any NXdata groups that this device creates
 		nexusProvider.setAxisDataFieldNames(NXdetector.NX_DATA);
-		
+
 		// "data" is the name of the primary data field (i.e. the 'signal' field of the default NXdata)
 		nexusProvider.setPrimaryDataFieldName(NXdetector.NX_DATA);
 

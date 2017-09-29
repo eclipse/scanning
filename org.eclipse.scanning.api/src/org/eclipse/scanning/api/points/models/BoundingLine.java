@@ -16,13 +16,13 @@ package org.eclipse.scanning.api.points.models;
  * IBoundingLineModel}.
  * <p>
  * The position of the line is defined by an (X, Y) start point, an angle (CCW from the positive X axis) and a length.
- * 
+ *
  * Important difference between BoundingLine and LinearROI -> rois are in data coordinates and bounding lines are
  * in axis coordinates i.e. locations of the motors rather than the selection of the data.
  *
  * @author Colin Palmer
  * @author Matthew Gerring
- * 
+ *
  * @Deprecated Replaced by ScanRegion which is provided with the CompoundModel
  *
  */

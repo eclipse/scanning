@@ -263,11 +263,11 @@ public class CompoundModel<R> implements Cloneable {
 	 */
     private boolean equals(Collection<?> o, Collection<?> t) {
 
-    	if (o == t)
+	if (o == t)
             return true;
-    	if (o == null && t == null)
+	if (o == null && t == null)
             return true;
-    	if (o == null || t == null)
+	if (o == null || t == null)
             return false;
 
         Iterator<?> e1 = o.iterator();
@@ -278,12 +278,12 @@ public class CompoundModel<R> implements Cloneable {
 
             // Collections go down to the same equals.
             if (o1 instanceof Collection && o2 instanceof Collection) {
-            	boolean collectionsEqual = equals((Collection<?>)o1,(Collection<?>)o2);
-            	if (!collectionsEqual) {
-            		return false;
-            	} else {
-            		continue;
-            	}
+		boolean collectionsEqual = equals((Collection<?>)o1,(Collection<?>)o2);
+		if (!collectionsEqual) {
+			return false;
+		} else {
+			continue;
+		}
             }
 
             // Otherwise we use object equals.

@@ -26,7 +26,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom serialiser for Circular ROI.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -35,7 +35,7 @@ public class EllipticalROISerialiser implements IPVStructureSerialiser<Elliptica
 	@Override
 	public Structure buildStructure(Serialiser serialiser, EllipticalROI roi) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-		
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			addArray("semiAxes", ScalarType.pvDouble).
 			add("angle", ScalarType.pvDouble).
@@ -50,9 +50,9 @@ public class EllipticalROISerialiser implements IPVStructureSerialiser<Elliptica
 		PVDoubleArray semiAxes = pvStructure.getSubField(PVDoubleArray.class, "semiAxes");
 		semiAxes.put(0, roi.getSemiAxes().length, roi.getSemiAxes(), 0);
 		PVDouble angle = pvStructure.getSubField(PVDouble.class, "angle");
-		angle.put(roi.getAngle());		
+		angle.put(roi.getAngle());
 		PVDoubleArray point = pvStructure.getSubField(PVDoubleArray.class, "point");
 		point.put(0, roi.getPoint().length, roi.getPoint(), 0);
 	}
-	
+
 }

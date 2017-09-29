@@ -92,4 +92,3 @@ class LinearROI(ROI):
     @classmethod
     def from_dict(cls, d):
         return cls(d["start"], d["length"], d["angle"])
-

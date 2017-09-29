@@ -8,7 +8,7 @@
 #
 # Contributors:
 #    Peter Chang - initial API and implementation and/or initial documentation
-# 
+#
 ###
 
 '''
@@ -461,7 +461,7 @@ def trace(a, offset=0, axis1=0, axis2=1, dtype=None):
 @_wrap
 def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):
     '''Cross product of two (arrays of vectors)
-    
+
     a -- first vector
     b -- second vector
     axisa -- axis of a that defines the vector(s)
@@ -477,7 +477,7 @@ def cross(a, b, axisa=-1, axisb=-1, axisc=-1, axis=None):
 @_wrap
 def gradient(f, *varargs):
     '''Gradient of array
-    
+
     f -- array
     *varargs -- 0, 1, N scalars for sample distance, or (1 or N-d) datasets for sample points
     '''
@@ -514,7 +514,7 @@ def roots(p):
 def interp(x, xp, fp, left=None, right=None):
     '''Linearly interpolate'''
     x = _asarray(x)
-        
+
     xp = _asarray(xp)
     fp = _asarray(fp)
     if left is None:

@@ -19,10 +19,10 @@ import java.lang.annotation.Target;
 /**
  * Used to annotate methods as participating at a location in a scan.
  * ScanFinally is called after ScanEnd but ScanEnd is not called if there was an error.
- * 
+ *
  * <p>
  * It is possible using annotations to have more than one method annotated
- * which means a super class can declare its implementation as final, requiring a 
+ * which means a super class can declare its implementation as final, requiring a
  * subclass to define another annotation.
  * <p>
  * Services such as IRunnableDeviceService, IPointsGenerator etc may be declared
@@ -72,9 +72,9 @@ import java.lang.annotation.Target;
  *     }
  *}
  * </pre></code>
- * 
+ *
  * ScanFinally is always run, even if there was an error.
- * 
+ *
  * <p>
  * @author Matthew Gerring
  *

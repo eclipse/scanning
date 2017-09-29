@@ -24,7 +24,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositioner;
 
 public class MockScanService implements IRunnableDeviceService {
-	
+
 	private IPositioner poser = new MockPositioner();
 
 	@Override
@@ -52,7 +52,7 @@ public class MockScanService implements IRunnableDeviceService {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	@Override
 	public <T> IRunnableDevice<T> createRunnableDevice(T model,
 			IPublisher<ScanBean> publisher, boolean configure) throws ScanningException {
@@ -105,7 +105,7 @@ public class MockScanService implements IRunnableDeviceService {
 	@Override
 	public <T> void register(IRunnableDevice<T> device) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

@@ -32,18 +32,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A view which sends IROI events, implements IROI.class in getAdapter(...) and 
+ * A view which sends IROI events, implements IROI.class in getAdapter(...) and
  * responds to model selections which contain rois.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class VisualiseView extends ViewPart implements IAdaptable, ISelectionListener {
-	
+
 	public static final String ID = "org.eclipse.scanning.device.ui.vis.visualiseView";
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(VisualiseView.class);
-			
+
 	// Delegated control
 	private   PlottingController      controller;
 
@@ -51,36 +51,36 @@ public class VisualiseView extends ViewPart implements IAdaptable, ISelectionLis
 	private   IPlottingSystem<Object> system;
 
 	public VisualiseView() {
-		
+
 		try {
 			IPlottingService service = ServiceHolder.getPlottingService();
 			system = service.createPlottingSystem();
 			system.getPlotActionSystem().setShowCustomPlotActions(false); // Disable the custom plot actions.
-			
- 
+
+
 		} catch (Exception ne) {
 			logger.error("Unable to make plotting system", ne);
-			system = null; // It creates the view but there will be no plotting system 
+			system = null; // It creates the view but there will be no plotting system
 		}
 
 	}
 
 	@Override
 	public void createPartControl(Composite parent) {
-		
+
         controller = new PlottingController(system, getViewSite());
-        		
-		system.createPlotPart(parent, getPartName(), getViewSite().getActionBars(), PlotType.IMAGE, this);  
+
+		system.createPlotPart(parent, getPartName(), getViewSite().getActionBars(), PlotType.IMAGE, this);
 		system.getSelectedXAxis().setTitle("stage_x");
 		system.getSelectedYAxis().setTitle("stage_y");
-		
+
 		// Connect to existing regions, although they might not be desirable ones
 		controller.connect();
-        
+
         getSite().setSelectionProvider(controller);
-        
+
         getSite().getPage().addSelectionListener(this);
-        
+
 		ScanningPerspective.createKeyPlayers();
 
 	}
@@ -103,7 +103,7 @@ public class VisualiseView extends ViewPart implements IAdaptable, ISelectionLis
 			if (controller!=null) controller.refresh(); // Axes might have changed
 		}
 	}
-	
+
 	private void processModel(Object model) {
 		try {
 			if (controller!=null) controller.setModel(model);
@@ -133,7 +133,7 @@ public class VisualiseView extends ViewPart implements IAdaptable, ISelectionLis
 	public void dispose() {
 		getSite().getPage().removeSelectionListener(this);
 		if (controller!=null) controller.dispose();
- 		super.dispose();
+		super.dispose();
 	}
 
 }
