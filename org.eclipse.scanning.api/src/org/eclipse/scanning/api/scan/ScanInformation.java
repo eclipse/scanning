@@ -18,16 +18,16 @@ import org.eclipse.scanning.api.device.models.ScanMode;
 import org.eclipse.scanning.api.points.GeneratorException;
 
 /**
- * 
+ *
  * Holds state of whole scan. May be used in annotated methods like &#64;ScanStart
  * to provide information about whole scan. Should not be used to hold transient
  * state during the scan. One should be created per run.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class ScanInformation {
-	
+
 	private String filePath;
 	private int                size;
 	private int                rank;
@@ -36,17 +36,17 @@ public class ScanInformation {
 	private int[] shape;
 	private ScanMode scanMode;
 	private long estimatedScanTime;
-	
+
 	public ScanInformation() {
-		
+
 	}
-	
+
 	/**
 	 * Setup the scan information from a ScanEstimator
 	 * NOTE the getShape() method is then delegated to the ScanEstimator
 	 * for speed reasons. It will not be calculated until you call
 	 * getShape() for the first time.
-	 *  
+	 *
 	 * @param prov
 	 */
 	public ScanInformation(ScanEstimator prov) {
@@ -54,11 +54,11 @@ public class ScanInformation {
 		setSize(estimator.getSize());
 		setRank(estimator.getRank());
 	}
-	
+
 	public String getFilePath() {
 		return filePath;
 	}
-	
+
 	public void setFilePath(String filePath) {
 		this.filePath = filePath;
 	}
@@ -133,7 +133,7 @@ public class ScanInformation {
 		}
 		return shape;
 	}
-	
+
 	public long getEstimatedScanTime() {
 		if (estimatedScanTime > 0) return estimatedScanTime;
 		estimatedScanTime = estimator != null ? estimator.getEstimatedScanTime() : 0;

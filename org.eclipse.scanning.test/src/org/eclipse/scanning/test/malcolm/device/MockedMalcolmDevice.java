@@ -209,76 +209,76 @@ class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 		sendEvent(new MalcolmEventBean(getState()));
 
         try {
-    		NexusFile file=null;
-    		try {
-    			file = factory.newNexusFile(params.get("file").toString(), false);  // DO NOT COPY!
-    			file.openToWrite(true); // DO NOT COPY!
+		NexusFile file=null;
+		try {
+			file = factory.newNexusFile(params.get("file").toString(), false);  // DO NOT COPY!
+			file.openToWrite(true); // DO NOT COPY!
 
-    			GroupNode par = file.getGroup("/entry/data", true); // DO NOT COPY!
+			GroupNode par = file.getGroup("/entry/data", true); // DO NOT COPY!
 
 				int[] ishape = (int[])params.get("shape");
 				if (ishape==null) ishape = new int[]{64,64};
 
 				final int[] shape = new int[]{1,  ishape[0], ishape[1]};
-    			final int[] max   = new int[]{-1, ishape[0], ishape[1]};
-    			ILazyWriteableDataset writer = new LazyWriteableDataset("image", Dataset.FLOAT, shape, max, shape, null); // DO NOT COPY!
-    			file.createData(par, writer);
+			final int[] max   = new int[]{-1, ishape[0], ishape[1]};
+			ILazyWriteableDataset writer = new LazyWriteableDataset("image", Dataset.FLOAT, shape, max, shape, null); // DO NOT COPY!
+			file.createData(par, writer);
 				file.close();
 
-    			int index = 0;
-    			while(getState().isRunning()) {
+			int index = 0;
+			while(getState().isRunning()) {
 
-    				try {
+				try {
 						acquireRunLock(); // Blocks if paused.
 
-	    				int[] start = {index, 0, 0};
-	    				int[] stop  = {index+1, 64, 64};
-	    				index++;
-	    				if (index>23) index = 23; // Stall on the last image to avoid writing massive stacks
+					int[] start = {index, 0, 0};
+					int[] stop  = {index+1, 64, 64};
+					index++;
+					if (index>23) index = 23; // Stall on the last image to avoid writing massive stacks
 
-	    				IDataset       rimage   = Random.rand(new int[]{1, ishape[0], ishape[1]});
-	    				rimage.setName("image");
-	   				    writer.setSlice(new IMonitor.Stub(), rimage, start, stop, null);
-	   				    file.flush();
+					IDataset       rimage   = Random.rand(new int[]{1, ishape[0], ishape[1]});
+					rimage.setName("image");
+					    writer.setSlice(new IMonitor.Stub(), rimage, start, stop, null);
+					    file.flush();
 
-	   					long exposure = Math.round(((double)params.get("exposure"))*1000d);
-	   					Thread.sleep(exposure);
-	    				System.out.println(">> HDF5 wrote image to "+params.get("file").toString());
+						long exposure = Math.round(((double)params.get("exposure"))*1000d);
+						Thread.sleep(exposure);
+					System.out.println(">> HDF5 wrote image to "+params.get("file").toString());
 
-	    				if (index>=amount) {
-	    					break;
-	    				}
-	    				if (getPublisher() != null) getPublisher().broadcast(getBean());
-    				} finally {
-    					releaseRunLock();
-     				}
-
-    			}
-
-    		} catch (Exception ne) {
-    			ne.printStackTrace();
+					if (index>=amount) {
+						break;
+					}
+					if (getPublisher() != null) getPublisher().broadcast(getBean());
+				} finally {
+					releaseRunLock();
+				}
 
 			}
 
-    		setDeviceState(DeviceState.POSTRUN); // Devices go into postrun after running
+		} catch (Exception ne) {
+			ne.printStackTrace();
+
+			}
+
+		setDeviceState(DeviceState.POSTRUN); // Devices go into postrun after running
 
 			setDeviceState(DeviceState.ARMED); // State change
 	        sendEvent(new MalcolmEventBean(getState())); // Scan end event
 
 
         } catch (Exception ne) {
-        	ne.printStackTrace();
-    		setState(DeviceState.FAULT, ne.getMessage());
-     	    throw ne;
+		ne.printStackTrace();
+		setState(DeviceState.FAULT, ne.getMessage());
+	    throw ne;
 
         } finally {
             try {
-            	releaseRunLock();
+		releaseRunLock();
             } catch (IllegalMonitorStateException ignored) {
-            	// We try to make sure that the lock is released if the run thread has it.
-            	// Since we are multi-threading here, it could be released
-            	// by a resume call at any time. Therefore isLocked() is not
-            	// reliable to protect the unlock()
+		// We try to make sure that the lock is released if the run thread has it.
+		// Since we are multi-threading here, it could be released
+		// by a resume call at any time. Therefore isLocked() is not
+		// reliable to protect the unlock()
             }
         }
 	}

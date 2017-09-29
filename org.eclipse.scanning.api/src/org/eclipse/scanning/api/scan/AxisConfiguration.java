@@ -18,17 +18,17 @@ import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 import org.eclipse.scanning.api.annotation.ui.FileType;
 
 public class AxisConfiguration implements Serializable {
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3907146006857647918L;
 
-	@FieldDescriptor(file=FileType.EXISTING_FILE, 
-			         hint="The microscope image to load into the scan as a background.", 
+	@FieldDescriptor(file=FileType.EXISTING_FILE,
+			         hint="The microscope image to load into the scan as a background.",
 			         fieldPosition=-2)
 	private String microscopeImage;
-	
+
 	@FieldDescriptor(label="Random", hint="If there is no image, create some random noise for one instead.", fieldPosition=-1, enableif="microscopeImage==null")
 	private boolean randomNoise = false;
 
@@ -46,22 +46,22 @@ public class AxisConfiguration implements Serializable {
 	}
 	@FieldDescriptor(device=DeviceType.SCANNABLE, hint="The name of a fast motor, for instance that used for the x-stage.", fieldPosition=0)
 	private String fastAxisName;
-	
+
 	@FieldDescriptor(scannable="fastAxisName", fieldPosition=1)
 	private double fastAxisStart;
-	
+
 	@FieldDescriptor(scannable="fastAxisName", fieldPosition=2)
 	private double fastAxisEnd;
-	
+
 	@FieldDescriptor(device=DeviceType.SCANNABLE, hint="The name of a slow or other motor, for instance that used for the y-stage.", fieldPosition=3)
 	private String slowAxisName;
-	
+
 	@FieldDescriptor(scannable="slowAxisName", fieldPosition=4)
 	private double slowAxisStart;
-	
+
 	@FieldDescriptor(scannable="slowAxisName", fieldPosition=5)
 	private double slowAxisEnd;
-	
+
 	@FieldDescriptor(label="Apply to Regions", hint="Find any scan regions and set their axis names to those on this form.", fieldPosition=6)
 	private boolean applyRegions = false;
 
@@ -165,7 +165,7 @@ public class AxisConfiguration implements Serializable {
 	public void setSlowAxisEnd(double slowAxisEnd) {
 		this.slowAxisEnd = slowAxisEnd;
 	}
-	
+
 	public boolean isApplyRegions() {
 		return applyRegions;
 	}

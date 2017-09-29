@@ -24,32 +24,32 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TaskBeanProcess uses an {@link AtomQueueProcessor} to read the 
- * {@link SubTaskAtom}s in a {@link TaskBean} and form them into an 
+ * TaskBeanProcess uses an {@link AtomQueueProcessor} to read the
+ * {@link SubTaskAtom}s in a {@link TaskBean} and form them into an
  * active-queue.
- * 
- * It differs from the {@link SubTaskAtomProcess} only in its failure 
- * behaviour, when it is configured to send a {@link PauseBean} to its 
+ *
+ * It differs from the {@link SubTaskAtomProcess} only in its failure
+ * behaviour, when it is configured to send a {@link PauseBean} to its
  * consumer (i.e. the job-queue consumer) to prevent any more {@link TaskBean}s
  * being consumed.
- * 
+ *
  * @author Michael Wharmby
  *
- * @param <T> The {@link Queueable} specified by the {@link IConsumer} 
- *            instance using this TaskBeanProcess. This will be 
+ * @param <T> The {@link Queueable} specified by the {@link IConsumer}
+ *            instance using this TaskBeanProcess. This will be
  *            {@link QueueBean}.
  */
 public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean, T> {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(TaskBeanProcess.class);
 	/*
-	 * Used by {@link QueueProcessFactory} to identify the bean type this 
+	 * Used by {@link QueueProcessFactory} to identify the bean type this
 	 * {@link QueueProcess} handles.
 	 */
 	public static final String BEAN_CLASS_NAME = TaskBean.class.getName();
-	
+
 	private AtomQueueProcessor<TaskBean, SubTaskAtom, T> atomQueueProcessor;
-	
+
 	public TaskBeanProcess(T bean, IPublisher<T> publisher, Boolean blocking) throws EventException {
 		super(bean, publisher, blocking);
 		atomQueueProcessor = new AtomQueueProcessor<>(this);
@@ -83,28 +83,28 @@ public class TaskBeanProcess<T extends Queueable> extends QueueProcess<TaskBean,
 		controller.pauseQueue(ServicesHolder.getQueueService().getJobQueueID());
 		atomQueueProcessor.tidyQueue();
 	}
-	
+
 	@Override
 	protected void doPause() throws Exception {
 		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		//TODO!
 		logger.warn("Pause/resume not implemented on TaskBeanProcessor");
 	}
-	
+
 	@Override
 	protected void doResume() throws Exception {
 		if (finished) return; //Stops spurious messages/behaviour when processing already finished
 		//TODO!
 		logger.warn("Pause/resume not implemented on TaskBeanProcessor");
 	}
-	
+
 	@Override
 	public Class<TaskBean> getBeanClass() {
 		return TaskBean.class;
 	}
 
 	/*
-	 * For tests 
+	 * For tests
 	 */
 	public AtomQueueProcessor<TaskBean, SubTaskAtom, T> getAtomQueueProcessor() {
 		return atomQueueProcessor;

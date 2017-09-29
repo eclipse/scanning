@@ -33,26 +33,26 @@ import org.eclipse.scanning.event.queues.remote.QueueResponseCreator;
 
 @Deprecated
 public class MockQueueService implements IQueueService {
-	
+
 	public static final String MOCK_JOB_QUEUE_ID = "mock.job-queue";
 	public static final String MOCK_ACTIVE_QUEUE_ID_PREFIX = "mock.active-queue.";
-	
+
 	private IQueue<QueueBean> jobQueue;
 	private String jobQueueID;
-	
+
 	private String commandTopicName, commandQueueName;
-	
+
 	private Map<String, IQueue<QueueAtom>> activeQueues = new HashMap<>();
 	private List<String> activeQueueIDs = new ArrayList<>();
 	private int nrActiveQueues = 0;
-	
+
 	private URI uri;
-	
+
 	private boolean active = false, forced = false;
 	private boolean startResponder;
 
 	private IResponder<QueueRequest> queueResponder;
-	
+
 	public MockQueueService() {
 		jobQueue = null;
 		jobQueueID = "mock-job-queue";
@@ -65,7 +65,7 @@ public class MockQueueService implements IQueueService {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public MockQueueService(IQueue<QueueBean> mockJobQueue) {
 		this.jobQueue = mockJobQueue;
 		jobQueueID = mockJobQueue.getQueueID();
@@ -77,16 +77,16 @@ public class MockQueueService implements IQueueService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	public MockQueueService(IQueue<QueueBean> mockJobQueue, IQueue<QueueAtom> mockActiveQueue) {
 		this(mockJobQueue);
 		activeQueues.put(mockActiveQueue.getQueueID(), mockActiveQueue);
 		activeQueueIDs.add(mockActiveQueue.getQueueID());
 		nrActiveQueues = 1;
 	}
-	
+
 	public MockQueueService(IQueue<QueueBean> mockJobQueue, IQueue<QueueAtom> mockActiveQueue, URI uri) {
 		this(mockJobQueue, mockActiveQueue);
 		this.uri = uri;
@@ -117,7 +117,7 @@ public class MockQueueService implements IQueueService {
 		for (String queueID : activeQueues.keySet()) {
 			activeQueues.get(queueID).getConsumer().start();
 		}
-		
+
 		active = true;
 	}
 
@@ -188,7 +188,7 @@ public class MockQueueService implements IQueueService {
 	public URI getURI() {
 		return uri;
 	}
-	
+
 	public void addActiveQueue(IQueue<QueueAtom> queue) {
 		activeQueues.put(queue.getQueueID(), queue);
 	}
@@ -208,20 +208,20 @@ public class MockQueueService implements IQueueService {
 	public boolean isActive() {
 		return active;
 	}
-	
+
 	@Override
 	public String getCommandSetName() {
 		return commandQueueName;
 	}
-	
+
 	public boolean isForced() {
 		return forced;
 	}
-	
+
 	public void setCommandTopicName(String cmdTopic) {
 		commandTopicName = cmdTopic;
 	}
-	
+
 	public void setCommandQueueName(String cmdQueue) {
 		commandQueueName = cmdQueue;
 	}
@@ -244,5 +244,5 @@ public class MockQueueService implements IQueueService {
 			}
 		}
 	}
-	
+
 }

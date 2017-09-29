@@ -26,7 +26,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom serialiser for Circular ROI.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -35,7 +35,7 @@ public class YAxisBoxROISerialiser implements IPVStructureSerialiser<YAxisBoxROI
 	@Override
 	public Structure buildStructure(Serialiser serialiser, YAxisBoxROI roi) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-		
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			addArray("lengths", ScalarType.pvDouble).
 			add("angle", ScalarType.pvDouble).
@@ -50,9 +50,9 @@ public class YAxisBoxROISerialiser implements IPVStructureSerialiser<YAxisBoxROI
 		PVDoubleArray lengths = pvStructure.getSubField(PVDoubleArray.class, "lengths");
 		lengths.put(0, roi.getLengths().length, roi.getLengths(), 0);
 		PVDouble angle = pvStructure.getSubField(PVDouble.class, "angle");
-		angle.put(roi.getAngle());		
+		angle.put(roi.getAngle());
 		PVDoubleArray point = pvStructure.getSubField(PVDoubleArray.class, "point");
 		point.put(0, roi.getPoint().length, roi.getPoint(), 0);
 	}
-	
+
 }

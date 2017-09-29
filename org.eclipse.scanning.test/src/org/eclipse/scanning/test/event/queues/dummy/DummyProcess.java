@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class DummyProcess<Q extends Queueable, T extends Queueable> extends QueueProcess<Q, T> {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(DummyBeanProcess.class);
 
 	protected DummyProcess(T bean, IPublisher<T> publisher, Boolean blocking) throws EventException {
@@ -29,7 +29,7 @@ public abstract class DummyProcess<Q extends Queueable, T extends Queueable> ext
 
 	@Override
 	public void execute() throws EventException {
-		executed = true; 
+		executed = true;
 		broadcast(Status.RUNNING, 0d);
 
 		for (int i = 0; i < 10; i++) {
@@ -50,12 +50,12 @@ public abstract class DummyProcess<Q extends Queueable, T extends Queueable> ext
 		}
 		broadcast(Status.COMPLETE, 100d, "Dummy process complete (no software run)");
 	}
-	
+
 	@Override
 	protected void run() throws EventException, InterruptedException {
 		//Do nothing - this is not needed for Dummy processing
 	}
-	
+
 	@Override
 	public void doTerminate() throws EventException {
 		terminated = true;

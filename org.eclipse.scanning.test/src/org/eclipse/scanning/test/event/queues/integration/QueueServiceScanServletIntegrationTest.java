@@ -70,7 +70,7 @@ import org.junit.Test;
  *
  */
 public class QueueServiceScanServletIntegrationTest extends BrokerTest {
-	
+
 	//These are the fields to run the scan servlet
 	protected static IRunnableDeviceService      dservice;
 	protected static IScannableDeviceService     connector;
@@ -81,15 +81,15 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 	protected static IScriptService              sservice;
 	protected static MarshallerService           marshaller;
 	protected static ValidatorService            validator;
-	
+
 	protected static AbstractConsumerServlet<?> servlet;
-	
+
 	//These fields are for the queueservice
 	protected static QueueService     qservice;
-	
+
 	@BeforeClass
 	public static void create() throws Exception {
-		
+
 		ScanPointGeneratorFactory.init();
 
 		marshaller = new MarshallerService(
@@ -100,7 +100,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 				);
 		ActivemqConnectorService.setJsonMarshaller(marshaller);
 		eservice  = new EventServiceImpl(new ActivemqConnectorService());
-		
+
 		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE
 		connector = new MockScannableConnector(null);
@@ -110,7 +110,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		impl._register(MockWritingMandlebrotModel.class, MockWritingMandelbrotDetector.class);
 		impl._register(MandelbrotModel.class, MandelbrotDetector.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
-		
+
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
 		dmodel.setExposureTime(0.001);
@@ -125,7 +125,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		wservice = new DeviceWatchdogService();
 		lservice = new LoaderServiceMock();
 		sservice = new MockScriptService();
-		
+
 		// Provide lots of services that OSGi would normally.
 		Services.setEventService(eservice);
 		Services.setRunnableDeviceService(dservice);
@@ -137,22 +137,22 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		ServiceHolder.setTestServices(lservice, new DefaultNexusBuilderFactory(), null, null, gservice);
 		org.eclipse.scanning.example.Services.setPointGeneratorService(gservice);
 		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(new NexusFileFactoryHDF5());
-		
+
 		validator = new ValidatorService();
 		validator.setPointGeneratorService(gservice);
 		validator.setRunnableDeviceService(dservice);
 		Services.setValidatorService(validator);
-		
+
 		//Set up the queue service (normally populated by OSGi)
 		qservice = new QueueService(uri.toString());
-		
+
 		ServicesHolder.setEventService(eservice);
 		ServicesHolder.setQueueService(qservice);
 		ServicesHolder.setQueueControllerService(qservice);
 		RealQueueTestUtils.initialise(uri);
-		
+
 	}
-	
+
 	@Before
 	public void before() throws Exception {
 		servlet = createServlet();
@@ -160,24 +160,24 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 			servlet.getConsumer().cleanQueue(servlet.getSubmitQueue());
 			servlet.getConsumer().cleanQueue(servlet.getStatusSet());
 		}
-		
+
 		//Start QueueService
 		qservice.startQueueService();
 	}
-	
+
 	@After
 	public void disconnect() throws Exception {
 		qservice.stopQueueService(true);
-		
+
 		if (servlet!=null) {
 			servlet.getConsumer().cleanQueue(servlet.getSubmitQueue());
 			servlet.getConsumer().cleanQueue(servlet.getStatusSet());
 			servlet.disconnect();
 		}
-		
+
 		RealQueueTestUtils.reset();
 	}
-	
+
 	@AfterClass
 	public static void shutdown() throws Exception {
 		qservice.disposeService();
@@ -191,12 +191,12 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 
 		return servlet;
 	}
-	
+
 //	@Test
 	public void testMove() throws Exception {
 		//Some sort of latch here
 		CountDownLatch latch = null; //Make one
-		
+
 		//Set up PositionerAtom
 		PositionerAtom mvAt = new PositionerAtom("testMove", null, null); //TODO change me!!
 
@@ -212,14 +212,14 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		String jqID = qservice.getJobQueueID();
 		qservice.submit(tBean, jqID);
 		RealQueueTestUtils.waitForEvent(latch, 60000);
-		
+
 		/* These should test the move happened
 		 * assertEquals(1, RealQueueTestUtils.getStartEvents().size());
-		 * assertTrue(RealQueueTestUtils.getEndEvents().size() > 0); 
+		 * assertTrue(RealQueueTestUtils.getEndEvents().size() > 0);
 		 */
-		
+
 	}
-	
+
 	@Test
 	public void testStepScan() throws Exception {
 		//Set up ScanAtom...
@@ -230,28 +230,28 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		Map<String, Object> detectors = new HashMap<>();
 		detectors.put("detector", dmodel);
 		ScanAtom scAt = new ScanAtom("testScan", paths, detectors, null);
-		
+
 		//... and an enclosing SubTaskAtom...
 		SubTaskAtom stAt = new SubTaskAtom(null, "testSubTask");
 		stAt.addAtom(scAt);
-		
+
 		//... and an enclosing TaskBean
 		TaskBean tBean = new TaskBean(null, "testTask");
 		tBean.addAtom(stAt);
-		
+
 		//Create latches to wait for activity
 		CountDownLatch scanLatch = RealQueueTestUtils.createScanEndEventWaitLatch(servlet.getStatusTopic());
 		CountDownLatch queueLatch = RealQueueTestUtils.createFinalStateBeanWaitLatch(tBean, qservice.getJobQueueID());
-		
+
 		//Submit it and wait!
 		String jqID = qservice.getJobQueueID();
 		qservice.submit(tBean, jqID);
 		RealQueueTestUtils.waitForEvent(scanLatch, 60000);
-	
+
 		assertEquals(1, RealQueueTestUtils.getStartEvents().size());
 		assertTrue(RealQueueTestUtils.getEndEvents().size() > 0);
-		
+
 		RealQueueTestUtils.waitForEvent(queueLatch);
 	}
-	
+
 }

@@ -33,25 +33,25 @@ import org.eclipse.ui.PartInitException;
 import org.osgi.framework.FrameworkUtil;
 
 public class ViewUtil {
-	
+
     /**
      * Show the top where the mouse is.
      * @param tip
      * @param message
      */
 	public static void showTip(ToolTip tip, String message) {
-		
+
 		if (tip==null) return;
-    	tip.setMessage(message);
+	tip.setMessage(message);
 		PointerInfo a = MouseInfo.getPointerInfo();
 		java.awt.Point loc = a.getLocation();
-		
+
 		tip.setLocation(loc.x, loc.y+20);
         tip.setVisible(true);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param id
 	 * @param managers
 	 * @param actions
@@ -59,9 +59,9 @@ public class ViewUtil {
 	public static void addGroups(String id, List<IContributionManager> managers, IAction... actions) {
 		for (IContributionManager man : managers) addGroup(id, man, actions);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param id
 	 * @param manager
 	 * @param actions
@@ -74,17 +74,17 @@ public class ViewUtil {
 		}
 	}
 
-	
+
 	public static void openQueueMonitor(Class<? extends StatusBean> beanClass, String partName) throws PartInitException, UnsupportedEncodingException {
 		openQueueMonitor(beanClass, EventConstants.STATUS_SET, EventConstants.STATUS_TOPIC, EventConstants.SUBMISSION_QUEUE, partName);
 	}
-	
-	public static void openQueueMonitor(Class<? extends StatusBean> beanClass, 
-			                           final String queueName, 
-			                           final String topicName, 
-			                           final String submissionQueueName, 
+
+	public static void openQueueMonitor(Class<? extends StatusBean> beanClass,
+			                           final String queueName,
+			                           final String topicName,
+			                           final String submissionQueueName,
 			                           String partName) throws PartInitException, UnsupportedEncodingException {
-		
+
 		String bundle = FrameworkUtil.getBundle(beanClass).getSymbolicName();
 		String bean   = beanClass.getName();
 		String sqn    = queueName;
@@ -96,7 +96,7 @@ public class ViewUtil {
 		try {
 			PageUtil.getPage().showView(QueueViews.getQueueViewID(), queueViewId, IWorkbenchPage.VIEW_ACTIVATE);
 		} catch (PartInitException e) {
-			ErrorDialog.openError(Display.getDefault().getActiveShell(), "Cannot open view", "Cannot open view "+queueViewId, 
+			ErrorDialog.openError(Display.getDefault().getActiveShell(), "Cannot open view", "Cannot open view "+queueViewId,
 					new Status(Status.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
 			throw e;
 		}

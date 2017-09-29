@@ -23,7 +23,7 @@ import org.epics.pvmarshaller.marshaller.deserialisers.Deserialiser;
 
 /**
  * Custom deserialiser for Circular ROI.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -33,18 +33,18 @@ public class LinearROIDeserialiser implements IPVStructureDeserialiser {
 	public Object fromPVStructure(Deserialiser deserialiser, PVStructure pvStructure)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchFieldException, SecurityException {
-		
+
 		PVDoubleArray doubleArray = pvStructure.getSubField(PVDoubleArray.class, "point");
 		DoubleArrayData doubleArrayData = new DoubleArrayData();
 		doubleArray.get(0, doubleArray.getLength(), doubleArrayData);
-		
+
 		double length = pvStructure.getSubField(PVDouble.class, "length").get();
 		double angle = pvStructure.getSubField(PVDouble.class, "angle").get();
-		
+
 		LinearROI roi = new LinearROI();
 		roi.setPoint(doubleArrayData.data);
 		roi.setAngle(angle);roi.setLength(length);
-		
+
 		return roi;
 	}
 }

@@ -122,16 +122,16 @@ public class DeviceRequestTest extends BrokerTest {
 	@Before
 	public void start() {
 
-	   	Constants.setNotificationFrequency(200); // Normally 2000
-	   	Constants.setReceiveFrequency(100);
+		Constants.setNotificationFrequency(200); // Normally 2000
+		Constants.setReceiveFrequency(100);
 	}
 
 	@After
 	public void stop() throws Exception {
 
-    	Constants.setNotificationFrequency(2000); // Normally 2000
-    	if (requester!=null) requester.disconnect();
-    	if (responder!=null) responder.disconnect();
+	Constants.setNotificationFrequency(2000); // Normally 2000
+	if (requester!=null) requester.disconnect();
+	if (responder!=null) responder.disconnect();
 	}
 
 	protected void connect() throws Exception {

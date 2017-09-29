@@ -28,17 +28,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class CompoundTestLarge {
-	
+
 	private IPointGeneratorService service;
-	
+
 	@Before
 	public void before() throws Exception {
 		service = new PointGeneratorService();
 	}
-	
+
 	@Test
 	public void test2Pow24() throws Exception {
-		
+
 		List<IPointGenerator<?>> gens = new ArrayList<>(20);
 		for (int i = 0; i < 24; i++) {
 			IPointGenerator<StepModel> two = service.createGenerator(new StepModel("Temperature"+i, 290,291,1));
@@ -56,14 +56,14 @@ public class CompoundTestLarge {
 		assertEquals(24, scan.getRank());
 		final int[] expectedShape = Collections.nCopies(24, 2).stream().mapToInt(Integer::intValue).toArray();
 		assertArrayEquals(expectedShape, scan.getShape());
-		
+
 		long stage1 = System.currentTimeMillis();
 		System.out.println("Size of "+size+" returned in "+(stage1-start)+" ms");
-		
+
 		Iterator<IPosition> it = scan.iterator();
 		long stage2 = System.currentTimeMillis();
 		System.out.println("Iterator returned in "+(stage2-stage1)+" ms");
-		
+
 		int sz=0;
 		while(it.hasNext()) {
 			it.next();
@@ -72,7 +72,7 @@ public class CompoundTestLarge {
 		}
 		long stage3 = System.currentTimeMillis();
 		System.out.println("Iterator size "+sz+" ran over in "+(stage3-stage2)+" ms");
-	
+
 	}
 
 }

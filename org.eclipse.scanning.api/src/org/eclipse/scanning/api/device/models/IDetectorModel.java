@@ -29,9 +29,9 @@ public interface IDetectorModel extends ITimeoutable, INameable, IReflectedModel
 	 * @return the exposure time in seconds. Can be zero but not negative.
 	 */
 	public double getExposureTime();
-	
+
 	/**
-	 * Call to set the time 
+	 * Call to set the time
 	 * @param time
 	 * @return
 	 */

@@ -16,19 +16,19 @@ import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.event.status.StatusBean;
 
 /**
- * Base class for all atoms/beans which will be handled by the 
+ * Base class for all atoms/beans which will be handled by the
  * {@link IQueueService}.
- * 
+ *
  * @author Michael Wharmby
  *
  */
 public abstract class Queueable extends StatusBean {
-	
+
 	/**
-	 * Version ID for serialization. Should be updated when class changed. 
+	 * Version ID for serialization. Should be updated when class changed.
 	 */
 	private static final long serialVersionUID = 20161017L;
-	
+
 	protected long runTime;
 	protected String beamline;
 	protected String shortName;
@@ -39,11 +39,11 @@ public abstract class Queueable extends StatusBean {
 		setStatus(Status.NONE);
 		setPreviousStatus(Status.NONE);
 	}
-	
+
 	public String getBeamline() {
 		return beamline;
 	}
-	
+
 	public void setBeamline(String beamline) {
 		this.beamline = beamline;
 	}
@@ -116,12 +116,12 @@ public abstract class Queueable extends StatusBean {
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public String toString() {
 		String clazzName = this.getClass().getSimpleName();
 		if (model) clazzName = clazzName + " (MODEL)";
-		return clazzName + " [name=" + name +" (shortname=" + shortName + "), status=" + status 
+		return clazzName + " [name=" + name +" (shortname=" + shortName + "), status=" + status
 				+ ", message=" + message + ", percentComplete=" + percentComplete
 				+ ", previousStatus=" + previousStatus + ", runTime=" + runTime + ", userName="
 				+ userName + ", hostName=" + hostName + ", beamline="+ beamline + ", submissionTime="

@@ -157,7 +157,7 @@ public class SeekTest extends AbstractAcquisitionTest {
 		 */
 		while(iterator.hasNext()) {
 			IPosition pos = iterator.next();
-        	pos.setStepIndex(stepNumber);
+		pos.setStepIndex(stepNumber);
 			if (stepNumber == location) return pos;
 			stepNumber++;
 		}

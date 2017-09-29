@@ -20,19 +20,19 @@ os.close(fd)
 print_scan_file_status(tempfile)
 
 class StatusTopicHandler(object):
-    
+
     def on_message(self, headers, data):
-        
+
         pprint(data)
-        
+
         if (data['status'] == "COMPLETE"):
             print("Complete.")
             print_scan_file_status(tempfile)
-         
+
         if (data['status'] == "FAILED"):
             print("Failed.")
             print_scan_file_status(tempfile)
-        
+
 
 handlers = {'acquire-response-topic': StatusTopicHandler(),
             }
@@ -44,7 +44,7 @@ set_handlers(conn, handlers)
 subscribe_all(conn, conn_dict, handlers)
 
 submission_time = int(time.time() * 1000)
- 
+
 acquire_request = {"@type":"AcquireRequest",
                    "uniqueId":"c8f12aee-d56a-49f6-bc03-9c7de9415674",
                    "detectorName":"mandelbrot",

@@ -14,7 +14,7 @@ package org.eclipse.scanning.api.script;
 public class ScriptExecutionException extends Exception {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -8147830575087863138L;
 

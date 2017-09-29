@@ -24,14 +24,14 @@ import org.eclipse.scanning.api.script.UnsupportedLanguageException;
 /**
  * This was copied from o.e.s.test.scan.servlet
  * As it is protected, it seemed best to just take a copy.
- * 
+ *
  * @author wnm24546
  *
  */
 final class MockScriptService implements IScriptService {
 
 	private List<ScriptRequest> scriptRequests = new ArrayList<>();
-	
+
 	@Override
 	public ScriptLanguage[] supported() {
 		return ScriptLanguage.values();
@@ -43,7 +43,7 @@ final class MockScriptService implements IScriptService {
 		scriptRequests.add(req);
 		return new ScriptResponse<>();
 	}
-	
+
 	public List<ScriptRequest> getScriptRequests() {
 		return scriptRequests;
 	}

@@ -28,30 +28,30 @@ public class StepModelComposite extends Composite {
 
 	public StepModelComposite(Composite parent, int style) {
 		super(parent, style);
-		
+
 		setLayout(new GridLayout(2, false));
-					
+
 		Label label = new Label(this, SWT.NONE);
 		label.setText("Start");
-		
+
 		start = new ScaleBox(this, SWT.NONE);
 		start.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		start.setUnit("eV");
 		start.setMinimum(Integer.getInteger("org.eclipse.scanning.device.ui.composites.stepStartMin", -100000).doubleValue());
 		start.setMaximum(Integer.getInteger("org.eclipse.scanning.device.ui.composites.stepStartMax", 100000).doubleValue());
-		
+
 		label = new Label(this, SWT.NONE);
 		label.setText("Stop");
-		
+
 		stop = new ScaleBox(this, SWT.NONE);
 		stop.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		stop.setUnit("eV");
 		stop.setMinimum(start);
 		stop.setMaximum(Integer.getInteger("org.eclipse.scanning.device.ui.composites.stepStopMax", 100000).doubleValue());
-		
+
 		label = new Label(this, SWT.NONE);
 		label.setText("Step");
-		
+
 		step = new ScaleBox(this, SWT.NONE);
 		step.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		step.setUnit("eV");
@@ -60,7 +60,7 @@ public class StepModelComposite extends Composite {
 
 		label = new Label(this, SWT.HORIZONTAL|SWT.SEPARATOR);
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-		
+
 		label = new Label(this, SWT.NONE);
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 		label.setText("Exposure overrides the detector configuration");
@@ -68,7 +68,7 @@ public class StepModelComposite extends Composite {
 
 		label = new Label(this, SWT.NONE);
 		label.setText("Exposure");
-		
+
 		exposureTime = new ScaleBox(this, SWT.NONE);
 		exposureTime.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 		exposureTime.setDecimalPlaces(3);

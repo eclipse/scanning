@@ -200,7 +200,7 @@ public class ScanRegionView extends ViewPart {
 		createActions();
 		this.selectionDelegate = new DelegatingSelectionProvider(viewer);
 		try {
- 			createColumns(viewer, selectionDelegate);
+			createColumns(viewer, selectionDelegate);
 		} catch (EventException | URISyntaxException e1) {
 			logger.error("Serious internal error trying to create table columns!", e1);
 		}
@@ -292,11 +292,11 @@ public class ScanRegionView extends ViewPart {
 
 	@Override
     public void saveState(IMemento memento) {
-    	super.saveState(memento);
+	super.saveState(memento);
 
-    	if (!Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.AUTO_SAVE_REGIONS)) return;
-    	try {
-    		stash.stash(ScanRegions.getScanRegions(system));
+	if (!Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.AUTO_SAVE_REGIONS)) return;
+	try {
+		stash.stash(ScanRegions.getScanRegions(system));
 		} catch (Exception e) {
 			logger.error("Problem stashing control factory!", e);
 		}
@@ -481,16 +481,16 @@ public class ScanRegionView extends ViewPart {
 		for (RegionType regionType : regionTypes) {
 
             IAction action = new Action("Press to click and drag a "+regionType.getName()+" on '"+PlotUtil.getRegionViewName()+"'") {
-            	@Override
+		@Override
 				public void run() {
-            		try {
+			try {
 						ScanRegions.createRegion(system, regionType, null);
 						ViewUtil.showTip(tip, "Click and drag in the '"+regionViewName+"' to create a scan region.");
 					} catch (Exception e) {
 						logger.error("Unable to create region!", e);
 					}
-            		rois.setSelectedAction(this);
-            	}
+			rois.setSelectedAction(this);
+		}
             };
 
 			final ImageDescriptor des = findImageDescriptor(menuAction, regionType.getId());

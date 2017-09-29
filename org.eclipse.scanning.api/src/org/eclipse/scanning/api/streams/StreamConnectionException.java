@@ -19,7 +19,7 @@ package org.eclipse.scanning.api.streams;
 public class StreamConnectionException extends Exception {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 3374901989954371016L;
 

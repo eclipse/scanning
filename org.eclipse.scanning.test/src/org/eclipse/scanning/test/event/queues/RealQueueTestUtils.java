@@ -29,35 +29,35 @@ import org.eclipse.scanning.api.event.status.StatusBean;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 
 public class RealQueueTestUtils {
-	
+
 	private static URI uri;
-	
+
 	private static IEventService evServ;
 	private static IQueueControllerService queueControl;
-	private static List<ISubscriber<? extends EventListener>> subscList; 
-	
+	private static List<ISubscriber<? extends EventListener>> subscList;
+
 	private static List<ConsumerCommandBean> cmdBeans;
 	private static List<StatusBean> statusBeans;
-	
+
 	//For listening to ScanServlets
 	private static List<ScanBean> startEvents, endEvents;
-	
+
 	public static void initialise(URI uri) {
 		RealQueueTestUtils.uri = uri;
 		evServ = ServicesHolder.getEventService();
 		queueControl = ServicesHolder.getQueueControllerService();
-		
+
 		cmdBeans = new ArrayList<>();
 		statusBeans = new ArrayList<>();
-		
+
 		subscList = new ArrayList<>();
-		
+
 		//For listening to ScanServlets
 		startEvents = new ArrayList<>();
 		endEvents = new ArrayList<>();
-		
+
 	}
-	
+
 	public static void reset() throws EventException {
 		cmdBeans.clear();
 		statusBeans.clear();
@@ -65,42 +65,42 @@ public class RealQueueTestUtils {
 			subsc.disconnect();
 		}
 		subscList.clear();
-		
+
 		//For listening to ScanServlets
 		startEvents.clear();
 		endEvents.clear();
 	}
-	
+
 	public static void dispose() throws EventException  {
 		reset();
 		RealQueueTestUtils.uri = null;
 		evServ = null;
 		queueControl = null;
 	}
-	
+
 	/**
-	 * Set up listener for a StatusBean with a final state. Return a 
+	 * Set up listener for a StatusBean with a final state. Return a
 	 * CountDownLatch which releases on hearing such a bean.
 	 */
-	public static <T extends StatusBean> CountDownLatch createFinalStateBeanWaitLatch(Queueable bean, String queueID) 
+	public static <T extends StatusBean> CountDownLatch createFinalStateBeanWaitLatch(Queueable bean, String queueID)
 			throws EventException {
 		return createStatusBeanWaitLatch(queueID, null, bean, null, true);
 	}
-	
+
 	/**
-	 * Set up a listener for a bean in a particular queue or on a topic with a 
+	 * Set up a listener for a bean in a particular queue or on a topic with a
 	 * state or which might be final.
 	 */
-	private static <T extends StatusBean> CountDownLatch createStatusBeanWaitLatch(String queueID, String topicName, T bean, Status state, Boolean isFinal) 
+	private static <T extends StatusBean> CountDownLatch createStatusBeanWaitLatch(String queueID, String topicName, T bean, Status state, Boolean isFinal)
 			throws EventException {
 		final CountDownLatch statusLatch = new CountDownLatch(1);
-		
+
 		//Make sure the topic to listen on is set (has it been supplied?)
 				if (topicName == null) {
 					IQueue<? extends StatusBean> queue = queueControl.getQueue(queueID);
 					topicName = queue.getStatusTopicName();
 				}
-		
+
 		//Create our subscriber and add the listener
 		ISubscriber<IBeanListener<? extends IdBean>>statusSubsc = evServ.createSubscriber(uri, topicName);
 		statusSubsc.addListener(new IBeanListener<T>() {
@@ -119,29 +119,29 @@ public class RealQueueTestUtils {
 		subscList.add(statusSubsc);
 		return statusLatch;
 	}
-	
+
 	/**
-	 * Set up listener for a given number of ConsumerCommandBeans on a given 
+	 * Set up listener for a given number of ConsumerCommandBeans on a given
 	 * topic. Return a CountDownLatch which releases on hearing such a bean.
 	 */
 	public static <T extends ConsumerCommandBean> CountDownLatch createCommandBeanWaitLatch(String topicName, int nBeans) throws EventException {
 		return createCommandBeanWaitLatch(topicName, null, null, nBeans);
 	}
-	
+
 	/**
 	 * Set up a listener for a given number of beans on a queue or topic.
 	 */
-	private static <T extends ConsumerCommandBean> CountDownLatch createCommandBeanWaitLatch(String topicName, String queueID, T bean, Integer nBeans) 
+	private static <T extends ConsumerCommandBean> CountDownLatch createCommandBeanWaitLatch(String topicName, String queueID, T bean, Integer nBeans)
 			throws EventException {
 		if (nBeans == null) nBeans = 1;
 		final CountDownLatch commandLatch = new CountDownLatch(nBeans);
-		
+
 		//Make sure the topic to listen on is set (has it been supplied?)
 		if (topicName == null) {
 			IQueue<? extends StatusBean> queue = queueControl.getQueue(queueID);
 			topicName = queue.getStatusTopicName();
 		}
-		
+
 		//Create our subscriber and add the listener
 		ISubscriber<IBeanListener<? extends IdBean>> cmdSubsc = evServ.createSubscriber(uri, topicName);
 		cmdSubsc.addListener(new IBeanListener<T>() {
@@ -161,10 +161,10 @@ public class RealQueueTestUtils {
 		subscList.add(cmdSubsc);
 		return commandLatch;
 	}
-	
+
 	public static CountDownLatch createScanEndEventWaitLatch(String topicName) throws EventException {
 		final CountDownLatch scanLatch = new CountDownLatch(1);
-		
+
 		ISubscriber<IScanListener> beanEvtSubsc = evServ.createSubscriber(uri, topicName);
 		beanEvtSubsc.addListener(new IScanListener() {
 
@@ -182,24 +182,24 @@ public class RealQueueTestUtils {
 		subscList.add(beanEvtSubsc);
 		return scanLatch;
 	}
-	
+
 	/**
-	 * Wait for the given CountDownLatch to countdown or to exceed its timeout 
+	 * Wait for the given CountDownLatch to countdown or to exceed its timeout
 	 * (10000ms).
 	 */
 	public static void waitForEvent(CountDownLatch latch) throws InterruptedException {
 		waitForEvent(latch, 10000, false);
 	}
 	/**
-	 * Wait for the given CountDownLatch to countdown or to exceed its timeout 
+	 * Wait for the given CountDownLatch to countdown or to exceed its timeout
 	 * (10000ms if no time specified).
 	 */
 	public static void waitForEvent(CountDownLatch latch, long timeout) throws InterruptedException {
 		waitForEvent(latch, timeout, false);
 	}
 	/**
-	 * Wait for the given CountDownLatch to countdown or to exceed its timeout 
-	 * (10000ms if no time specified). The noFail argument stops JUnit.fail 
+	 * Wait for the given CountDownLatch to countdown or to exceed its timeout
+	 * (10000ms if no time specified). The noFail argument stops JUnit.fail
 	 * from being called when the latch is not released.
 	 */
 	public static void waitForEvent(CountDownLatch latch, long timeout, Boolean noFail) throws InterruptedException {
@@ -217,7 +217,7 @@ public class RealQueueTestUtils {
 			}
 		}
 	}
-	
+
 	/**
 	 * In addition to waiting for an event to occur, this method then returns the last heard command bean.
 	 * @param latch
@@ -227,7 +227,7 @@ public class RealQueueTestUtils {
 	 */
 	public static ConsumerCommandBean waitToGetCmdBean(CountDownLatch latch, Long timeout, boolean noBeanExpected) throws InterruptedException {
 		waitForEvent(latch, timeout, noBeanExpected);
-		
+
 		if (noBeanExpected) {
 			assertEquals("Command beans heard, but didn't expect any", 0, cmdBeans.size());
 			return null;
@@ -236,10 +236,10 @@ public class RealQueueTestUtils {
 			return cmdBeans.get(cmdBeans.size()-1);
 		}
 	}
-	
+
 	/**
-	 * Wait for the submission queue of the given consumer to reach a certain 
-	 * size before returning. If the timeout is exceeded before the requested 
+	 * Wait for the submission queue of the given consumer to reach a certain
+	 * size before returning. If the timeout is exceeded before the requested
 	 * number of events, return anyway printing a warning.
 	 * @param cons
 	 * @param timeout
@@ -250,7 +250,7 @@ public class RealQueueTestUtils {
 	public static void waitForSubmitQueueLength(IConsumer<?> cons, Long timeout, Integer nBeans) throws EventException, InterruptedException {
 		if (timeout == null) timeout = 3000L; //Defaults
 		if (nBeans == null) nBeans = 1;
-		
+
 		Long startTime = System.currentTimeMillis();
 		while ((System.currentTimeMillis() - startTime) < timeout) {
 			if (cons.getSubmissionQueue().size() >= nBeans) {

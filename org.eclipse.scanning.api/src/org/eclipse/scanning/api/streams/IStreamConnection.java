@@ -17,7 +17,7 @@ public interface IStreamConnection<T> {
 	/**
 	 * T is any type which the plotting system may plot as
 	 * a dynamic dataset.
-	 * 
+	 *
 	 * @return
 	 * @throws StreamConnectionException
 	 */
@@ -30,9 +30,9 @@ public interface IStreamConnection<T> {
 	void disconnect() throws StreamConnectionException;
 
     /**
-     * Called to show the configuration options for the stream. 
+     * Called to show the configuration options for the stream.
      * For instance the URI to which it should connect.
-     * 
+     *
      * @throws StreamConnectionException
      */
 	void configure() throws StreamConnectionException;

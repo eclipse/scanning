@@ -207,8 +207,8 @@ public class AbstractPauseTest extends BrokerTest{
 
 		consumer.setRunner(new FastRunCreator<StatusBean>(0,100,10,100, true));
 		consumer.start();
-		
-		Thread.sleep(500); 
+
+		Thread.sleep(500);
 		IPublisher<PauseBean> pauser = eservice.createPublisher(submitter.getUri(), IEventService.CMD_TOPIC);
 		pauser.setStatusSetName(IEventService.CMD_SET);
 		pauser.setStatusSetAddRequired(true);
@@ -216,12 +216,12 @@ public class AbstractPauseTest extends BrokerTest{
 		PauseBean pbean = new PauseBean();
 		pbean.setQueueName(consumer.getSubmitQueueName());
 		pauser.broadcast(pbean);
-		
+
 		Thread.sleep(500);
 		assertTrue(!consumer.isActive());
-		
+
 		// Submit two things.
-		StatusBean bean = null; 
+		StatusBean bean = null;
 		for (int i = 0; i < 2; i++) {
 			bean = new StatusBean();
 			bean.setName("Submission"+i);
@@ -232,13 +232,13 @@ public class AbstractPauseTest extends BrokerTest{
 			bean.setUserName(String.valueOf(i));
 			submitter.submit(bean);
 		}
-	
+
 		submitter.reorder(bean, consumer.getSubmitQueueName(), 1);
-		
+
 		Thread.sleep(500);
 		assertTrue(!consumer.isActive());
 		assertEquals(2, submitter.getQueue().size());
-		
+
 		pbean.setPause(false);
 		pauser.broadcast(pbean);
 

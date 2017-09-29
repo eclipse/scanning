@@ -8,7 +8,7 @@
  *
  * Contributors:
  *    Matthew Gerring - initial API and implementation and/or initial documentation
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.scanning.test.util;
 
 import java.text.DecimalFormat;
@@ -25,7 +25,7 @@ public class DoubleUtils {
 	public static boolean equalsWithinTolerance(Number foo, Number bar, Number tolerance) {
 		final double a = foo.doubleValue();
 		final double b = bar.doubleValue();
-		final double t = tolerance.doubleValue();	
+		final double t = tolerance.doubleValue();
 		return t>=Math.abs(a-b);
 	}
 

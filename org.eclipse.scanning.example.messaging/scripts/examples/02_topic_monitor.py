@@ -2,19 +2,19 @@
 
 from utilities.listeners import MonitorHandler
 from utilities.connections import create_connection, set_handlers, subscribe_all
- 
+
 conn_dict = {
              'device-response-topic': "/topic/org.eclipse.scanning.response.device.topic",
              'device-request-topic': "/topic/org.eclipse.scanning.request.device.topic",
-             
+
              'positioner-request-topic': "/topic/org.eclipse.scanning.request.positioner.topic",
              'positioner-response-topic': "/topic/org.eclipse.scanning.response.positioner.topic",
              'position-response-topic': "/topic/org.eclipse.scanning.request.position.topic",
-             
+
              'xcen-submission-queue': "/queue/dataacq.xcen.SUBMISSION_QUEUE",
              'xcen-status-queue': "/queue/dataacq.xcen.STATUS_QUEUE",
              'xcen-status-topic': "/topic/dataacq.xcen.STATUS_TOPIC",
-             
+
             'scanning-submission-queue': "/queue/org.eclipse.scanning.submission.queue",
             'scanning-status-queue': "/queue/org.eclipse.scanning.status.set",
              'scanning-status-topic': "/topic/org.eclipse.scanning.status.topic",
@@ -26,11 +26,11 @@ handlers = {
             'positioner-request-topic':MonitorHandler(),
             'positioner-response-topic':MonitorHandler(),
             'position-response-topic':MonitorHandler(),
-            
+
             # Remember, subscribing to the queues will consume the messages.
 #             'xcen-submission-queue':MonitorHandler(),
 #             'xcen-status-queue':MonitorHandler(),
-            
+
             'xcen-status-topic':MonitorHandler(),
             }
 

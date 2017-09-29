@@ -39,10 +39,10 @@ public class ModelTest extends AbstractValidationTest {
 		COMPLETE_MODELS.add(OneDEqualSpacingModel.class);
 		COMPLETE_MODELS.add(OneDStepModel.class);
 	}
-	
+
 	@Test
 	public void emptyScanModels() throws Exception {
-		
+
 		IPointGeneratorService pservice = ValidatorService.getPointGeneratorService();
 		for (String id : pservice.getRegisteredGenerators()) {
 			Object empty = pservice.createGenerator(id).getModel();
@@ -56,16 +56,16 @@ public class ModelTest extends AbstractValidationTest {
 			}
 		}
 	}
-	
+
 	@Test
 	public void detectorModelsFromSpring() throws Exception {
-		
+
 		IRunnableDeviceService rservice = ValidatorService.getRunnableDeviceService();
 		Collection<DeviceInformation<?>> infos =  rservice.getDeviceInformation();
-		
+
 		assertNotEquals("There must be some info! There must!", 0, infos.size());
 		for (DeviceInformation<?> info : infos) {
-			
+
 			Object sprung = info.getModel();
 			try {
 				validator.validate(sprung);

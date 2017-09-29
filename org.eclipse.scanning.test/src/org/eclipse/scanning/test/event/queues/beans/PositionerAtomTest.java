@@ -26,34 +26,34 @@ import org.junit.Test;
  * Test for the {@link PositionerAtom} class. This class only create the POJO.
  * Actual tests in {@link AbstractBeanTest}. Additional test to determine atom
  * configuration.
- * 
+ *
  * @author Michael Wharmby
  *
  */
 public class PositionerAtomTest extends AbstractBeanTest<PositionerAtom> {
-	
+
 	private String shrtNmA = "tstMvA", shrtNmB = "tstMvB";
 	private String nameA = "Set cryostream to 273.15", nameB = "Set samX to 0.0, samY to 10 and cryojet to 273.15";
-	private String deviceA = "cryojet", deviceB = "samX", 
+	private String deviceA = "cryojet", deviceB = "samX",
 			deviceC = "samY", deviceD = "blower";
 	private double targetA = 273.15, targetB = 957.845;
 	private int targetC = 10;
 	private String targetD = "out";
-	
+
 	@Before
 	public void buildBeans() throws Exception {
 		Map<String, Object> beanBConf = new LinkedHashMap<>();
 		beanBConf.put(deviceB, targetB);
 		beanBConf.put(deviceC, targetC);
 		beanBConf.put(deviceD, targetD);
-		
+
 		beanA = new PositionerAtom(shrtNmA, deviceA, targetA);
 		beanA.setName(nameA);
 		beanB = new PositionerAtom(shrtNmB, beanBConf);
 		beanB.setName(nameB);
-		
+
 	}
-	
+
 	/**
 	 * Test of returning only the names from the stored map of motors.
 	 */
@@ -63,7 +63,7 @@ public class PositionerAtomTest extends AbstractBeanTest<PositionerAtom> {
 		expected.add(deviceB);
 		expected.add(deviceC);
 		expected.add(deviceD);
-		
+
 		assertEquals("Reported list and the expected list of names differ", expected, beanB.getPositionerNames());
 	}
 

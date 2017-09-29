@@ -5,7 +5,7 @@ conn_dict = {'device-response-topic': "/topic/org.eclipse.scanning.response.devi
              }
 
 class DeviceNamesHandler(object):
-    
+
     def on_message(self, headers, data):
         print(data['deviceType'] + " names are:")
         for device in data['devices']:

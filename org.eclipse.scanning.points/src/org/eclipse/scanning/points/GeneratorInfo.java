@@ -20,7 +20,7 @@ class GeneratorInfo {
 	private Class<? extends IScanPathModel>  modelClass;
 	private String label;
 	private String description;
-	
+
 	public Class<? extends IPointGenerator> getGeneratorClass() {
 		return generatorClass;
 	}
@@ -86,5 +86,5 @@ class GeneratorInfo {
 			return false;
 		return true;
 	}
-	
+
 }

@@ -9,9 +9,9 @@ import org.eclipse.scanning.api.event.queues.models.ExperimentConfiguration;
 import org.eclipse.scanning.api.scan.models.ScanMetadata;
 
 public class MockSampleDescriptionService implements ISampleDescriptionService {
-	
+
 	private Map<Long, String> sampleIDNames;
-	
+
 	private void makeFakeExperimentIdNames() {
 		// TODO: temporary code for populating the ExperimentView until the real service is available.
 		Map<Long, String> fakeExperIdNames = new HashMap<>();
@@ -21,16 +21,16 @@ public class MockSampleDescriptionService implements ISampleDescriptionService {
 		fakeExperIdNames.put(95222L, "XPDF testgg");
 		setSampleIdNames(fakeExperIdNames);
 	}
-	
+
 	@Override
 	public Map<Long, String> getSampleIdNames(String proposalCode, long proposalNumber) {
 		if (sampleIDNames == null) {
 			makeFakeExperimentIdNames();
 		}
-		
+
 		return sampleIDNames;
 	}
-	
+
 	public void setSampleIdNames(Map<Long, String> sampleIdNames) {
 		this.sampleIDNames = sampleIdNames;
 	}

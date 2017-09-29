@@ -104,30 +104,30 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 		Topic topic = super.createTopic(topicName);
 
 
-       	final MessageConsumer consumer = session.createConsumer(topic);
-    	MessageListener listener = new MessageListener() {
-    		@Override
+	final MessageConsumer consumer = session.createConsumer(topic);
+	MessageListener listener = new MessageListener() {
+		@Override
 			public void onMessage(Message message) {
 
-    			TextMessage txt   = (TextMessage)message;
-    			try {
-	    			String      json  = txt.getText();
-	    			json = JsonUtil.removeProperties(json, properties);
-	    			try {
+			TextMessage txt   = (TextMessage)message;
+			try {
+				String      json  = txt.getText();
+				json = JsonUtil.removeProperties(json, properties);
+				try {
 
-		    			Object bean = service.unmarshal(json, beanClass);
-		    			schedule(new DiseminateEvent(bean));
+					Object bean = service.unmarshal(json, beanClass);
+					schedule(new DiseminateEvent(bean));
 
-	    			} catch (Exception ne) {
-	    				logger.error("Error processing message {} on topic {} with beanClass {}", message, topicName, beanClass, ne);
-	    				ne.printStackTrace(); // Unit tests without log4j config show this one.
-	     			}
-    			} catch (JMSException ne) {
-    				logger.error("Cannot get text from message "+txt, ne);
-    			}
-    		}
-    	};
-    	consumer.setMessageListener(listener);
+				} catch (Exception ne) {
+					logger.error("Error processing message {} on topic {} with beanClass {}", message, topicName, beanClass, ne);
+					ne.printStackTrace(); // Unit tests without log4j config show this one.
+				}
+			} catch (JMSException ne) {
+				logger.error("Cannot get text from message "+txt, ne);
+			}
+		}
+	};
+	consumer.setMessageListener(listener);
         return consumer;
 	}
 
@@ -472,7 +472,7 @@ class SubscriberImpl<T extends EventListener> extends AbstractConnection impleme
 		for (FilterAction fa : actions) if (fa!=FilterAction.DELETE) throw new IllegalArgumentException("It is only possible to remove properties from the subscribed json right now");
 	    if (properties == null) properties = new ArrayList<>(7);
 	    properties.add(name);
- 	}
+	}
 
 	@Override
 	public void removeProperty(String name) {

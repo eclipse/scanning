@@ -506,7 +506,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	 * @throws ScanningException
 	 */
 	public final DeviceInformation<T> getDeviceInformation() throws ScanningException {
- 		return getDeviceInformation(false);
+		return getDeviceInformation(false);
 	}
 
 	/**
@@ -555,7 +555,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 			deviceInformation.setState(DeviceState.OFFLINE);
 		}
 
- 		return deviceInformation;
+		return deviceInformation;
 	}
 
 	public void setDeviceInformation(DeviceInformation<T> deviceInformation) {
@@ -578,7 +578,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		if (model instanceof INameable) {
 			INameable dmodel = (INameable)model;
 		    if (dmodel.getName()==null || dmodel.getName().length()<1) {
-		    	throw new ModelValidationException("The name must be set!", model, "name");
+			throw new ModelValidationException("The name must be set!", model, "name");
 		    }
 		}
 		if (model instanceof IDetectorModel) {

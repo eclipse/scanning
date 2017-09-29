@@ -19,44 +19,44 @@ import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
 
 /**
- * 
+ *
  * Could use Mockito but always causes compilation issues
  *
  */
 public class InvalidInjectionDevice extends InjectionDevice {
-		
+
     @PointStart
     public void validMethod1(IRunnableDeviceService rservice) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{rservice});
+	count(Thread.currentThread().getStackTrace(), new Object[]{rservice});
     }
     @PointStart
     public void validMethod2(IPosition position) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{position});
+	count(Thread.currentThread().getStackTrace(), new Object[]{position});
     }
-    
+
     @PointStart
     public void invalidMethod1(Integer unknown) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{unknown});
+	count(Thread.currentThread().getStackTrace(), new Object[]{unknown});
     }
     @PointStart
     public void invalidMethod2(String unknown1, Integer unknown2,  Map<?,?> unknown3) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{unknown1, unknown2, unknown3});
+	count(Thread.currentThread().getStackTrace(), new Object[]{unknown1, unknown2, unknown3});
     }
     @PointStart
     public void invalidMethod3(IPosition position, String unknown) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{position, unknown});
+	count(Thread.currentThread().getStackTrace(), new Object[]{position, unknown});
     }
     @PointStart
     public void invalidMethod4(IPosition position, IRunnableDeviceService rservice, Map<?,?> unknown) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{position, rservice, unknown});
+	count(Thread.currentThread().getStackTrace(), new Object[]{position, rservice, unknown});
     }
     @PointStart
     public void invalidMethod5(IPosition position, Map<?,?> unknown, IRunnableDeviceService rservice) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{position, unknown, rservice});
+	count(Thread.currentThread().getStackTrace(), new Object[]{position, unknown, rservice});
     }
 
     @PointStart
     public void invalidMethod6(IRunnableDeviceService rservice, IPointGeneratorService pservice, IPosition position, String unknown1, Integer unknown2,  Map<?,?> unknown3) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{rservice, pservice, position, unknown1, unknown2, unknown3});
+	count(Thread.currentThread().getStackTrace(), new Object[]{rservice, pservice, position, unknown1, unknown2, unknown3});
     }
  }

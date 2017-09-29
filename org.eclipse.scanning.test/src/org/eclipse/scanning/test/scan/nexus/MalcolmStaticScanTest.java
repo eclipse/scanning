@@ -24,21 +24,21 @@ import org.junit.Test;
 
 /**
  * Test the use of Malcolm to acquire data without moving any scannables.<br>
- * This would be used for software scans using detectors that can only acquire via Malcolm. 
+ * This would be used for software scans using detectors that can only acquire via Malcolm.
  *
  */
 public class MalcolmStaticScanTest extends AbstractMalcolmScanTest {
-	
+
 	@Test
 	public void test0d() throws Exception {
 		runMalcolmScan();
 	}
-	
+
 	@Test
 	public void test1d() throws Exception {
 		runMalcolmScan(5);
 	}
-	
+
 	@Test
 	public void test3d() throws Exception {
 		runMalcolmScan(5, 3, 2);
@@ -50,20 +50,20 @@ public class MalcolmStaticScanTest extends AbstractMalcolmScanTest {
 		model.setAxesToMove(Collections.emptyList());
 		return model;
 	}
-	
+
 	private void runMalcolmScan(int... size) throws Exception {
 		final IRunnableDevice<ScanModel> scanner = createScanner(size);
 		scanner.run();
-		
+
 		checkSize(scanner, size);
 		checkFiles();
 		checkNexusFile(scanner, false, size);
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 	}
-	
+
 	// Create a scan where the Malcolm device just does a static scan, but there may be outer scannables
 	private IRunnableDevice<ScanModel> createScanner(int... size) throws Exception {
-		final IPointGenerator<?> pointGenerator; 
+		final IPointGenerator<?> pointGenerator;
 		if (size.length == 0) {
 			// Static generator for the Malcolm device
 			pointGenerator = gservice.createGenerator(new StaticModel());

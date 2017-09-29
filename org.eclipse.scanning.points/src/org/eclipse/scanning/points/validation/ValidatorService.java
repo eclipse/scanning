@@ -41,27 +41,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ValidatorService implements IValidatorService {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(ValidatorService.class);
-	
+
 	static {
 		System.out.println("Starting ValidatorService");
 	}
-	
+
 	private static IPointGeneratorService factory;
 	public void setPointGeneratorService(IPointGeneratorService pservice) {
 		factory = pservice;
 	}
-	
+
 	private static IRunnableDeviceService dservice;
 	private static IEventService          eservice;
-	
+
 	public void setEventService(IEventService leservice) {
 		eservice = leservice;
 	}
-	
+
 	private static ComponentContext context;
-	
+
 	public static IPointGeneratorService getPointGeneratorService() {
 		return factory;
 	}
@@ -81,11 +81,11 @@ public class ValidatorService implements IValidatorService {
 		}
 		return dservice;
 	}
-	
+
 	public void setRunnableDeviceService(IRunnableDeviceService service) {
 		dservice = service;
 	}
-	
+
 	public void start(ComponentContext lcontext) {
 		context = lcontext;
 	}
@@ -99,13 +99,13 @@ public class ValidatorService implements IValidatorService {
 		tmp.put(BoundingBox.class,   BoundingBoxValidator.class);
 		tmp.put(CompoundModel.class, CompoundValidator.class);
 		tmp.put(ScanRequest.class,   ScanRequestValidator.class);
-		
+
 		validators = Collections.unmodifiableMap(tmp);
 	}
 
 	@Override
 	public <T> void validate(T model) throws ValidationException, InstantiationException, IllegalAccessException {
-		
+
 		if (model==null) throw new ValidationException("The object to validate is null and cannot be checked!");
 		IValidator<T> validator = getValidator(model);
 		if (validator==null) throw new IllegalAccessException("There is no validator for "+model.getClass().getSimpleName());
@@ -116,21 +116,21 @@ public class ValidatorService implements IValidatorService {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T> IValidator<T> getValidator(T model) throws InstantiationException, IllegalAccessException {
-		
+
 		if (model==null) throw new NullPointerException("The model is null!");
-		
+
 		if (model instanceof IValidator) throw new IllegalArgumentException("Models should be vanilla and not contain logic for validating themselves!");
-		
+
 		if (validators.containsKey(model.getClass())) {
 			return validators.get(model.getClass()).newInstance();
 		}
-	
+
 		if (model instanceof IScanPathModel) { // Ask a generator
 			try {
 				IScanPathModel     pmodel = (IScanPathModel)model;
 				IPointGenerator<?> gen    = factory.createGenerator(pmodel);
 				return (IValidator<T>)gen;
-				
+
 			} catch (GeneratorException e) {
 				throw new IllegalAccessException(e.getMessage());
 			}
@@ -142,12 +142,12 @@ public class ValidatorService implements IValidatorService {
 				// Do nothing
 			}
 		}
-		
+
 		return getDeviceFromModel(model);
 	}
-	
+
 	private <T> IRunnableDevice<T> getDeviceFromModel(T model) {
-		
+
 		if (dservice==null) return null;
 
 		IRunnableDevice<T> device = null;
@@ -168,7 +168,7 @@ public class ValidatorService implements IValidatorService {
 				device = dservice.getRunnableDevice(name);
 
 			} catch (Exception ne) {
-				try { 
+				try {
 					device  = dservice.createRunnableDevice(model, false);
 				} catch (Exception legallyPossible) {
 					// Do nothing, if we cannot get it, then we cannot get it.

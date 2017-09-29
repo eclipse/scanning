@@ -35,15 +35,15 @@ import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 class ScanRequestValidator implements IValidator<ScanRequest<?>> {
-	
-	
+
+
 	private IValidatorService vservice;
 
 	@Override
 	public void setService(IValidatorService vservice) {
 		this.vservice = vservice;
 	}
-	
+
 	@Override
 	public void validate(ScanRequest<?> req) throws ValidationException, InstantiationException, IllegalAccessException {
 
@@ -60,32 +60,32 @@ class ScanRequestValidator implements IValidator<ScanRequest<?>> {
 				validateDetectors(dmodels);
 				validateAnnotations(dmodels);
 			}
-			
+
 		} catch (ScanningException ne) {
             throw new ValidationException(ne);
 		}
 	}
-	
+
 	private void validateAnnotations(Map<String, Object> dmodels) throws ValidationException, IllegalArgumentException, IllegalAccessException, ScanningException {
-		
+
 		for (String name : dmodels.keySet()) {
-			
+
 			// The model we will validate
 			Object model = dmodels.get(name);
-			
-			// If the model has an annotated field which points at 
+
+			// If the model has an annotated field which points at
 			// a detector, that detector must be in the scan.
 			Field[] fields = model.getClass().getDeclaredFields();
-			
+
 			BeanMap beanMap = null; // May need to use newer version of BeanMap in Java9 if it uses setAccessable(true)
 			for (Field field : fields) {
 				Annotation[] anots = field.getAnnotations();
 				for (Annotation annotation : anots) {
 					if (annotation instanceof FieldDescriptor) {
-						
+
 						FieldDescriptor des = (FieldDescriptor)annotation;
 						if (des.device()==DeviceType.RUNNABLE) { // Then its value must be in the devices.
-							
+
 							if (beanMap == null) beanMap = new BeanMap(model);
 							String reference = beanMap.get(field.getName()).toString();
 							if (!dmodels.containsKey(reference)) {
@@ -135,7 +135,7 @@ class ScanRequestValidator implements IValidator<ScanRequest<?>> {
 					}
 					role = info.getDeviceRole();
 				}
-					
+
 				if (role==null) throw new ValidationException("Detector '"+name+"' cannot be found!");
 				Integer c = deviceRoleCount.get(role);
 				deviceRoleCount.put(role, ++c);
@@ -147,13 +147,13 @@ class ScanRequestValidator implements IValidator<ScanRequest<?>> {
 	}
 
 	private void validateDetectors(Map<String, Object> dmodels) throws ValidationException, InstantiationException, IllegalAccessException {
-	
+
 		// All the models must validate too
 		for (Object model : dmodels.values()) {
 			IValidator<Object> validator = vservice.getValidator(model);
 			if (validator!=null) validator.validate(model); // We just ignore those without validators.
 		}
-		
+
 	}
 
 }

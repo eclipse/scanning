@@ -32,7 +32,7 @@ import org.epics.pvmarshaller.marshaller.deserialisers.Deserialiser;
  *
  */
 public class NTTableDeserialiser implements IPVStructureDeserialiser {
-	
+
 	private final String valueField = "value";
 	private final String headingsTagField = "labels";
 	private final String metaField = "meta";
@@ -43,7 +43,7 @@ public class NTTableDeserialiser implements IPVStructureDeserialiser {
 
 	@Override
 	public Object fromPVStructure(Deserialiser deserialiser, PVStructure pvStructure) throws Exception {
-		
+
 		PVStructure metaStructure = pvStructure.getStructureField(metaField);
 		String description = metaStructure.getStringField(descriptionField).get();
 		boolean writeable = metaStructure.getBooleanField(writeableField).get();
@@ -51,29 +51,29 @@ public class NTTableDeserialiser implements IPVStructureDeserialiser {
 		PVStringArray tagsArray = metaStructure.getSubField(PVStringArray.class, tagsField);
 		StringArrayData tagsArrayData = new StringArrayData();
 		tagsArray.get(0, tagsArray.getLength(), tagsArrayData);
-		
+
 		// TODO read column meta data?
-		
+
 		TableAttribute attribute = new TableAttribute();
-		
+
 		attribute.setDescription(description);
 		attribute.setLabel(label);
 		attribute.setTags(tagsArrayData.data);
 		attribute.setWriteable(writeable);
 		attribute.setName(pvStructure.getFullName());
-		
+
 		PVStringArray headingsArray = pvStructure.getSubField(PVStringArray.class, headingsTagField);
 		StringArrayData headingsArrayData = new StringArrayData();
 		headingsArray.get(0, headingsArray.getLength(), headingsArrayData);
 		attribute.setHeadings(headingsArrayData.data);
-		
+
 		PVStructure valuePVStructure = pvStructure.getStructureField(valueField);
-		
+
 		@SuppressWarnings("unchecked")
 		Map<String, List<Object>> valueMap = deserialiser.getMapDeserialiser().createMapFromPVStructure(valuePVStructure, LinkedHashMap.class, Object.class);
-		
+
 		Map<String, Class<?>> dataTypeMap = new LinkedHashMap<>();
-		
+
 		// Use the PVStructure to work out the column classes
 		for (String heading : valueMap.keySet()) {
 			Field field = valuePVStructure.getSubField(heading).getField();
@@ -107,18 +107,18 @@ public class NTTableDeserialiser implements IPVStructureDeserialiser {
 						break;
 					default:
 						throw new Exception("Unsupported data type: " + scalarType);
-							
+
 				}
 			}
 		}
-		
+
 		MalcolmTable malcolmTable = new MalcolmTable(valueMap, dataTypeMap);
-				
+
 		attribute.setValue(malcolmTable);
-		
+
 		return attribute;
-		
+
 	}
-	
-	
+
+
 }

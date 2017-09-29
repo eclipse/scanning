@@ -46,7 +46,7 @@ public class ExperimentSubmissionView {
 
 	public static final String ID = "org.eclipse.scanning.device.ui.expr.experimentSubmissionView"; //$NON-NLS-1$
 	private static final Logger logger = LoggerFactory.getLogger(ExperimentSubmissionView.class);
-	
+
 	private ShuffleConfiguration<SampleEntry> conf;
 	private ShuffleViewer<SampleEntry>        viewer;
 	private String proposalCode;
@@ -60,51 +60,51 @@ public class ExperimentSubmissionView {
 	 */
 	@PostConstruct
 	public void createView(Composite parent) {
-		
+
 		conf = new ShuffleConfiguration<>();
 		conf.setFromLabel("Available Experiments");
 		conf.setToLabel("Submission List");
 		conf.setFromReorder(true);
 		conf.setToReorder(true);
-		
+
 		Composite container = new Composite(parent, SWT.NONE);
 		container.setLayout(new GridLayout(1, false));
 
 		viewer = new ShuffleViewer<>(conf);
 		viewer.createPartControl(container);
 		viewer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		
+
 		final Color white = container.getDisplay().getSystemColor(SWT.COLOR_WHITE);
-		
+
 		final Composite buttons = new Composite(container, SWT.NONE);
 		buttons.setBackground(white);
 		buttons.setLayout(new RowLayout(SWT.HORIZONTAL));
 		buttons.setLayoutData(new GridData(SWT.RIGHT, SWT.FILL, true, false));
-		
+
 		Button refresh = new Button(buttons, SWT.PUSH|SWT.FLAT);
 		refresh.setText("Refresh");
 		refresh.setBackground(white);
 		refresh.setImage(Activator.getImageDescriptor("icons/recycle.png").createImage());
-		refresh.addSelectionListener(				
-				new SelectionAdapter() { 
+		refresh.addSelectionListener(
+				new SelectionAdapter() {
 					@Override
 					public void widgetSelected(SelectionEvent e) {
 						refresh();
 					}
 				});
-		
+
 		Button submit = new Button(buttons, SWT.PUSH|SWT.FLAT);
 		submit.setText("Submit");
 		submit.setBackground(white);
 		submit.setImage(Activator.getImageDescriptor("icons/shoe--arrow.png").createImage());
-		submit.addSelectionListener(				
-				new SelectionAdapter() { 
+		submit.addSelectionListener(
+				new SelectionAdapter() {
 					@Override
 					public void widgetSelected(SelectionEvent e) {
 						submit();
 					}
 				});
-		
+
 		processVisitID();
 		refresh();
 	}
@@ -121,7 +121,7 @@ public class ExperimentSubmissionView {
 		}
 	    catch (QueueModelException e) {
 		    logger.error("Error while queueing the experiment", e);
-	    } 
+	    }
 		catch (EventException e) {
 		    logger.error("Error detected in the event system", e);
 	    }
@@ -135,12 +135,12 @@ public class ExperimentSubmissionView {
 	public void setFocus() {
 		viewer.setFocus();
 	}
-	
+
 	@PreDestroy
 	public void dispose() {
 		viewer.dispose();
 	}
-	
+
 	public void processVisitID() {
 		String visitID;
 		try {
@@ -168,7 +168,7 @@ public class ExperimentSubmissionView {
 			logger.error("Cannot parse visit ID", e);
 		}
 		}
-	
+
 	/**
 	 * Get the samples information and show it in the UI
 	 */
@@ -185,7 +185,7 @@ public class ExperimentSubmissionView {
 			if (!shuffleToList.contains(sampleEntry)) {
 				fromList.add(sampleEntry);
 			}
-		}); 
+		});
 		conf.setFromList(fromList);
 	}
 
@@ -197,5 +197,5 @@ public class ExperimentSubmissionView {
 		IQueueSpoolerService queueSpoolerService = ServiceHolder.getQueueSpoolerService();
 		queueSpoolerService.submitExperiments(proposalCode, proposalNumber, sampleIdsList);
 	}
-	
+
 }

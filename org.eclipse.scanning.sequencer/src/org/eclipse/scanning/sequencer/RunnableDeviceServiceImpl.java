@@ -143,7 +143,7 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 	                    final Method setName = mod.getClass().getMethod("setName", String.class);
 	                    setName.invoke(mod, name);
 	                } catch (Exception ignored) {
-	                	// getName() is not compulsory in the model
+				// getName() is not compulsory in the model
 	                }
 
 	                if (!device.getRole().isVirtual()) { // We have to make a good instance which will be used in scanning.
@@ -223,18 +223,18 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
                 // If the model has a name for the device, we use
                 // it automatically.
                 try {
-                	String name = null;
-                	// Try with INameable first as faster than reflection
-                	if (model instanceof INameable) name = ((INameable) model).getName();
+			String name = null;
+			// Try with INameable first as faster than reflection
+			if (model instanceof INameable) name = ((INameable) model).getName();
 
-                	// Try with reflection
-                	if (name == null) {
-	                	final Method getName = model.getClass().getMethod("getName");
+			// Try with reflection
+			if (name == null) {
+				final Method getName = model.getClass().getMethod("getName");
 	                    name = (String)getName.invoke(model);
-                	}
+			}
                     ascanner.setName(name);
                 } catch (NoSuchMethodException ignored) {
-                	// getName() is not compulsory in the model
+			// getName() is not compulsory in the model
                 }
 			}
 

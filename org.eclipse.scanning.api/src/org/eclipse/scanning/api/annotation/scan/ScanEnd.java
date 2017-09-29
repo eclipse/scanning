@@ -21,10 +21,10 @@ import java.lang.annotation.Target;
  * ScanEnd is called after the files are closed for writing and the scan
  * has finished with success. It is called before ScanFinally but will not
  * be called if no success occurred.
- * 
+ *
  * <p>
  * It is possible using annotations to have more than one method annotated
- * which means a super class can declare its implementation as final, requiring a 
+ * which means a super class can declare its implementation as final, requiring a
  * subclass to define another annotation.
  * <p>
  * Services such as IRunnableDeviceService, IPointsGenerator etc may be declared
@@ -74,7 +74,7 @@ import java.lang.annotation.Target;
  *     }
  *}
  * </pre></code>
- * 
+ *
  * <p>
  * @author Matthew Gerring
  *

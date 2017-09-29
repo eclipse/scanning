@@ -17,13 +17,13 @@ import org.eclipse.scanning.api.points.IPosition;
 public class PositionerRequest extends IdBean {
 
 	private PositionRequestType positionType = PositionRequestType.GET;
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3212765978085542676L;
 
-	
+
 	private IPosition position;
 
 	public IPosition getPosition() {

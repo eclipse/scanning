@@ -40,9 +40,9 @@ import org.eclipse.scanning.example.Services;
 
 /**
  * This device mimicks telling EPICS to do a scan down a line.
- * 
+ *
  * It writes an HDF5 file for the line (actually random data)
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -78,20 +78,20 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 		final NXdetector detector = NexusNodeFactory.createNXdetector();
 		// We add 2 to the scan rank to include the image
 		int rank = info.getRank()+1; // scan rank plus three dimensions for the line scan.
-		
+
 		context = detector.initializeLazyDataset(NXdetector.NX_DATA, rank, Double.class);
-		
+
 		// Setting chunking is a very good idea if speed is required.
 		int[] chunk = info.createChunk(model.getLineSize());
 		context.setChunking(chunk);
-		
+
 		Attributes.registerAttributes(detector, this);
 
 		return detector;
 	}
-	
+
 	@Override
-	public void configure(RandomLineModel model) throws ScanningException {	
+	public void configure(RandomLineModel model) throws ScanningException {
 		count(Thread.currentThread().getStackTrace(), model);
 		super.configure(model);
 		setName(model.getName());
@@ -102,28 +102,28 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 		count(Thread.currentThread().getStackTrace());
 		// TODO Real device would tell EPICS to run the line scan now.
 		// To simulate this, we create a line using the definition in the model
-		// EPICS might write an HDF5 file with this data rather than the data 
+		// EPICS might write an HDF5 file with this data rather than the data
 		// being in memory.
 		data = Random.rand(new int[]{model.getLineSize()});
 	}
 
 	@Override
 	public boolean write(IPosition pos) throws ScanningException, InterruptedException {
-		
+
 		count(Thread.currentThread().getStackTrace());
 		if (model.getExposureTime()>0) {
 			Thread.sleep(Math.round(model.getExposureTime()*1000));
 		}
 		if (isThrowWriteExceptions()) throw new ScanningException("The detector has been instructed to fail on a write!");
 		try {
-			// In a real CV Scan the write step could be to either link in the HDF5 or read in its data 
+			// In a real CV Scan the write step could be to either link in the HDF5 or read in its data
 			// and write a new record. Avoiding reading in the HDF5 being preferable.
 			final IScanSlice rslice = IScanRankService.getScanRankService().createScanSlice(pos, model.getLineSize());
 			SliceND sliceND = new SliceND(context.getShape(), context.getMaxShape(), rslice.getStart(), rslice.getStop(), rslice.getStep());
 			context.setSlice(null, data, sliceND);
 
 		} catch (Exception e) {
-			throw new ScanningException(e.getMessage(), e); 
+			throw new ScanningException(e.getMessage(), e);
 		}
 
 		return true;
@@ -145,39 +145,39 @@ public class RandomLineDevice extends AbstractRunnableDevice<RandomLineModel> im
 			throw new ScanningException("Cannot clone information during test", e);
 		}
 	}
-	
+
 	public int getCount(String method) {
 		if (!counts.containsKey(method)) return 0;
 		return counts.get(method);
 	}
-	
+
 	public Object getValue(String method, int index) {
 		return values.get(method).get(index);
 	}
-	
-	protected static final String getMethodName ( StackTraceElement ste[] ) {  
-		   
-	    String methodName = "";  
-	    boolean flag = false;  
-	   
-	    for ( StackTraceElement s : ste ) {  
-	   
-	        if ( flag ) {  
-	   
-	            methodName = s.getMethodName();  
-	            break;  
-	        }  
-	        flag = s.getMethodName().equals( "getStackTrace" );  
-	    }  
-	    return methodName;  
+
+	protected static final String getMethodName ( StackTraceElement ste[] ) {
+
+	    String methodName = "";
+	    boolean flag = false;
+
+	    for ( StackTraceElement s : ste ) {
+
+	        if ( flag ) {
+
+	            methodName = s.getMethodName();
+	            break;
+	        }
+	        flag = s.getMethodName().equals( "getStackTrace" );
+	    }
+	    return methodName;
 	}
-	
+
 	@Override
 	public void reset() throws ScanningException {
 		resetCount();
 		super.reset();
 	}
-	
+
 	public void resetCount() {
 		counts.clear();
 		values.clear();

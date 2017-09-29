@@ -27,17 +27,17 @@ import org.python.util.PythonInterpreter;
 
 
 public abstract class AbstractJythonTest extends BrokerTest{
-	
+
 	protected static PythonInterpreter pi;
 	protected static MarshallerService           marshaller;
-	
+
 	public AbstractJythonTest() {
 		super();
 	}
 	public AbstractJythonTest(boolean start) {
 		super(start);
 	}
-	
+
 	protected static void createMarshaller() {
 		marshaller = new MarshallerService(
 				Arrays.asList(new ScanningAPIClassRegistry(),

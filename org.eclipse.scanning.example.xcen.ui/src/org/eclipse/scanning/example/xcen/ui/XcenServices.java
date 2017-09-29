@@ -32,13 +32,13 @@ public class XcenServices {
 	public void setLoaderService(ILoaderService loaderService) {
 		this.loaderService = loaderService;
 	}
-	
+
 	private static XcenServices current;
 
 	public void start(ComponentContext context) {
 		current = this;
 	}
-	
+
 	public void stop() {
 		current = null;
 	}

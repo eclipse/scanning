@@ -4,13 +4,13 @@ public class SampleEntry {
 
 	private Long sampleId;
 	private String sampleName;
-	
+
 	public SampleEntry(Long sampleId, String sampleName) {
 		super();
 		this.sampleId = sampleId;
 		this.sampleName = sampleName;
 	}
-	
+
 	public Long getSampleId() {
 		return sampleId;
 	}
@@ -62,5 +62,5 @@ public class SampleEntry {
 			return false;
 		return true;
 	}
-	
+
 }

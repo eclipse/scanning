@@ -39,9 +39,9 @@ import org.python.core.PyDictionary;
 import org.python.core.PyList;
 
 public class CompoundTest {
-	
+
 	private IPointGeneratorService service;
-	
+
 	@Before
 	public void before() throws Exception {
 		service = new PointGeneratorService();
@@ -51,7 +51,7 @@ public class CompoundTest {
 	public void testCompoundCompoundException() throws Exception {
 
 		IPointGenerator<StepModel> pos = service.createGenerator(new StepModel("Position", 1, 4, 0.6));
-		
+
 		BoundingBox box = new BoundingBox();
 		box.setFastAxisStart(0);
 		box.setSlowAxisStart(0);
@@ -94,7 +94,7 @@ public class CompoundTest {
 		assertEquals(36, scan.size());
 		assertEquals(2, scan.getRank());
 		assertArrayEquals(new int[] { 6, 6 }, scan.getShape());
-		
+
 		Iterator<IPosition> it = scan.iterator();
 		int size = scan.size();
 		int sz=0;
@@ -104,10 +104,10 @@ public class CompoundTest {
 			if (sz>size) throw new Exception("Iterator grew too large!");
 		}
 	}
-	
+
 	@Test
 	public void testSimpleCompoundStep2Step() throws Exception {
-		
+
 		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290,295,1));
 		assertEquals(6, temp.size());
 		assertEquals(1, temp.getRank());
@@ -124,7 +124,7 @@ public class CompoundTest {
 		assertArrayEquals(new int[] { 6, 6 }, scan.getShape());
 
 		final List<IPosition> points = scan.createPoints();
-		
+
 		// 290K
 		assertEquals(new Double(290), (Double)points.get(0).get("Temperature"));
 		assertEquals(new Double(1),   (Double)points.get(0).get("Position"));
@@ -132,7 +132,7 @@ public class CompoundTest {
 		assertEquals(new Double(1.6), (Double)points.get(1).get("Position"));
 		assertEquals(new Double(290), (Double)points.get(2).get("Temperature"));
 		assertEquals(new Double(2.2), (Double)points.get(2).get("Position"));
-		
+
 		// 291K
 		assertEquals(new Double(291), (Double)points.get(6).get("Temperature"));
 		assertEquals(new Double(1),   (Double)points.get(6).get("Position"));
@@ -140,7 +140,7 @@ public class CompoundTest {
 		assertEquals(new Double(1.6), (Double)points.get(7).get("Position"));
 		assertEquals(new Double(291), (Double)points.get(8).get("Temperature"));
 		assertEquals(new Double(2.2), (Double)points.get(8).get("Position"));
-		
+
 		// 295K
 		assertEquals(new Double(295), (Double)points.get(30).get("Temperature"));
 		assertEquals(new Double(1),   (Double)points.get(30).get("Position"));
@@ -151,15 +151,15 @@ public class CompoundTest {
 
         GeneratorUtil.testGeneratorPoints(scan);
 	}
-	
+
 	@Test
 	public void testSimpleToDict() throws Exception {
-		
+
 		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290, 295, 1));
 		IPointGenerator<?> scan = service.createCompoundGenerator(temp);
-		
+
 		Map<?,?> dict = ((PySerializable)scan).toDict();
-		
+
 		PyList gens = (PyList) dict.get("generators");
 		PyDictionary line1 = (PyDictionary) gens.get(0);
 
@@ -174,16 +174,16 @@ public class CompoundTest {
 		assertEquals(new PyList(), excluders);
 		assertEquals(new PyList(), mutators);
 	}
-	
+
 	@Test
 	public void testNestedToDict() throws Exception {
-		
+
 		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290, 295, 1));
 		IPointGenerator<StepModel> pos = service.createGenerator(new StepModel("Position", 1, 4, 0.6));
 		IPointGenerator<?> scan = service.createCompoundGenerator(temp, pos);
-		
+
 		Map<?,?> dict = ((PySerializable)scan).toDict();
-		
+
 		PyList gens = (PyList) dict.get("generators");
 		PyDictionary line1 = (PyDictionary) gens.get(0);
 		PyDictionary line2 = (PyDictionary) gens.get(1);
@@ -193,7 +193,7 @@ public class CompoundTest {
 		assertEquals(290.0, (double) ((PyList) line1.get("start")).get(0), 1E-10);
 		assertEquals(295.0, (double) ((PyList) line1.get("stop")).get(0), 1E-10);
 		assertEquals(6, (int) line1.get("size"));
-		
+
 		assertEquals("Position", (String) ((PyList) line2.get("axes")).get(0));
 		assertEquals("mm", (String) ((PyList) line2.get("units")).get(0));
 		assertEquals(1.0, (double) ((PyList) line2.get("start")).get(0), 1E-10);
@@ -205,10 +205,10 @@ public class CompoundTest {
 		assertEquals(new PyList(), excluders);
 		assertEquals(new PyList(), mutators);
 	}
-	
+
 	@Test
 	public void testSimpleCompoundStep3Step() throws Exception {
-		
+
 		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290,295,1));
 		assertEquals(6, temp.size());
 		assertEquals(1, temp.getRank());
@@ -223,14 +223,14 @@ public class CompoundTest {
 		assertEquals(6, x.size());
 		assertEquals(1, x.getRank());
 		assertArrayEquals(new int[] { 6 }, x.getShape());
-	
+
 		IPointGenerator<?> scan = service.createCompoundGenerator(temp, y, x);
 		assertEquals(216, scan.size());
 		assertEquals(3, scan.getRank());
 		assertArrayEquals(new int[] { 6, 6, 6 }, scan.getShape());
 
 		final List<IPosition> points = scan.createPoints();
-		
+
 		// 290K
 		assertEquals(new Double(290), (Double)points.get(0).get("Temperature"));
 		assertEquals(new Double(11),  (Double)points.get(0).get("Y"));
@@ -241,7 +241,7 @@ public class CompoundTest {
 		assertEquals(new Double(290), (Double)points.get(2).get("Temperature"));
 		assertEquals(new Double(11),  (Double)points.get(2).get("Y"));
 		assertEquals(new Double(2.2), (Double)points.get(2).get("X"));
-		
+
 		// 291K
 		assertEquals(new Double(291), (Double)points.get(36).get("Temperature"));
 		assertEquals(new Double(11),  (Double)points.get(36).get("Y"));
@@ -269,28 +269,28 @@ public class CompoundTest {
 
 	@Test
 	public void testSimpleCompoundGrid() throws Exception {
-		
+
 		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290,300,1));
 		assertEquals(11, temp.size());
 		assertEquals(1, temp.getRank());
 		assertArrayEquals(new int[] { 11 }, temp.getShape());
-		
+
 		BoundingBox box = new BoundingBox();
 		box.setFastAxisStart(0);
 		box.setSlowAxisStart(0);
 		box.setFastAxisLength(3);
 		box.setSlowAxisLength(3);
-		
+
 		GridModel model = new GridModel("x", "y");
 		model.setSlowAxisPoints(20);
 		model.setFastAxisPoints(20);
 		model.setBoundingBox(box);
-		
+
 		IPointGenerator<GridModel> grid = service.createGenerator(model);
 		assertEquals(400, grid.size());
 		assertEquals(2, grid.getRank());
 		assertArrayEquals(new int[] { 20, 20 }, grid.getShape());
-		
+
 		IPointGenerator<?> scan = service.createCompoundGenerator(temp, grid);
 		assertEquals(4400, scan.size());
 		assertEquals(3, scan.getRank());
@@ -306,7 +306,7 @@ public class CompoundTest {
 			first400.add(points.get(i));
 		}
 		checkPoints(first400);
-		
+
 		for (int i = 400; i < 800; i++) {
 			assertEquals(new Double(291.0), points.get(i).get("Temperature"));
 		}
@@ -315,7 +315,7 @@ public class CompoundTest {
 		}
         GeneratorUtil.testGeneratorPoints(scan);
 	}
-	
+
 	@Test
 	public void testSimpleCompoundGridWithCircularRegion() throws Exception {
 		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290,300,1));
@@ -323,26 +323,26 @@ public class CompoundTest {
 		assertEquals(expectedOuterSize, temp.size());
 		assertEquals(1, temp.getRank());
 		assertArrayEquals(new int[] { expectedOuterSize }, temp.getShape());
-		
+
 		BoundingBox box = new BoundingBox();
 		box.setFastAxisStart(0);
 		box.setSlowAxisStart(0);
 		box.setFastAxisLength(3);
 		box.setSlowAxisLength(3);
-		
+
 		GridModel model = new GridModel("x", "y");
 		model.setSlowAxisPoints(20);
 		model.setFastAxisPoints(20);
 		model.setBoundingBox(box);
-		
+
 		IROI region = new CircularROI(2, 1, 1);
 		IPointGenerator<GridModel> grid = service.createGenerator(model, region);
-		
+
 		final int expectedInnerSize = 316;
 		assertEquals(expectedInnerSize, grid.size());
 		assertEquals(1, grid.getRank());
-		assertArrayEquals(new int[] { expectedInnerSize }, grid.getShape()); 
-		
+		assertArrayEquals(new int[] { expectedInnerSize }, grid.getShape());
+
 		IPointGenerator<?> scan = service.createCompoundGenerator(temp, grid);
 		final int expectedScanSize = expectedOuterSize * expectedInnerSize;
 		assertEquals(expectedScanSize, scan.size());
@@ -363,49 +363,49 @@ public class CompoundTest {
 		}
         GeneratorUtil.testGeneratorPoints(scan);
 	}
-	
+
 
 	@Test
 	public void testGridCompoundGrid() throws Exception {
-		
+
 		BoundingBox box = new BoundingBox();
 		box.setFastAxisStart(0);
 		box.setSlowAxisStart(0);
 		box.setFastAxisLength(3);
 		box.setSlowAxisLength(3);
-		
+
 		GridModel model1 = new GridModel();
 		model1.setSlowAxisPoints(5);
 		model1.setFastAxisPoints(5);
 		model1.setBoundingBox(box);
 		model1.setFastAxisName("x");
 		model1.setSlowAxisName("y");
-		
-		IPointGenerator<GridModel> grid1 = service.createGenerator(model1);	
+
+		IPointGenerator<GridModel> grid1 = service.createGenerator(model1);
 		assertEquals(25, grid1.size());
 		assertEquals(2, grid1.getRank());
 		assertArrayEquals(new int[] { 5, 5 }, grid1.getShape());
-		
+
 		GridModel model2 = new GridModel();
 		model2.setSlowAxisPoints(5);
 		model2.setFastAxisPoints(5);
 		model2.setBoundingBox(box);
 		model2.setFastAxisName("x2");
 		model2.setSlowAxisName("y2");
-		
+
 		IPointGenerator<GridModel> grid2 = service.createGenerator(model2);
 		assertEquals(25, grid2.size());
 		assertEquals(2, grid2.getRank());
 		assertArrayEquals(new int[] { 5, 5 }, grid2.getShape());
-		
+
 		IPointGenerator<?> scan = service.createCompoundGenerator(grid1, grid2);
 		assertEquals(625, scan.size());
 		assertEquals(4, scan.getRank());
 		assertArrayEquals(new int[] { 5, 5, 5, 5 }, scan.getShape());
-		
+
         GeneratorUtil.testGeneratorPoints(scan);
 	}
-	
+
 	private void checkPoints(List<IPosition> pointList) {
 		// Check correct number of points
 		assertEquals(20 * 20, pointList.size());
@@ -424,12 +424,12 @@ public class CompoundTest {
 		assertEquals(0.075 + 17 * (3.0 / 20.0), (Double)pointList.get(350).get("y"), 1e-8);
 
 	}
-	
+
 	@Test
 	public void testNestedNeXus() throws Exception {
-		
+
 		int[] size = {10,8,5};
-		
+
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
 		gmodel.setFastAxisName("xNex");
@@ -437,9 +437,9 @@ public class CompoundTest {
 		gmodel.setSlowAxisName("yNex");
 		gmodel.setSlowAxisPoints(size[size.length-1]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		IPointGenerator<?> gen = service.createGenerator(gmodel);
-		
+
 		// We add the outer scans, if any
 		if (size.length > 2) {
 			IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length - 1];
@@ -450,25 +450,25 @@ public class CompoundTest {
 			gens[size.length - 2] = gen;
 			gen = service.createCompoundGenerator(gens);
 		}
-		
+
 		final IPosition pos = gen.iterator().next();
 		assertEquals(size.length, pos.size());
-		
+
 	}
-	
+
 	@Test
 	public void testMultiAroundGrid() throws Exception {
-		
+
 		final MultiStepModel mmodel = new MultiStepModel();
 		mmodel.setName("energy");
 		mmodel.addStepModel(new StepModel("energy", 10000,20000,10000)); // 2 points
-		
+
 		assertEquals(2, service.createGenerator(mmodel).size());
 
-		
+
 		GridModel gmodel = new GridModel("stage_x", "stage_y", 5, 5);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		IPointGenerator<?> scan = service.createCompoundGenerator(new CompoundModel(Arrays.asList(mmodel, gmodel)));
 
 		assertEquals(50, scan.size());

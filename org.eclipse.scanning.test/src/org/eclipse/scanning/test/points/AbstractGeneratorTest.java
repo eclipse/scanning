@@ -31,13 +31,13 @@ public abstract class AbstractGeneratorTest {
 
 	@Before
 	public void before() throws Exception {
-	
+
 		service = new PointGeneratorService();
 	}
 
-	
+
 	public void checkWrtCompound(Object model, IROI roi, int size) throws Exception {
-		
+
 		// Get the point list
 		IPointGenerator<?> generator = roi!=null ? service.createGenerator(model, roi) : service.createGenerator(model);
 	    List<IPosition> pointList = generator.createPoints();
@@ -47,8 +47,8 @@ public abstract class AbstractGeneratorTest {
 
 		CompoundModel<IROI> cmodel = new CompoundModel<>(model);
 		if (roi!=null) cmodel.setRegions(Arrays.asList(new ScanRegion(roi, Arrays.asList("x", "y"))));
-		
-		IPointGenerator<?> cgenerator = service.createCompoundGenerator(cmodel); 
+
+		IPointGenerator<?> cgenerator = service.createCompoundGenerator(cmodel);
 	    List<IPosition> cpointList = cgenerator.createPoints();
 		assertEquals(size, cpointList.size());
 		assertEquals(size, cgenerator.size());

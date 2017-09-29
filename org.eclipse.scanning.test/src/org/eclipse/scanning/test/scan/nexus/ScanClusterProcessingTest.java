@@ -48,7 +48,7 @@ import org.junit.Test;
 
 @Ignore("This test occasionally hangs on travis.")
 public class ScanClusterProcessingTest extends NexusTest {
-	
+
 	private static IConsumer<StatusBean> consumer;
 
 	@BeforeClass
@@ -56,10 +56,10 @@ public class ScanClusterProcessingTest extends NexusTest {
 		// called after NexusTest.beforeClass()
 		BrokerTest.setUpNonOSGIActivemqMarshaller(DummyOperationBean.class);
 		BrokerTest.startBroker();
-		
+
 		IEventService eventService = new EventServiceImpl(new ActivemqConnectorService());
 		ServiceHolder.setEventService(eventService);
-		
+
 		URI uri = URI.create(CommandConstants.getScanningBrokerUri());
 		consumer = eventService.createConsumer(uri, PROCESSING_QUEUE_NAME,
 				"scisoft.operation.STATUS_SET", "scisoft.operation.STATUS_TOPIC");
@@ -67,7 +67,7 @@ public class ScanClusterProcessingTest extends NexusTest {
 		consumer.setRunner(new FastRunCreator(0, 1, 1, 10, false));
 		consumer.start();
 	}
-	
+
 	@AfterClass
 	public static void afterClass() throws Exception {
 		consumer.cleanQueue(consumer.getSubmitQueueName());
@@ -75,30 +75,30 @@ public class ScanClusterProcessingTest extends NexusTest {
 		consumer.disconnect();
 		BrokerTest.stopBroker();
 	}
-	
+
 	@Test
 	public void testNexusScanWithClusterProcessing() throws Exception {
 		testScan(2, 2);
 	}
-	
+
 	private void testScan(int... shape) throws Exception {
-		
+
 		ScanClusterProcessingChecker checker = new ScanClusterProcessingChecker(fileFactory, consumer);
-		
+
 		IRunnableDevice<ScanModel> scanner = createGridScan(shape);
 		checker.setDevice(scanner);
 		assertScanNotFinished(checker.getNexusRoot().getEntry());
 		scanner.run(null);
-		
+
 		Thread.sleep(100);
 		// Check the main nexus file
 		checker.checkNexusFile(shape);
-		
+
 		// Check the processing bean was submitted successfully
 		Thread.sleep(200);
 		checker.checkSubmittedBean(true);
 	}
-	
+
 
 	private IRunnableDevice<ScanModel> createGridScan(int... size) throws Exception {
 		// Create scan points for a grid and make a generator
@@ -108,7 +108,7 @@ public class ScanClusterProcessingTest extends NexusTest {
 		gmodel.setSlowAxisName("yNex");
 		gmodel.setSlowAxisPoints(size[size.length-2]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length - 1];
 		// We add the outer scans, if any
@@ -125,17 +125,17 @@ public class ScanClusterProcessingTest extends NexusTest {
 			}
 		}
 		gens[size.length - 2 ] = gen;
-		
+
 		gen = gservice.createCompoundGenerator(gens);
-		
+
 		// Create the model for a scan
 		final ScanModel smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
-		
+
 		// Create a file to scan into
 		smodel.setFilePath(output.getAbsolutePath());
 		System.out.println("File writing to " + smodel.getFilePath());
-		
+
 		// Set up the Mandelbrot
 		MandelbrotModel model = createMandelbrotModel();
 		IWritableDetector<MandelbrotModel> detector =
@@ -147,18 +147,18 @@ public class ScanClusterProcessingTest extends NexusTest {
 				//System.out.println("Ran mandelbrot detector @ "+evt.getPosition());
 			}
 		});
-		
+
 		// TODO set up the processing
 		ClusterProcessingModel pmodel = new ClusterProcessingModel();
 		pmodel.setDetectorName("mandelbrot");
 		pmodel.setProcessingFilePath("/tmp/sum.nxs");
 		pmodel.setName("sum");
-		
+
 		final IRunnableDevice<ClusterProcessingModel> processor = dservice.createRunnableDevice(pmodel);
 		smodel.setDetectors(detector, processor);
-		
+
 		final IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override
@@ -170,7 +170,7 @@ public class ScanClusterProcessingTest extends NexusTest {
 				}
 			}
 		});
-		
+
 		return scanner;
 	}
 

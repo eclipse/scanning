@@ -8,7 +8,7 @@
 #
 # Contributors:
 #    Peter Chang - initial API and implementation and/or initial documentation
-# 
+#
 ###
 
 '''
@@ -93,7 +93,7 @@ def logical_xor(a, b):
 @_wrap
 def allclose(a, b, rtol=1e-05, atol=1e-08, axis=None):
     '''Return true if all items are equal within given tolerances
-    
+
     Parameters:
     rtol - relative tolerance
     atol - absolute tolerance
@@ -148,4 +148,3 @@ def iscomplex(x):
 
 def isreal(x):
     return equal(_asany(x).imag, 0)
-

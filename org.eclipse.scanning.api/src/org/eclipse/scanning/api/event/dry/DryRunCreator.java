@@ -17,9 +17,9 @@ import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.status.StatusBean;
 
 public class DryRunCreator<T extends StatusBean> implements IProcessCreator<T> {
-	
+
 	private boolean blocking;
-	
+
 	public DryRunCreator() {
 		this(true);
 	}

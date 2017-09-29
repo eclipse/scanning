@@ -20,5 +20,5 @@ import org.junit.runners.Suite.SuiteClasses;
 })
 public class Suite {
 
-	
+
 }

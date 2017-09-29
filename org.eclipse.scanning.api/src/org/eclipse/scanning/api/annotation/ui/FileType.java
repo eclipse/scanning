@@ -13,17 +13,17 @@
 package org.eclipse.scanning.api.annotation.ui;
 
 /**
- * An enum used to mark options on a OperationModelField as being 
- * editable using 
+ * An enum used to mark options on a OperationModelField as being
+ * editable using
  */
 public enum FileType {
 
-	NONE(false, true), 
-	EXISTING_FILE(false, false), 
-	EXISTING_FOLDER(true, false), 
-	NEW_FILE(false, true), 
+	NONE(false, true),
+	EXISTING_FILE(false, false),
+	EXISTING_FOLDER(true, false),
+	NEW_FILE(false, true),
 	NEW_FOLDER(true, true);
-	
+
 	private final boolean isDirectory;
 	private final boolean isNewFile;
 

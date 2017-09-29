@@ -165,7 +165,7 @@ public class DeviceRequestHandler implements IRequestHandler<DeviceRequest> {
         info.setPermittedValues(device.getPermittedValues());
         info.setActivated(device.isActivated());
         info.setMonitorRole(device.getMonitorRole());
- 	}
+	}
 
 	private static void processRunnables(DeviceRequest request, IRunnableDeviceService dservice) throws Exception {
 
@@ -242,7 +242,7 @@ public class DeviceRequestHandler implements IRequestHandler<DeviceRequest> {
 					.collect(toMap(IDeviceAttribute::getName, identity())));
 		} else if (request.getAttributeName() != null) {
 			// add the single attribute with the given name - note: exception thrown if no such attribute
- 			request.addAttribute(attrDevice.getAttribute(request.getAttributeName()));
+			request.addAttribute(attrDevice.getAttribute(request.getAttributeName()));
 		}
 	}
 

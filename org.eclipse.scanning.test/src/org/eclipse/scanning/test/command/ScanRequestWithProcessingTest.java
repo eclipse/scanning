@@ -33,7 +33,7 @@ public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 
 	@BeforeClass
 	public static void createProcessingConsumer() throws EventException {
-		
+
 		pconsumer = eservice.createConsumer(uri, PROCESSING_QUEUE_NAME, "scisoft.operation.STATUS_SET", "scisoft.operation.STATUS_TOPIC");
 		// we need a runner, but it doesn't have to do anything
 		pconsumer.setRunner(new FastRunCreator(0, 1, 1, 10, false));
@@ -49,31 +49,31 @@ public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 		servlet.getConsumer().cleanQueue(servlet.getStatusSet());
 		servlet.disconnect();
 	}
-	
+
 
 	@Test
 	public void testGridScanWithProcessing() throws Exception {
-		
+
 		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False), "
                 + "det=[detector('mandelbrot', 0.1), detector('processing', -1, detectorName='mandelbrot', processingFilePath='/tmp/sum.nxs')],"
                 + "file='"+path+"' )";
 		pi.exec(cmd);
 		runAndCheck("sr", "mandelbrot", "processing", false, 10);
 	}
-	
+
 	@Test
 	public void testGridScanWithProcessing2() throws Exception {
-		
+
 		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False), "
                 + "det=[detector('m', 0.1), detector('p', -1, detectorName='m', processingFilePath='/tmp/sum.nxs')],"
                 + "file='"+path+"' )";
 		pi.exec(cmd);
 		runAndCheck("sr", "m", "p", false, 10);
 	}
-	
+
 	@Test
 	public void testGridScanWithProcessing3() throws Exception {
-		
+
 		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False), "
                 + "det=[detector('m', 0.1), detector('processing', -1, detectorName='m', processingFilePath='/tmp/sum.nxs')],"
                 + "file='"+path+"' )";
@@ -84,7 +84,7 @@ public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 
 	@Test(expected=Exception.class) // Should give a validation exception.
 	public void testGridScanWithProcessingNoDetectorName() throws Exception {
-		
+
 		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False), "
                 + "det=[detector('mandelbrot', 0.1), detector('processing', -1, detectorName=None)],"
                 + "file='"+path+"' )";
@@ -94,22 +94,22 @@ public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 
 	@Test(expected=Exception.class) // Should give a validation exception.
 	public void testGridScanWithProcessingBadDetectorName() throws Exception {
-		
+
 		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False), "
                 + "det=[detector('mandelbrot', 0.1), detector('processing', -1, detectorName='fred', processingFilePath='/tmp/sum.nxs')],"
                 + "file='"+path+"' )";
 		pi.exec(cmd);
 		runAndCheck("sr", "mandelbrot", "processing", false, 10);
 	}
-	
+
 	@Test
 	public void testSnakedGridScanWithProcessing() throws Exception {
-		
+
 		assertTrue(servlet.isConnected());
-		
+
 		IRunnableDevice<?> device = dservice.getRunnableDevice("processing");
 		assertTrue(device.getModel()!=null);
-		
+
 		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=True), "
                 + "det=[detector('mandelbrot', 0.1), detector('processing', -1, detectorName='mandelbrot', processingFilePath='/tmp/sum.nxs')],"
                 + "file='"+path+"' )";
@@ -119,7 +119,7 @@ public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 
 	@Test
 	public void testStepScanNoMscanCommand() throws Exception {
-		
+
 		ScanBean bean = createStepScan();
 		runAndCheckNoPython(bean, 60);
 	}

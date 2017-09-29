@@ -14,7 +14,7 @@ package org.eclipse.scanning.server.application;
 import java.util.List;
 
 class NamedList {
-	
+
 	private List<String> refs;
 	private String       name;
 	public NamedList(String name, List<String> refs) {
@@ -62,5 +62,5 @@ class NamedList {
 			return false;
 		return true;
 	}
-	
+
 }

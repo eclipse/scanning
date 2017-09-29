@@ -8,11 +8,11 @@ import org.eclipse.scanning.api.points.models.IScanPathModel;
 public abstract class AbstractPathModelAssembler<P extends IScanPathModel> implements IScanObjectModelAssembler<P> {
 
 	protected final String[] required;
-		
+
 	protected AbstractPathModelAssembler(String[] required) {
 		this.required = required;
 	}
-	
+
 	@Override
 	public List<String> getRequiredArgReferences() {
 		return Arrays.asList(required);

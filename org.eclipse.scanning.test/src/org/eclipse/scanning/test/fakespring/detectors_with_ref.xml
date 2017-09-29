@@ -29,9 +29,9 @@
 		<property name="deviceInformation" ref="mandelbrotInfo"/>
 		<property name="activated"         value="true"/> <!-- This means it is activated as the default device to use in a scan -->
 	</bean>
-	
-	
-	
+
+
+
 	<!--  Dark Image Example -->
 	<bean id="darkImageModel" class="org.eclipse.scanning.example.detector.DarkImageModel">
 		<property name="name"          value="dkExmpl"/>
@@ -50,9 +50,9 @@
 		<property name="model"             ref="darkImageModel"/>
 		<property name="deviceInformation" ref="darkImageInfo"/>
 	</bean>
-	
-	
-	
+
+
+
 	<!--  Constant Velocity Example -->
 	<bean id="constantVelocityModel" class="org.eclipse.scanning.example.detector.ConstantVelocityModel">
 		<property name="name"           value="cvExmpl"/>
@@ -71,5 +71,5 @@
 		<property name="model"             ref="constantVelocityModel"/>
 		<property name="deviceInformation" ref="constantVelocityInfo"/>
 	</bean>
-	
+
 </beans>

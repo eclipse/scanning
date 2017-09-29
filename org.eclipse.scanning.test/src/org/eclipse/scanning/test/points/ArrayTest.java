@@ -29,7 +29,7 @@ public class ArrayTest {
 
 	@Before
 	public void before() throws Exception {
-		
+
 		double[] positions = new double[] {1.0, 2.0 ,3.0, 4.0, 5.0};
 
 		ArrayModel model = new ArrayModel();

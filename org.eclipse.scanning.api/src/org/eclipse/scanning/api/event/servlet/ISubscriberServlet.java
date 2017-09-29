@@ -22,20 +22,20 @@ import org.eclipse.scanning.api.event.core.IPublisher;
  * services, however the client and the server do not have to be Java,
  * more like a servlet. For instance the client can be VM running a scan
  * for B23 or it can be a javascript client like syncweb.
- * 
+ *
  * The event servlet in spring must have its uri and topic set before
  * the connect() method is called.
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
  */
 public interface ISubscriberServlet<T> extends IConnectable {
-	
+
 
 	/**
-	 * Called to do work in the servlet. 
-	 * 
+	 * Called to do work in the servlet.
+	 *
 	 * @param bean
 	 * @throws EventException
 	 */

@@ -19,18 +19,18 @@ import org.eclipse.scanning.api.event.queues.QueueStatus;
 import org.eclipse.scanning.api.event.status.Status;
 
 /**
- * A QueueRequest contains a request for data about the {@link IQueueService} 
- * from the client. From the {@link QueueRequestType}, the 
- * {@link QueueResponseProcess} decides what data it will populate to fulfil 
+ * A QueueRequest contains a request for data about the {@link IQueueService}
+ * from the client. From the {@link QueueRequestType}, the
+ * {@link QueueResponseProcess} decides what data it will populate to fulfil
  * the request, before returning it to the client.
- * 
+ *
  * @author Michael Wharmby
  *
  */
 public class QueueRequest extends IdBean {
 
 	/**
-	 * Version ID for serialization. Should be updated when class changed. 
+	 * Version ID for serialization. Should be updated when class changed.
 	 */
 	private static final long serialVersionUID = 20161107L;
 
@@ -41,7 +41,7 @@ public class QueueRequest extends IdBean {
 	private boolean startQueueService = false;
 	private boolean stopQueueService = false;
 	private boolean forceStop = false;
-	
+
 	//Values to be completed by responses
 	private String jobQueueID;//jobQueue of IQueueService
 	private String commandSetName, commandTopicName, heartbeatTopicName;//QueueService configured destinations
@@ -50,7 +50,7 @@ public class QueueRequest extends IdBean {
 	private QueueStatus status;
 	private String submissionQueueName, statusSetName, statusTopicName;
 	private UUID consumerId;
-	
+
 	//Request variables
 	public QueueRequestType getRequestType() {
 		return requestType;
@@ -119,7 +119,7 @@ public class QueueRequest extends IdBean {
 	public Status getBeanStatus() {
 		return beanStatus;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "QueueRequest [requestType=" + requestType + ", beanID=" + beanID + ", queueID=" + queueID

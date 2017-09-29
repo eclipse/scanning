@@ -24,7 +24,7 @@ public class MockResponder<T extends IdBean> implements IResponder<T> {
 	@Override
 	public void setRequestTopic(String requestTopic) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class MockResponder<T extends IdBean> implements IResponder<T> {
 	@Override
 	public void setResponseTopic(String responseTopic) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -48,7 +48,7 @@ public class MockResponder<T extends IdBean> implements IResponder<T> {
 	@Override
 	public void disconnect() throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -78,13 +78,13 @@ public class MockResponder<T extends IdBean> implements IResponder<T> {
 	@Override
 	public void setBeanClass(Class<T> beanClass) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void setResponseCreator(IResponseCreator<T> responder) throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

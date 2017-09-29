@@ -18,12 +18,12 @@ import org.eclipse.scanning.test.event.queues.dummy.DummyAtom;
 /**
  * Factory class to generate classes implementing the {@link IHasAtomQueue} interface.
  * Used within the testing framework.
- * 
+ *
  * @author Michael Wharmby
  *
  */
 public class TestAtomQueueBeanMaker {
-	
+
 	/*
 	 * List of Objects Available
 	 * -------------------------
@@ -32,27 +32,27 @@ public class TestAtomQueueBeanMaker {
 	 * DummySubTaskBeanC - SubTaskBean containing three DummyAtomBeans (HIJ)
 	 * DummySubTaskBeanD - SubTaskBean containing five DummyAtomBeans (LMNOP)
 	 * DummySubTaskBeanE - SubTaskBean containing two DummyAtomBeans (QR)
-	 * 
+	 *
 	 * DummyTaskBeanA - TaskBean containing DummySTBA & DummySTBB
 	 */
-	
+
 	public static SubTaskAtom makeDummySubTaskBeanA() {
 		SubTaskAtom sta = new SubTaskAtom(null, "Dummy SubTask A");
 		sta.addAtom(new DummyAtom("Arnold", 10));
 		sta.addAtom(new DummyAtom("Beatrice", 465));
 		sta.addAtom(new DummyAtom("Carlos", 1245));
 		sta.addAtom(new DummyAtom("Deirdre", 675));
-		
+
 		return sta;
 	}
-	
+
 	public static SubTaskAtom makeDummySubTaskBeanB() {
 		SubTaskAtom sta = new SubTaskAtom(null, "Dummy SubTask B");
 		sta.addAtom(new DummyAtom("Edmund", 10));
 		sta.addAtom(new DummyAtom("Francis", 20));
 		return sta;
 	}
-	
+
 	public static SubTaskAtom makeDummySubTaskBeanC() {
 		SubTaskAtom sta = new SubTaskAtom(null, "Dummy SubTask C");
 		sta.addAtom(new DummyAtom("Heinrich", 479));
@@ -60,7 +60,7 @@ public class TestAtomQueueBeanMaker {
 		sta.addAtom(new DummyAtom("Jane", 387));
 		return sta;
 	}
-	
+
 	public static SubTaskAtom makeDummySubTaskBeanD() {
 		SubTaskAtom sta = new SubTaskAtom(null, "Dummy SubTask D");
 		sta.addAtom(new DummyAtom("Linda", 7444));
@@ -70,14 +70,14 @@ public class TestAtomQueueBeanMaker {
 		sta.addAtom(new DummyAtom("Pablo", 58));
 		return sta;
 	}
-	
+
 	public static SubTaskAtom makeDummySubTaskBeanE() {
 		SubTaskAtom sta = new SubTaskAtom(null, "Dummy SubTask E");
 		sta.addAtom(new DummyAtom("Quentin", 986));
 		sta.addAtom(new DummyAtom("Reginald", 5886));
 		return sta;
 	}
-	
+
 	public static TaskBean makeDummyTaskBeanA() {
 		TaskBean tb = new TaskBean(null, "Dummy Task A");
 		tb.addAtom(makeDummySubTaskBeanA());

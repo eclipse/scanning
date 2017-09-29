@@ -14,7 +14,7 @@ package org.eclipse.scanning.api.ui;
 import org.eclipse.scanning.api.event.status.StatusBean;
 
 public interface IModifyHandler<T extends StatusBean> extends IHandler<T> {
-	
+
 	/**
 	 * Called to open the result from the beam.
 	 * @param bean

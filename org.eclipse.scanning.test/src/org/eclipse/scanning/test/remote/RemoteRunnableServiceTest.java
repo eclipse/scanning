@@ -53,11 +53,11 @@ public class RemoteRunnableServiceTest extends BrokerTest {
 
 	@BeforeClass
 	public static void createServices() throws Exception {
-		
+
 		System.out.println("Create Services");
 		RemoteServiceFactory.setTimeout(1, TimeUnit.MINUTES); // Make test easier to debug.
 
-		// We wire things together without OSGi here 
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		setUpNonOSGIActivemqMarshaller();
 		eservice = new EventServiceImpl(new ActivemqConnectorService()); // Do not copy this get the service from OSGi!
@@ -78,13 +78,13 @@ public class RemoteRunnableServiceTest extends BrokerTest {
 		Services.setRunnableDeviceService(dservice);
 		Services.setEventService(eservice);
 		System.out.println("Set connectors");
-	
+
 		dservlet = new DeviceServlet();
 		dservlet.setBroker(uri.toString());
 		dservlet.setRequestTopic(IEventService.DEVICE_REQUEST_TOPIC);
 		dservlet.setResponseTopic(IEventService.DEVICE_RESPONSE_TOPIC);
 		dservlet.connect();
-		
+
 		pservlet = new PositionerServlet();
 		pservlet.setBroker(uri.toString());
 		pservlet.setRequestTopic(IEventService.POSITIONER_REQUEST_TOPIC);
@@ -99,14 +99,14 @@ public class RemoteRunnableServiceTest extends BrokerTest {
 		dservlet.disconnect();
 		pservlet.disconnect();
 	}
-	
+
 	private         IRunnableDeviceService    rservice;
 
 	@Before
 	public void createService() throws EventException {
 		rservice = eservice.createRemoteService(uri, IRunnableDeviceService.class);
 	}
-	
+
 	@After
 	public void disposeService() throws EventException {
 		((IDisconnectable)rservice).disconnect();
@@ -116,24 +116,24 @@ public class RemoteRunnableServiceTest extends BrokerTest {
 	public void checkNotNull() throws Exception {
 		assertNotNull(rservice);
 	}
-	
+
 	@Test
 	public void testDrivePositioner() throws Exception {
-		
+
 		IPositioner pos1 = dservice.createPositioner();
 		IPositioner pos2 = rservice.createPositioner();
-		
+
 		// Set them up the same.
 		pos1.setPosition(new MapPosition("test", 0, 0));
 		pos2.setPosition(new MapPosition("test", 0, 0));
-		
+
 		pos1.setPosition(new MapPosition("test", 0, Math.PI));
 		assertTrue(pos2.getPosition().getValue("test")==Math.PI);
 	}
 
 	@Test
 	public void testThatAbortDoesNotChangeHardware() throws Exception {
-        
+
 		IPositioner pos1 = dservice.createPositioner();
 		if (rservice==null) rservice = eservice.createRemoteService(uri, IRunnableDeviceService.class);
 		IPositioner pos2 = rservice.createPositioner();
@@ -146,11 +146,11 @@ public class RemoteRunnableServiceTest extends BrokerTest {
 		assertTrue(pos2.getPosition().getValue("x")==10); // Should reach 10 despite abort because setPosition is blocking.
 
 	}
-	
+
 	// TODO Why does this pass locally an not on travis?
 	//@Test
 	public void testDeviceNames() throws Exception {
-		
+
 		Collection<String> names1 = dservice.getRunnableDeviceNames();
 		Collection<String> names2 = rservice.getRunnableDeviceNames();
 		assertTrue(names1!=null);
@@ -161,15 +161,15 @@ public class RemoteRunnableServiceTest extends BrokerTest {
 
 	@Test
 	public void testGetRunnableDevice() throws Exception {
-		
+
 		IRunnableDevice<?> dev1 = dservice.getRunnableDevice("mandelbrot");
 		IRunnableDevice<?> dev2 = rservice.getRunnableDevice("mandelbrot");
 		assertTrue(dev1!=null);
 		assertTrue(dev2!=null);
-		
+
 		assertTrue(dev1.getLevel()==(dev2.getLevel()));
 		assertTrue(dev1.getDeviceState().equals(dev2.getDeviceState()));
-	
+
 		final Object mod1 = dev1.getModel();
 		final Object mod2 = dev2.getModel();
 		assertTrue(mod1!=null);
@@ -177,5 +177,5 @@ public class RemoteRunnableServiceTest extends BrokerTest {
 		assertTrue(mod1.equals(mod2));
 	}
 
-	
+
 }

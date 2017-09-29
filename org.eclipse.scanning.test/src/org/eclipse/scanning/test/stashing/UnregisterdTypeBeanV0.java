@@ -15,12 +15,12 @@ public class UnregisterdTypeBeanV0 {
 
 	private int value1;
 	private String value2;
-	
+
 	public UnregisterdTypeBeanV0() {
 		value1 = 1;
 		value2 = "2";
 	}
-	
+
 	public int getValue1() {
 		return value1;
 	}
@@ -59,6 +59,6 @@ public class UnregisterdTypeBeanV0 {
 			return false;
 		return true;
 	}
-	
-	
+
+
 }

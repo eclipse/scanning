@@ -40,46 +40,46 @@ import org.slf4j.LoggerFactory;
 /**
  * AtomQueueService provides an implementation of {@link IQueueService}.
  * The service requires a URI and a queueRoot String as configuration. The URI
- * is used to specify the broker which will be used to run create 
+ * is used to specify the broker which will be used to run create
  * {@link IEventService} objects and the queueRoot String is used as a starting
  * point to name {@link IQueue} objects.
- * 
- * On starting, the service creates a job-queue {@link IQueue} object which 
- * processes {@link QueueBean}s (i.e. {@link TaskBean}s in the design). The 
- * service has methods to register new active-queue {@link IQueue} object on 
+ *
+ * On starting, the service creates a job-queue {@link IQueue} object which
+ * processes {@link QueueBean}s (i.e. {@link TaskBean}s in the design). The
+ * service has methods to register new active-queue {@link IQueue} object on
  * the fly, with the names for these based on the queueRoot String and a random
  * number to ensure queue names do not collide.
- * 
+ *
  * All queues are configured to share the same heartbeat & command destinations
- * to allow control of the service (these are also based on the queueRoot 
+ * to allow control of the service (these are also based on the queueRoot
  * String with common suffixes appended).
- * 
- * Users should be able to interact with the service directly, and therefore 
+ *
+ * Users should be able to interact with the service directly, and therefore
  * the job-queue. However individual active-queues should work autonomously.
- * Interaction with the queue is provided through 
+ * Interaction with the queue is provided through
  * {@link IQueueControllerService}.
- * 
- * To start the service, after instantiation a queueRoot & URI should be 
- * provided. init() can then be called, leaving the service in a state where 
- * the start() and stop() methods can be used to activate/deactivate bean 
- * processing. To shutdown the service, call disposeService()  
- * 
- * 
+ *
+ * To start the service, after instantiation a queueRoot & URI should be
+ * provided. init() can then be called, leaving the service in a state where
+ * the start() and stop() methods can be used to activate/deactivate bean
+ * processing. To shutdown the service, call disposeService()
+ *
+ *
  * @author Michael Wharmby
  *
  */
 public class QueueService extends QueueControllerService implements IQueueService {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(QueueService.class);
-	
+
 	private static Map<String, IQueue<QueueAtom>> activeQueueRegister;
 
-	
+
 	private String heartbeatTopicName, commandSetName, commandTopicName, jobQueueID;
 	private boolean active = false, stopped = false, runOnce = false;
 
 	/*
-	 * uriConstruct is only set during the constructor and used by unit tests to 
+	 * uriConstruct is only set during the constructor and used by unit tests to
 	 * specify the URI.
 	 */
 	private final String queueRoot, uriConstruct;
@@ -87,13 +87,13 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	private IQueue<QueueBean>         jobQueue;
 	private IResponder<QueueRequest>  queueResponder;
 
-	
+
 	private final ReentrantReadWriteLock queueControlLock = new ReentrantReadWriteLock();
-	
+
 	static {
 		System.out.println("Created " + IQueueService.class.getSimpleName());
 	}
-	
+
 	/**
 	 * No argument constructor for OSGi
 	 * @throws EventException if a URI cannot be constructed for the service.
@@ -101,7 +101,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	public QueueService() {
 		this(getQueueRootFromProperty(), CommandConstants.getScanningBrokerUri());
 	}
-	
+
 	/**
 	 * Used by tests directly
 	 * @throws EventException if a URI cannot be constructed for the service.
@@ -109,7 +109,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	public QueueService(String uri) {
 		this(getQueueRootFromProperty(), uri);
 	}
-	
+
 	/**
 	 * Used by tests directly.
 	 * @throws EventException if a URI cannot be constructed for the service.
@@ -117,7 +117,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	public QueueService(String queueRoot, String uriConstruct) {
 		this.queueRoot = queueRoot;
 		this.uriConstruct = uriConstruct;
-		
+
 		//uriString & queueRoot are already set, so we need to set their dependent fields
 		heartbeatTopicName = queueRoot+HEARTBEAT_TOPIC_SUFFIX;
 		commandSetName = queueRoot+COMMAND_SET_SUFFIX;
@@ -126,7 +126,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		//Create the active-queues map
 		if (activeQueueRegister==null) activeQueueRegister = new ConcurrentHashMap<>();
 	}
-	
+
 	private static final String getQueueRootFromProperty() {
 		String root = System.getProperty("GDA/gda.event.queues.queue.root");
 		if (root==null) root = System.getProperty("org.eclipse.scanning.event.queues.queue.root", DEFAULT_QUEUE_ROOT);
@@ -136,10 +136,10 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	@Override
 	public void init() throws EventException {
 		/*
-		 * We need the URI set by this point. Before here, we couldn't rely on 
-		 * SPRING to have set a value, so we check one hasn't been passed in 
-		 * by tests (as uriConstruct) and if not, get a URI via the SPRING 
-		 * config. 
+		 * We need the URI set by this point. Before here, we couldn't rely on
+		 * SPRING to have set a value, so we check one hasn't been passed in
+		 * by tests (as uriConstruct) and if not, get a URI via the SPRING
+		 * config.
 		 */
 		logger.debug("Initialising QueueService...");
 		runOnce = true; //Indicate that initialisation has been attempted
@@ -152,11 +152,11 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		} catch (URISyntaxException uSEx) {
 			throw new IllegalArgumentException("Failed to set QueueService URI", uSEx);
 		}
-		
+
 		//Now we can set up the job-queue
 		logger.debug("Creating job-queue...");
 		jobQueueID = queueRoot+JOB_QUEUE_SUFFIX;
-		jobQueue = new Queue<QueueBean>(jobQueueID, uri, 
+		jobQueue = new Queue<QueueBean>(jobQueueID, uri,
 				heartbeatTopicName, commandSetName, commandTopicName);
 
 		//Add responder
@@ -168,24 +168,24 @@ public class QueueService extends QueueControllerService implements IQueueServic
 
 		//Mark initialised
 		init = true;
-		
+
 		//With QueueService parts initialised, we can initialise the QueueController parts
 		// - this also makes calls to the IEventService!
 		super.init();
 		logger.debug("QueueService initialised with queue-root: "+queueRoot);
 	}
-	
+
 	@Override
 	public void disposeService() throws EventException {
 		if (!init && runOnce) {
 			logger.warn("Queue service has already been disposed or was never initialised.");
 			return;
 		}
-		
+
 		//Stop the job queue if service is up
 		logger.debug("Force-stopping active-queue(s)...");
 		if (active) stop(true);
-		
+
 		if (queueResponder != null) {
 			//Shutdown the responder
 			logger.debug("Disconnecting queueResponder...");
@@ -198,7 +198,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			jobQueue = null;
 		}
 		jobQueueID = null;
-		
+
 		//Mark the service not initialised
 		init = false;
 		logger.debug("QueueService disposed");
@@ -221,7 +221,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		//Start the job-queue if it can be
 		logger.debug("Starting job-queue...");
 		jobQueue.start();
-		
+
 		//Mark service as up & reset stopped (if needed)
 		active = true;
 		stopped = false;
@@ -271,11 +271,11 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		}
 		logger.info("QueueService stopped");
 	}
-	
+
 	@Override
 	public String registerNewActiveQueue() throws EventException {
 		if (!active) throw new IllegalStateException("Queue service not started.");
-		
+
 		//Generate the random name of the queue
 		Random randNrGen = new Random();
 		String randInt = String.format("%03d", randNrGen.nextInt(999));
@@ -290,7 +290,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 
 			//Create active-queue, add to register & return the active-queue ID
 			logger.debug("Creating new active-queue... (ID: "+aqID+")");
-			IQueue<QueueAtom> activeQueue = new Queue<>(aqID, uri, 
+			IQueue<QueueAtom> activeQueue = new Queue<>(aqID, uri,
 					heartbeatTopicName, commandSetName, commandTopicName);
 			activeQueue.clearQueues();
 			try {
@@ -304,7 +304,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 				queueControlLock.writeLock().unlock();
 				logger.debug("Active-queue successfully registered");
 			}
-			
+
 		} catch (InterruptedException iEx) {
 			logger.error("Active-queue registration interrupted: "+iEx.getMessage());
 			throw new EventException(iEx);
@@ -316,7 +316,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			}
 		}
 	}
-	
+
 	@Override
 	public void deRegisterActiveQueue(String queueID) throws EventException {
 		//Are we in a state where we can deregister?
@@ -355,7 +355,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			queueControlLock.readLock().unlock();
 		}
 	}
-	
+
 	private void disconnectAndClear(IQueue<? extends Queueable> queue) throws EventException {
 		//Clear queues: in previous iteration found that...
 		queue.clearQueues(); //...status queue clear, but submit not...
@@ -364,7 +364,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		if (!isClear) throw new EventException("Failed to clear queues when disposing "+queue.getQueueID());
 		logger.debug(queue.getQueueID()+" successfully disconnected and cleared");
 	}
-	
+
 	@Override
 	public boolean isActiveQueueRegistered(String queueID) {
 		//Use lock to make sure the register isn't being changed by another process
@@ -374,9 +374,9 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		} finally {
 			queueControlLock.readLock().unlock();
 		}
-		
+
 	}
-	
+
 	@Override
 	public void startActiveQueue(String queueID) throws EventException {
 		try {
@@ -408,9 +408,9 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			queueControlLock.readLock().unlock();
 		}
 	}
-	
+
 	@Override
-	public void stopActiveQueue(String queueID, boolean force) 
+	public void stopActiveQueue(String queueID, boolean force)
 			throws EventException {
 		if (stopped) throw new EventException("stopped");
 		try {
@@ -449,7 +449,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			queueControlLock.readLock().unlock();
 		}
 	}
-	
+
 	@Override
 	public Set<String> getAllActiveQueueIDs() {
 		//Use lock to make sure the register isn't being changed by another process
@@ -459,9 +459,9 @@ public class QueueService extends QueueControllerService implements IQueueServic
 		} finally {
 			queueControlLock.readLock().unlock();
 		}
-		
+
 	}
-	
+
 	@Override
 	public IQueue<? extends Queueable> getQueue(String queueID) throws EventException {
 		if (queueID.equals(jobQueueID)) {
@@ -479,7 +479,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	public IQueue<QueueBean> getJobQueue() {
 		return jobQueue;
 	}
-	
+
 	@Override
 	public IQueue<QueueAtom> getActiveQueue(String queueID) throws EventException {
 		//Use lock to make sure the register isn't being changed by another process
@@ -491,7 +491,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 			queueControlLock.readLock().unlock();
 		}
 	}
-	
+
 	@Override
 	public String getJobQueueID() {
 		return jobQueueID;
@@ -521,7 +521,7 @@ public class QueueService extends QueueControllerService implements IQueueServic
 	public URI getURI() {
 		return uri;
 	}
-	
+
 	@Override
 	public boolean isInitialized() {
 		return init;

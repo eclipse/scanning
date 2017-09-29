@@ -34,14 +34,14 @@ import org.slf4j.LoggerFactory;
 class Stashing implements IStashing {
 
 	private static final Logger logger = LoggerFactory.getLogger(Stashing.class);
-	
+
 	private final File file;
 
 	private IMarshallerService marshallerService;
 	private String stashName = "scans";
-	
+
 	/**
-	 * 
+	 *
 	 * @param fileName, e.g. org.eclipse.scanning.device.ui.device.controls.json
 	 */
 	Stashing(String fileName, IMarshallerService marshallerService) {
@@ -52,7 +52,7 @@ class Stashing implements IStashing {
 		this.file = file;
 		this.marshallerService = marshallerService;
 	}
-	
+
 	private static File getDataHome(String fileName) {
 		final String path = System.getProperty("GDA/gda.var", System.getProperty("user.home"));
 		return new File(path + "/.solstice/" + fileName);
@@ -62,26 +62,26 @@ class Stashing implements IStashing {
 	public boolean isStashed() {
 		return file.exists();
 	}
-	
+
 	@Override
 	public void stash(Object object) throws Exception {
 		final String json = marshallerService.marshal(object);
 		write(file, json);
 	}
-	
+
 	@Override
 	public <T> T unstash(Class<T> clazz) throws Exception {
-		
+
 		if (!isStashed()) return null;
-		
+
 		final String json = readFile(file).toString();
 		final T ret = marshallerService.unmarshal(json, clazz);
 		return ret;
-		
+
 	}
-	
+
 	private static void write(final File file, final String text) throws Exception {
-		
+
 		file.getParentFile().mkdirs();
 		BufferedWriter b = null;
 		try {
@@ -93,7 +93,7 @@ class Stashing implements IStashing {
 			if (b != null) {
 				b.close();
 
-				// Clients and server may be running as different users, so make sure anyone can write the file 
+				// Clients and server may be running as different users, so make sure anyone can write the file
 				if (!file.setWritable(true, false)) {
 					logger.warn("Could not set write permissions for stash file", file.getCanonicalPath());
 				}
@@ -124,7 +124,7 @@ class Stashing implements IStashing {
 			}
 		}
 	}
-	
+
 	/**
 	 * Stash using appropriate messages to the user.
 	 * @param models
@@ -133,30 +133,30 @@ class Stashing implements IStashing {
 	@Override
 	public void save(Object object) {
 		try {
-			
+
 			if (file.exists()) {
 				boolean ok = MessageDialog.openConfirm(Display.getCurrent().getActiveShell(), "Confirm Overwrite", "Are you sure that you would like to overwrite '"+file.getName()+"'?");
 				if (!ok) return;
 			}
-			
+
 			stash(object);
-			
+
 		} catch (Exception e) {
 			ErrorDialog.openError(Display.getCurrent().getActiveShell(), "Error Saving Information", "An exception occurred while writing the "+getStashName()+" to file.",
 					              new Status(IStatus.ERROR, "org.eclipse.scanning.device.ui", e.getMessage()));
 		    logger.error("Error Saving Information", e);
 		}
 	}
-	
+
 	@Override
 	public <T> T load(Class<T> clazz) {
 		try {
-            return unstash(clazz);	
+            return unstash(clazz);
 		} catch (Exception e) {
 			MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Exception while reading "+getStashName()+" from file", "An exception occurred while reading "+getStashName()+" from a file.\n" + e.getMessage());
 		    return null;
 		}
-     
+
 	}
 
 	@Override

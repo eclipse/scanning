@@ -17,7 +17,7 @@ public enum EditType {
 	 * Directly edit the value using a cell editor appropriate for the value.
 	 */
 	DIRECT,
-	
+
 	/**
 	 * Edit using a dialog because value is too long to be edited in place.
 	 */

@@ -35,30 +35,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
- * The device manager parses annotations and allows methods to be 
+ *
+ * The device manager parses annotations and allows methods to be
  * efficiently called during a scan to notify of progress. This replaces
  * the need to override an atScanStart() method as well as allowing resources
- * to be injected into the method. 
- * 
+ * to be injected into the method.
+ *
  * If attemps to parse all the reflection stuff up-front so that a call
  * to invoke(...) during the scan can be as efficiently despatched using
  * method.invoke(...) as possible.
- * 
+ *
  * This class could be made into a general purpose annotation parsing
  * and method calling class once tested.
- * 
+ *
  * NOTE: If you find yourself debugging this class to view despatched events,
  * consider adding a test to @see AnnotationManagerTest to reproduce the problem.
  * Trying to debug annotation parsing in a live scanning system is not desirable.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class AnnotationManager {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(AnnotationManager.class);
-	
+
 	private Map<Class<? extends Annotation>, Collection<MethodWrapper>> annotationMap;
 	private Map<Class<?>, Collection<Class<?>>>                         cachedClasses;
 	private Map<Class<?>, Object>                                       services;
@@ -70,7 +70,7 @@ public class AnnotationManager {
 	public AnnotationManager() {
 		this((IServiceResolver)null, DeviceAnnotations.getAllAnnotations());
 	}
-	
+
 	@SafeVarargs
 	public AnnotationManager(Class<? extends Annotation>... a) {
 		this(null, a);
@@ -79,7 +79,7 @@ public class AnnotationManager {
 	public AnnotationManager(IServiceResolver resolver) {
 		this(resolver, DeviceAnnotations.getAllAnnotations());
 	}
-	
+
 	@SafeVarargs
 	public AnnotationManager(IServiceResolver resolver, Class<? extends Annotation>... a) {
 		this(resolver, Arrays.asList(a));
@@ -89,16 +89,16 @@ public class AnnotationManager {
 	 * Set some implementations of types, for instance services.
 	 * Used in addition to the OSGi services available.
 	 * In test mode replaces OSGi services.
-	 * 
+	 *
 	 * @param services
 	 */
 	public AnnotationManager(IServiceResolver resolver, Map<Class<?>, Object> services) {
 		this(resolver);
 		this.services = services;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param resolver - may be null
 	 * @param a
 	 */
@@ -107,7 +107,7 @@ public class AnnotationManager {
 		this.annotationMap = new Hashtable<>(31); // Intentionally synch
 		this.cachedClasses = new Hashtable<>(31); // Intentionally synch
 		this.annotations = a;
-		
+
 		if (resolver!=null) {
 			try {
 				Collection<IScanParticipant> others = resolver.getServices(IScanParticipant.class);
@@ -124,7 +124,7 @@ public class AnnotationManager {
 	 * they are sorted by level and added in that order. If another call to add
 	 * devices is made the new collection of devices will be sorted by level and
 	 * added to the end of the main list of devices.
-	 * 
+	 *
 	 * So for:
 	 * <code>
 	 * manager.add(devices1[])
@@ -135,9 +135,9 @@ public class AnnotationManager {
 	 * for instance all devices of a given type to be notified by level before another
 	 * group of objects of another type. If no distinction of type is required, simply
 	 * add all devices in one go and they will be sorted by level.
-	 * 
-	 * If a device does not implement ILevel its level is assumed to be ILevel.MAXIMUM 
-	 * 
+	 *
+	 * If a device does not implement ILevel its level is assumed to be ILevel.MAXIMUM
+	 *
 	 * @param ds
 	 */
 	public void addDevices(Object... ds) {
@@ -145,13 +145,13 @@ public class AnnotationManager {
 		if (ds.length<1) throw new IllegalArgumentException("No devices specified!");
 		addDevices(Arrays.asList(ds));
 	}
-	
+
 	/**
 	 * Add a group of devices. As the devices are added if they implement ILevel,
 	 * they are sorted by level and added in that order. If another call to add
 	 * devices is made the new collection of devices will be sorted by level and
 	 * added to the end of the main list of devices.
-	 * 
+	 *
 	 * So for:
 	 * <code>
 	 * manager.add(devices1[])
@@ -162,9 +162,9 @@ public class AnnotationManager {
 	 * for instance all devices of a given type to be notified by level before another
 	 * group of objects of another type. If no distinction of type is required, simply
 	 * add all devices in one go and they will be sorted by level.
-	 * 
-	 * If a device does not implement ILevel its level is assumed to be ILevel.MAXIMUM 
-	 * 
+	 *
+	 * If a device does not implement ILevel its level is assumed to be ILevel.MAXIMUM
+	 *
 	 * @param devices the devices to add
 	 */
 	public void addDevices(Collection<?> devices) {
@@ -175,15 +175,15 @@ public class AnnotationManager {
 			addOrderedDevices(sortedDevices);
 		}
 	}
-	
+
 	private void addOrderedDevices(Collection<Object> ds) {
 		for (Object object : ds) processAnnotations(object);
 	}
 
 	private void processAnnotations(Object device) {
-		
+
 		if (device==null) return;
-		
+
 		final Method[] methods = device.getClass().getMethods();
 		for (int i = 0; i < methods.length; i++) {
 			final Annotation[] as = methods[i].getAnnotations();
@@ -202,60 +202,60 @@ public class AnnotationManager {
 	}
 
 	/**
-	 * Notify the methods with this annotation that it happened. 
+	 * Notify the methods with this annotation that it happened.
 	 * Optionally provide some context which the system will try to insert into the
 	 * argument list when it is called.
-	 * 
+	 *
 	 * @param annotation like &#64;ScanStart etc.
 	 * @param context, extra things like ScanInformation, IPosition etc.
-	 * @throws InvocationTargetException 
-	 * @throws IllegalArgumentException 
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws InvocationTargetException
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
 	public void invoke(Class<? extends Annotation> annotation, Object... context) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, ScanningException, EventException {
 		try {
 			final Collection<MethodWrapper> as = annotationMap.get(annotation);
 			if (as!=null) for (MethodWrapper wrapper : as) wrapper.invoke(context);
-			
+
 		} catch (InvocationTargetException wapperExceptioned) {
 		    Throwable supressed = wapperExceptioned.getTargetException();
 		    if (supressed!=null) {
-		    	// If they returned one of the scanning.api exceptions, throw this from the call.
-		    	if (supressed instanceof ScanningException) throw (ScanningException)supressed;
-		    	if (supressed instanceof EventException) throw (EventException)supressed;
+			// If they returned one of the scanning.api exceptions, throw this from the call.
+			if (supressed instanceof ScanningException) throw (ScanningException)supressed;
+			if (supressed instanceof EventException) throw (EventException)supressed;
 		    }
 		    throw wapperExceptioned;
 		}
 	}
-	
+
 	private class MethodWrapper {
-		
+
 		private Object          instance;
 		private Method          method;
 		private List<Class<?>>  argClasses;
 		private Object[]        arguments; // Must be object[] for speed and is not variable
-		
+
 		MethodWrapper(final Class<? extends Annotation> aclass, Object instance, Method method) throws IllegalArgumentException {
 			this.instance = instance;
 			this.method   = method;
-			
+
 			final Class<?>[] args = method.getParameterTypes();
 			this.argClasses = args!=null?Arrays.asList(args):null;
-			
+
 			if (argClasses!=null) {
 				final Set<?> unique = new HashSet<>(argClasses);
-				
+
 				/**
 				 * We do not allow duplications in the classes list because a given service or
-				 * information object should be required once. Type is used to determine argument 
+				 * information object should be required once. Type is used to determine argument
 				 * position as well, therefore duplicates do not work with the current alg.
 				 */
 			    if (unique.size()!=argClasses.size()) throw new IllegalArgumentException("Duplicated types are not allowed in injected methods!\n"
-			    		+ "Your annotation of @"+aclass.getSimpleName()+" sits over a method '"+method.getName()+"' on class '"+instance.getClass().getSimpleName()+"' with duplicated types!\n"
-			    	    + "More than one of any given type is not allowed. Have you seen '"+ScanInformation.class.getSimpleName()+"' class, which can be used to provide various metrics about the scan?");
+					+ "Your annotation of @"+aclass.getSimpleName()+" sits over a method '"+method.getName()+"' on class '"+instance.getClass().getSimpleName()+"' with duplicated types!\n"
+				    + "More than one of any given type is not allowed. Have you seen '"+ScanInformation.class.getSimpleName()+"' class, which can be used to provide various metrics about the scan?");
 			}
-			
+
 			if (args!=null) {
 				this.arguments= new Object[args.length];
 				for (int i = 0; i < args.length; i++) {
@@ -269,22 +269,22 @@ public class AnnotationManager {
 				}
 			}
 		}
-		
+
 		public void invoke(Object... objects) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-			
+
 			if (arguments!=null) { // Put the context into the args (if there are any)
-				
+
 				List<Object> context = getContext(objects);
 				for (int i = 0; i < context.size(); i++) {
-					
+
 				    final Collection<Class<?>> classes = getCachedClasses(context.get(i));
-				    
+
 				    // Find the first class in classes which is in argClasses
 				    // NOTE this is why duplicates are not supported, type of argument used to map to injected class.
-                	Optional<Class<?>> contained = classes.stream().filter(x -> argClasses.contains(x)).findFirst();
-                	if (contained.isPresent()) {
-                	    final int index = argClasses.indexOf(contained.get());
-                	    arguments[index] = context.get(i);
+			Optional<Class<?>> contained = classes.stream().filter(x -> argClasses.contains(x)).findFirst();
+			if (contained.isPresent()) {
+			    final int index = argClasses.indexOf(contained.get());
+			    arguments[index] = context.get(i);
                     }
 				}
 				boolean accessible = method.isAccessible();
@@ -306,25 +306,25 @@ public class AnnotationManager {
 	 * @return
 	 */
 	private Collection<Class<?>> getCachedClasses(Object object) {
-		
+
 		final Class<?> clazz = object.getClass();
 		if (cachedClasses.containsKey(clazz)) return cachedClasses.get(clazz);
-		
+
 		final Collection<Class<?>> classes = new HashSet<>();
 		classes.add(clazz);
 		Class<?>[] interfaces = clazz.getInterfaces();
 		for (Class<?> class1 : interfaces)  classes.add(class1);
-		
+
 		// TODO Currently only support one level deep
 		classes.add(clazz.getSuperclass());
 		interfaces = clazz.getSuperclass().getInterfaces();
 		for (Class<?> class1 : interfaces)  classes.add(class1);
-		
+
 		cachedClasses.put(clazz, classes);
-		
+
 		return classes;
 	}
-	
+
 	public List<Object> getContext(Object[] objects) {
 		List<Object> context = new ArrayList<>();
 		if (extraContext!=null) context.addAll(extraContext);
@@ -352,7 +352,7 @@ public class AnnotationManager {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param object
 	 */
 	public void removeContext(Object object) {

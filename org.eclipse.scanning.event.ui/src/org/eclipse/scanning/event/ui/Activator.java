@@ -69,7 +69,7 @@ public class Activator extends AbstractUIPlugin {
 
     public static final String getJmsUri() {
 
-    	String uri = null;
+	String uri = null;
 		if (uri == null) uri = getNovelCommandPreference(CommandConstants.JMS_URI);
 	    if (uri == null) uri = CommandConstants.getScanningBrokerUri();
 		return uri;
@@ -83,10 +83,10 @@ public class Activator extends AbstractUIPlugin {
      */
     private static final String getNovelCommandPreference(String key) {
 		final IPreferenceStore store = getDefault().getPreferenceStore();
-    	String val = store.getString(key);
-    	String def = store.getDefaultString(key);
-    	if (!val.equals(def)) return val;
-    	return null;
+	String val = store.getString(key);
+	String def = store.getDefaultString(key);
+	if (!val.equals(def)) return val;
+	return null;
      }
 
 }

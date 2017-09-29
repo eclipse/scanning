@@ -25,19 +25,19 @@ import org.eclipse.scanning.jython.JythonObjectFactory;
  * An iterator over multiple step ranges. Acts essentially as a sequence of
  * step iterators chained together. In the special case where one step iterator begins
  * with the last value of the previous iterator it is not repeated.
- * 
+ *
  * @author Matthew Dickie
  */
 public class MultiStepIterator extends AbstractScanPointIterator {
-	
+
 	private final MultiStepModel model;
 	private int                  index;
-	private double[]             points; 
-	private double[]             times; 
-	
+	private double[]             points;
+	private double[]             times;
+
 	public MultiStepIterator(MultiStepModel model) {
 		this.model = model;
-		
+
 		JythonObjectFactory<ScanPointIterator> arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
 
 		createPositions();
@@ -45,9 +45,9 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 		ScanPointIterator iterator = arrayGeneratorFactory.createObject(model.getName(), "mm", points);
 		pyIterator = iterator;
 	}
-	
+
 	private void createPositions() {
-		
+
 		int totalSize = 0;
 		boolean finalPosWasEnd = false;
 		List<double[]> positionArrays = new ArrayList<>(model.getStepModels().size());
@@ -58,31 +58,31 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 
 			// if the start of this model is the end of the previous one, and the end of the
 			// previous was was its final point, skip the first point
-			if (finalPosWasEnd && 
+			if (finalPosWasEnd &&
 					Math.abs(stepModel.getStart() - previousEnd) < Math.abs(stepModel.getStep() / 100)) {
 				pos = pos += stepModel.getStep();
 				size--;
 			}
 			double[] positions = new double[size];
-			
+
 			for (int i = 0; i < size; i++) {
 				positions[i] = pos;
 				pos += stepModel.getStep();
 			}
 			positionArrays.add(positions);
 			totalSize += size;
-			
+
 			// record if the final position of this model is its end position (within a tolerance of step/100)
 			// this is not always the case, e.g. if start=0, stop=10 and step=3
 			double finalPos = positions[positions.length - 1];
 			finalPosWasEnd = Math.abs(stepModel.getStop() - finalPos) < Math.abs(stepModel.getStep() / 100);
 			previousEnd = stepModel.getStop();
 		}
-		
+
 		this.points = new double[totalSize];
 		this.times  = new double[totalSize];
 		this.index  = 0;
-		
+
 		int pos        = 0;
 		int sindex     = 0;
 		for (double[] positions : positionArrays) {
@@ -93,7 +93,7 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 			sindex+=1;
 		}
 	}
-	
+
 	@Override
 	public boolean hasNext() {
 		return pyIterator.hasNext();

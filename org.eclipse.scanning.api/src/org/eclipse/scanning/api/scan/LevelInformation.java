@@ -18,7 +18,7 @@ public class LevelInformation {
 	private int level;
 	private List<?> objects;
 	private LevelRole levelRole;
-	
+
 	public LevelInformation(LevelRole role, int level, List<?> objects) {
 		super();
 		this.levelRole = role;

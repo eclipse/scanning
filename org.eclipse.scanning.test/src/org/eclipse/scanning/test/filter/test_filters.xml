@@ -8,7 +8,7 @@
 		<property name="name" value="org.eclipse.scanning.scannableFilter"/>
 		<property name="excludes">
 			<list>
-				<value>qvach</value> <!--  Should not match anything --> 
+				<value>qvach</value> <!--  Should not match anything -->
 				<value>monitor1</value> <!--  The later include will override this -->
 				<value>a</value>
 				<value>b</value>
@@ -23,7 +23,7 @@
 				<value>beamcurrent</value>
 				<value>neXusScannable2</value>
 				<value>neXusScannable</value> <!--  Should not match anything -->
-				<value>rubbish</value> <!--  Should not match anything --> 
+				<value>rubbish</value> <!--  Should not match anything -->
 			</list>
 		</property>
         <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->

@@ -36,25 +36,25 @@ import org.eclipse.dawnsci.analysis.api.expressions.IExpressionEngineListener;
 import org.eclipse.january.IMonitor;
 
 public class VanillaExpressionEngine implements IExpressionEngine{
-	
+
 	private JexlEngine jexl;
 	private Expression expression;
 	private MapContext context;
 	private HashSet<IExpressionEngineListener> expressionListeners;
 	private Callable<Object> callable;
-	
+
 	public VanillaExpressionEngine() {
 		//Create the Jexl engine with the DatasetArthmetic object to allows basic
 		//mathematical calculations to be performed on Datasets
 		jexl = new JexlEngine();
-		
+
 		expressionListeners = new HashSet<IExpressionEngineListener>();
 	}
 
 	@Override
 	public void createExpression(String expr) throws Exception {
 		this.expression = jexl.createExpression(expr);
-		
+
 		checkFunctions(expr);
 	}
 
@@ -64,7 +64,7 @@ public class VanillaExpressionEngine implements IExpressionEngine{
 	 * @throws Exception
 	 */
 	private void checkFunctions(String expr)  throws Exception {
-		
+
 		// We do not support the . operator for now because
 		// otherwise http://jira.diamond.ac.uk/browse/SCI-1731
 		//if  (expr.indexOf('.')>-1) {
@@ -73,17 +73,17 @@ public class VanillaExpressionEngine implements IExpressionEngine{
 
 		// We now evaluate the expression to try and trap invalid functions.
 		try {
-			
+
 			final Script script = jexl.createScript(expr);
 			Set<List<String>> names = script.getVariables();
 			Collection<String> vars = unpack(names);
-			
+
 			final Map<String,Object> dummy = new HashMap<String,Object>(vars.size());
 			for (String name : vars) dummy.put(name, 1);
 			MapContext dCnxt = new MapContext(dummy);
-			
+
 			expression.evaluate(dCnxt);
-			
+
 		} catch (JexlException ne) {
 			if (ne.getMessage().toLowerCase().contains("no such function namespace")) {
 				final String  msg = ne.toString();
@@ -93,7 +93,7 @@ public class VanillaExpressionEngine implements IExpressionEngine{
 
 		} catch (Exception ignored) {
 			// We allow the expression but it might fail later
-		}		
+		}
 	}
 
 
@@ -102,14 +102,14 @@ public class VanillaExpressionEngine implements IExpressionEngine{
 		checkAndCreateContext();
 		return (T)expression.evaluate(context);
 	}
-	
+
 	@Override
 	public void addLoadedVariables(Map<String, Object> variables) {
 		if (context == null) {
 			context = new MapContext(variables);
 			return;
 		}
-		
+
 		for (String name : variables.keySet()) {
 			context.set(name, variables.get(name));
 		}
@@ -168,10 +168,10 @@ public class VanillaExpressionEngine implements IExpressionEngine{
 
 
 	/**
-	 * TODO FIXME Currently does a regular expression. If there was a 
-	 * way in JEXL of getting the variables for a given function it would 
+	 * TODO FIXME Currently does a regular expression. If there was a
+	 * way in JEXL of getting the variables for a given function it would
 	 * be better than what we do: which is a regular expression!
-	 * 
+	 *
 	 * lz:rmean(fred,0)                     -> fred
 	 * 10*lz:rmean(fred,0)                  -> fred
 	 * 10*lz:rmean(fred,0)+dat:mean(bill,0) -> fred
@@ -187,14 +187,14 @@ public class VanillaExpressionEngine implements IExpressionEngine{
 			return null;
 		}
 	}
-	
+
 	private static final Pattern lazyPattern = Pattern.compile("lz\\:[a-zA-Z0-9_]+\\({1}([a-zA-Z0-9_ \\,\\*\\+\\-\\\\]+)\\){1}");
 
 	private Collection<String> getLazyVariables(String expr) {
 
 		final Collection<String> found = new HashSet<String>(4);
         final Matcher          matcher = lazyPattern.matcher(expr);
- 		while (matcher.find()) {
+		while (matcher.find()) {
 			final String      exprLine = matcher.group(1);
 			final Script      script   = jexl.createScript(exprLine.replace(',','+'));
 			Set<List<String>> names    = script.getVariables();
@@ -236,7 +236,7 @@ public class VanillaExpressionEngine implements IExpressionEngine{
 		final ExecutorService service = Executors.newCachedThreadPool();
 		//final IMonitor monitor = mon == null ? new IMonitor.Stub() : mon;
 
-		service.submit( new Runnable() {			
+		service.submit( new Runnable() {
 			@Override
 			public void run() {
 				String exp = expression.getExpression();
@@ -262,7 +262,7 @@ public class VanillaExpressionEngine implements IExpressionEngine{
 				return;
 
 			}
-		});		
+		});
 	}
 
 	private void fireExpressionListeners(ExpressionEngineEvent event) {

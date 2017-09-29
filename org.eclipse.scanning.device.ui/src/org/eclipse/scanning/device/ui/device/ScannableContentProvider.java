@@ -32,14 +32,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class ScannableContentProvider implements IStructuredContentProvider, IPositionListener {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ScannableContentProvider.class);
 
 	private final IScannableDeviceService cservice;
 	private final Map<String, IScannable<?>> content;
 
 	private TableViewer viewer;
-	
+
 	public ScannableContentProvider(IScannableDeviceService cservice) {
 		this.cservice = cservice;
 		this.content = new TreeMap<>(new SortNatural<>(true));
@@ -60,7 +60,7 @@ class ScannableContentProvider implements IStructuredContentProvider, IPositionL
 
 		this.viewer = (TableViewer)viewer;
         content.clear();
-        
+
         if (newInput!=null) {
 			for (String name : (List<String>)newInput) {
 				try {
@@ -76,7 +76,7 @@ class ScannableContentProvider implements IStructuredContentProvider, IPositionL
 	public void positionChanged(PositionEvent evt) throws ScanningException {
 		update(evt);
 	}
-	
+
 	@Override
 	public void positionPerformed(PositionEvent evt) throws ScanningException {
 		update(evt);
@@ -103,7 +103,7 @@ class ScannableContentProvider implements IStructuredContentProvider, IPositionL
 	}
 
 	public void replace(IScannable<?> oscannable, IScannable<?> nscannable) {
-		
+
 		Map<String, IScannable<?>> copy = new LinkedHashMap<>(content);
 		content.clear();
 		for (String name : copy.keySet()) {

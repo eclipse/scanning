@@ -19,7 +19,7 @@ public class ControlNode extends AbstractControl implements INameable {
 
 	private Object value;       // If the user sets a temporary value which does not go straight to the scannable
 	private double increment=1;
-	
+
 	public ControlNode() {
 	}
 	public ControlNode(String name, double increment) {
@@ -31,7 +31,7 @@ public class ControlNode extends AbstractControl implements INameable {
 		this(name, increment);
 		setParentName(parentName);
 	}
-	
+
 	public String getScannableName() {
 		return getName();
 	}
@@ -53,7 +53,7 @@ public class ControlNode extends AbstractControl implements INameable {
 	}
 
 	public Object getValue(boolean direct, IScannableDeviceService cservice) throws Exception {
-		
+
 		Object value = null;
 		if (!direct && getValue()!=null) {
 			value = getValue();

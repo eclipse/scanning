@@ -67,7 +67,7 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 			}
 			result = prime * result + (int) (temp ^ (temp >>> 32));
 		}
-  	    return result+stepIndex;
+	    return result+stepIndex;
 	}
 
 	/**
@@ -142,11 +142,11 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	 */
     private boolean equals(Collection<?> o, Collection<?> t) {
 
-    	if (o == t)
+	if (o == t)
             return true;
-    	if (o == null && t == null)
+	if (o == null && t == null)
             return true;
-    	if (o == null || t == null)
+	if (o == null || t == null)
             return false;
 
         Iterator<?> e1 = o.iterator();
@@ -157,12 +157,12 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 
             // Collections go down to the same equals.
             if (o1 instanceof Collection && o2 instanceof Collection) {
-            	boolean collectionsEqual = equals((Collection<?>)o1,(Collection<?>)o2);
-            	if (!collectionsEqual) {
-            		return false;
-            	} else {
-            		continue;
-            	}
+		boolean collectionsEqual = equals((Collection<?>)o1,(Collection<?>)o2);
+		if (!collectionsEqual) {
+			return false;
+		} else {
+			continue;
+		}
             }
 
             // Otherwise we use object equals.
@@ -183,16 +183,16 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		final Collection<String> names   = getNames();
         for (Iterator<String> it = names.iterator(); it.hasNext();) {
 			String name = it.next();
-        	buf.append(name);
-        	int index = getIndex(name);
-        	if(index>-1) {
-	        	buf.append("(");
-	        	buf.append(index);
-	        	buf.append(")");
-        	}
-         	buf.append("=");
-        	buf.append(get(name));
-        	if (it.hasNext()) buf.append(", ");
+		buf.append(name);
+		int index = getIndex(name);
+		if(index>-1) {
+			buf.append("(");
+			buf.append(index);
+			buf.append(")");
+		}
+		buf.append("=");
+		buf.append(get(name));
+		if (it.hasNext()) buf.append(", ");
 		}
         buf.append(", step=");
         buf.append(getStepIndex());
@@ -202,8 +202,8 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 	        buf.append(getExposureTime());
         }
 
-    	buf.append("]");
-    	return buf.toString();
+	buf.append("]");
+	return buf.toString();
 	}
 
 	public Collection<String> getDimensionNames(int dimension) {

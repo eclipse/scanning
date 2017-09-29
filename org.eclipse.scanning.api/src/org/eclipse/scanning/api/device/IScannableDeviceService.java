@@ -46,17 +46,17 @@ import org.eclipse.scanning.api.scan.ScanningException;
  * It mirrors the other connector services like the JMS one, which push the
  * details of getting connections outside the core scanning API using
  * declarative services.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public interface IScannableDeviceService {
-	
+
 	/**
 	 * Used to register a device. This is required so that spring may create
 	 * detectors and call the register method by telling the detector to register
 	 * itself.
-	 * 
+	 *
 	 * @param device
 	 */
 	<T> void register(IScannable<T> scannable);
@@ -75,7 +75,7 @@ public interface IScannableDeviceService {
 	 * @throws ScanningException if no scannable with the given name could be found
 	 */
 	<T> IScannable<T> getScannable(String name) throws ScanningException;
-	
+
 	/**
 	 * Returns a list of the scannables for the given {@link Iterable} over {@link IPosition}s.
 	 * @param positionIterable an iterator over positions
@@ -90,10 +90,10 @@ public interface IScannableDeviceService {
 		if (names == null) {
 			names = positionIterable.iterator().next().getNames();
 		}
-		
+
 		return getScannables(names);
 	}
-	
+
 	/**
 	 * Returns a list of the scannables for the given {@link IPosition}s.
 	 * @param position an {@link IPosition}
@@ -103,7 +103,7 @@ public interface IScannableDeviceService {
 	default List<IScannable<?>> getScannables(IPosition position) throws ScanningException {
 		return getScannables(position.getNames());
 	}
-	
+
 	/**
 	 * Returns a list of the scannables with the given names
 	 * @param scannableNames a list of scannable names
@@ -115,10 +115,10 @@ public interface IScannableDeviceService {
 		for (String scannableName : scannableNames) {
 			scannables.add(getScannable(scannableName));
 		}
-		
+
 		return scannables;
 	}
-	
+
 	/**
 	 * Returns the set of global per-scan monitors that should be added to all scans.
 	 * This is used to support legacy (GDA8) spring configurations. Should not be called
@@ -129,11 +129,11 @@ public interface IScannableDeviceService {
 	default Set<String> getGlobalPerScanMonitorNames() {
 		return Collections.emptySet();
 	}
-	
+
 	/**
 	 * Returns the set of the names required per-scan monitors for the given scannable name.
 	 * This is used to support legacy (GDA8) spring configurations. Should not be called
-	 * by client code. 
+	 * by client code.
 	 * @param scannableName scannable to get required per-scan monitor names for
 	 * @return names of required per-scan monitors for the scannable with the given name
 	 */
@@ -141,13 +141,13 @@ public interface IScannableDeviceService {
 	default Set<String> getRequiredPerScanMonitorNames(String scannableName) {
 		return Collections.emptySet();
 	}
-	
+
 	/**
 	 * Get a list of all the IScannables known to the service as a list of DeviceInformation<?>
-	 * objects. DeviceInformation is JSON serializable and this method is 
-	 * 
+	 * objects. DeviceInformation is JSON serializable and this method is
+	 *
 	 * @return
-	 * @throws ScanningException 
+	 * @throws ScanningException
 	 * @throws Exception
 	 */
 	default Collection<DeviceInformation<?>> getDeviceInformation() throws ScanningException {
@@ -167,7 +167,7 @@ public interface IScannableDeviceService {
 		}
 		return ret;
 	}
-	
+
 	default void handleDeviceError(String name, Exception e) {
 		System.err.println("Failure getting device information for " + name);
 		e.printStackTrace();

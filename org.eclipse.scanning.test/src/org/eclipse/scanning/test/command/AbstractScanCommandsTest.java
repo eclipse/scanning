@@ -62,21 +62,21 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
-	
-	protected static ScanServlet servlet; 
-	
+
+	protected static ScanServlet servlet;
+
 	/**
 	 * Fake processing consumer or null if no processing
 	 */
 	protected static IConsumer<StatusBean>       pconsumer;
 
-	
+
 	@BeforeClass
 	public static void init() {
 		pconsumer = null;
 		ScanPointGeneratorFactory.init();
 	}
-	
+
 	protected static IRunnableDeviceService      dservice;
 	protected static IScannableDeviceService     connector;
 	protected static IPointGeneratorService      gservice;
@@ -88,24 +88,24 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 
 	@BeforeClass
 	public static void create() throws Exception {
-		
+
 		createMarshaller();
 		eservice  = new EventServiceImpl(new ActivemqConnectorService());
-		
+
 		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE
 		connector = new MockScannableConnector(null);
 		dservice  = new RunnableDeviceServiceImpl(connector);
-		fileFactory = new NexusFileFactoryHDF5();		
+		fileFactory = new NexusFileFactoryHDF5();
 
-		
+
 		RunnableDeviceServiceImpl impl = (RunnableDeviceServiceImpl)dservice;
 		impl._register(MockDetectorModel.class, MockWritableDetector.class);
 		impl._register(MockWritingMandlebrotModel.class, MockWritingMandelbrotDetector.class);
 		impl._register(MandelbrotModel.class, MandelbrotDetector.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
 		impl._register(ClusterProcessingModel.class, ClusterProcessingRunnableDevice.class);
-		
+
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
 		dmodel.setExposureTime(0.1);
@@ -115,18 +115,18 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 		model.setName("mandelbrot");
 		model.setExposureTime(0.001);
 		impl.createRunnableDevice(model);
-		
+
 		ClusterProcessingModel cmodel = new ClusterProcessingModel();
 		cmodel.setDetectorName(null); // Intentionally not one
 		cmodel.setName("processing");
 		cmodel.setProcessingFilePath(null);
 		impl.createRunnableDevice(cmodel);
-		
+
 		model = new MandelbrotModel("xNex", "yNex");
 		model.setName("m");
 		model.setExposureTime(0.001);
 		impl.createRunnableDevice(model);
-		
+
 		cmodel = new ClusterProcessingModel();
 		cmodel.setDetectorName(null); // Intentionally not one
 		cmodel.setName("p");
@@ -136,7 +136,7 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 		gservice  = new PointGeneratorService();
 		wservice = new DeviceWatchdogService();
 		lservice = new LoaderServiceMock();
-	
+
 		// Provide lots of services that OSGi would normally.
 		Services.setEventService(eservice);
 		ServiceHolder.setEventService(eservice);
@@ -149,19 +149,19 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 		org.eclipse.scanning.command.Services.setScannableDeviceService(connector);
 
 		org.eclipse.scanning.sequencer.ServiceHolder.setTestServices(lservice,
-				                                                     new DefaultNexusBuilderFactory(), 
-				                                                     new MockOperationService(), 
+				                                                     new DefaultNexusBuilderFactory(),
+				                                                     new MockOperationService(),
 				                                                     new MockFilePathService(), gservice);
-	
+
 		org.eclipse.scanning.example.Services.setPointGeneratorService(gservice);
 		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(new NexusFileFactoryHDF5());
-		
+
 		validator = new ValidatorService();
 		validator.setPointGeneratorService(gservice);
 		validator.setRunnableDeviceService(dservice);
 		Services.setValidatorService(validator);
-		
-		
+
+
 		// Create an object for the servlet
 		/**
 		 *  This would be done by spring on the GDA Server
@@ -180,7 +180,7 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 		servlet.setBroker(uri.toString());
 		servlet.setDurable(true);
 		servlet.connect(); // Gets called by Spring automatically
-		
+
 	}
 
 	@AfterClass
@@ -196,23 +196,23 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 
 	protected String path;
 	private boolean requireFile;
-	
+
 	public AbstractScanCommandsTest(boolean requireFile) {
 		this.requireFile = requireFile;
 	}
-	
+
 	@Before
 	public void before() throws Exception {
-		
+
 		if (requireFile) {
 			File output = File.createTempFile("test_nexus", ".nxs");
 			output.deleteOnExit();
 			path = output.getAbsolutePath().replace("\\\\", "\\").replace('\\', '/');
 		}
-		
+
 		servlet.getConsumer().cleanQueue(servlet.getSubmitQueue());
 		servlet.getConsumer().cleanQueue(servlet.getStatusSet());
-		
+
 		if (pconsumer!=null) {
 			pconsumer.cleanQueue(PROCESSING_QUEUE_NAME);
 			pconsumer.cleanQueue("scisoft.operation.STATUS_SET");
@@ -220,18 +220,18 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 	}
 
 	protected List<ScanBean> runAndCheck(String name, boolean blocking, long maxScanTimeS) throws Exception {
-		
+
 		final IEventService eservice = Services.getEventService();
 
 		// Let's listen to the scan and see if things happen when we run it
 		final ISubscriber<IScanListener> subscriber = eservice.createSubscriber(new URI(servlet.getBroker()), servlet.getStatusTopic());
 		final ISubmitter<ScanBean>       submitter  = eservice.createSubmitter(new URI(servlet.getBroker()),  servlet.getSubmitQueue());
-		
+
 		try {
 			final List<ScanBean> beans = new ArrayList<>(13);
 			final List<ScanBean> failed = new ArrayList<>(13);
 			final List<ScanBean> startEvents = new ArrayList<>(13);
-			
+
 			final CountDownLatch latch = new CountDownLatch(1);
 			subscriber.addListener(new IScanListener() {
 				@Override
@@ -241,7 +241,7 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 						beans.add(evt.getBean());
 					}
 				}
-	
+
 				@Override
 				public void scanStateChanged(ScanEvent evt) {
 					if (evt.getBean().getStatus()==Status.FAILED) failed.add(evt.getBean());
@@ -249,27 +249,27 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 						startEvents.add(evt.getBean()); // Should be just one
 					}
 	                if (evt.getBean().scanEnd()) {
-	                	latch.countDown();
+				latch.countDown();
 	                }
 				}
 			});
-	
-			
+
+
 			// Ok done that, now we sent it off...
 			pi.exec("submit("+name+", block="+(blocking?"True":"False")+", broker_uri='"+uri+"')");
-			
+
 			Thread.sleep(100);
 			boolean ok = latch.await(maxScanTimeS, TimeUnit.SECONDS);
 			if (!ok) throw new Exception("The latch broke before the scan finished!");
-			
+
 			if (failed.size()>0) throw new Exception(failed.get(0).getMessage());
-			
+
 			ScanBean start = startEvents.get(0);
 			assertEquals(start.getSize(), beans.size());
 			assertEquals(1, startEvents.size());
-			
+
 			return beans;
-			
+
 		} finally {
 			subscriber.disconnect();
 			submitter.disconnect();
@@ -277,18 +277,18 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 	}
 
 	protected List<ScanBean> runAndCheck(String name, String mainDetectorName, String processingDetectorName, boolean blocking, long maxScanTimeS) throws Exception {
-		
+
 		final IEventService eservice = Services.getEventService();
 
 		// Let's listen to the scan and see if things happen when we run it
 		final ISubscriber<IScanListener> subscriber = eservice.createSubscriber(new URI(servlet.getBroker()), servlet.getStatusTopic());
 		final ISubmitter<ScanBean>       submitter  = eservice.createSubmitter(new URI(servlet.getBroker()),  servlet.getSubmitQueue());
-		
+
 		try {
 			final List<ScanBean> beans = new ArrayList<>(13);
 			final List<ScanBean> failed = new ArrayList<>(13);
 			final List<ScanBean> startEvents = new ArrayList<>(13);
-			
+
 			final CountDownLatch latch = new CountDownLatch(1);
 			subscriber.addListener(new IScanListener() {
 				@Override
@@ -298,7 +298,7 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 						beans.add(evt.getBean());
 					}
 				}
-	
+
 				@Override
 				public void scanStateChanged(ScanEvent evt) {
 					if (evt.getBean().getStatus()==Status.FAILED) failed.add(evt.getBean());
@@ -306,62 +306,62 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 						startEvents.add(evt.getBean()); // Should be just one
 					}
 	                if (evt.getBean().scanEnd()) {
-	                	latch.countDown();
+				latch.countDown();
 	                }
 				}
 			});
-	
-			
+
+
 			// Ok done that, now we sent it off...
 			pi.exec("submit("+name+", block="+(blocking?"True":"False")+", broker_uri='"+uri+"')");
-			
+
 			Thread.sleep(200);
 			boolean ok = latch.await(maxScanTimeS, TimeUnit.SECONDS);
 			if (!ok) throw new Exception("The latch broke before the scan finished!");
-			
+
 			if (failed.size()>0) throw new Exception(failed.get(0).getMessage());
-			
+
 			ScanBean start = startEvents.get(0);
 			assertEquals(start.getSize(), beans.size());
 			assertEquals(1, startEvents.size());
-			
+
 			Thread.sleep(100);
-			
+
 			// Do Some checking
 			ScanClusterProcessingChecker checker = new ScanClusterProcessingChecker(fileFactory, pconsumer);
 			checker.setDetectorName(mainDetectorName);
 			checker.setProcessingName(processingDetectorName);
 			checker.setScannableNames(Arrays.asList("xNex", "yNex"));
 			checker.setFilePath(path);
-			
+
 			// Check the main nexus file
 			checker.checkNexusFile(2, 2);
-			
+
 			// Check the processing bean was submitted successfully
 			checker.checkSubmittedBean(true);
 
 			return beans;
-			
+
 		} finally {
 			subscriber.disconnect();
 			submitter.disconnect();
 		}
 	}
-	
+
 	protected List<ScanBean> runAndCheckNoPython(ScanBean bean, long maxScanTimeS) throws Exception {
-		
+
 		final IEventService eservice = Services.getEventService();
 
 		// Let's listen to the scan and see if things happen when we run it
 		final ISubscriber<IScanListener> subscriber = eservice.createSubscriber(new URI(servlet.getBroker()), servlet.getStatusTopic());
 		final ISubmitter<ScanBean>       submitter  = eservice.createSubmitter(new URI(servlet.getBroker()),  servlet.getSubmitQueue());
-		
+
 		try {
 			final List<ScanBean> beans       = new ArrayList<>(13);
 			final List<ScanBean> startEvents = new ArrayList<>(13);
-			final List<ScanBean> endEvents   = new ArrayList<>(13);			
+			final List<ScanBean> endEvents   = new ArrayList<>(13);
 			final CountDownLatch latch       = new CountDownLatch(1);
-			
+
 			subscriber.addListener(new IScanListener() {
 				@Override
 				public void scanEventPerformed(ScanEvent evt) {
@@ -369,44 +369,44 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 						beans.add(evt.getBean());
 					}
 				}
-	
+
 				@Override
 				public void scanStateChanged(ScanEvent evt) {
 					if (evt.getBean().scanStart()) {
 						startEvents.add(evt.getBean()); // Should be just one
 					}
 	                if (evt.getBean().scanEnd()) {
-	                	endEvents.add(evt.getBean());
-	                	latch.countDown();
+				endEvents.add(evt.getBean());
+				latch.countDown();
 	                }
 				}
 			});
-	
-			
+
+
 			// Ok done that, now we sent it off...
 			submitter.submit(bean);
-			
+
 			Thread.sleep(200);
 			boolean ok = latch.await(maxScanTimeS, TimeUnit.SECONDS);
 			if (!ok) throw new Exception("The latch broke before the scan finished!");
-			
+
 			assertEquals(1, startEvents.size());
 			assertEquals(1, endEvents.size());
-			
+
 			return beans;
-			
+
 		} finally {
 			subscriber.disconnect();
 			submitter.disconnect();
 		}
 	}
 
-	
+
 	protected ScanBean createStepScan() throws IOException {
 		// We write some pojos together to define the scan
 		final ScanBean bean = new ScanBean();
 		bean.setName("Hello Scanning World");
-		
+
 		final ScanRequest<?> req = new ScanRequest<>();
 		req.setCompoundModel(new CompoundModel(new StepModel("fred", 0, 9, 1)));
 		req.setMonitorNames(Arrays.asList("monitor"));
@@ -415,7 +415,7 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 		dmodel.setName("detector");
 		dmodel.setExposureTime(0.001);
 		req.putDetector("detector", dmodel);
-		
+
 		bean.setScanRequest(req);
 		return bean;
 	}

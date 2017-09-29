@@ -25,42 +25,42 @@ import org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice;
 import org.junit.Test;
 
 public class MalcolmGridScanTest extends AbstractMalcolmScanTest {
-	
+
 	@Test
 	public void test2DMalcolmScan() throws Exception {
 		testMalcolmScan(false, 8, 5);
 	}
-	
+
 	@Test
 	public void test2DMalcolmSnakeScan() throws Exception {
 		testMalcolmScan(true, 8, 5);
 	}
-	
+
 	@Test
 	public void test2DMalcolmSnakeWithOddNumberOfLinesScan() throws Exception {
 		testMalcolmScan(true, 7, 5);
 	}
-	
+
 	@Test
 	public void test3DMalcolmScan() throws Exception {
 		testMalcolmScan(false, 3, 2, 5);
 	}
-	
+
 	@Test
 	public void test3DMalcolmSnakeScan() throws Exception {
 		testMalcolmScan(true, 3, 2, 5);
 	}
-	
+
 	@Test
 	public void test4DMalcolmScan() throws Exception {
 		testMalcolmScan(false,3,3,2, 2);
 	}
-	
+
 	@Test
 	public void test5DMalcolmScan() throws Exception {
 		testMalcolmScan(false,1,1,1,2, 2);
 	}
-	
+
 	@Test
 	public void test8DMalcolmScan() throws Exception {
 		testMalcolmScan(false,1,1,1,1,1,1,2, 2);
@@ -75,11 +75,11 @@ public class MalcolmGridScanTest extends AbstractMalcolmScanTest {
 
 		return model;
 	}
-	
+
 	private void testMalcolmScan(boolean snake, int... shape) throws Exception {
 		IRunnableDevice<ScanModel> scanner = createMalcolmGridScan(malcolmDevice, output, snake, shape); // Outer scan of another scannable, for instance temp.
 		scanner.run(null);
-		
+
 		checkSize(scanner, shape);
 		checkFiles();
 
@@ -89,7 +89,7 @@ public class MalcolmGridScanTest extends AbstractMalcolmScanTest {
 	}
 
 	private IRunnableDevice<ScanModel> createMalcolmGridScan(final IRunnableDevice<?> malcolmDevice, File file, boolean snake, int... size) throws Exception {
-		
+
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel(); // Note stage_x and stage_y scannables controlled by malcolm
 		gmodel.setFastAxisName("stage_x");
@@ -98,9 +98,9 @@ public class MalcolmGridScanTest extends AbstractMalcolmScanTest {
 		gmodel.setSlowAxisPoints(size[size.length-2]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
 		gmodel.setSnake(snake);
-		
+
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
-		
+
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length - 1];
 		if (size.length > 2) {
 			for (int dim = size.length - 3; dim > -1; dim--) {
@@ -115,23 +115,23 @@ public class MalcolmGridScanTest extends AbstractMalcolmScanTest {
 			}
 		}
 		gens[size.length - 2] = gen;
-		
+
 		gen = gservice.createCompoundGenerator(gens);
-		
+
 		// Create the model for a scan.
 		final ScanModel smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(malcolmDevice);
 		// Cannot set the generator from @PreConfigure in this unit test.
 		((AbstractMalcolmDevice<?>)malcolmDevice).setPointGenerator(gen);
-		
+
 		// Create a file to scan into.
 		smodel.setFilePath(file.getAbsolutePath());
 		System.out.println("File writing to " + smodel.getFilePath());
-		
+
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override
@@ -143,10 +143,10 @@ public class MalcolmGridScanTest extends AbstractMalcolmScanTest {
 				}
 			}
 		});
-		
+
 		return scanner;
 	}
-	
+
 	private void checkFiles() {
 		assertEquals(4, participant.getCount(FileDeclared.class));
 		List<String> paths = participant.getPaths();

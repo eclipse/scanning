@@ -1,4 +1,4 @@
-# [Eclipse Scanning](http://eclipse.github.io/scanning)  
+# [Eclipse Scanning](http://eclipse.github.io/scanning)
 
 
 [![Build Status](https://api.travis-ci.org/eclipse/scanning.png)](https://travis-ci.org/eclipse/scanning)
@@ -14,7 +14,7 @@ Instead of having to name your class *Test as in other projects, in this project
 Example: [org.eclipse.scanning.test.points.Suite](https://github.com/eclipse/scanning/blob/master/org.eclipse.scanning.test/src/org/eclipse/scanning/test/points/Suite.java)
 
 # Check out a development version
-1. Clone repositories as specified in .travis.yml at the top of this repository (richbeans, dawnsci, dawn-hdf) 
+1. Clone repositories as specified in .travis.yml at the top of this repository (richbeans, dawnsci, dawn-hdf)
 2. Clone this repositiory to org.eclipse.scanning
 3. Import all the bundles from all the repos to your eclipse workspace (other IDE's are available but they probably don't support target platforms)
 4. Use the org.eclipse.scanning.target.platform target plaform which will pull in a few apacahe dependencies

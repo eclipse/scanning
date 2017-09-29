@@ -89,7 +89,7 @@ public abstract class AbstractServletTest extends BrokerTest {
 
 	@BeforeClass
 	public static void create() throws Exception {
-		
+
 		ScanPointGeneratorFactory.init();
 
 		marshaller = new MarshallerService(
@@ -100,7 +100,7 @@ public abstract class AbstractServletTest extends BrokerTest {
 				);
 		ActivemqConnectorService.setJsonMarshaller(marshaller);
 		eservice  = new EventServiceImpl(new ActivemqConnectorService());
-		
+
 		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE
 		connector = new MockScannableConnector(null);
@@ -110,7 +110,7 @@ public abstract class AbstractServletTest extends BrokerTest {
 		impl._register(MockWritingMandlebrotModel.class, MockWritingMandelbrotDetector.class);
 		impl._register(MandelbrotModel.class, MandelbrotDetector.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
-		
+
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
 		dmodel.setExposureTime(0.001);
@@ -125,7 +125,7 @@ public abstract class AbstractServletTest extends BrokerTest {
 		wservice = new DeviceWatchdogService();
 		lservice = new LoaderServiceMock();
 		sservice = new MockScriptService();
-		
+
 		// Provide lots of services that OSGi would normally.
 		Services.setEventService(eservice);
 		Services.setRunnableDeviceService(dservice);
@@ -137,20 +137,20 @@ public abstract class AbstractServletTest extends BrokerTest {
 		ServiceHolder.setTestServices(lservice, new DefaultNexusBuilderFactory(), null, null, gservice);
 		org.eclipse.scanning.example.Services.setPointGeneratorService(gservice);
 		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(new NexusFileFactoryHDF5());
-		
+
 		validator = new ValidatorService();
 		validator.setPointGeneratorService(gservice);
 		validator.setRunnableDeviceService(dservice);
 		Services.setValidatorService(validator);
 	}
-	
+
 	/**
 	 * The servlet started in createServlet() if any.
 	 */
-	protected static AbstractConsumerServlet<?> servlet; 
-	
+	protected static AbstractConsumerServlet<?> servlet;
+
     /**
-     * 
+     *
      * @return
      * @throws Exception
      */
@@ -173,12 +173,12 @@ public abstract class AbstractServletTest extends BrokerTest {
 			servlet.disconnect();
 		}
 	}
-	
+
 	protected ScanBean createStepScan() throws IOException {
 		// We write some pojos together to define the scan
 		final ScanBean bean = new ScanBean();
 		bean.setName("Hello Scanning World");
-		
+
 		final ScanRequest<?> req = new ScanRequest<>();
 		req.setCompoundModel(new CompoundModel(new StepModel("fred", 0, 9, 1)));
 		req.setMonitorNames(Arrays.asList("monitor"));
@@ -187,17 +187,17 @@ public abstract class AbstractServletTest extends BrokerTest {
 		dmodel.setName("detector");
 		dmodel.setExposureTime(0.001);
 		req.putDetector("detector", dmodel);
-		
+
 		bean.setScanRequest(req);
 		return bean;
 	}
 
 	protected ScanBean createStepGridScan(int outerScanNum) throws IOException {
-		
+
 		// We write some pojos together to define the scan
 		final ScanBean bean = new ScanBean();
 		bean.setName("Hello Scanning World");
-		
+
 		final ScanRequest<?> req = new ScanRequest<IROI>();
 		// Create a grid scan model
 		BoundingBox box = new BoundingBox();
@@ -221,11 +221,11 @@ public abstract class AbstractServletTest extends BrokerTest {
 		models.add(gmodel);
 		req.setCompoundModel(new CompoundModel(models.toArray(new IScanPathModel[models.size()])));
 		req.setMonitorNames(Arrays.asList("monitor"));
-		
+
 		final File tmp = File.createTempFile("scan_servlet_test", ".nxs");
 		tmp.deleteOnExit();
 		req.setFilePath(tmp.getAbsolutePath()); // TODO This will really come from the scan file service which is not written.
-		
+
 		// 2 detectors
 		final MandelbrotModel mandyModel = new MandelbrotModel();
 		mandyModel.setName("mandelbrot");
@@ -233,7 +233,7 @@ public abstract class AbstractServletTest extends BrokerTest {
 		mandyModel.setImaginaryAxisName("yNex");
 		mandyModel.setExposureTime(0.001);
 		req.putDetector("mandelbrot", mandyModel);
-		
+
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
 		dmodel.setExposureTime(0.001);
@@ -244,12 +244,12 @@ public abstract class AbstractServletTest extends BrokerTest {
 	}
 
 	protected ScanBean createGridScan() throws IOException {
-		
-		
+
+
 		// We write some pojos together to define the scan
 		final ScanBean bean = new ScanBean();
 		bean.setName("Hello Scanning World");
-		
+
 		final ScanRequest<?> req = new ScanRequest<IROI>();
 		// Create a grid scan model
 		BoundingBox box = new BoundingBox();
@@ -267,35 +267,35 @@ public abstract class AbstractServletTest extends BrokerTest {
 
 		req.setCompoundModel(new CompoundModel(gmodel));
 		req.setMonitorNames(Arrays.asList("monitor"));
-		
+
 		final File tmp = File.createTempFile("scan_servlet_test", ".nxs");
 		tmp.deleteOnExit();
 		req.setFilePath(tmp.getAbsolutePath()); // TODO This will really come from the scan file service which is not written.
-		
+
 		final MandelbrotModel mandyModel = new MandelbrotModel();
 		mandyModel.setName("mandelbrot");
 		mandyModel.setRealAxisName("xNex");
 		mandyModel.setImaginaryAxisName("yNex");
 		mandyModel.setExposureTime(0.001);
 		req.putDetector("mandelbrot", mandyModel);
-		
+
 		bean.setScanRequest(req);
 		return bean;
 	}
 
 	protected List<ScanBean> runAndCheck(ScanBean bean, long maxScanTimeS) throws Exception {
-		
+
 		final IEventService eservice = Services.getEventService();
 
 		// Let's listen to the scan and see if things happen when we run it
 		final ISubscriber<IScanListener> subscriber = eservice.createSubscriber(new URI(servlet.getBroker()), servlet.getStatusTopic());
-		
+
 		try {
 			final List<ScanBean> beans       = new ArrayList<>(13);
 			final List<ScanBean> startEvents = new ArrayList<>(13);
-			final List<ScanBean> endEvents   = new ArrayList<>(13);			
+			final List<ScanBean> endEvents   = new ArrayList<>(13);
 			final CountDownLatch latch       = new CountDownLatch(1);
-			
+
 			subscriber.addListener(new IScanListener() {
 				@Override
 				public void scanEventPerformed(ScanEvent evt) {
@@ -303,38 +303,38 @@ public abstract class AbstractServletTest extends BrokerTest {
 						beans.add(evt.getBean());
 					}
 				}
-	
+
 				@Override
 				public void scanStateChanged(ScanEvent evt) {
 					if (evt.getBean().scanStart()) {
 						startEvents.add(evt.getBean()); // Should be just one
 					}
 	                if (evt.getBean().scanEnd()) {
-	                	endEvents.add(evt.getBean());
-	                	latch.countDown();
+				endEvents.add(evt.getBean());
+				latch.countDown();
 	                }
 				}
 			});
-	
-			
+
+
 			// Ok done that, now we sent it off...
 			submit(servlet, bean);
-			
+
 			boolean ok = latch.await(maxScanTimeS, TimeUnit.SECONDS);
 			if (!ok) throw new Exception("The latch broke before the scan finished!");
-			
+
 			assertEquals(1, startEvents.size());
 			assertTrue(endEvents.size()>0);
-			
+
 			return beans;
-			
+
 		} finally {
 			subscriber.disconnect();
 		}
 	}
 
 	protected void submit(AbstractConsumerServlet<?> servlet, ScanBean bean) throws Exception {
-		
+
 		// Ok done that, now we sent it off...
 		final ISubmitter<ScanBean> submitter  = eservice.createSubmitter(new URI(servlet.getBroker()),  servlet.getSubmitQueue());
 		submitter.submit(bean);

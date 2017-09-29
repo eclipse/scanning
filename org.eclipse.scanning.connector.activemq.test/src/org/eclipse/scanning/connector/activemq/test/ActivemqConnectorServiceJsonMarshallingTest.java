@@ -59,7 +59,7 @@ public class ActivemqConnectorServiceJsonMarshallingTest {
 		MarshallerService marshaller = new MarshallerService(
 				Arrays.asList(new ScanningAPIClassRegistry()),
 				Arrays.asList(new PointsModelMarshaller()));
-		
+
 		ActivemqConnectorService.setJsonMarshaller(marshaller);
 		this.marshaller = new ActivemqConnectorService();
 	}

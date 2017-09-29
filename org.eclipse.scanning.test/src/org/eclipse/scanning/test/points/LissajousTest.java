@@ -30,7 +30,7 @@ public class LissajousTest {
 
 	@Before
 	public void before() throws Exception {
-		
+
 		BoundingBox box = new BoundingBox();
 		box.setFastAxisStart(-10);
 		box.setSlowAxisStart(5);
@@ -59,20 +59,20 @@ public class LissajousTest {
 		assertEquals(new Point(100, -9.939837880744866, 100, 6.925069008238842, false), pointList.get(100));
 		assertEquals(new Point(300, -7.5128903496577735, 300, 6.775627736273646, false), pointList.get(300));
 	}
-	
+
 	@Test
 	public void testLissajousWithBoundingRectangle() throws Exception {
 		Assert.fail(); // Not yet implemented
 	}
-	
+
 	@Test
 	public void testLissajousWithCircularRegion() throws Exception {
 		Assert.fail(); // Not yet implemented
 	}
-	
+
 	@Test
 	public void testLissajousWithPolygonRegion() throws Exception {
 		Assert.fail(); // Not yet implemented
 	}
-	
+
 }

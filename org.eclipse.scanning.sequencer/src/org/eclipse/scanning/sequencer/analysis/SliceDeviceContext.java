@@ -11,9 +11,9 @@ public class SliceDeviceContext {
 	private IScanSlice   scanSlice;
 	private ILazyDataset data;
 	private IDataset     slice;
-	
+
 	public SliceDeviceContext() {
-		
+
 	}
 	public SliceDeviceContext(IPosition loc, IScanSlice rslice, ILazyDataset data, IDataset slice) {
 		this.location    = loc;

@@ -8,7 +8,7 @@
 #
 # Contributors:
 #    Peter Chang - initial API and implementation and/or initial documentation
-# 
+#
 ###
 import sys
 if sys.hexversion < 0x02040000:

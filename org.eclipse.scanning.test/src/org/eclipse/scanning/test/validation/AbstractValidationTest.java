@@ -51,13 +51,13 @@ public abstract class AbstractValidationTest {
 
 	@Before
 	public void before() throws Exception {
-		
+
 		// Make a validator.
 		validator = new ValidatorService();
-		
+
 		IPointGeneratorService pservice = new PointGeneratorService();
 		validator.setPointGeneratorService(pservice);
-		
+
 		IRunnableDeviceService dservice  = new RunnableDeviceServiceImpl(new MockScannableConnector(null));
 		RunnableDeviceServiceImpl impl = (RunnableDeviceServiceImpl)dservice;
 		impl._register(MockDetectorModel.class, MockWritableDetector.class);
@@ -69,29 +69,29 @@ public abstract class AbstractValidationTest {
 		impl._register(ClusterProcessingModel.class, ClusterProcessingRunnableDevice.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
 		impl._register(DummyMalcolmTriggeredModel.class, DummyMalcolmTriggeredDetector.class);
-		
+
 		validator.setRunnableDeviceService(dservice);
 		Services.setValidatorService(validator);
 		Services.setRunnableDeviceService(validator.getRunnableDeviceService());
 		org.eclipse.scanning.example.Services.setRunnableDeviceService(validator.getRunnableDeviceService());
-		
+
 		// Make a few detectors and models...
 		PseudoSpringParser parser = new PseudoSpringParser();
 		parser.parse(getClass().getResourceAsStream("test_detectors.xml"));
-		
+
 		IRunnableDevice<DummyMalcolmModel> device = dservice.getRunnableDevice("malcolm");
-		
+
 		// Just for testing we give it a dir.
 		File dir = File.createTempFile("fred", ".nxs").getParentFile();
 		device.getModel().setFileDir(dir.getAbsolutePath());
-		
+
 		// Just for testing, we make the detector legal.
 		IMalcolmDevice<?> mdevice = (IMalcolmDevice<?>)device;
 		GridModel gmodel = new GridModel("stage_x", "stage_y");
 		gmodel.setBoundingBox(new BoundingBox(10, -10, 100, -100));
 		// Cannot set the generator from @PreConfigure in this unit test.
-     	mdevice.setPointGenerator(pservice.createGenerator(gmodel));
-		
+	mdevice.setPointGenerator(pservice.createGenerator(gmodel));
+
 
 	}
 

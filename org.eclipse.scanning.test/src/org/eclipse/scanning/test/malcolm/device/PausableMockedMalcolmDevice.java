@@ -67,7 +67,7 @@ public abstract class PausableMockedMalcolmDevice extends MockedMalcolmDevice {
 	public void setState(final DeviceState state) throws ScanningException {
 
         if (!state.isRunning()) {				// Clear up any trailing awaits from previous Run/Pause sequences
-        	clearRunningStateChangeActive();	// when entering a non-running state e.g when extra threads have
+		clearRunningStateChangeActive();	// when entering a non-running state e.g when extra threads have
         }										// tried to pause completed tasks
         super.setDeviceState(state);
 	}
@@ -115,30 +115,30 @@ public abstract class PausableMockedMalcolmDevice extends MockedMalcolmDevice {
 	protected void beforeExecute() throws Exception {
         logger.debug("Entering beforeExecute lock, state is " + getState());
 
-    	if(!taskPauseLock.tryLock(1, TimeUnit.SECONDS)) {
-    		throw new MalcolmDeviceException(this, "Could not obtain lock to read isPaused within 1 second");
-    	}
+	if(!taskPauseLock.tryLock(1, TimeUnit.SECONDS)) {
+		throw new MalcolmDeviceException(this, "Could not obtain lock to read isPaused within 1 second");
+	}
 
-    	try {
-    		while (taskPauseRequested) {
-        		setState(DeviceState.PAUSED, "Scan has been paused and will be resumed when the run method is called on the same thread.");
+	try {
+		while (taskPauseRequested) {
+			setState(DeviceState.PAUSED, "Scan has been paused and will be resumed when the run method is called on the same thread.");
 
-        		clearRunningStateChangeActive();		// signal that state transition to PAUSED has completed
+			clearRunningStateChangeActive();		// signal that state transition to PAUSED has completed
 				taskPauseCompleted.await();				// wait for pausing thread to signal resume
 
 				// only proceed with run if nothing has changed the state during the pause (e.g. abort)
 				if (getState().equals(DeviceState.PAUSED)) {
 					setState(DeviceState.RUNNING, "Scan has been unpaused and will resume.");
 				}
-        		clearRunningStateChangeActive();
+			clearRunningStateChangeActive();
 			}
-    	}
-    	catch (InterruptedException ie) {
-    		Thread.currentThread().interrupt();
-    	}
-    	finally {
-    		taskPauseLock.unlock();
-    	}
+	}
+	catch (InterruptedException ie) {
+		Thread.currentThread().interrupt();
+	}
+	finally {
+		taskPauseLock.unlock();
+	}
 	}
 
 	protected Thread pauseThread;

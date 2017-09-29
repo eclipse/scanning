@@ -95,13 +95,13 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class ScanProcessTest {
-	
-	
+
+
 	@BeforeClass
 	public static void init() {
 		ScanPointGeneratorFactory.init();
 	}
-	
+
 	private IRunnableDeviceService      dservice;
 	private IScannableDeviceService     connector;
 	private IPointGeneratorService      gservice;
@@ -124,7 +124,7 @@ public class ScanProcessTest {
 				);
 		ActivemqConnectorService.setJsonMarshaller(marshaller);
 		eservice  = new EventServiceImpl(new ActivemqConnectorService());
-		
+
 		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE
 		connector = new MockScannableConnector(null);
@@ -134,7 +134,7 @@ public class ScanProcessTest {
 		impl._register(MockWritingMandlebrotModel.class, MockWritingMandelbrotDetector.class);
 		impl._register(MandelbrotModel.class, MandelbrotDetector.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
-		
+
 		MandelbrotModel model = new MandelbrotModel("p", "q");
 		model.setName("mandelbrot");
 		model.setExposureTime(0.00001);
@@ -146,7 +146,7 @@ public class ScanProcessTest {
 		sservice = new MockScriptService();
 		fpservice = new MockFilePathService();
 		fileFactory = new NexusFileFactoryHDF5();
-		
+
 		// Provide lots of services that OSGi would normally.
 		Services.setEventService(eservice);
 		Services.setRunnableDeviceService(dservice);
@@ -159,13 +159,13 @@ public class ScanProcessTest {
 		ServiceHolder.setTestServices(lservice, new DefaultNexusBuilderFactory(), null, null, gservice);
 		org.eclipse.scanning.example.Services.setPointGeneratorService(gservice);
 		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(fileFactory);
-		
+
 		validator = new ValidatorService();
 		validator.setPointGeneratorService(gservice);
 		validator.setRunnableDeviceService(dservice);
 		Services.setValidatorService(validator);
 	}
-	
+
 	@After
 	public void teardown() throws Exception {
 		if (fpservice != null) {
@@ -191,20 +191,20 @@ public class ScanProcessTest {
 		ScanBean scanBean = new ScanBean();
 		ScanRequest<?> scanRequest = new ScanRequest<>();
 		scanRequest.setCompoundModel(new CompoundModel<>(new StepModel("fred", 0, 9, 1)));
-		
+
 		ScriptRequest before = new ScriptRequest();
 		before.setFile("/path/to/before.py");
 		before.setLanguage(ScriptLanguage.PYTHON);
 		scanRequest.setBefore(before);
-		
+
 		ScriptRequest after = new ScriptRequest();
 		after.setFile("/path/to/after.py");
 		after.setLanguage(ScriptLanguage.PYTHON);
 		scanRequest.setAfter(after);
-		
+
 		scanBean.setScanRequest(scanRequest);
 		ScanProcess process = new ScanProcess(scanBean, null, true);
-		
+
 		// Act
 		process.execute();
 
@@ -213,48 +213,48 @@ public class ScanProcessTest {
 		assertThat(scriptRequests.size(), is(2));
 		assertThat(scriptRequests, hasItems(before, after));
 	}
-	
+
 	@Test
 	public void testSimpleNest() throws Exception {
 		// Arrange
 		ScanBean scanBean = new ScanBean();
 		ScanRequest<?> scanRequest = new ScanRequest<>();
-		
+
 		CompoundModel cmodel = new CompoundModel<>(Arrays.asList(new StepModel("T", 290, 291, 2), new GridModel("xNex", "yNex",2,2)));
 		cmodel.setRegions(Arrays.asList(new ScanRegion<IROI>(new RectangularROI(0, 0, 3, 3, 0), "xNex", "yNex")));
 		scanRequest.setCompoundModel(cmodel);
-		
+
 		final Map<String, Object> dmodels = new HashMap<String, Object>(3);
 		MandelbrotModel model = new MandelbrotModel("xNex", "yNex");
 		model.setName("mandelbrot");
 		model.setExposureTime(0.001);
 		dmodels.put("mandelbrot", model);
 		scanRequest.setDetectors(dmodels);
-		
+
 		final File tmp = File.createTempFile("scan_nested_test", ".nxs");
 		tmp.deleteOnExit();
 		scanRequest.setFilePath(tmp.getAbsolutePath()); // TODO This will really come from the scan file service which is not written.
-		
+
 		scanBean.setScanRequest(scanRequest);
 		ScanProcess process = new ScanProcess(scanBean, null, true);
-		
+
 		// Act
 		process.execute();
 
 		// Assert
-		
+
 	}
-	
+
 	@Test
 	public void testScannableAndMonitor() throws Exception {
 		// Arrange
 		ScanBean scanBean = new ScanBean();
 		ScanRequest<?> scanRequest = new ScanRequest<>();
-		
+
 		CompoundModel cmodel = new CompoundModel<>(Arrays.asList(new StepModel("T", 290, 300, 2), new GridModel("xNex", "yNex",2,2)));
 		cmodel.setRegions(Arrays.asList(new ScanRegion<IROI>(new RectangularROI(0, 0, 3, 3, 0), "xNex", "yNex")));
 		scanRequest.setCompoundModel(cmodel);
-		
+
 		final Map<String, Object> dmodels = new HashMap<String, Object>(3);
 		MandelbrotModel model = new MandelbrotModel("xNex", "yNex");
 		model.setName("mandelbrot");
@@ -262,21 +262,21 @@ public class ScanProcessTest {
 		dmodels.put("mandelbrot", model);
 		scanRequest.setDetectors(dmodels);
 		scanRequest.setMonitorNames(Arrays.asList("T"));
-		
+
 		final File tmp = File.createTempFile("scan_nested_test", ".nxs");
 		tmp.deleteOnExit();
 		scanRequest.setFilePath(tmp.getAbsolutePath()); // TODO This will really come from the scan file service which is not written.
-		
+
 		scanBean.setScanRequest(scanRequest);
 		ScanProcess process = new ScanProcess(scanBean, null, true);
-		
+
 		// Act
 		process.execute();
 
 		// Assert
 		try (NexusFile nf = fileFactory.newNexusFile(tmp.getAbsolutePath())) {
 			nf.openToRead();
-			
+
 			TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 			nf.close();
 			NXroot root = (NXroot) nexusTree.getGroupNode();
@@ -286,42 +286,42 @@ public class ScanProcessTest {
 			IDataset tempDataset = tPos.getValue();
 			assertThat(tempDataset, is(notNullValue()));
 			assertThat(tempDataset.getShape(), is(equalTo(new int[] { 6, 2, 2 })));
-			
+
 			NXdata mandelbrot = entry.getData("mandelbrot");
 			assertThat(mandelbrot, is(notNullValue()));
 			assertThat(mandelbrot.getDataNode("T"), is(nullValue()));
 		}
 	}
-	
+
 	@Test
 	public void testSimpleNestWithSleepInIterator() throws Exception {
 		// Arrange
 		ScanBean scanBean = new ScanBean();
 		ScanRequest<?> scanRequest = new ScanRequest<>();
-		
+
 		final int numPoints = 5;
 		CompoundModel cmodel = new CompoundModel<>(Arrays.asList(
 				new RepeatedPointModel("T1", numPoints, 290.2, 100), new GridModel("xNex", "yNex",2,2)));
 		cmodel.setRegions(Arrays.asList(new ScanRegion<IROI>(
 				new RectangularROI(0, 0, 3, 3, 0), "xNex", "yNex")));
 		scanRequest.setCompoundModel(cmodel);
-		
+
 		final Map<String, Object> dmodels = new HashMap<String, Object>(3);
 		MandelbrotModel model = new MandelbrotModel("xNex", "yNex");
 		model.setName("mandelbrot");
 		model.setExposureTime(0.001);
 		dmodels.put("mandelbrot", model);
 		scanRequest.setDetectors(dmodels);
-		
+
 		final File tmp = File.createTempFile("scan_nested_test", ".nxs");
 		tmp.deleteOnExit();
 		scanRequest.setFilePath(tmp.getAbsolutePath()); // TODO This will really come from the scan file service which is not written.
-		
+
 		scanBean.setScanRequest(scanRequest);
 		ScanProcess process = new ScanProcess(scanBean, null, true);
-		
+
 		RepeatedPointIterator._setCountSleeps(true);
-		
+
 		// Act
 		long before = System.currentTimeMillis();
 		process.execute();
@@ -329,7 +329,7 @@ public class ScanProcessTest {
 
 		// Assert
 		assertTrue("The time to do a scan of roughly 500ms of sleep was "+(after-before), (10000 > (after-before)));
-		
+
 		// Important: the number of sleeps must be five
 		// NOTE: there are currently ten sleeps, as we iterate through the points in the scan
 		// twice to get the scan shape.
@@ -337,49 +337,49 @@ public class ScanProcessTest {
 		assertEquals(numPoints * 2, RepeatedPointIterator._getSleepCount());
 	}
 
-	
+
 	@Test
 	public void testStartAndEndPos() throws Exception {
 		// Arrange
 		ScanBean scanBean = new ScanBean();
 		ScanRequest<?> scanRequest = new ScanRequest<>();
 		scanRequest.setCompoundModel(new CompoundModel<>(new StepModel("fred", 0, 9, 1)));
-		
+
 		final MapPosition start = new MapPosition();
 		start.put("p", 1.0);
 		start.put("q", 2.0);
 		start.put("r", 3.0);
 		scanRequest.setStart(start);
-		
+
 		final MapPosition end = new MapPosition();
 		end.put("p", 6.0);
 		end.put("q", 7.0);
 		end.put("r", 8.0);
 		scanRequest.setEnd(end);
-		
+
 		scanBean.setScanRequest(scanRequest);
 		ScanProcess process = new ScanProcess(scanBean, null, true);
-		
+
 		// Act
 		process.execute();
-		
+
 		// Assert
 		for (String scannableName : start.getNames()) {
 			final Number startPos = start.getValue(scannableName);
 			final Number endPos = end.getValue(scannableName);
-			
+
 			IScannable<Number> scannable = connector.getScannable(scannableName);
 			MockScannable mockScannable = (MockScannable) scannable;
-			
+
 			mockScannable.verify(start.getValue(scannableName), start);
 			mockScannable.verify(end.getValue(scannableName), end);
-			
+
 			final List<Number> values = mockScannable.getValues();
 			assertThat(values.get(0), is(equalTo(startPos)));
 			assertThat(values.get(values.size() - 1), is(equalTo(endPos)));
 		}
 	}
-	
+
 	@Ignore("Got broken by scisoft change...")
 	@Test
 	public void testMalcolmValidation() throws Exception {
@@ -387,31 +387,31 @@ public class ScanProcessTest {
 		fpservice = new MockFilePathService();
 		Services.setFilePathService(fpservice);
 		new ServiceHolder().setFilePathService(fpservice);
-		
+
 		GridModel gmodel = new GridModel();
 		gmodel.setFastAxisName("stage_x");
 		gmodel.setFastAxisPoints(5);
 		gmodel.setSlowAxisName("stage_y");
 		gmodel.setSlowAxisPoints(5);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		DummyMalcolmModel dmodel = new DummyMalcolmModel();
 		dmodel.setName("malcolm");
 		dmodel.setExposureTime(0.1);
 		dservice.createRunnableDevice(dmodel);
-		
+
 		ScanBean scanBean = new ScanBean();
 		ScanRequest<?> scanRequest = new ScanRequest<>();
 		scanRequest.setCompoundModel(new CompoundModel<>(gmodel));
 		scanRequest.putDetector("malcolm", dmodel);
-		
+
 		scanBean.setScanRequest(scanRequest);
 		ScanProcess process = new ScanProcess(scanBean, null, true);
-		
+
 		// Act
 		process.execute();
-		
-		// Nothing to assert. This test was written to check that the malcolm device is 
+
+		// Nothing to assert. This test was written to check that the malcolm device is
 		// properly initialized before validation occurs. If this didn't happen, an
 		// exception would be thrown by DummyMalcolmDevice.validate()
 	}

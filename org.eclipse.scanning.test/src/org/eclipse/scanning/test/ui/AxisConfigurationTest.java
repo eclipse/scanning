@@ -38,17 +38,17 @@ import org.junit.runner.RunWith;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class AxisConfigurationTest extends ShellTest{
-	
+
 	private static IInterfaceService interfaceService; // We really get this from OSGi services!
-	
+
 	@BeforeClass
-	public static void createServices() throws Exception {	
+	public static void createServices() throws Exception {
 		interfaceService = new InterfaceService(); // Just for testing! This comes from OSGi really.
 		UISuite.createTestServices(false);
 	}
-	
+
 	@AfterClass
-	public static void disposeServices() throws Exception {	
+	public static void disposeServices() throws Exception {
 		interfaceService = null;
 		UISuite.disposeTestServices();
 	}
@@ -58,7 +58,7 @@ public class AxisConfigurationTest extends ShellTest{
 
 	@Override
 	protected Shell createShell(Display display) throws Exception {
-		
+
 		this.config = new AxisConfiguration();
 		config.setApplyModels(true);
 		config.setApplyRegions(true);
@@ -69,8 +69,8 @@ public class AxisConfigurationTest extends ShellTest{
 		config.setSlowAxisStart(-100);
 		config.setSlowAxisEnd(-200);
 		config.setMicroscopeImage("C:/tmp/fred.png");
-		
-		
+
+
 		this.viewer = interfaceService.createModelViewer();
 
 		Shell shell = new Shell(display);
@@ -78,7 +78,7 @@ public class AxisConfigurationTest extends ShellTest{
 		shell.setLayout(new GridLayout(1, false));
         viewer.createPartControl(shell);
 		viewer.setModel(config);
-		
+
 		shell.pack();
 		shell.setSize(500, 500);
 		shell.open();
@@ -90,59 +90,59 @@ public class AxisConfigurationTest extends ShellTest{
 	public void checkShell() throws Exception {
 		assertNotNull(bot.shell("Scan Area"));
 	}
-	
+
 	@Test
 	public void testDialog() throws Exception {
 		Shell shell = bot.shell("Scan Area").widget;
-		
+
 		List<Exception> errors = new ArrayList<>();
- 		shell.getDisplay().syncExec(()->{
- 			try {
- 				// Intentionally loose generics here because the
- 				// ModelCellEditor cannot type check so we mimik
- 				// what it does to reproduce an old defect
- 				IModelDialog dialog = interfaceService.createModelDialog(shell);
- 				dialog.create();
+		shell.getDisplay().syncExec(()->{
+			try {
+				// Intentionally loose generics here because the
+				// ModelCellEditor cannot type check so we mimik
+				// what it does to reproduce an old defect
+				IModelDialog dialog = interfaceService.createModelDialog(shell);
+				dialog.create();
 				dialog.setModel((Serializable)config);
- 			} catch (Exception ne) {
- 				errors.add(ne);
- 			}
+			} catch (Exception ne) {
+				errors.add(ne);
+			}
 		});
- 		if (errors.size()>0) throw errors.get(0);
+		if (errors.size()>0) throw errors.get(0);
 	}
 
 	@Test
 	public void checkInitialValues() throws Exception {
-		
+
 		assertEquals(config.getMicroscopeImage(),                 bot.table(0).cell(0, 1));
-		
+
 		assertEquals(config.getFastAxisName(),                    bot.table(0).cell(2, 1));
 		assertEquals(String.valueOf(config.getFastAxisStart())+" mm",   bot.table(0).cell(3, 1));
 		assertEquals(String.valueOf(config.getFastAxisEnd())+" mm",     bot.table(0).cell(4, 1));
-		
+
 		assertEquals(config.getSlowAxisName(),                    bot.table(0).cell(5, 1));
 		assertEquals(String.valueOf(config.getSlowAxisStart())+" mm",   bot.table(0).cell(6, 1));
 		assertEquals(String.valueOf(config.getSlowAxisEnd())+" mm",     bot.table(0).cell(7, 1));
-		
+
 	}
 
-	
+
 	@Test
 	public void checkFilePath() throws Exception {
-		
+
 		assertEquals(config.getMicroscopeImage(), bot.table(0).cell(0, 1));
-		
+
 		bot.table(0).click(0, 1); // Make the file editor
-		
+
 		SWTBotText text = bot.text(0);
 		assertNotNull(text);
 		assertEquals(config.getMicroscopeImage(), text.getText());
-		
+
 		text.setText("Invalid Path");
-		
+
 		Color red = new Color(bot.getDisplay(), 255, 0, 0, 255);
         assertEquals(red, text.foregroundColor());
-        
+
         File file = File.createTempFile("a_testFile", ".txt");
         file.deleteOnExit();
 		text.setText(file.getAbsolutePath());
@@ -150,7 +150,7 @@ public class AxisConfigurationTest extends ShellTest{
 		Color black = new Color(bot.getDisplay(), 0, 0, 0, 255);
         assertEquals(black, text.foregroundColor());
 
-        
+
 	}
 
 	@Test
@@ -159,21 +159,21 @@ public class AxisConfigurationTest extends ShellTest{
 		assertEquals(String.valueOf(config.getFastAxisStart())+" mm", bot.table(0).cell(3, 1));
 
 		bot.table(0).click(3, 1); // Make the file editor
-		
+
 		SWTBotText text = bot.text(0);
 		assertNotNull(text);
 		assertEquals(String.valueOf(config.getFastAxisStart()), text.getText());
-		
+
 		Color red = new Color(bot.getDisplay(), 255, 0, 0, 255);
- 		Color black = new Color(bot.getDisplay(), 0, 0, 0, 255);
+		Color black = new Color(bot.getDisplay(), 0, 0, 0, 255);
         assertEquals(black, text.foregroundColor());
 
         text.setText("-2000");
         assertEquals(red, text.foregroundColor());
-        
+
         text.setText("1");
         assertEquals(black, text.foregroundColor());
-        
+
         text.setText("1001");
         assertEquals(red, text.foregroundColor());
 

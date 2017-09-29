@@ -19,9 +19,9 @@ import org.eclipse.scanning.api.INamedNode;
 
 public class ControlGroup extends AbstractControl implements INameable {
 
-	
+
 	public ControlGroup() {
-		
+
 	}
 
 	public List<INamedNode> getControls() {

@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
  * Used to annotation methods as participating at a location in a scan.
  * <p>
  * It is possible using annotations to have more than one method annotated
- * which means a super class can declare its implementation as final, requiring a 
+ * which means a super class can declare its implementation as final, requiring a
  * subclass to define another annotation.
  * <p>
  * Services such as IRunnableDeviceService, IPointsGenerator etc may be declared
@@ -70,7 +70,7 @@ import java.lang.annotation.Target;
  *     }
  *}
  * </pre></code>
- * 
+ *
  * <p>
  * @author Matthew Gerring
  *

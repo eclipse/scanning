@@ -17,15 +17,15 @@ import org.junit.Before;
 /**
  * Test for the {@link MonitorAtom} class. This class only create the POJO.
  * Actual tests in {@link AbstractBeanTest}.
- * 
+ *
  * @author Michael Wharmby
  *
  */
 public class MonitorAtomTest extends AbstractBeanTest<MonitorAtom> {
-	
+
 	private String shrtNmA = "testMonitorA", shrtNmB = "testMonitorB";
 	private String deviceA = "testMonDeviceA", deviceB = "testMonDeviceB";
-	
+
 	@Before
 	public void buildBeans() throws Exception {
 		beanA = new MonitorAtom(shrtNmA, deviceA);

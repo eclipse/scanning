@@ -23,15 +23,15 @@ import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.remote.QueueRequest;
 
 /**
- * Remote {@link IQueue} class containing all the configuration information on 
- * a real queue object, but without anything to directly allow control. This 
- * should be passed back to a client through a remote request. Configuration 
- * information inside this class allows the client to interact remotely with 
+ * Remote {@link IQueue} class containing all the configuration information on
+ * a real queue object, but without anything to directly allow control. This
+ * should be passed back to a client through a remote request. Configuration
+ * information inside this class allows the client to interact remotely with
  * the queue.
- * 
- * Getters & setters which would control resources which are unavailable in 
+ *
+ * Getters & setters which would control resources which are unavailable in
  * the remote case will throw {@link IllegalArgumentException}s.
- * 
+ *
  * @author Michael Wharmby
  *
  * @param <T> Bean extending the {@link Queueable} super-type.
@@ -40,19 +40,19 @@ public class _Queue<T extends Queueable> implements IQueue<T> {
 
 	private final String queueID;
 	private final URI uri;
-	
-	private final String submissionQueueName, statusSetName, statusTopicName, 
+
+	private final String submissionQueueName, statusSetName, statusTopicName,
 	heartbeatTopicName, commandSetName, commandTopicName;
-	
+
 	private final QueueStatus status;
-	
+
 	private final UUID consumerID;
-	
+
 	/**
-	 * Constructor takes a real {@link IQueue} object from the 
-	 * {@link IQueueService} as it's only argument. All of the configuration 
+	 * Constructor takes a real {@link IQueue} object from the
+	 * {@link IQueueService} as it's only argument. All of the configuration
 	 * parameters are extracted from this realQueue object.
-	 * 
+	 *
 	 * @param realQueue {@link IQueue} which will be source for the config.
 	 */
 	public _Queue(URI uri, QueueRequest reply) {
@@ -65,10 +65,10 @@ public class _Queue<T extends Queueable> implements IQueue<T> {
 		statusTopicName = reply.getStatusTopicName();
 		submissionQueueName = reply.getSubmissionQueueName();
 		this.uri = uri;
-		
+
 		this.consumerID = reply.getConsumerId();
 	}
-	
+
 	@Override
 	public String getQueueID() {
 		return queueID;

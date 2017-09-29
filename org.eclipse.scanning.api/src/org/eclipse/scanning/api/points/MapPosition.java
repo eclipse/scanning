@@ -23,15 +23,15 @@ import java.util.Map;
  *
  */
 public final class MapPosition extends AbstractPosition {
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -3161176012921556875L;
-	
+
 	private Map<String, Object>  values;   // Name->Value
 	private Map<String, Integer> indices;  // Name->Index
-	
+
 	public MapPosition() {
 		values   = new LinkedHashMap<String, Object>(7);
 		indices  = new LinkedHashMap<String, Integer>(7);
@@ -48,7 +48,7 @@ public final class MapPosition extends AbstractPosition {
 		}
 		indices  = inds;
 	}
-	
+
 	public MapPosition(String name, Integer index, Object value) {
 		this();
 		values.put(name, value);
@@ -58,19 +58,19 @@ public final class MapPosition extends AbstractPosition {
 	/**
 	 * Define the values as a comma separate list of values of the form:
 	 * name1:position1:value1, name2:position2:value2, ... etc. namen:valuen
-	 * 
+	 *
 	 * The value string must parse as a double or a NumberFormatException is thrown
-	 * 
+	 *
 	 * Spaces between commas and between names and values will be trimmed
-	 * 
+	 *
 	 * @param value
 	 * @throws NumberFormatException if the elements of the string could not be parsed as numbers
 	 */
 	public MapPosition(String value) throws NumberFormatException {
-		
+
 		values  = new LinkedHashMap<String, Object>(7);
 		indices = new LinkedHashMap<String, Integer>(7);
-		
+
 		String[] pairs = value.split(",");
 		for (String pair : pairs) {
 			String[] nv = pair.trim().split("\\:");
@@ -102,7 +102,7 @@ public final class MapPosition extends AbstractPosition {
 		indices.put(key, index);
 		return values.put(key, value);
 	}
-	
+
 	public void putAll(IPosition pos) {
 		final Collection<String> names = pos.getNames();
 		if (names==null) return; // StaticPosition allowed.
@@ -123,7 +123,7 @@ public final class MapPosition extends AbstractPosition {
 		if (indices==null) indices = new LinkedHashMap<String, Integer>(7);
 		return indices.put(key, value);
 	}
-	
+
 	public void putAllIndices(IPosition pos) {
 		if (indices==null) indices = new LinkedHashMap<String, Integer>(7);
 		final Collection<String> names = pos.getNames();
@@ -137,7 +137,7 @@ public final class MapPosition extends AbstractPosition {
 	public Map<String, Integer> getIndices() {
 		return indices;
 	}
-	
+
 	@Override
 	public Map<String, Object> getValues() {
 		return values;

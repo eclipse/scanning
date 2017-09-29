@@ -27,7 +27,7 @@ import org.epics.pvmarshaller.marshaller.deserialisers.Deserialiser;
  *
  */
 public class MalcolmPointGeneratorDeserialiser implements IPVStructureDeserialiser {
-	
+
 	private final String valueField = "value";
 	private final String metaField = "meta";
 	private final String descriptionField = "description";
@@ -37,7 +37,7 @@ public class MalcolmPointGeneratorDeserialiser implements IPVStructureDeserialis
 
 	@Override
 	public Object fromPVStructure(Deserialiser deserialiser, PVStructure pvStructure) throws Exception {
-		
+
 		PVStructure metaStructure = pvStructure.getStructureField(metaField);
 		String description = metaStructure.getStringField(descriptionField).get();
 		boolean writeable = metaStructure.getBooleanField(writeableField).get();
@@ -45,23 +45,23 @@ public class MalcolmPointGeneratorDeserialiser implements IPVStructureDeserialis
 		PVStringArray tagsArray = metaStructure.getSubField(PVStringArray.class, tagsField);
 		StringArrayData tagsArrayData = new StringArrayData();
 		tagsArray.get(0, tagsArray.getLength(), tagsArrayData);
-		
-		
+
+
 		PointGeneratorAttribute attribute = new PointGeneratorAttribute();
-		
+
 		attribute.setDescription(description);
 		attribute.setLabel(label);
 		attribute.setTags(tagsArrayData.data);
 		attribute.setWriteable(writeable);
 		attribute.setName(pvStructure.getFullName());
-		
+
 		PVStructure valuePVStructure = pvStructure.getStructureField(valueField);
-		
+
 		Map<?, ?> valueMap = deserialiser.getMapDeserialiser().createMapFromPVStructure(valuePVStructure, LinkedHashMap.class, Object.class);
-		
+
 		attribute.setValue(valueMap);
-		
+
 		return attribute;
-		
+
 	}
 }

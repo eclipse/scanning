@@ -12,16 +12,16 @@
 package org.eclipse.scanning.api.malcolm.attributes;
 
 /**
- * 
+ *
  * Encapsulates a health attribute as read from a malcolm device
- * 
+ *
  * @author Matt Taylor
  *
  */
 public class HealthAttribute extends MalcolmAttribute<String> {
-	
+
 	public static final String HEALTH_ID = "malcolm:core/HealthMeta:";
-	
+
 	private String value;
 
 	@Override

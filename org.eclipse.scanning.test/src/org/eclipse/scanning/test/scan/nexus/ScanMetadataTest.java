@@ -74,14 +74,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class ScanMetadataTest extends NexusTest {
-	
+
 	private IWritableDetector<MandelbrotModel> detector;
-	
+
 	@Before
 	public void before() throws ScanningException {
-	
+
 		MandelbrotModel model = createMandelbrotModel();
-		
+
 		detector = (IWritableDetector<MandelbrotModel>)dservice.createRunnableDevice(model);
 		assertNotNull(detector);
 		detector.addRunListener(new IRunListener() {
@@ -101,34 +101,34 @@ public class ScanMetadataTest extends NexusTest {
 		entryMetadata.addField(NXentry.NX_EXPERIMENT_IDENTIFIER, "i05-1");
 		entryMetadata.addField(NXentry.NX_START_TIME, "2016-03-21T16:41:27Z");
 		scanMetadata.add(entryMetadata);
-		
+
 		ScanMetadata instrumentMetadata = new ScanMetadata(MetadataType.INSTRUMENT);
 		instrumentMetadata.addField(NXinstrument.NX_NAME, "i05-1");
 		scanMetadata.add(instrumentMetadata);
-		
+
 		ScanMetadata sampleMetadata = new ScanMetadata(MetadataType.SAMPLE);
 		sampleMetadata.addField(NXsample.NX_CHEMICAL_FORMULA, "H2O");
 		sampleMetadata.addField(NXsample.NX_TEMPERATURE, 22.0);
 		sampleMetadata.addField(NXsample.NX_DESCRIPTION, "Test sample");
 		scanMetadata.add(sampleMetadata);
-		
+
 		ScanMetadata userMetadata = new ScanMetadata(MetadataType.USER);
 		userMetadata.addField(NXuser.NX_NAME, "testuser");
 		userMetadata.addField(NXuser.NX_ADDRESS, "Diamond Light Source, Diamond House, Harwell Science & Innovation Campus, Didcot, Oxfordshire, OX11 0DE");
 		userMetadata.addField(NXuser.NX_EMAIL, "user@diamond.ac.uk");
 		userMetadata.addField(NXuser.NX_TELEPHONE_NUMBER, "01");
 		scanMetadata.add(userMetadata);
-		
+
 		IRunnableDevice<ScanModel> scanner = createGridScan(detector, scanMetadata, 2, 2);
 		assertScanNotFinished(getNexusRoot(scanner).getEntry());
 		scanner.run(null);
-		
+
 		checkNexusFile(scanner, scanMetadata, 2, 2);
 	}
-	
+
 	private IRunnableDevice<ScanModel> createGridScan(final IRunnableDevice<?> detector,
 			List<ScanMetadata> scanMetadata, int... size) throws Exception {
-		
+
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
 		gmodel.setFastAxisName("xNex");
@@ -136,11 +136,11 @@ public class ScanMetadataTest extends NexusTest {
 		gmodel.setSlowAxisName("yNex");
 		gmodel.setSlowAxisPoints(size[size.length-2]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
-		
+
 		// We add the outer scans, if any
-		if (size.length > 2) { 
+		if (size.length > 2) {
 			for (int dim = size.length-3; dim>-1; dim--) {
 				final StepModel model;
 				if (size[dim]-1>0) {
@@ -152,20 +152,20 @@ public class ScanMetadataTest extends NexusTest {
 				gen = gservice.createCompoundGenerator(step, gen);
 			}
 		}
-	
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector);
 		smodel.setScanMetadata(scanMetadata);
-		
+
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());
 		System.out.println("File writing to "+smodel.getFilePath());
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override
@@ -180,12 +180,12 @@ public class ScanMetadataTest extends NexusTest {
 
 		return scanner;
 	}
-	
+
 	private void checkMetadata(NXentry entry, List<ScanMetadata> scanMetadataList) {
 		for (ScanMetadata scanMetadata : scanMetadataList) {
 			MetadataType type = scanMetadata.getType();
 			NXobject object = getNexusObjectForMetadataType(entry, type);
-			
+
 			Map<String, Object> metadataFields = scanMetadata.getFields();
 			for (String metadataFieldName : metadataFields.keySet()) {
 				Object expectedValue = scanMetadata.getFieldValue(metadataFieldName);
@@ -199,14 +199,14 @@ public class ScanMetadataTest extends NexusTest {
 			}
 		}
 	}
-	
+
 	private NXobject getNexusObjectForMetadataType(NXentry entry, MetadataType type) {
 		if (type == null) {
 			return entry;
 		}
-		
+
 		switch (type) {
-			case ENTRY: 
+			case ENTRY:
 				return entry;
 			case INSTRUMENT:
 				return entry.getInstrument();
@@ -230,7 +230,7 @@ public class ScanMetadataTest extends NexusTest {
 		checkMetadata(entry, scanMetadata);
 		// check that the scan points have been written correctly
 		assertSolsticeScanGroup(entry, false, false, sizes);
-		
+
 		NXinstrument instrument = entry.getInstrument();
 
 		LinkedHashMap<String, List<String>> signalFieldAxes = new LinkedHashMap<>();
@@ -263,7 +263,7 @@ public class ScanMetadataTest extends NexusTest {
 			assertSame(dataNode, nxData.getDataNode(sourceFieldName));
 			assertTarget(nxData, sourceFieldName, rootNode, "/entry/instrument/" + detectorName
 					+ "/" + sourceFieldName);
-			
+
 			// check that the other primary data fields of the detector haven't been added to this NXdata
 			for (String primaryDataFieldName : signalFieldAxes.keySet()) {
 				if (!primaryDataFieldName.equals(sourceFieldName)) {
@@ -296,7 +296,7 @@ public class ScanMetadataTest extends NexusTest {
 			int[] defaultDimensionMappings = IntStream.range(0, sizes.length).toArray();
 			int i = -1;
 			for (String  scannableName : scannableNames) {
-				
+
 			    i++;
 				NXpositioner positioner = instrument.getPositioner(scannableName);
 				assertNotNull(positioner);

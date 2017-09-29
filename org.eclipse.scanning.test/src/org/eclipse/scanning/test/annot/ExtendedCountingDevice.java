@@ -23,50 +23,50 @@ import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanInformation;
 
 /**
- * 
+ *
  * Could use Mockito but always causes compilation issues
  *
  */
 public class ExtendedCountingDevice extends CountingDevice {
-	
+
 	private List<IPosition>              positions = new ArrayList<>();
 	private List<IRunnableDeviceService> services  = new ArrayList<>();
 	private ScanInformation              scanInformation;
-	
+
     @ScanStart
     public void moveToNonObstructingLocation(IRunnableDeviceService rservice) throws Exception {
-    	// Do a floating point op
+	// Do a floating point op
         double v1 = 2;
         double v2 = 2;
         double s = v1*v2;
         count(Thread.currentThread().getStackTrace());
         services.add(rservice); // Normally same one each time
     }
-      
+
     @PointStart
     public void checkNextMoveLegal(IPosition pos) throws Exception {
-    	// Do a floating point op
+	// Do a floating point op
         double v1 = 2;
         double v2 = 2;
         double s = v1*v2;
         count(Thread.currentThread().getStackTrace());
         positions.add(pos);
     }
-    
+
     @PointStart
     public void notifyPosition(IPosition pos) throws Exception {
-    	// Do a floating point op
+	// Do a floating point op
         double v1 = 2;
         double v2 = 2;
         double s = v1*v2;
         count(Thread.currentThread().getStackTrace());
     }
-    
+
     @PointEnd
     public void deleteLocation() {
         count(Thread.currentThread().getStackTrace());
     }
-    
+
     @Override
     @ScanEnd
     public void dispose() {

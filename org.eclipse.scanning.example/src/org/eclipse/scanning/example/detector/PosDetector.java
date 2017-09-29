@@ -46,13 +46,13 @@ public class PosDetector extends AbstractRunnableDevice<PosDetectorModel> implem
 	private int scanRank = -1;
 	private String filePath;
 	private NexusFile nexusFile;
-	
+
 	public PosDetector() throws ScanningException {
 		super(Services.getRunnableDeviceService());
 		this.model = new PosDetectorModel();
 		setDeviceState(DeviceState.READY);
 	}
-	
+
 	@Override
 	public void run(IPosition position)
 			throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
@@ -64,17 +64,17 @@ public class PosDetector extends AbstractRunnableDevice<PosDetectorModel> implem
 		if (image == null) {
 			return false;
 		}
-		
+
 		if (data == null) {
 			createNexusFile();
 		}
-		
+
 		try {
 			IScanSlice rslice = IScanRankService.getScanRankService().createScanSlice(position, 64, 64);
 			SliceND sliceND = new SliceND(data.getShape(), data.getMaxShape(),
 					rslice.getStart(), rslice.getStop(), rslice.getStep());
 			data.setSlice(null, image, sliceND);
-			
+
 			// write unique key
 			final int uniqueKey = position.getStepIndex() + 1;
 			final Dataset uniqueKeyDataset = DatasetFactory.createFromObject(uniqueKey);
@@ -82,31 +82,31 @@ public class PosDetector extends AbstractRunnableDevice<PosDetectorModel> implem
 			sliceND = new SliceND(uniqueKeys.getShape(), uniqueKeys.getMaxShape(),
 					rslice.getStart(), rslice.getStop(), rslice.getStep());
 			uniqueKeys.setSlice(null, uniqueKeyDataset, sliceND);
-			
+
 		} catch (DatasetException e) {
 			setDeviceState(DeviceState.FAULT);
 			throw new ScanningException("Failed to write the data to the NeXus file", e);
 		}
-		
+
 		setDeviceState(DeviceState.ARMED);
 		return true;
 	}
-	
+
 	private void createNexusFile() throws ScanningException {
 		TreeFile treeFile = NexusNodeFactory.createTreeFile(filePath);
 		NXroot root = NexusNodeFactory.createNXroot();
 		treeFile.setGroupNode(root);
 		NXentry entry = NexusNodeFactory.createNXentry();
 		root.setEntry(entry);
-		
+
 		NXcollection ndAttributesCollection = NexusNodeFactory.createNXcollection();
 		entry.setCollection("NDAttributes", ndAttributesCollection);
 		uniqueKeys = ndAttributesCollection.initializeLazyDataset("NDArrayUniqueId", scanRank, Integer.class);
-		
+
 		NXdata dataGroup = NexusNodeFactory.createNXdata();
 		entry.setData(getName(), dataGroup);
 		data = dataGroup.initializeLazyDataset(NXdata.NX_DATA, scanRank + 2, Double.class);
-		
+
 		INexusFileFactory nff = ServiceHolder.getNexusFileFactory();
 		nexusFile = nff.newNexusFile(filePath, true);
 		try {
@@ -118,25 +118,25 @@ public class PosDetector extends AbstractRunnableDevice<PosDetectorModel> implem
 			throw new ScanningException(e);
 		}
 	}
-	
+
 	@Override
 	public NexusObjectProvider<NXdetector> getNexusProvider(NexusScanInfo info) throws NexusException {
 		scanRank = info.getRank();
 		filePath = getFilePath(info);
-				
+
 		NXdetector detector = NexusNodeFactory.createNXdetector();
 		detector.setCount_timeScalar(model.getExposureTime());
-		
-		NexusObjectWrapper<NXdetector> nexusWrapper = 
+
+		NexusObjectWrapper<NXdetector> nexusWrapper =
 				new NexusObjectWrapper<NXdetector>(getName(), detector, NXdetector.NX_DATA);
 		nexusWrapper.addExternalLink(detector, NXdetector.NX_DATA, getFilePath(info),
 				"/entry/" + getName() + "/" + NXdata.NX_DATA, info.getRank() + 2);
 		nexusWrapper.setPropertyValue(PROPERTY_NAME_UNIQUE_KEYS_PATH,
 				"/entry/NDAttributes/NDArrayUniqueId");
-		
+
 		return nexusWrapper;
 	}
-	
+
 	private String getFilePath(NexusScanInfo info) {
 		final File scanFile = new File(info.getFilePath());
 		final File scanDir = scanFile.getParentFile();
@@ -147,11 +147,11 @@ public class PosDetector extends AbstractRunnableDevice<PosDetectorModel> implem
 		}
 		final File outputDir = new File(scanDir, scanFileNameNoExtn);
 		outputDir.mkdir();
-		
+
 		final String filePath = new File(outputDir, "posdetector.h5").getAbsolutePath();
 		return filePath;
 	}
-	
+
 	@ScanFinally
 	public void clean() {
 		image = null;

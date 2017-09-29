@@ -35,41 +35,41 @@ import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 public class BoundingBox  implements Serializable {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 3775847793520017725L;
 
 	@FieldDescriptor(editable=false, fieldPosition=0)
 	private String fastAxisName="stage_x";
-	
+
 	@FieldDescriptor(scannable="fastAxisName", fieldPosition=1)
 	private double fastAxisStart;
-	
+
 	@FieldDescriptor(scannable="fastAxisName", validif="fastAxisLength!=0", fieldPosition=2)
 	private double fastAxisLength;
-	
+
 	@FieldDescriptor(editable=false, fieldPosition=3)
 	private String slowAxisName="stage_y";
 
 	@FieldDescriptor(scannable="slowAxisName", fieldPosition=4)
 	private double slowAxisStart;
-	
+
 	@FieldDescriptor(scannable="slowAxisName", validif="slowAxisLength!=0", fieldPosition=5)
 	private double slowAxisLength;
-	
+
 	@FieldDescriptor(visible=false, hint="Provides information about the visible region we are linked to.")
 	private String regionName;
 
 
 	public BoundingBox() {
-		
+
 	}
 
 	public BoundingBox(String fName, String sName) {
 		this.fastAxisName = fName;
 		this.slowAxisName = sName;
 	}
-	
+
 	public BoundingBox(double fastAxisStart, double slowAxisStart, double fastAxisLength, double slowAxisLength) {
 		super();
 		this.fastAxisStart = fastAxisStart;
@@ -79,12 +79,12 @@ public class BoundingBox  implements Serializable {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param spt [fastStart, slowStart]
 	 * @param ept [fastEnd, slowEnd]
 	 */
 	public BoundingBox(double[] spt, double[] ept) {
-		
+
 		double[] len = new double[2];
 		double lx = ept[0] - spt[0];
 		double ly = ept[1] - spt[1];
@@ -208,7 +208,7 @@ public class BoundingBox  implements Serializable {
 	public double getSlowAxisEnd() {
 		return getSlowAxisStart()+getSlowAxisLength();
 	}
-	
+
 	public double getFastAxisEnd() {
 		return getFastAxisStart()+getFastAxisLength();
 	}
@@ -224,7 +224,7 @@ public class BoundingBox  implements Serializable {
 	private double[] getLength() {
 		return new double[]{fastAxisLength, slowAxisLength};
 	}
-	
+
     private String toString(double[] a) {
         if (a == null)
             return "null";
@@ -241,10 +241,10 @@ public class BoundingBox  implements Serializable {
             b.append(", ");
         }
     }
-    
+
     private DecimalFormat format = new DecimalFormat("##########0.0###");
     public void setNumberFormat(String sformat) {
-    	format = new DecimalFormat(sformat);
+	format = new DecimalFormat(sformat);
     }
 
 }

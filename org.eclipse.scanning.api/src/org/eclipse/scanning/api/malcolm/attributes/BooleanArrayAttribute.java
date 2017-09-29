@@ -14,15 +14,15 @@ package org.eclipse.scanning.api.malcolm.attributes;
 import java.util.Arrays;
 
 /**
- * 
+ *
  * Encapsulates a boolean array attribute as read from a malcolm device
- * 
+ *
  * @author Matt Taylor
  *
  */
 public class BooleanArrayAttribute extends MalcolmAttribute<boolean[]> {
 	public static final String BOOLEANARRAY_ID = "malcolm:core/BooleanArrayMeta:";
-	
+
 	private boolean value[];
 
 	public void setValue(boolean[] value) {
@@ -57,5 +57,5 @@ public class BooleanArrayAttribute extends MalcolmAttribute<boolean[]> {
 			return false;
 		return true;
 	}
-	
+
 }

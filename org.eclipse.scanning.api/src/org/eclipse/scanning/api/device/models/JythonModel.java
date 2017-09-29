@@ -6,7 +6,7 @@ public class JythonModel extends SlicingModel {
 	 * Name of the module, usually script name minus '.py'
 	 */
 	private String moduleName;
-	
+
 	/**
 	 * Name of the jython class implementing IJythonFunction
 	 */

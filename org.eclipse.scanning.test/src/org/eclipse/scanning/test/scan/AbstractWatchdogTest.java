@@ -14,7 +14,7 @@ package org.eclipse.scanning.test.scan;
 import org.junit.BeforeClass;
 
 public abstract class AbstractWatchdogTest extends AbstractAcquisitionTest {
-	
+
 	@BeforeClass
 	public static void createServices() throws Exception {
 		setupServices();

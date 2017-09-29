@@ -12,30 +12,30 @@ import org.eclipse.scanning.api.annotation.ui.FieldUtils;
 import org.eclipse.scanning.api.annotation.ui.FieldValue;
 
 /**
- * 
+ *
  * This class links to a database bean using reflection.
  * It means that an arbitrary bean may be used outside the {@link IExperimentDatabaseService}
  * which is not in the classpath at the time it is used. The Bean instance
  * is then transmitted to the IExperimentDatabaseService whose classloader is
  * able to load the class referenced and set the fields using reflection.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class Bean {
-	
+
 	private String             beanClass;
     private Map<String,Object> data;
-	
+
 	public Bean() {
 		this(null);
 	}
-	
+
 	public Bean(String beanClass) {
 		this.beanClass = beanClass;
 		this.data      = new HashMap<>();
 	}
-	
+
 	/**
 	 * Shortcut method used for when you already have an instance of the bean.
 	 * @param theBean
@@ -46,7 +46,7 @@ public class Bean {
 	 * @throws InvocationTargetException
 	 */
 	public Bean(Object theBean) throws Exception {
-		
+
 		this.beanClass = theBean.getClass().getName();
 		this.data      = new HashMap<>();
 		init(theBean);
@@ -60,14 +60,14 @@ public class Bean {
 	public <T> void set(String fieldName, T value) {
 		data.put(fieldName, value);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public <T> T get(String fieldName) {
 		return (T)data.get(fieldName);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return a Set of the field names
 	 */
 	public Collection<String> names() {
@@ -120,7 +120,7 @@ public class Bean {
 			return false;
 		return true;
 	}
-	
+
     /**
      * Method reflects the fields into the map of field values.
      * @param theBean
@@ -131,7 +131,7 @@ public class Bean {
      * @throws InvocationTargetException
      */
 	private void init(Object theBean) throws Exception {
-		
+
 		Collection<FieldValue> fields = FieldUtils.getModelFields(theBean);
 		for (FieldValue field : fields) {
 			String fieldName = field.getName();

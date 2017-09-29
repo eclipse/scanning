@@ -57,7 +57,7 @@ class RequesterImpl<T extends IdBean> extends AbstractRequestResponseConnection 
         final IPublisher<T>  send    = eservice.createPublisher(getUri(), getRequestTopic());
 
         try {
-        	// Just listen to our id changing.
+		// Just listen to our id changing.
 	        receive.addListener(request.getUniqueId(), new IBeanListener<T>() {
 				@Override
 				public void beanChangePerformed(BeanEvent<T> evt) {

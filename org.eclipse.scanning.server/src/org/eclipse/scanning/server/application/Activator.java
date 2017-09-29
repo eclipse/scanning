@@ -20,7 +20,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
 public class Activator implements BundleActivator {
-	
+
 	private static BundleContext context;
 
 	@Override
@@ -32,7 +32,7 @@ public class Activator implements BundleActivator {
 	public void stop(BundleContext context) throws Exception {
 		context = null;
 	}
-	
+
 	static <S> void registerService(Class<S> interfaceClass, S serviceInstance) {
 		if (context==null && Boolean.getBoolean("org.eclipse.scanning.test")) return;
 		context.registerService(interfaceClass, serviceInstance, null);
@@ -41,7 +41,7 @@ public class Activator implements BundleActivator {
 	public static BundleContext getContext() {
 		return context;
 	}
-	
+
 	public static IServiceResolver createResolver() {
 		if (context == null) return null;
 		return new IServiceResolver() {
@@ -62,6 +62,6 @@ public class Activator implements BundleActivator {
 			}
 		};
 	}
-	
+
 
 }

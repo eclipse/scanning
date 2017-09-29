@@ -12,9 +12,9 @@
 package org.eclipse.scanning.example.scannable;
 
 /**
- * 
+ *
  * See http://confluence.diamond.ac.uk/pages/viewpage.action?pageId=37814632
- * 
+ *
  <pre>
  primary_slit:NXslit
     x_gap = {NX_NUMBER}
@@ -71,8 +71,8 @@ package org.eclipse.scanning.example.scannable;
                 @units = "mm"
             controller_record = {NX_CHAR} //EPICS name
  </pre>
- 
- * 
+
+ *
  * @author Matthew Gerring
  *
  */
@@ -81,9 +81,9 @@ public class MockScannableConfiguration {
 	private String xGapName, yGapName, xCentreName, yCentreName;
 
     public MockScannableConfiguration() {
-    	
+
     }
-    
+
 	public MockScannableConfiguration(String xGapName, String yGapName, String xCentreName, String yCentreName) {
 		this.xGapName    = xGapName;
 		this.yGapName    = yGapName;
@@ -165,5 +165,5 @@ public class MockScannableConfiguration {
 			return false;
 		return true;
 	}
-	
+
 }

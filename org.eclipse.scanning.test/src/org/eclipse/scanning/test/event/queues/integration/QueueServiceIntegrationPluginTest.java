@@ -38,11 +38,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class QueueServiceIntegrationPluginTest extends BrokerTest {
-	
+
 	protected static IEventService evServ;
 	protected static IQueueService queueService;
 	protected static IQueueControllerService queueControl;
-	
+
 	/*
 	 * These three methods are called by OSGi to configure services during a
 	 * plugin test - see OSGI-INF/queueServiceIntegrationPluginTest.xml
@@ -56,42 +56,42 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 	public static void setQueueControllerService(IQueueControllerService qcServ) {
 		ServicesHolder.setQueueControllerService(qcServ);
 	}
-	
+
 	@Before
 	public void setup() throws Exception {
 		RealQueueTestUtils.initialise(uri);
 		//FOR TESTS ONLY
 		QueueProcessFactory.registerProcess(DummyAtomProcess.class);
 		QueueProcessFactory.registerProcess(DummyBeanProcess.class);
-		
+
 		//Get services service & start the QueueService
 		evServ = ServicesHolder.getEventService();
 		queueService = ServicesHolder.getQueueService();
 		queueControl = ServicesHolder.getQueueControllerService();
-		
+
 		//Above here - spring will make the calls
 		queueControl.startQueueService();
 	}
-	
+
 	@After
 	public void tearDown() throws EventException {
 		QueueProcessFactory.initialize(); //Remove the registered processes
 		queueControl.stopQueueService(false);
 		queueService.disposeService();
-		
+
 		RealQueueTestUtils.reset();
 	}
-	
+
 	@AfterClass
 	public static void tearDownClass() throws EventException {
 		RealQueueTestUtils.dispose();
 	}
-	
+
 	@Test
 	public void testRunningBean() throws EventException {
 		DummyBean dummyBean = new DummyBean("Bob", 50);
 		CountDownLatch waiter = RealQueueTestUtils.createFinalStateBeanWaitLatch(dummyBean, queueControl.getJobQueueID());
-		
+
 		queueControl.submit(dummyBean, queueService.getJobQueueID());
 		try {
 			RealQueueTestUtils.waitForEvent(waiter);
@@ -99,25 +99,25 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 			// It's only a test...
 			e.printStackTrace();
 		}
-		
+
 		List<QueueBean> statusSet = queueService.getJobQueue().getConsumer().getStatusSet();
 		assertEquals(1, statusSet.size());
 		assertEquals(Status.COMPLETE, statusSet.get(0).getStatus());
 		assertEquals(dummyBean.getUniqueId(), statusSet.get(0).getUniqueId());
 	}
-	
+
 	@Test
 	public void testTaskBean() throws EventException {
 		TaskBean task = new TaskBean();
 		task.setName("Test Task");
-		
+
 		SubTaskAtom subTask = new SubTaskAtom();
 		subTask.setName("Test SubTask");
-		
+
 		DummyAtom dummyAtom = new DummyAtom("Gregor", 70);
 		subTask.addAtom(dummyAtom);
 		task.addAtom(subTask);
-		
+
 		CountDownLatch waiter = RealQueueTestUtils.createFinalStateBeanWaitLatch(task, queueControl.getJobQueueID());
 		queueControl.submit(task, queueControl.getJobQueueID());
 		try {
@@ -126,7 +126,7 @@ public class QueueServiceIntegrationPluginTest extends BrokerTest {
 			// It's only a test...
 			e.printStackTrace();
 		}
-		
+
 		List<QueueBean> statusSet = queueService.getJobQueue().getConsumer().getStatusSet();
 		assertEquals(1, statusSet.size());
 		assertEquals(Status.COMPLETE, statusSet.get(0).getStatus());

@@ -19,32 +19,32 @@ import org.junit.After;
 import org.junit.Before;
 
 /**
- * Class to test that we can run 
- * 
+ * Class to test that we can run
+ *
  * @author Matthew Gerring
  *
  */
 public class MConsumerTest extends AbstractMConsumerTest{
-	
+
 
 	@Before
 	public void createServices() throws Exception {
-		
-		// We wire things together without OSGi here 
+
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		setUpNonOSGIActivemqMarshaller();
-		
+
 		eservice = new EventServiceImpl(new ActivemqConnectorService()); // Do not copy this get the service from OSGi!
-		
+
 		// We use the long winded constructor because we need to pass in the connector.
-		// In production we would normally 
+		// In production we would normally
 		submitter  = eservice.createSubmitter(uri, IEventService.SUBMISSION_QUEUE);
 		consumer   = eservice.createConsumer(uri, IEventService.SUBMISSION_QUEUE, IEventService.STATUS_SET, IEventService.STATUS_TOPIC, IEventService.HEARTBEAT_TOPIC, IEventService.CMD_TOPIC);
 		consumer.setName("Test Consumer 1");
 		consumer.clearQueue(IEventService.SUBMISSION_QUEUE);
 		consumer.clearQueue(IEventService.STATUS_SET);
 	}
-	
+
 	@After
 	public void dispose() throws EventException {
 		submitter.disconnect();

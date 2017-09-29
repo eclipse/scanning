@@ -438,7 +438,7 @@ public class AbstractMConsumerTest extends BrokerTest{
 
     private void checkStatus(List<StatusBean> submissions) throws Exception {
 
-    	List<StatusBean> stati = consumer.getStatusSet();
+	List<StatusBean> stati = consumer.getStatusSet();
 		if (stati.size()!=10) throw new Exception("Unexpected status size in queue! Should be 10 size is "+stati.size());
 
 		for (int i = 0; i < 10; i++) {
@@ -449,16 +449,16 @@ public class AbstractMConsumerTest extends BrokerTest{
 			}
 
 			StatusBean bean     = submissions.get(i);
-	       	if (complete.equals(bean)) {
-	       		throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
-	       	}
+		if (complete.equals(bean)) {
+			throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
+		}
 
-	       	if (complete.getStatus()!=Status.COMPLETE) {
-	       		throw new Exception("The bean in the queue is not complete!"+complete);
-	       	}
-	       	if (complete.getPercentComplete()<100) {
-	       		throw new Exception("The percent complete is less than 100!"+complete);
-	       	}
+		if (complete.getStatus()!=Status.COMPLETE) {
+			throw new Exception("The bean in the queue is not complete!"+complete);
+		}
+		if (complete.getPercentComplete()<100) {
+			throw new Exception("The percent complete is less than 100!"+complete);
+		}
 		}
 	}
 
@@ -474,35 +474,35 @@ public class AbstractMConsumerTest extends BrokerTest{
 
 		StatusBean complete = stati.get(0);
 
-       	if (complete.equals(bean)) {
-       		throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
-       	}
+	if (complete.equals(bean)) {
+		throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
+	}
 
-       	if (complete.getStatus()!=Status.COMPLETE) {
-       		throw new Exception("The bean in the queue is not complete!"+complete);
-       	}
-       	if (complete.getPercentComplete()<100) {
-       		throw new Exception("The percent complete is less than 100!"+complete);
-       	}
+	if (complete.getStatus()!=Status.COMPLETE) {
+		throw new Exception("The bean in the queue is not complete!"+complete);
+	}
+	if (complete.getPercentComplete()<100) {
+		throw new Exception("The percent complete is less than 100!"+complete);
+	}
 	}
 
 
 
 	private StatusBean doSubmit() throws Exception {
- 	   return doSubmit("Test");
+	   return doSubmit("Test");
     }
     private StatusBean doSubmit(String name) throws Exception {
 
- 		StatusBean bean = new StatusBean();
- 		bean.setName(name);
- 		bean.setStatus(Status.SUBMITTED);
- 		bean.setHostName(InetAddress.getLocalHost().getHostName());
- 		bean.setMessage("Hello World");
- 		bean.setUniqueId(UUID.randomUUID().toString());
+		StatusBean bean = new StatusBean();
+		bean.setName(name);
+		bean.setStatus(Status.SUBMITTED);
+		bean.setHostName(InetAddress.getLocalHost().getHostName());
+		bean.setMessage("Hello World");
+		bean.setUniqueId(UUID.randomUUID().toString());
 
- 		submitter.submit(bean);
+		submitter.submit(bean);
 
- 		return bean;
- 	}
+		return bean;
+	}
 
 }

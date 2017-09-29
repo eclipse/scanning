@@ -4,41 +4,41 @@ import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 
 /**
- * Basic model argument which holds a single object. Typically this would be a 
- * String, Double, Integer or another simple type, but could also be a List, 
- * Map or other collection. 
- * 
+ * Basic model argument which holds a single object. Typically this would be a
+ * String, Double, Integer or another simple type, but could also be a List,
+ * Map or other collection.
+ *
  * @author Michael Wharmby
  *
  * @param <V> Type of the value held by this argument
  */
 public class QueueValue<V> implements IQueueValue<V> {
-	
+
 	private String name;
 	private V value;
 	private boolean reference;
-	
+
 	/**
 	 * Construct a new {@link QueueValue} with a given value.
-	 * 
+	 *
 	 * @param value V to be stored in this argument
 	 */
 	public QueueValue(V value) {
 		this(null, value, false);
 	}
-	
+
 	/**
-	 * Construct a new QueueValue with a given value. Marking it as a variable 
-	 * indicates to the {@link IQueueBeanFactory} that it only holds a 
+	 * Construct a new QueueValue with a given value. Marking it as a variable
+	 * indicates to the {@link IQueueBeanFactory} that it only holds a
 	 * reference to a real value to be evaluated.
 	 * @param value V to be stored in this argument
-	 * @param reference if true this holds only a reference to another 
+	 * @param reference if true this holds only a reference to another
 	 *        {@link IQueueValue}
 	 */
 	public QueueValue(V value, boolean reference) {
 		this(null, value, reference);
 	}
-	
+
 	/**
 	 * Construct a new named {@link QueueValue} with a given value.
 	 * @param name String name of {@link QueueValue}
@@ -47,14 +47,14 @@ public class QueueValue<V> implements IQueueValue<V> {
 	public QueueValue(String name, V value) {
 		this(name, value, false);
 	}
-	
+
 	/**
-	 * Construct a new named {@link QueueValue} with a given value. Marking it 
-	 * as a variable indicates to the {@link IQueueBeanFactory} that it only 
+	 * Construct a new named {@link QueueValue} with a given value. Marking it
+	 * as a variable indicates to the {@link IQueueBeanFactory} that it only
 	 * holds a reference to a real value to be evaluated.
 	 * @param name String name of {@link QueueValue}
 	 * @param value V to be stored in this argument
-	 * @param reference if true this holds only a reference to another 
+	 * @param reference if true this holds only a reference to another
 	 *        {@link IQueueValue}
 	 */
 	public QueueValue(String name, V value, boolean reference) {
@@ -68,10 +68,10 @@ public class QueueValue<V> implements IQueueValue<V> {
 		if (value == null) throw new ModelEvaluationException("Value of '"+getName()+"' is not set");
 		return value;
 	}
-	
+
 	/**
 	 * Change the value of this QueueValue.
-	 * 
+	 *
 	 * @param value V of this QueueValue.
 	 */
 	public void setValue(V value) {
@@ -92,12 +92,12 @@ public class QueueValue<V> implements IQueueValue<V> {
 	public boolean isReference() {
 		return reference;
 	}
-	
+
 	@Override
 	public boolean isReferenceFor(IQueueValue<?> value) {
 			return this.value == value.getName() && reference;
 	}
-	
+
 	@Override
 	public Class<?> getValueType() {
 		return value.getClass();

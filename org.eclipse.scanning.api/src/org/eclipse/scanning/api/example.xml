@@ -1,6 +1,6 @@
-<!-- 
+<!--
 
-Example spring file to configure the various scanning services 
+Example spring file to configure the various scanning services
 
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -12,7 +12,7 @@ Example spring file to configure the various scanning services
     <bean id="dataServer" class="org.eclipse.dawnsci.remotedataset.server.DataServer" init-method="start">
         <property name="port"      value="8690" />
     </bean>
-    
+
 
     <!-- SOA stuff for GDA Server -->
 	<bean id="scanServlet"  class="org.eclipse.scanning.server.servlet.ScanServlet" init-method="connect">
@@ -29,7 +29,7 @@ Example spring file to configure the various scanning services
        <property name="requestTopic"    value="org.eclipse.scanning.request.device.topic" />
        <property name="responseTopic"   value="org.eclipse.scanning.response.device.topic"   />
     </bean>
-    
+
     <bean id="positionerServlet" class="org.eclipse.scanning.server.servlet.PositionerServlet" init-method="connect">
        <property name="broker"          value="${org.eclipse.scanning.broker.uri}" />
        <property name="requestTopic"    value="org.eclipse.scanning.request.positioner.topic" />

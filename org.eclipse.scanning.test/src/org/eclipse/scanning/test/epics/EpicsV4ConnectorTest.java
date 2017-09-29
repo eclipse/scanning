@@ -48,32 +48,32 @@ public class EpicsV4ConnectorTest {
 
 	private IMalcolmService      service;
 	private IEPICSv4Device epicsv4Device;
-	
+
 	@Before
 	public void before() throws Exception {
 		// The real service, get it from OSGi outside this test!
 		// Not required in OSGi mode (do not add this to your real code GET THE SERVICE FROM OSGi!)
 		this.service = new MalcolmService(new EpicsV4ConnectorService(), null);
 	}
-	
+
 	@After
 	public void after() throws Exception {
 		// Stop the device
 		if (epicsv4Device!=null) epicsv4Device.stop();
 		service.dispose();
- 	}
-	
+	}
+
 	@Test(expected=MalcolmDeviceException.class)
 	public void connectToNonExistentService() throws Exception {
-		
+
 		IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice("fred");
 
 		// Get the device state.
 		modelledDevice.getDeviceState();
 	}
-	
+
 	/**
-	 * Starts an instance of the ExampleMalcolmDevice and then attempts to get the device state from 
+	 * Starts an instance of the ExampleMalcolmDevice and then attempts to get the device state from
 	 * it to check that the Epics V4 connection mechanism is working.
 	 * @throws Exception
 	 */
@@ -93,7 +93,7 @@ public class EpicsV4ConnectorTest {
 		assertEquals(DeviceState.READY, deviceState);
 
 	}
-	
+
 	@Test(expected=MalcolmDeviceException.class)
 	public void connectToEvilDevice() throws Exception {
 
@@ -112,7 +112,7 @@ public class EpicsV4ConnectorTest {
 	}
 
 	/**
-	 * This device is designed to reproduce a hang which happens with the GDA Server 
+	 * This device is designed to reproduce a hang which happens with the GDA Server
 	 * if malcolm has got into an error state. This happened on I18!
 	 */
 	@Test(expected=MalcolmDeviceException.class)
@@ -124,10 +124,10 @@ public class EpicsV4ConnectorTest {
 
 		try (MalcolmService hanger = new MalcolmService(new HangingGetConnectorService(), null)) {
 	        System.setProperty("org.eclipse.scanning.malcolm.core.timeout", String.valueOf(100));
-	
+
 			// Get the device
 			IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = hanger.getDevice(epicsv4Device.getRecordName());
-	
+
 			// Get the device state.
 			modelledDevice.getDeviceState(); // Hangs unless timeout is working
 		} finally {
@@ -149,7 +149,7 @@ public class EpicsV4ConnectorTest {
 
 			// Get the device state. This should fail as the device does not exist
 			modelledDevice.getDeviceState();
-			
+
 			fail("No exception thrown but one was expected");
 
 		} catch (Exception ex) {
@@ -158,7 +158,7 @@ public class EpicsV4ConnectorTest {
 			assertTrue(ex.getMessage().contains("channel not connected"));
 		}
 	}
-	
+
 	@Test
 	public void connectToInvalidDeviceTimeout() throws Exception {
 
@@ -169,7 +169,7 @@ public class EpicsV4ConnectorTest {
 
 			// Get the device state. This should fail as the device does not exist
 			modelledDevice.getDeviceState();
-			
+
 			fail("No exception thrown but one was expected");
 
 		} catch (Exception ex) {
@@ -205,7 +205,7 @@ public class EpicsV4ConnectorTest {
 			assertEquals(MalcolmDeviceException.class, ex.getClass());
 			assertTrue("Message was: " + ex.getMessage(), ex.getMessage().contains("CreateGet failed for 'NON_EXISTANT'"));
 			assertTrue(ex.getMessage().contains("illegal pvRequest"));
-		} 
+		}
 	}
 
 	/**
@@ -226,17 +226,17 @@ public class EpicsV4ConnectorTest {
 
 			// Get the device state.
 			DeviceState deviceState = modelledDevice.getDeviceState();
-			
+
 			assertEquals(DeviceState.READY, deviceState);
-			
+
 			List<IROI> regions = new LinkedList<>();
 			regions.add(new CircularROI(2, 6, 1));
-			
+
 			IPointGeneratorService pgService = new PointGeneratorService();
 			IPointGenerator<SpiralModel> temp = pgService.createGenerator(
 					new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
 			IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
-			
+
 			EPICSv4ExampleModel pmac1 = new EPICSv4ExampleModel();
 			pmac1.setExposureTime(23.1);
 			pmac1.setFileDir("/TestFile/Dir");
@@ -244,14 +244,14 @@ public class EpicsV4ConnectorTest {
 			// Set the generator on the device
 			// Cannot set the generator from @PreConfigure in this unit test.
 			((AbstractMalcolmDevice<?>) modelledDevice).setPointGenerator(scan);
-			
+
 			epicsv4Device.stop();
-			
+
 			try {
 				// Call configure
 				modelledDevice.configure(pmac1);
 				fail("No exception thrown but one was expected");
-				
+
 			} catch (Exception ex) {
 				assertEquals(MalcolmDeviceException.class, ex.getClass());
 				assertTrue("Message was: " + ex.getMessage(), ex.getMessage().contains("Failed to connect to device"));
@@ -260,7 +260,7 @@ public class EpicsV4ConnectorTest {
 
 		} catch (Exception ex) {
 			fail(ex.getMessage());
-		} 
+		}
 	}
 
 	/**
@@ -281,17 +281,17 @@ public class EpicsV4ConnectorTest {
 
 			// Get the device state.
 			DeviceState deviceState = modelledDevice.getDeviceState();
-			
+
 			assertEquals(DeviceState.READY, deviceState);
-			
+
 			List<IROI> regions = new LinkedList<>();
 			regions.add(new CircularROI(2, 6, 1));
-			
+
 			IPointGeneratorService pgService = new PointGeneratorService();
 			IPointGenerator<SpiralModel> temp = pgService
 					.createGenerator(new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
 			IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
-			
+
 			EPICSv4ExampleModel pmac1 = new EPICSv4ExampleModel();
 			pmac1.setExposureTime(23.1);
 			pmac1.setFileDir("/TestFile/Dir");
@@ -299,16 +299,16 @@ public class EpicsV4ConnectorTest {
 			// Set the generator on the device
 			// Cannot set the generator from @PreConfigure in this unit test.
 			((AbstractMalcolmDevice<?>)modelledDevice).setPointGenerator(scan);
-			
+
 			// Call configure
 			modelledDevice.configure(pmac1);
 
 			epicsv4Device.stop();
-			
+
 			try {
 				modelledDevice.run(null);
 				fail("No exception thrown but one was expected");
-				
+
 			} catch (Exception ex) {
 				assertEquals(MalcolmDeviceException.class, ex.getClass());
 				assertTrue("Message was: " + ex.getMessage(), ex.getMessage().contains("Failed to connect to device"));

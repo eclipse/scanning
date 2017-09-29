@@ -25,40 +25,40 @@ import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
 
 /**
- * 
+ *
  * Could use Mockito but always causes compilation issues
  *
  */
 public class InjectionDevice extends CountingDevice {
-	
+
 	private Map<String, List<Object[]>> calls = new HashMap<>();
 	private IPointGenerator<?> pointGenerator;
-	
+
     @PointStart
     public void method1(IRunnableDeviceService rservice) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{rservice});
+	count(Thread.currentThread().getStackTrace(), new Object[]{rservice});
     }
     @PointStart
     public void method2(IPosition position) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{position});
+	count(Thread.currentThread().getStackTrace(), new Object[]{position});
     }
     @PointStart
     public void method3(IRunnableDeviceService rservice, IPosition position) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{rservice, position});
+	count(Thread.currentThread().getStackTrace(), new Object[]{rservice, position});
     }
     @PointStart
     public void method4(IPosition position, IRunnableDeviceService rservice) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{position, rservice});
+	count(Thread.currentThread().getStackTrace(), new Object[]{position, rservice});
     }
     @PointStart
     public void method5(IPosition position, IRunnableDeviceService rservice, IPointGeneratorService pservice) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{position, rservice, pservice});
+	count(Thread.currentThread().getStackTrace(), new Object[]{position, rservice, pservice});
     }
     @PointStart
     public void method6(IRunnableDeviceService rservice, IPointGeneratorService pservice, IPosition position) throws Exception {
-    	count(Thread.currentThread().getStackTrace(), new Object[]{rservice, pservice, position});
+	count(Thread.currentThread().getStackTrace(), new Object[]{rservice, pservice, position});
     }
-    
+
 	protected void count(StackTraceElement[] ste, Object[] oa) {
 		String methodName = getMethodName(ste);
 		List<Object[]> count = calls.get(methodName);
@@ -68,7 +68,7 @@ public class InjectionDevice extends CountingDevice {
 		}
 		count.add(oa);
 	}
-	
+
 	@PreConfigure
 	public void setPointGenerator(IPointGenerator<?> pointGenerator) {
 		this.pointGenerator = pointGenerator;
@@ -80,9 +80,9 @@ public class InjectionDevice extends CountingDevice {
        super.dispose();
        calls.clear();
     }
-    
+
     public List<Object[]> getArguments(String methodName) {
-    	return calls.get(methodName);
+	return calls.get(methodName);
     }
 	public IPointGenerator<?> getPointGenerator() {
 		return pointGenerator;

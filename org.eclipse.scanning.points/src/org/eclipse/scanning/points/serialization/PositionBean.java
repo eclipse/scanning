@@ -25,9 +25,9 @@ class PositionBean {
 	private Map<String, Integer> indices;
 	private int stepIndex;
 	private List<Collection<String>> dimensionNames; // Dimension->Names@dimension
-	
+
 	public PositionBean() {
-		
+
 	}
 	public PositionBean(IPosition pos) {
 		this.values    = pos.getValues();
@@ -35,7 +35,7 @@ class PositionBean {
 		this.stepIndex = pos.getStepIndex();
 		this.dimensionNames = getDimensionNames(pos);
 	}
-	
+
 	private List<Collection<String>> getDimensionNames(IPosition pos) {
 		if (pos instanceof AbstractPosition) return ((AbstractPosition)pos).getDimensionNames();
 		return null; // Do not have to support dimension names

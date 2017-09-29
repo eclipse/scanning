@@ -26,7 +26,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom serialiser for Circular ROI.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -35,7 +35,7 @@ public class HyperbolicROISerialiser implements IPVStructureSerialiser<Hyperboli
 	@Override
 	public Structure buildStructure(Serialiser serialiser, HyperbolicROI roi) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-		
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			add("semilatusRectum", ScalarType.pvDouble).
 			add("eccentricity", ScalarType.pvDouble).
@@ -50,15 +50,15 @@ public class HyperbolicROISerialiser implements IPVStructureSerialiser<Hyperboli
 	@Override
 	public void populatePVStructure(Serialiser serialiser, HyperbolicROI roi, PVStructure pvStructure) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		PVDouble semilatusRectum = pvStructure.getSubField(PVDouble.class, "semilatusRectum");
-		semilatusRectum.put(roi.getSemilatusRectum());	
+		semilatusRectum.put(roi.getSemilatusRectum());
 		PVDouble eccentricity = pvStructure.getSubField(PVDouble.class, "eccentricity");
-		eccentricity.put(roi.getEccentricity());	
+		eccentricity.put(roi.getEccentricity());
 		PVDouble asymptoteAngle = pvStructure.getSubField(PVDouble.class, "asymptoteAngle");
-		asymptoteAngle.put(roi.getAsymptoteAngle());	
+		asymptoteAngle.put(roi.getAsymptoteAngle());
 		PVDouble angle = pvStructure.getSubField(PVDouble.class, "angle");
-		angle.put(roi.getAngle());		
+		angle.put(roi.getAngle());
 		PVDoubleArray point = pvStructure.getSubField(PVDoubleArray.class, "point");
 		point.put(0, roi.getPoint().length, roi.getPoint(), 0);
 	}
-	
+
 }

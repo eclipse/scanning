@@ -17,13 +17,13 @@ public class RegisteredTypeBeanV2 {
 	private String value2;
 	private double value3;
 	private double value4;
-	
+
 	public RegisteredTypeBeanV2() {
 		value1 = 1;
 		value2 = "2";
 		value3 = 3.0d;
 	}
-	
+
 	public int getValue1() {
 		return value1;
 	}
@@ -85,6 +85,6 @@ public class RegisteredTypeBeanV2 {
 	public void setValue4(double value4) {
 		this.value4 = value4;
 	}
-	
-	
+
+
 }

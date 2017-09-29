@@ -24,7 +24,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom deserialiser for Step model.
- * TODO - make this non 'test' and finalise custom serialisation strategy for models 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for models
  * @author Matt Taylor
  *
  */
@@ -33,7 +33,7 @@ public class StepModelSerialiser implements IPVStructureSerialiser<StepModel> {
 	@Override
 	public Structure buildStructure(Serialiser serialiser, StepModel model) throws Exception {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-				
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			add("name", ScalarType.pvString).
 			add("start", ScalarType.pvDouble).
@@ -47,13 +47,13 @@ public class StepModelSerialiser implements IPVStructureSerialiser<StepModel> {
 	@Override
 	public void populatePVStructure(Serialiser serialiser, StepModel model, PVStructure pvStructure) throws Exception {
 		PVString name = pvStructure.getSubField(PVString.class, "name");
-		name.put(model.getName());		
+		name.put(model.getName());
 		PVDouble start = pvStructure.getSubField(PVDouble.class, "start");
-		start.put(model.getStart());			
+		start.put(model.getStart());
 		PVDouble stop = pvStructure.getSubField(PVDouble.class, "stop");
-		stop.put(model.getStop());		
+		stop.put(model.getStop());
 		PVDouble step = pvStructure.getSubField(PVDouble.class, "step");
 		step.put(model.getStep());
 	}
-	
+
 }

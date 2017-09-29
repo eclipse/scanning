@@ -20,7 +20,7 @@ public class MockStringScannable extends AbstractScannable<String> implements IN
 
 	private String value;
 	private String[] permittedValues;
-	
+
 	public MockStringScannable(String name, String pos, String... permittedValues) {
 		setName(name);
 		this.value = pos;

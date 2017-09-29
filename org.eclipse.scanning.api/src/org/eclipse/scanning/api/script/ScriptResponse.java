@@ -14,12 +14,12 @@ package org.eclipse.scanning.api.script;
 /**
  * Class which encapsulates a response one, none or all of the return
  * information may be set.
- * 
+ *
  * @author Matthew Gerring
- * @param <T> must be type of object that the script returns. 
+ * @param <T> must be type of object that the script returns.
  *        Many script types cannot return an object, so this is optional to declare.
  *        The object returned should json serialize, it may be sent in events to the client
- *        and should ideally encode information rather than provide callable server methods. 
+ *        and should ideally encode information rather than provide callable server methods.
  */
 public class ScriptResponse<T> {
 
@@ -31,7 +31,7 @@ public class ScriptResponse<T> {
 	private int    returnCode=0;
 	private T      returnObject;
 	private String message;
-	
+
 	public int getReturnCode() {
 		return returnCode;
 	}

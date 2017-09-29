@@ -24,21 +24,21 @@ public class EpicsV4MonitorListener {
 		this.malcolmListener = malcolmListener;
 		this.monitor = monitor;
 	}
-	
+
 	public IMalcolmListener<MalcolmMessage> getMalcolmListener() {
 		return malcolmListener;
 	}
-	
+
 	public void setMalcolmListener(IMalcolmListener<MalcolmMessage> malcolmListener) {
 		this.malcolmListener = malcolmListener;
 	}
-	
+
 	public PvaClientMonitor getMonitor() {
 		return monitor;
 	}
-	
+
 	public void setMonitor(PvaClientMonitor monitor) {
 		this.monitor = monitor;
 	}
-	
+
 }

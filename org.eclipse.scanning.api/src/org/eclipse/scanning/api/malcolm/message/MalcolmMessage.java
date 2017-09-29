@@ -16,21 +16,21 @@ import java.util.Map;
 import org.eclipse.scanning.api.malcolm.connector.MalcolmMethod;
 
 /**
- * Class used to define malcolm object which 
+ * Class used to define malcolm object which
  * sends information to the server.
- * 
+ *
  * @author Matthew Gerring
- * 
+ *
  * @internal Internal use only
- * 
+ *
  * TODO FIXME Tom Cobb changed the spec around a lot.
  * Some methods may not be required anymore.
- * 
+ *
  */
 public class MalcolmMessage {
 
 	private Type   type;
-	
+
 	private long   id;
 	private String param;
 	private String endpoint;
@@ -39,7 +39,7 @@ public class MalcolmMessage {
 	private Object arguments;
 	private Object value;
 	private Object rawValue;
-	
+
 	public Type getType() {
 		return type;
 	}
@@ -58,7 +58,7 @@ public class MalcolmMessage {
 	public void setParam(String param) {
 		this.param = param;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -75,7 +75,7 @@ public class MalcolmMessage {
 		result = prime * result + ((rawValue == null) ? 0 : rawValue.hashCode());
 		return result;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -145,7 +145,7 @@ public class MalcolmMessage {
 	public void setValue(Object val) {
 		this.value = val;
 	}
-	
+
 	public MalcolmMethod getMethod() {
 		return method;
 	}
@@ -164,7 +164,7 @@ public class MalcolmMessage {
 	public void setMessage(String message) {
 		this.message = message;
 	}
-	
+
 	public String getEndpoint() {
 		return endpoint;
 	}

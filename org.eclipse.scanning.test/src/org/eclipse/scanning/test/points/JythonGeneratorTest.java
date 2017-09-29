@@ -29,20 +29,20 @@ import org.junit.Test;
 import org.python.core.PyException;
 
 /**
- * Tests the Jython point iterator by loading its scan points and 
- * 
+ * Tests the Jython point iterator by loading its scan points and
+ *
  * @author Matthew Gerring
  *
  */
 public class JythonGeneratorTest {
-	
+
 	private IPointGeneratorService service;
-	
+
 	@Before
 	public void before() throws Exception {
 		service = new PointGeneratorService();
 	}
-	
+
 	@Test
 	public void generatorExists() throws Exception {
 
@@ -50,10 +50,10 @@ public class JythonGeneratorTest {
         IPointGenerator<JythonGeneratorModel> gen = service.createGenerator(model);
         assertNotNull(gen);
 	}
-	
+
 	@Test(expected=ValidationException.class)
 	public void emptyModel() throws Exception {
-		
+
         JythonGeneratorModel model = new JythonGeneratorModel();
         IPointGenerator<JythonGeneratorModel> gen = service.createGenerator(model);
         gen.size();
@@ -61,16 +61,16 @@ public class JythonGeneratorTest {
 
 	@Test(expected=ValidationException.class)
 	public void modulelessModel() throws Exception {
-		
+
         JythonGeneratorModel model = new JythonGeneratorModel();
         model.setPath("src/org/eclipse/scanning/test/points");
         IPointGenerator<JythonGeneratorModel> gen = service.createGenerator(model);
         gen.size();
 	}
-	
+
 	@Test(expected=ValidationException.class)
 	public void classlessModel() throws Exception {
-		
+
         JythonGeneratorModel model = new JythonGeneratorModel();
         model.setPath("src/org/eclipse/scanning/test/points");
         model.setModuleName("JythonGeneratorTest");
@@ -80,7 +80,7 @@ public class JythonGeneratorTest {
 
 	@Test(expected=PyException.class)
 	public void badModule() throws Exception {
-		
+
         JythonGeneratorModel model = new JythonGeneratorModel();
         model.setPath("src/org/eclipse/scanning/test/points");
         model.setModuleName("fred");
@@ -88,10 +88,10 @@ public class JythonGeneratorTest {
         IPointGenerator<JythonGeneratorModel> gen = service.createGenerator(model);
         gen.size();
 	}
-	
+
 	@Test(expected=PyException.class)
 	public void badClass() throws Exception {
-		
+
         JythonGeneratorModel model = new JythonGeneratorModel();
         model.setPath("src/org/eclipse/scanning/test/points");
         model.setModuleName("JythonGeneratorTest");
@@ -102,7 +102,7 @@ public class JythonGeneratorTest {
 
 	@Test(expected=PyException.class)
 	public void exceptionInGenerator() throws Exception {
-		
+
         JythonGeneratorModel model = new JythonGeneratorModel();
         model.setPath("src/org/eclipse/scanning/test/points");
         model.setModuleName("JythonGeneratorTest");
@@ -118,7 +118,7 @@ public class JythonGeneratorTest {
         IPointGenerator<JythonGeneratorModel> gen = service.createGenerator(model);
         assertEquals(10, gen.size());
 	}
-	
+
 	@Test
 	public void testValue1() throws Exception {
 
@@ -127,7 +127,7 @@ public class JythonGeneratorTest {
         List<IPosition> points = gen.createPoints();
         assertEquals(3, points.size());
         assertEquals(Math.PI, points.get(1).getValue("p"), 0.000001);
-       
+
 	}
 
 	@Test
@@ -141,7 +141,7 @@ public class JythonGeneratorTest {
         assertEquals(10, points.get(1).getValue("m"), 0.000001);
         assertEquals(20, points.get(2).getValue("m"), 0.000001);
         assertEquals(40, points.get(4).getValue("m"), 0.000001);
-      
+
 	}
 
 	@Test
@@ -154,11 +154,11 @@ public class JythonGeneratorTest {
         assertEquals(0, points.get(0).getValue("x0"), 0.000001);
         assertEquals(0, points.get(0).getValue("x1"), 0.000001);
         assertEquals(0, points.get(0).getValue("x2"), 0.000001);
-      
+
         assertEquals(40, points.get(4).getValue("x0"), 0.000001);
         assertEquals(40, points.get(4).getValue("x1"), 0.000001);
         assertEquals(40, points.get(4).getValue("x2"), 0.000001);
-        
+
         assertEquals(null, points.get(4).get("x5")); // No such scannable created
 
 	}

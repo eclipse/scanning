@@ -36,40 +36,40 @@ import org.slf4j.LoggerFactory;
 /**
  * ScanAtomProcess takes the fields of a {@link ScanAtom} and from them makes
  * a {@link ScanBean}, which is then submitted to the scan event service.
- * 
- * The process uses a {@link QueueListener} to monitor the process of the 
+ *
+ * The process uses a {@link QueueListener} to monitor the process of the
  * scan and pass up messages to the rest of the queue.
- * 
+ *
  * @author Michael Wharmby
- * 
- * @param <T> The {@link Queueable} specified by the {@link IConsumer} 
- *            instance using this ScanAtomProcess. This will be 
- *            {@link QueueAtom}. 
+ *
+ * @param <T> The {@link Queueable} specified by the {@link IConsumer}
+ *            instance using this ScanAtomProcess. This will be
+ *            {@link QueueAtom}.
  */
 public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom, T> {
-	
+
 	/**
-	 * Used by {@link QueueProcessFactory} to identify the bean type this 
+	 * Used by {@link QueueProcessFactory} to identify the bean type this
 	 * {@link QueueProcess} handles.
 	 */
 	public static final String BEAN_CLASS_NAME = ScanAtom.class.getName();
-	
+
 	private static Logger logger = LoggerFactory.getLogger(ScanAtomProcess.class);
-	
+
 	//Scanning infrastructure
 	private IEventService eventService;
 	private IPublisher<ScanBean> scanCommandPublisher;
 	private ISubscriber<QueueListener<ScanAtom, ScanBean>> scanSubscriber;
 	private QueueListener<ScanAtom, ScanBean> queueListener;
-	
+
 	//For processor operation
 	private ScanBean scanBean;
-	
+
 	/**
-	 * Create a ScanAtomProcessor which can be used by a {@link QueueProcess}. 
-	 * Constructor configures the {@link IEventService} using the instance 
-	 * specified in the {@link ServicesHolder}. Additionally, a new 
-	 * {@link ScanBean} is created which will be configured with the details 
+	 * Create a ScanAtomProcessor which can be used by a {@link QueueProcess}.
+	 * Constructor configures the {@link IEventService} using the instance
+	 * specified in the {@link ServicesHolder}. Additionally, a new
+	 * {@link ScanBean} is created which will be configured with the details
 	 * of from the {@link ScanAtom}.
 	 */
 	public ScanAtomProcess(T bean, IPublisher<T> publisher, Boolean blocking) throws EventException {
@@ -107,7 +107,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 			scanSubmitQueueName = queueBean.getScanSubmitQueueName();
 		}
 		logger.debug("Found scanSubmitQueue="+scanSubmitQueueName);
-		
+
 		broadcast(Status.RUNNING, 2d, "Setting up ScanBean");
 		scanBean = new ScanBean();
 		if (scanBean.getUniqueId() == null) scanBean.setUniqueId(UUID.randomUUID().toString());
@@ -116,7 +116,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 		scanBean.setHostName(queueBean.getHostName());
 		scanBean.setUserName(queueBean.getUserName());
 		scanBean.setScanRequest(queueBean.getScanReq());
-		
+
 		broadcast(Status.RUNNING, 3d, "Creating scanning infrastructure.");
 		logger.debug("Creating scan command publisher, submitter and subscriber...");
 		ISubmitter<ScanBean> scanSubmitter = eventService.createSubmitter(scanBrokerURI, scanSubmitQueueName);
@@ -130,7 +130,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 			logger.error("Failed to add QueueListener to scan subscriber for '"+queueBean.getName()+"'; unable to monitor queue. Cannot continue: \""+evEx.getMessage()+"\".");
 			throw new EventException("Failed to add QueueListener to scan subscriber", evEx);
 		}
-		
+
 		broadcast(Status.RUNNING, 4d, "Submitting bean to scanning service.");
 		scanBean.setStatus(Status.SUBMITTED);
 		try {
@@ -143,7 +143,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 			logger.error("Failed to submit scan bean '"+scanBean.getName()+"' to scanning system: \""+evEx.getMessage()+"\".");
 			throw new EventException("Failed to submit scan bean to scanning system", evEx);
 		}
-		
+
 		//Allow scan to run
 		broadcast(Status.RUNNING, 5d, "Waiting for scan to complete...");
 	}
@@ -175,7 +175,7 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 		logger.error("'"+bean.getName()+"' failed. Last message was: "+bean.getMessage());
 		tidyScanActors();
 	}
-	
+
 	@Override
 	protected void doPause() throws EventException {
 		if (finished) return; //Stops spurious messages/behaviour when processing already finished
@@ -196,15 +196,15 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 		logger.error("Pause/resume not implemented on ScanAtom");
 	}
 
-	
+
 	@Override
 	public Class<ScanAtom> getBeanClass() {
 		return ScanAtom.class;
 	}
-	
+
 	/**
 	 * Send instructions to the child ScanBean.
-	 * 
+	 *
 	 * @param command the new State of the ScanBean.
 	 * @throws EventException In case broadcasting fails.
 	 */
@@ -221,14 +221,14 @@ public class ScanAtomProcess<T extends Queueable> extends QueueProcess<ScanAtom,
 		scanCommandPublisher.broadcast(scanBean);
 		logger.info("Sent command to scan service (ScanBean='"+scanBean.getName()+"' command="+command+")");
 	}
-	
+
 	/**
 	 * Clean up EventService objects which interact with the scan child queue.
 	 * @throws EventException
 	 */
 	private void tidyScanActors() throws EventException {
 		logger.debug("Cleaning up queue infrastructure for '"+queueBean.getName()+"'...");
-		
+
 		scanCommandPublisher.disconnect();
 		scanSubscriber.disconnect();
 	}

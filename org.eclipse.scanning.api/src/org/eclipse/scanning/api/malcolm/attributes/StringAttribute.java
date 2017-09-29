@@ -12,16 +12,16 @@
 package org.eclipse.scanning.api.malcolm.attributes;
 
 /**
- * 
+ *
  * Encapsulates a string attribute as read from a malcolm device
- * 
+ *
  * @author Matt Taylor
  *
  */
 public class StringAttribute extends MalcolmAttribute<String> {
-	
+
 	public static final String STRING_ID = "malcolm:core/StringMeta:";
-	
+
 	private String value;
 
 	@Override

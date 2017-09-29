@@ -19,116 +19,116 @@ import org.eclipse.scanning.api.event.queues.IQueueService;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
 /**
- * Interface describing a queue of {@link QueueAtoms} which will be spooled 
+ * Interface describing a queue of {@link QueueAtoms} which will be spooled
  * into an {@link IQueueService} queue and sequentially processed.
- * 
+ *
  * @author Michael Wharmby
  *
  * @param <T> Class extending QueueAtom; this class will be held in the Queue
  *            inside this Atom/Bean
  */
 public interface IHasAtomQueue<T extends QueueAtom> extends IHasChildQueue {
-	
+
 	/**
 	 * Get the queue of {@link QueueAtom}s held by this atom/bean.
-	 * 
+	 *
 	 * @return List describing the queue.
 	 */
 	public List<T> getAtomQueue();
 
 	/**
-	 * Replace the entire queue of {@link QueueAtom}s. This also recalculates 
+	 * Replace the entire queue of {@link QueueAtom}s. This also recalculates
 	 * the run-time.
-	 * 
+	 *
 	 * @param List of beans describing a queue.
 	 */
 	public void setAtomQueue(List<T> atomQueue);
-	
+
 	/**
-	 * When the current instance is a model, get the list of {@link QueueAtom} 
-	 * references which will be used to build the real atomQueue by the 
+	 * When the current instance is a model, get the list of {@link QueueAtom}
+	 * references which will be used to build the real atomQueue by the
 	 * {@link IQueueBeanFactory}.
-	 * 
-	 * @return List of {@link QueueValue}s containing references to 
+	 *
+	 * @return List of {@link QueueValue}s containing references to
 	 *         {@link QueueAtom}s
 	 */
 	public List<QueueValue<String>> getQueueAtomShortNames();
-	
+
 	/**
-	 * When the current instance is a model, set the list of of {@link QueueAtom} 
-	 * references which will be used to build the real atomQueue by the 
+	 * When the current instance is a model, set the list of of {@link QueueAtom}
+	 * references which will be used to build the real atomQueue by the
 	 * {@link IQueueBeanFactory}.
-	 * @param queueAtomShortNames List of {@link QueueValue}s containing references to 
+	 * @param queueAtomShortNames List of {@link QueueValue}s containing references to
 	 *        {@link QueueAtom}s
 	 */
 	public void setQueueAtomShortNames(List<QueueValue<String>> queueAtomShortNames);
-	
+
 	/**
-	 * From the {@link QueueAtom}s present in the queue, calculate the 
+	 * From the {@link QueueAtom}s present in the queue, calculate the
 	 * time this queue should take to run through.
-	 * 
+	 *
 	 * @return long sum time in ms for {@link QueueAtom}s to run.
 	 */
 	public long calculateRunTime();
-	
+
 	/**
-	 * Append a {@link QueueAtom} to the end of the list comprising 
+	 * Append a {@link QueueAtom} to the end of the list comprising
 	 * this queue. Duplicates and null values will cause an exception.
-	 * After appending, the run-time is updated. 
-	 * 
+	 * After appending, the run-time is updated.
+	 *
 	 * @param atom - {@link QueueAtom} to add to the list.
 	 * @throws NullPointerException - if atom is null.
-	 * @throws IllegalArgumentException - if an atom with the same UID is in 
+	 * @throws IllegalArgumentException - if an atom with the same UID is in
 	 *                                    the queue.
 	 * @return true if addition was successful.
 	 */
 	public boolean addAtom(T atom);
-	
+
 	/**
 	 * Report the number of {@link QueueAtoms} queue.
-	 * 
+	 *
 	 * @return number of {@link QueueAtom}s in the queue.
 	 */
 	public int atomQueueSize();
-	
+
 	/**
-	 * Return the position in the queue of a {@link QueueAtom} with the given 
+	 * Return the position in the queue of a {@link QueueAtom} with the given
 	 * unique ID.
 	 * N.B. This isn't heavily used, consider deprecating.
-	 * 
+	 *
 	 * @param uid - unique ID of {@link QueueAtom}.
-	 * @throws IllegalArgumentException - if no atom with given UID in queue. 
+	 * @throws IllegalArgumentException - if no atom with given UID in queue.
 	 * @return index of {@link QueueAtom} with given UID.
 	 */
 	public int getQueuePosition(String uid);
-	
+
 	/**
-	 * Return and remove the {@link QueueAtom} at the head of the queue. Does 
+	 * Return and remove the {@link QueueAtom} at the head of the queue. Does
 	 * not change the run-time.
-	 * 
+	 *
 	 * @throws NoSuchElementException - if there are no items in the queue.
 	 * @return {@link QueueAtom} at head of queue.
 	 */
 	public T nextAtom();
-	
+
 	/**
-	 * Return {@link QueueAtom} at the head of the queue, without removing it 
+	 * Return {@link QueueAtom} at the head of the queue, without removing it
 	 * from the queue. Does not change runtime.
-	 * 
+	 *
 	 * @throws NoSuchElementException - if there are no items in the queue.
 	 * @return {@link QueueAtom} at head of queue.
 	 */
 	public T viewNextAtom();
-	
+
 	/**
-	 * Tests whether the given {@link QueueAtom} is already present in 
+	 * Tests whether the given {@link QueueAtom} is already present in
 	 * the queue.
 	 * N.B. This isn't heavily used, consider deprecating.
-	 * 
+	 *
 	 * @param atom - {@link QueueAtom} whose UID is to be tested.
 	 * @return true if atom already in given list.
 	 */
 	public boolean isAtomPresent(T atom);
-	
+
 
 }

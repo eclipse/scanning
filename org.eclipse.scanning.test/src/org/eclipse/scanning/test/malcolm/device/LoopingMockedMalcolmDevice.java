@@ -25,10 +25,10 @@ import org.eclipse.scanning.api.scan.ScanningException;
  *
  */
 public class LoopingMockedMalcolmDevice extends PausableMockedMalcolmDevice {
-	
+
 	protected int count;
 	protected int amount;
-	
+
 	public LoopingMockedMalcolmDevice(final String name,  final LatchDelegate latcher) throws ScanningException {
 		super(name, latcher);
 		setState(DeviceState.READY);
@@ -49,48 +49,48 @@ public class LoopingMockedMalcolmDevice extends PausableMockedMalcolmDevice {
 		if (getState().isRunning()) {
 			throw new MalcolmDeviceException(this, "Device '"+getName()+"' is already running or paused!");
 		}
-		
+
 		try {
 			setState(DeviceState.RUNNING); // Will send an event
 
 	        count  = 0;
 	        amount = (int)model.getParameterMap().get("nframes");
-	        
+
 	        // Send scan start
 	        MalcolmEventBean bean = new MalcolmEventBean();
 	        bean.setPreviousState(DeviceState.ARMED);
 	        bean.setDeviceState(DeviceState.RUNNING);
 			sendEvent(bean);
-	           
+
 			while(getState().isRunning()) {
-				
+
 				executeTask();
 				// Break if done
 				if (count>=amount) {
 					break;
 				}
-				
+
 				// Sleep (no need to lock while sleeping)
 				long sleep = Math.round((double)model.getParameterMap().get("exposure")*1000d);
 				Thread.sleep(sleep);
 
 			} // End fake scanning loop.
-			
+
 			setState(DeviceState.READY); // State change
 	        bean = new MalcolmEventBean();
 	        bean.setPreviousState(DeviceState.RUNNING);
 	        bean.setDeviceState(DeviceState.READY);
 			sendEvent(bean);
-        } 
+        }
 		catch (Exception ne) {
 			ne.printStackTrace();
-    		setState(DeviceState.FAULT, ne.getMessage());
-     	    throw new MalcolmDeviceException(this, ne.getMessage(), ne);     	    
-        } 
+		setState(DeviceState.FAULT, ne.getMessage());
+	    throw new MalcolmDeviceException(this, ne.getMessage(), ne);
+        }
 		finally {
 			try {
 				close();
-			} 
+			}
 			catch (Exception e) {
 				throw new MalcolmDeviceException(this, "Cannot cleanly close JMS session", e);
 			}

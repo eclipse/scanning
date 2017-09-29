@@ -19,7 +19,7 @@ import org.eclipse.scanning.api.INameable;
 /**
  * <h3> Filters </h3>
  * Filters work as follows:<p>
- * 
+ *
  * <pre>
  * L = list of things to be filtered
  * e = excluded function
@@ -28,48 +28,48 @@ import org.eclipse.scanning.api.INameable;
  * <p>
  *   l = L-e(L)+i(L)
  * </pre>
- * 
+ *
  * This means that all combinations are possible.
  * An exclude of .* may be applied if only particular devices
  * are required in the filter and everything done with includes.
  * A particular set of devices may be removed but if one is
  * required, it may be added back in with the final include.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public interface IFilter<T> extends INameable {
 
 	/**
-	 * 
+	 *
 	 * @param items
 	 * @return filtered set
 	 */
 	List<T> filter(Collection<T> items);
-	
+
 	/**
 	 * The list of exclude regular expressions
-	 * 
+	 *
 	 * These regular expressions are matched with the String.matches(String) method.
-	 * 
+	 *
 	 * @return
 	 */
 	List<String> getExcludes();
-	
+
 	/**
 	 * The list of exclude regular expressions
 	 * These regular expressions are matched with the String.matches(String) method.
 	 * @return
 	 */
 	void setExcludes(List<String> excludes);
-	
+
 	/**
 	 * The list of include regular expressions
 	 * These regular expressions are matched with the String.matches(String) method.
 	 * @return
 	 */
 	List<String> getIncludes();
-	
+
 	/**
 	 * The list of include regular expressions
 	 * These regular expressions are matched with the String.matches(String) method.

@@ -9,12 +9,12 @@ addons:
     token:
       # See https://travis-ci.org/eclipse/scanning/settings, here be variables
       # SONAR_TOKEN = SONAR_GITHUB_TOKEN = The sonar token at https://sonarqube.com/account/security/
-      secure: $SONAR_TOKEN 
+      secure: $SONAR_TOKEN
     github_token:
       # See https://travis-ci.org/eclipse/scanning/settings, here be variables
       # GITHUB_READ_REPO = https://github.com/settings/tokens sonarqube-travis  token ('repo' and 'admin:repo_hook' permissions)
       secure: $GITHUB_READ_REPO
-      
+
 language: java
 
 # Makes build faster to cache maven things.
@@ -34,7 +34,7 @@ branches:
 jdk:
  - oraclejdk8
 
- 
+
 # Handle git submodules manually
 git:
     submodules: false
@@ -44,38 +44,38 @@ before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
-  
+
 before_install:
   - "/sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -ac -screen 0 1280x1024x16"
   - chmod +x ./org.eclipse.scanning.releng/build/commit-msg.sh
   - bash ./org.eclipse.scanning.releng/build/commit-msg.sh
-   
+
 # Clone the extra repos.
   - git clone --depth=50 --branch=master https://github.com/eclipse/richbeans.git ../../eclipse/org.eclipse.richbeans
   - git clone --depth=50 --branch=master https://github.com/eclipse/dawnsci.git ../../eclipse/org.eclipse.dawnsci
   - git clone --depth=50 --branch=master https://github.com/DawnScience/dawn-hdf.git ../../dawn-hdf
- 
+
 # Just needed for travis build, not if making an IDE version. No need to copy this if doing
 # a manual checkout because uk.ac.diamond.jython is in the target or an appropriate OSGi jython bundle.
   - git clone --depth=50 --branch=gda-9.5 https://github.com/openGDA/diamond-jython.git ../../diamond-jython
- 
+
 # Only needed for submodules which we are not currently using.
 # Replace the SSH URL with the public URL, then initialize submodules
 # - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
 # - git submodule update --init --recursive
-  
+
 # Run the build from org.eclipse.scanning
 install:
   - cd ../../eclipse
   - mv ../eclipse/scanning org.eclipse.scanning
   - cd org.eclipse.scanning
- 
+
 # Set LD_LIBRARY_PATH for the tests. Also set a variable that attempts to clear /tmp on the travis node to avoid it getting large
 env:
   - CLEAR_TMP=true LD_LIBRARY_PATH=/home/travis/build/dawn-hdf/hdf.hdf5lib/lib/linux-x86_64
 
 # compile and test
-script: 
+script:
  - mvn -T 4 -q clean install
  - mvn -q surefire:test -Dtest.includes=org/eclipse/scanning/**/Suite.java
  - mvn -q surefire:test -Dtest.includes=org/eclipse/scanning/**/UISuite.java -Dlog4j.configuration=log4j.properties

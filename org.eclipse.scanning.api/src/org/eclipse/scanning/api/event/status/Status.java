@@ -13,7 +13,7 @@ package org.eclipse.scanning.api.event.status;
 
 /**
  * States of jobs on the cluster.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -22,21 +22,21 @@ public enum Status { // TODO Should this be called QueueStatus or JobStatus to a
 	SUBMITTED, QUEUED, RUNNING, REQUEST_PAUSE, PAUSED, REQUEST_RESUME, RESUMED, REQUEST_TERMINATE, TERMINATED, FAILED, COMPLETE, UNFINISHED, NONE;
 
 	/**
-	 * 
+	 *
 	 * @return true if the run was taken from the queue and something was actually executed on it.
 	 */
 	public boolean isStarted() {
 		return this!=SUBMITTED;
 	}
-	
+
 	public boolean isFinal() {
 		return this==TERMINATED || this==FAILED || this==COMPLETE || this==UNFINISHED || this==NONE;
 	}
-	
+
 	public boolean isRunning() {
 		return this==RUNNING || this==RESUMED;
 	}
-	
+
 	public boolean isRequest() {
 		return toString().startsWith("REQUEST_");
 	}
@@ -44,7 +44,7 @@ public enum Status { // TODO Should this be called QueueStatus or JobStatus to a
 	public boolean isPaused() {
 		return this==REQUEST_PAUSE || this==PAUSED;
 	}
-	
+
 	public boolean isResumed() {
 		return this==REQUEST_RESUME || this==RESUMED;
 	}

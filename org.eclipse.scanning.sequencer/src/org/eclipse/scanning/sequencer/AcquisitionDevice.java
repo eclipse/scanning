@@ -307,52 +307,52 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	        // It was called limit checking in GDA.
 	        // Sometimes logic is needed to implement collision avoidance
 
-    		// Set the size and declare a count
-    		fireStart(location.getTotalSize());
+		// Set the size and declare a count
+		fireStart(location.getTotalSize());
 
-    		// Add the malcolm listners so that progress on inner malcolm scans can be reported
-    		addMalcolmListeners();
+		// Add the malcolm listners so that progress on inner malcolm scans can be reported
+		addMalcolmListeners();
 
-    		// The scan loop
-        	pos = null; // We want the last point when we are done so don't use foreach
-        	boolean firedFirst = false;
+		// The scan loop
+		pos = null; // We want the last point when we are done so don't use foreach
+		boolean firedFirst = false;
 	        while (positionIterator.hasNext()) {
 
-	        	pos = positionIterator.next();
-	        	pos.setStepIndex(location.getStepNumber());
+			pos = positionIterator.next();
+			pos.setStepIndex(location.getStepNumber());
 
-	        	if (!firedFirst) {
-	        		fireFirst(pos);
-	            	firedFirst = true;
-	        	}
+			if (!firedFirst) {
+				fireFirst(pos);
+			firedFirst = true;
+			}
 
-	        	// Check if we are paused, blocks until we are not
-	        	boolean continueRunning = checkPaused();
-	        	if (!continueRunning) return;  // finally block performed
+			// Check if we are paused, blocks until we are not
+			boolean continueRunning = checkPaused();
+			if (!continueRunning) return;  // finally block performed
 
-	        	// Run to the position
-        		annotationManager.invoke(PointStart.class, pos);
-	        	positioner.setPosition(pos);          // moveTo in GDA8
-	        	firePositionMoveComplete(pos);        // notify listers that the move is complete
+			// Run to the position
+			annotationManager.invoke(PointStart.class, pos);
+			positioner.setPosition(pos);          // moveTo in GDA8
+			firePositionMoveComplete(pos);        // notify listers that the move is complete
 
-	        	exposureManager.setExposureTime(pos); // most of the time this does nothing.
+			exposureManager.setExposureTime(pos); // most of the time this does nothing.
 
-	        	IPosition written = writers.await();  // Wait for the previous write out to return, if any
-	       		if (written!=null) annotationManager.invoke(WriteComplete.class, written);
+			IPosition written = writers.await();  // Wait for the previous write out to return, if any
+			if (written!=null) annotationManager.invoke(WriteComplete.class, written);
 
- 	        	runners.run(pos);                     // GDA8: collectData() / GDA9: run() for Malcolm
-	        	writers.run(pos, false);              // Do not block on the readout, move to the next position immediately.
+			runners.run(pos);                     // GDA8: collectData() / GDA9: run() for Malcolm
+			writers.run(pos, false);              // Do not block on the readout, move to the next position immediately.
 
-	        	// Send an event about where we are in the scan
-        		annotationManager.invoke(PointEnd.class, pos);
-	        	positionComplete(pos);
+			// Send an event about where we are in the scan
+			annotationManager.invoke(PointEnd.class, pos);
+			positionComplete(pos);
 
-	        	logger.info("Scanning completed step "+location.getStepNumber()+". Position was "+pos);
+			logger.info("Scanning completed step "+location.getStepNumber()+". Position was "+pos);
 	        }
 
 	        // On the last iteration we must wait for the final readout.
-        	IPosition written = writers.await();          // Wait for the previous write out to return, if any
-       		annotationManager.invoke(WriteComplete.class, written);
+		IPosition written = writers.await();          // Wait for the previous write out to return, if any
+		annotationManager.invoke(WriteComplete.class, written);
 
 
 		} catch (ScanningException | InterruptedException i) {
@@ -372,7 +372,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	}
 
 	private void positionComplete(IPosition pos) throws EventException, ScanningException {
-    	positionComplete(pos, location.getOuterCount(), location.getOuterSize());
+	positionComplete(pos, location.getOuterCount(), location.getOuterSize());
 	}
 
 	private void fireFirst(IPosition firstPosition) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException, ScanningException, EventException {
@@ -386,7 +386,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 			for (String path : otherFiles) if (path!=null) annotationManager.invoke(FileDeclared.class, path, firstPosition);
 		}
 
-    	fireRunWillPerform(firstPosition);
+	fireRunWillPerform(firstPosition);
 	}
 
 	/**
@@ -438,16 +438,16 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 				nexusScanFileManager.scanFinished(); // writes scanFinished and closes nexus file
 
 				// We should not fire the run performed until the nexus file is closed.
-	        	// Tests wait for this step and reread the file.
-	       	    fireRunPerformed(last);              // Say that we did the overall run using the position we stopped at.
+			// Tests wait for this step and reread the file.
+		    fireRunPerformed(last);              // Say that we did the overall run using the position we stopped at.
 
 			} finally {
-	    		// only fire end if finished normally
-	    		if (!errorFound) fireEnd(last);
+			// only fire end if finished normally
+			if (!errorFound) fireEnd(last);
 			}
 
 		} finally {
-       	    try {
+	    try {
 				annotationManager.invoke(ScanFinally.class, last);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException | EventException e) {
 				throw new ScanningException(e);
@@ -553,7 +553,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException  | EventException e) {
 			throw new ScanningException(e);
 		}
-   	    setDeviceState(DeviceState.ARMED); // Fires!
+	    setDeviceState(DeviceState.ARMED); // Fires!
 
 	}
 
@@ -582,25 +582,25 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		}
 
 		// Check the locking using a condition
-    	if(!lock.tryLock(1, TimeUnit.SECONDS)) {
-    		throw new ScanningException(this, "Internal Error - Could not obtain lock to run device!");
-    	}
-    	try {
-    		if (!getDeviceState().isRunning() && getDeviceState()!=DeviceState.ARMED) {
-    			throw new Exception("The scan state is "+getDeviceState());
-    		}
-       	    if (awaitPaused) {
-        		if (getDeviceState() != DeviceState.PAUSED) setDeviceState(DeviceState.PAUSED);
-        		annotationManager.invoke(ScanPause.class);
-        		paused.await();
-        		getBean().setStatus(Status.RESUMED);
-        		setDeviceState(DeviceState.RUNNING);
-        		annotationManager.invoke(ScanResume.class);
-        	}
-    	} finally {
-    		lock.unlock();
-    	}
-    	return true;
+	if(!lock.tryLock(1, TimeUnit.SECONDS)) {
+		throw new ScanningException(this, "Internal Error - Could not obtain lock to run device!");
+	}
+	try {
+		if (!getDeviceState().isRunning() && getDeviceState()!=DeviceState.ARMED) {
+			throw new Exception("The scan state is "+getDeviceState());
+		}
+	    if (awaitPaused) {
+			if (getDeviceState() != DeviceState.PAUSED) setDeviceState(DeviceState.PAUSED);
+			annotationManager.invoke(ScanPause.class);
+			paused.await();
+			getBean().setStatus(Status.RESUMED);
+			setDeviceState(DeviceState.RUNNING);
+			annotationManager.invoke(ScanResume.class);
+		}
+	} finally {
+		lock.unlock();
+	}
+	return true;
 	}
 
 	@Override

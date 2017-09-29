@@ -29,7 +29,7 @@ public class QueueSpoolerService implements IQueueSpoolerService {
 	@Override
 	public void doSubmission(TaskBean bean) throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override

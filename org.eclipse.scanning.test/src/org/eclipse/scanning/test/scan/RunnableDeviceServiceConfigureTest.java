@@ -41,53 +41,53 @@ public class RunnableDeviceServiceConfigureTest {
 		dservice  = new RunnableDeviceServiceImpl(new MockScannableConnector());
 		registerFive();
 	}
-	
+
 	public void registerFive() throws Exception {
-		
+
 		for (int i = 0; i < 5; i++) {
-			
+
 			final MandelbrotModel model = new MandelbrotModel("x", "y");
 			model.setName("mandelbrot"+i);
 			model.setExposureTime(0.000001);
-		
+
 			final MandelbrotDetector det = new MandelbrotDetector();
 			det.setModel(model);
 			det.setName("mandelbrot"+i);
-			
+
 			DeviceInformation<MandelbrotModel> info = new DeviceInformation<>("mandelbrot"+i);
 			info.setId("org.eclipse.scanning.example.mandelbrotDetectorInfo"+i);
 			info.setLabel("Mandelbrot Detector "+i);
 			info.setDescription("A Test Detector");
 			info.setIcon("org.eclipse.scanning.example/icons/alarm-clock-select.png");
 			det.setDeviceInformation(info);
-			
+
 			dservice.register(det);
-			
+
 		}
 	}
-	
+
 	@Test
-	public void testScanMandelbrot1() throws Exception {	
+	public void testScanMandelbrot1() throws Exception {
 		IRunnableDevice<ScanModel> scan = createTestScanner("mandelbrot1");
 		scan.run(null);
 		checkRun(scan, 25);
 	}
-	
+
 	@Test
-	public void testScanMandelbrot4() throws Exception {		
+	public void testScanMandelbrot4() throws Exception {
 		IRunnableDevice<ScanModel> scan = createTestScanner("mandelbrot4");
 		scan.run(null);
 		checkRun(scan, 25);
 	}
 
 	@Test
-	public void testScanAFewMandelbrots() throws Exception {		
+	public void testScanAFewMandelbrots() throws Exception {
 		IRunnableDevice<ScanModel> scan = createTestScanner("mandelbrot0", "mandelbrot1", "mandelbrot2", "mandelbrot3", "mandelbrot4");
 		scan.run(null);
 		checkRun(scan, 25);
 	}
 
-	
+
 	private IRunnableDevice<ScanModel> createTestScanner(String... names) throws Exception {
 
 		IRunnableDevice<?>[] detectors = new IRunnableDevice[names.length];
@@ -95,7 +95,7 @@ public class RunnableDeviceServiceConfigureTest {
 			detectors[i] = dservice.getRunnableDevice(names[i]);
 
 		}
-	
+
 		// If none passed, create scan points for a grid.
 		GridModel pmodel = new GridModel("x", "y");
 		pmodel.setSlowAxisPoints(5);
@@ -113,7 +113,7 @@ public class RunnableDeviceServiceConfigureTest {
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel);
 		return scanner;
 	}
-	
+
 	private void checkRun(IRunnableDevice<ScanModel> scanner, int size) throws Exception {
 		// Bit of a hack to get the generator from the model - should this be easier?
 		// Do not copy this code

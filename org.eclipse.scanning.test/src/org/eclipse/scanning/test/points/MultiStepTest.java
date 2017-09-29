@@ -28,18 +28,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class MultiStepTest {
-	
+
 	private IPointGeneratorService service;
-	
+
 	@Before
 	public void before() throws Exception {
 		service = new PointGeneratorService();
 	}
-	
+
 	@Test(expected = ModelValidationException.class)
 	public void testNoName() throws Exception {
 		MultiStepModel model = new MultiStepModel();
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
@@ -48,7 +48,7 @@ public class MultiStepTest {
 	public void testEmpty() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
@@ -57,86 +57,86 @@ public class MultiStepTest {
 	public void testSingleForward() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(10, 20, 2);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
-		
+
 		final int expectedSize = 6;
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 		for (int i = 0; i < pointList.size(); i++) {
 			assertEquals(new Scalar<>("x", i, 10.0 + (2 * i)), pointList.get(i));
 		}
 	}
-	
+
 	@Test(expected = ModelValidationException.class)
 	public void testSingleForwardStepsWrongDir() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(10.0, 20.0, -1.0);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
-	
+
 	@Test
 	public void testSingleBackward() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(20.0, 10.0, -2.0);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 		final int expectedSize = 6;
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 		for (int i = 0; i < pointList.size(); i++) {
 			assertEquals(new Scalar<>("x", i, 20.0 - (2 * i)), pointList.get(i));
 		}
 	}
-	
+
 	@Test(expected = ModelValidationException.class)
 	public void testSingleBackwardStepsWrongDir() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(20, 10, 2);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
-	
+
 	@Test
 	public void testMultipleForward() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(10, 20, 2);
 		model.addRange(25, 50, 5);
 		model.addRange(100, 500, 50);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 		final int expectedSize = 21; // 6 + 6 + 9
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
-		assertEquals(expectedSize, pointList.size()); 
-		
+		assertEquals(expectedSize, pointList.size());
+
 		for (int i = 0; i < pointList.size(); i++) {
 			double expected;
 			if (i < 6) expected = 10 + 2 * i;
@@ -145,27 +145,27 @@ public class MultiStepTest {
 			assertEquals(new Scalar<>("x", i, expected), pointList.get(i));
 		}
 	}
-	
+
 	@Test
 	public void testMultipleForwardWithExposureTime() throws Exception {
-		
+
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(10, 20, 2, 1.0);
 		model.addRange(25, 50, 5, 2.0);
 		model.addRange(100, 500, 50, 3.0);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 		final int expectedSize = 21; // 6 + 6 + 9
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
-		assertEquals(expectedSize, pointList.size()); 
-		
+		assertEquals(expectedSize, pointList.size());
+
 		assertEquals(1.0, pointList.get(0).getExposureTime(), 0.0001);
 		assertEquals(1.0, pointList.get(1).getExposureTime(), 0.0001);
 		assertEquals(1.0, pointList.get(5).getExposureTime(), 0.0001);
@@ -174,16 +174,16 @@ public class MultiStepTest {
 		assertEquals(3.0, pointList.get(12).getExposureTime(), 0.0001);
 		assertEquals(3.0, pointList.get(20).getExposureTime(), 0.0001);
 	}
-	
+
 	@Test
 	public void testMultipleBackward() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(500, 100, -50);
 		model.addRange(50, 25, -5);
 		model.addRange(20, 10, -2);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 
@@ -191,10 +191,10 @@ public class MultiStepTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
-		assertEquals(expectedSize, pointList.size()); 
-		
+		assertEquals(expectedSize, pointList.size());
+
 		for (int i = 0; i < pointList.size(); i++) {
 			double expected;
 			if (i < 9) expected = 500 - 50 * i;
@@ -206,14 +206,14 @@ public class MultiStepTest {
 
 	@Test
 	public void testMultipleBackwardExposureTime() throws Exception {
-		
+
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(500, 100, -50, 1.0);
 		model.addRange(50, 25, -5, 2.0);
 		model.addRange(20, 10, -2, 3.0);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 
@@ -221,10 +221,10 @@ public class MultiStepTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
-		assertEquals(expectedSize, pointList.size()); 
-		
+		assertEquals(expectedSize, pointList.size());
+
 		assertEquals(1.0, pointList.get(0).getExposureTime(), 0.0001);
 		assertEquals(1.0, pointList.get(8).getExposureTime(), 0.0001);
 		assertEquals(2.0, pointList.get(9).getExposureTime(), 0.0001);
@@ -238,10 +238,10 @@ public class MultiStepTest {
 	public void testForwardNoGap() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(10, 20, 2); // 6
 		model.addRange(20, 100, 5); // 17
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 
@@ -249,7 +249,7 @@ public class MultiStepTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 		for (int i = 0; i < pointList.size(); i++) {
@@ -259,23 +259,23 @@ public class MultiStepTest {
 			assertEquals(new Scalar<>("x", i, expected), pointList.get(i));
 		}
 	}
-	
+
 	@Test
 	public void testBackwardNoGap() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(100, 20, -5); // 17
 		model.addRange(20, 10, -2); // 6
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
-		
+
 		final int expectedSize = 22; // 6 + 17 - 1, as 20 should only appear once
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 		for (int i = 0; i < pointList.size(); i++) {
@@ -285,91 +285,91 @@ public class MultiStepTest {
 			assertEquals(new Scalar<>("x", i, expected), pointList.get(i));
 		}
 	}
-	
+
 	@Test(expected = ModelValidationException.class)
 	public void testForwardOverlapping() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(10, 20, 2);
 		model.addRange(15, 50, 5);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
-	
+
 	@Test(expected = ModelValidationException.class)
 	public void testBackwardOverlapping() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(50, 20, -5);
 		model.addRange(22, 10, -2);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
-	
+
 	@Test(expected = ModelValidationException.class)
 	public void testForwardThenBackward() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(10, 20, 2);
 		model.addRange(50, 25, -5);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
-	
+
 	@Test(expected = ModelValidationException.class)
 	public void testBackwardThenForward() throws Exception {
 		MultiStepModel model = new MultiStepModel();
 		model.setName("x");
-		
+
 		model.addRange(50, 25, -5);
 		model.addRange(10, 20, 2);
-		
+
 		IPointGenerator<MultiStepModel> gen = service.createGenerator(model);
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
-	
-	
+
+
 	@Test
 	public void testSizeIndependent() throws GeneratorException {
-		
-		
+
+
 		MultiStepModel mmodel = new MultiStepModel();
 		mmodel.setName("energy");
 		mmodel.addRange(1,2,1); // 2 points
-		
+
 		assertEquals(2, service.createGenerator(mmodel).size());
 
 
 		mmodel = new MultiStepModel();
 		mmodel.setName("energy");
 		mmodel.addRange(10,20,10); // 2 points
-		
+
 		assertEquals(2, service.createGenerator(mmodel).size());
 
-	
+
 		mmodel = new MultiStepModel();
 		mmodel.setName("energy");
 		mmodel.addRange(100,200,100); // 2 points
-		
+
 		assertEquals(2, service.createGenerator(mmodel).size());
-		
+
 		mmodel = new MultiStepModel();
 		mmodel.setName("energy");
 		mmodel.addRange(1000,2000,1000); // 2 points
-		
+
 		assertEquals(2, service.createGenerator(mmodel).size());
 
-		
+
 		mmodel = new MultiStepModel();
 		mmodel.setName("energy");
 		mmodel.addRange(10000,20000,10000); // 2 points
-		
+
 		assertEquals(2, service.createGenerator(mmodel).size());
 
 	}

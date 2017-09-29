@@ -9,11 +9,11 @@ import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
 public interface IBeanAssembler<Q extends Queueable> {
-	
+
 	default Q assemble(Q model, ExperimentConfiguration config) throws QueueModelException {
 		Q bean;
 		updateBeanModel(model, config);
-		
+
 		if (model.isModel()) {
 			bean = buildNewBean(model);
 		} else {
@@ -22,20 +22,20 @@ public interface IBeanAssembler<Q extends Queueable> {
 		setBeanName(bean);
 		return bean;
 	}
-	
+
 	Q buildNewBean(Q model) throws QueueModelException;
-	
+
 	void setBeanName(Q bean);
-	
+
 	IQueueBeanFactory getQueueBeanFactory();
-	
+
 	void updateBeanModel(Q model, ExperimentConfiguration config) throws QueueModelException;
-	
+
 	/**
-	 * Updates the current {@link IQueueValue} representing a value with the 
-	 * {@link IQueueValue} stored in local/global values, iff the given 
-	 * {@link IQueueValue} is a QueueValue instance and it is marked as a 
-	 * variable. Otherwise returns the {@link IQueueValue} given as the 
+	 * Updates the current {@link IQueueValue} representing a value with the
+	 * {@link IQueueValue} stored in local/global values, iff the given
+	 * {@link IQueueValue} is a QueueValue instance and it is marked as a
+	 * variable. Otherwise returns the {@link IQueueValue} given as the
 	 * argument (since it doesn't need to be updated).
 	 * @param valueReference {@link IQueueValue to be replaced
 	 * @return {@link IQueueValue} to replace argument
@@ -51,7 +51,7 @@ public interface IBeanAssembler<Q extends Queueable> {
 		}
 		return valueReference;
 	}
-	
+
 	IQueueValue<?> getRealValue(QueueValue<String> valueReference, ExperimentConfiguration config) throws QueueModelException;
-	
+
 }

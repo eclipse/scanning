@@ -1,6 +1,6 @@
-<!-- 
+<!--
 
-Example spring file to configure the various scanning services 
+Example spring file to configure the various scanning services
 
 -->
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -23,7 +23,7 @@ Example spring file to configure the various scanning services
        <property name="requestTopic"    value="org.eclipse.scanning.request.device.topic" />
        <property name="responseTopic"   value="org.eclipse.scanning.response.device.topic"   />
     </bean>
-    
+
     <bean id="positionerServlet" class="org.eclipse.scanning.server.servlet.PositionerServlet" init-method="connect">
        <property name="broker"          value="${org.eclipse.scanning.broker.uri}" />
        <property name="requestTopic"    value="org.eclipse.scanning.request.positioner.topic" />

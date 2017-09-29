@@ -34,7 +34,7 @@ class Util {
 	public static IWorkbenchPage getPage() {
 		return getPage(null);
 	}
-	
+
 	/**
 	 * Gets the page, even during startup.
 	 * @return the page
@@ -48,7 +48,7 @@ class Util {
 		if (activePage!=null) return activePage;
 		return getDefaultPage();
 	}
-	
+
 	/**
 	 * @return IWorkbenchPage
 	 */
@@ -59,8 +59,8 @@ class Util {
 		if (window==null) return null;
 		return window.getActivePage();
 	}
-	
-	
+
+
 	/**
 	 * @return IWorkbenchPage
 	 */
@@ -69,7 +69,7 @@ class Util {
 		if (bench==null) return null;
 		final IWorkbenchWindow[] windows = bench.getWorkbenchWindows();
 		if (windows==null) return null;
-		
+
 		return windows[0].getActivePage();
 	}
 
@@ -85,9 +85,9 @@ class Util {
 		return new FileStoreEditorInput(externalFile);
 	}
 
-	
+
 	/**
-	 * 
+	 *
 	 * @param area
 	 */
 	public static void removeMargins(Composite area) {
@@ -104,25 +104,25 @@ class Util {
 
 	}
 
-	
+
 	public static boolean browse(final String location) throws Exception {
-		
+
 		final String     dir  = Util.getSanitizedPath(location);
-		
+
 		final File resultsDir = new File(dir);
 		if (resultsDir.exists()) return browse(resultsDir);
-		
+
 		return false;
 	}
 
 	public static boolean browse(File resultsDir) throws Exception {
-		
+
 		final ProcessBuilder pb = new ProcessBuilder();
-		
+
 		// Can adjust env if needed:
 		// Map<String, String> env = pb.environment();
 		pb.directory(resultsDir);
-		
+
 		if (isWindowsOS()) {
 		    pb.command("cmd", "/C", "explorer \""+resultsDir.getAbsolutePath()+"\"");
 		} else if (isLinuxOS()) {
@@ -130,9 +130,9 @@ class Util {
 		} else if (isMacOS()) {
 		    pb.command("/bin/sh", "-c", "open \""+resultsDir.getAbsolutePath()+"\"");
 		}
-		
+
 		pb.start(); // We don't wait for it
- 
+
 		return true;
 	}
 
@@ -147,7 +147,7 @@ class Util {
 		}
 		return path;
 	}
-	
+
 	public static boolean isWindowsOS() {
 		String os = System.getProperty("os.name");
 		return os != null && os.toLowerCase().startsWith("windows");
@@ -159,7 +159,7 @@ class Util {
 		String os = System.getProperty("os.name");
 		return os != null && os.toLowerCase().startsWith("linux");
 	}
-	
+
 	public static boolean isMacOS() {
 		String os = System.getProperty("os.name");
 		return os != null && os.toLowerCase().indexOf("mac") >= 0;

@@ -60,14 +60,14 @@ public class AbstractConsumerTest extends BrokerTest {
 	@Before
 	public void start() throws Exception {
 
-	   	Constants.setNotificationFrequency(200); // Normally 2000
-	   	Constants.setReceiveFrequency(100);
+		Constants.setNotificationFrequency(200); // Normally 2000
+		Constants.setReceiveFrequency(100);
 	}
 
 	@After
 	public void stop() throws Exception {
 
-    	Constants.setNotificationFrequency(2000); // Normally 2000
+	Constants.setNotificationFrequency(2000); // Normally 2000
 		submitter.disconnect();
 		consumer.clearQueue(IEventService.SUBMISSION_QUEUE);
 		consumer.clearQueue(IEventService.STATUS_SET);
@@ -96,7 +96,7 @@ public class AbstractConsumerTest extends BrokerTest {
 			IMarshallerService marshaller = new MarshallerService(new PointsModelMarshaller());
 			StatusBean fromQ = marshaller.unmarshal(msg.getText(), StatusBean.class);
 
-        	if (!fromQ.equals(bean)) throw new Exception("The bean from the queue was not the same as that submitted! q="+fromQ+" submit="+bean);
+		if (!fromQ.equals(bean)) throw new Exception("The bean from the queue was not the same as that submitted! q="+fromQ+" submit="+bean);
 
 		} finally {
 			consumer.disconnect();
@@ -120,16 +120,16 @@ public class AbstractConsumerTest extends BrokerTest {
 
 		StatusBean complete = stati.get(0);
 
-       	if (complete.equals(bean)) {
-       		throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
-       	}
+	if (complete.equals(bean)) {
+		throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
+	}
 
-       	if (complete.getStatus()!=Status.COMPLETE) {
-       		throw new Exception("The bean in the queue is not complete!"+complete);
-       	}
-       	if (complete.getPercentComplete()<100) {
-       		throw new Exception("The percent complete is less than 100!"+complete);
-       	}
+	if (complete.getStatus()!=Status.COMPLETE) {
+		throw new Exception("The bean in the queue is not complete!"+complete);
+	}
+	if (complete.getPercentComplete()<100) {
+		throw new Exception("The percent complete is less than 100!"+complete);
+	}
     }
 
 
@@ -142,7 +142,7 @@ public class AbstractConsumerTest extends BrokerTest {
 			fconsumer.cleanQueue(consumer.getSubmitQueueName());
 			fconsumer.start(); // No bean!
 
-	     	FredStatusBean bean = new FredStatusBean();
+		FredStatusBean bean = new FredStatusBean();
 			bean.setName("Frederick");
 
 			dynamicBean(bean, fconsumer, 1);
@@ -164,7 +164,7 @@ public class AbstractConsumerTest extends BrokerTest {
 			fconsumer.cleanQueue(consumer.getSubmitQueueName());
 			fconsumer.start();// It's going now, we can submit
 
-	     	FredStatusBean fred = new FredStatusBean();
+		FredStatusBean fred = new FredStatusBean();
 			fred.setName("Frederick");
 			dynamicBean(fred, fconsumer, 1);
 
@@ -182,7 +182,7 @@ public class AbstractConsumerTest extends BrokerTest {
 
     private void dynamicBean(final StatusBean bean, IConsumer<StatusBean> fconsumer, int statusSize) throws Exception {
 
-    	// Hard code the service for the test
+	// Hard code the service for the test
 		ISubscriber<EventListener> sub = eservice.createSubscriber(fconsumer.getUri(), fconsumer.getStatusTopicName());
 		sub.addListener(new IBeanListener<StatusBean>() {
 			@Override
@@ -203,18 +203,18 @@ public class AbstractConsumerTest extends BrokerTest {
 
 		StatusBean complete = stati.get(0); // The queue is date sorted.
 
-       	if (complete.equals(bean)) {
-       		throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
-       	}
+	if (complete.equals(bean)) {
+		throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
+	}
 
-       	if (complete.getStatus()!=Status.COMPLETE) {
-       		throw new Exception("The bean in the queue is not complete!"+complete);
-       	}
-       	if (complete.getPercentComplete()<100) {
-       		throw new Exception("The percent complete is less than 100!"+complete);
-       	}
+	if (complete.getStatus()!=Status.COMPLETE) {
+		throw new Exception("The bean in the queue is not complete!"+complete);
+	}
+	if (complete.getPercentComplete()<100) {
+		throw new Exception("The percent complete is less than 100!"+complete);
+	}
 
-       	sub.disconnect();
+	sub.disconnect();
 	}
 
     @Ignore("TODO Figure out why noit reliable in travis, works locally")
@@ -249,7 +249,7 @@ public class AbstractConsumerTest extends BrokerTest {
     @Test
     public void testKillingAConsumer() throws Exception {
 
-    	consumer.setRunner(new FastRunCreator<StatusBean>(0, 100, 1, 100L, true));
+	consumer.setRunner(new FastRunCreator<StatusBean>(0, 100, 1, 100L, true));
 		consumer.cleanQueue(consumer.getSubmitQueueName());
 		consumer.start();
 
@@ -315,23 +315,23 @@ public class AbstractConsumerTest extends BrokerTest {
 
 		StatusBean complete = stati.get(0);
 
-       	if (complete.equals(bean)) {
-       		throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
-       	}
+	if (complete.equals(bean)) {
+		throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
+	}
 
-       	if (complete.getStatus()!=Status.TERMINATED) {
-       		throw new Exception("The bean in the queue should be terminated after a stop! It was "+complete);
-       	}
-       	if (complete.getPercentComplete()==100) {
-       		throw new Exception("The percent complete should not be 100!"+complete);
-       	}
+	if (complete.getStatus()!=Status.TERMINATED) {
+		throw new Exception("The bean in the queue should be terminated after a stop! It was "+complete);
+	}
+	if (complete.getPercentComplete()==100) {
+		throw new Exception("The percent complete should not be 100!"+complete);
+	}
 	}
 
     @Test
     public void testHeartbeat() throws Exception {
 
-    	ISubscriber<IHeartbeatListener> subscriber=null;
-    	try {
+	ISubscriber<IHeartbeatListener> subscriber=null;
+	try {
 			consumer.setRunner(new FastRunCreator<StatusBean>(100L, true));
 			consumer.cleanQueue(consumer.getSubmitQueueName());
 			consumer.start();
@@ -363,9 +363,9 @@ public class AbstractConsumerTest extends BrokerTest {
 			if (sizeAfterSleep!=sizeBeforeSleep) {
 				throw new Exception("The pulse continues to beat after death. Ahhhhhh! Is it a vampir? Do we need the garlic?!");
 			}
-    	} finally {
+	} finally {
 			subscriber.disconnect();
-    	}
+	}
    }
 
    private StatusBean doSubmit() throws Exception {
@@ -393,7 +393,7 @@ public class AbstractConsumerTest extends BrokerTest {
     @Test
     public void testMultipleSubmissions() throws Exception {
 
-    	consumer.setRunner(new FastRunCreator<StatusBean>(0, 100, 50, 100L, false));
+	consumer.setRunner(new FastRunCreator<StatusBean>(0, 100, 50, 100L, false));
 		consumer.cleanQueue(consumer.getSubmitQueueName());
 		consumer.start();
 
@@ -412,7 +412,7 @@ public class AbstractConsumerTest extends BrokerTest {
 
     private void checkStatus(List<StatusBean> submissions) throws Exception {
 
-    	List<StatusBean> stati = consumer.getStatusSet();
+	List<StatusBean> stati = consumer.getStatusSet();
 		if (stati.size()!=10) throw new Exception("Unexpected status size in queue! Should be 10 size is "+stati.size());
 
 		for (int i = 0; i < 10; i++) {
@@ -423,16 +423,16 @@ public class AbstractConsumerTest extends BrokerTest {
 			}
 
 			StatusBean bean     = submissions.get(i);
-	       	if (complete.equals(bean)) {
-	       		throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
-	       	}
+		if (complete.equals(bean)) {
+			throw new Exception("The bean from the status queue was the same as that submitted! It should have a different status. q="+complete+" submit="+bean);
+		}
 
-	       	if (complete.getStatus()!=Status.COMPLETE) {
-	       		throw new Exception("The bean in the queue is not complete!"+complete);
-	       	}
-	       	if (complete.getPercentComplete()<100) {
-	       		throw new Exception("The percent complete is less than 100!"+complete);
-	       	}
+		if (complete.getStatus()!=Status.COMPLETE) {
+			throw new Exception("The bean in the queue is not complete!"+complete);
+		}
+		if (complete.getPercentComplete()<100) {
+			throw new Exception("The percent complete is less than 100!"+complete);
+		}
 		}
 	}
 

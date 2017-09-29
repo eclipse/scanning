@@ -26,11 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DeviceWatchdogService implements IDeviceWatchdogService {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(DeviceWatchdogService.class);
-	
+
 	private Map<String, IDeviceWatchdog> templates = Collections.synchronizedMap(new LinkedHashMap<>(3));
-	
+
 	static {
 		if (System.getProperty("org.eclipse.scanning.watchdogs.active")==null) {
 			System.setProperty("org.eclipse.scanning.watchdogs.active", "true");
@@ -50,7 +50,7 @@ public class DeviceWatchdogService implements IDeviceWatchdogService {
 
 	@Override
 	public IDeviceController create(IPausableDevice<?> device) {
-		
+
 		if (!Boolean.getBoolean("org.eclipse.scanning.watchdogs.active")) return null;
 		if (templates==null) return null;
 		try {

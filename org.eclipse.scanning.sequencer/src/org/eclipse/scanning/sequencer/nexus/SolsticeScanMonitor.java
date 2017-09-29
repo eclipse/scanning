@@ -70,18 +70,18 @@ import org.slf4j.LoggerFactory;
  * The scan points writer creates and writes to the unique keys and points
  * datasets in a nexus file. The unique keys dataset can be used to track how far the scan has
  * progressed.
- * 
+ *
  * Note that this monitor is not added to the list of monitors in the ScanModel, but instead
  * its methods are invoked by the {@link NexusScanFileManager}. This is because it is part of the
  * scan framework itself, and specifically because it must write to the unique keys dataset only
  * after all devices have written to their datasets.
- * 
+ *
  * @author Matthew Dickie
  */
 public class SolsticeScanMonitor extends AbstractScannable<Object> implements INexusDevice<NXcollection> {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(SolsticeScanMonitor.class);
-	
+
 	// custom parser for converting durations to times. The only difference between this as
 	// DateTimeFormatter.ISO_LOCAL_TIME is that this one always outputs 3 digits for nanoseconds
 	private static final DateTimeFormatter formatter = new DateTimeFormatterBuilder().
@@ -90,7 +90,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 	// Nexus
 	private List<NexusObjectProvider<?>> nexusObjectProviders = null;
 	private NexusObjectProvider<NXcollection> nexusProvider = null;
-	
+
 	// Writing Datasets
 	private ILazyWriteableDataset uniqueKeysDataset = null;
 	private ILazyWriteableDataset scanFinishedDataset = null;
@@ -104,7 +104,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 	private Instant scanStartTime = null;
 	private int[] scanShape = null;
 	private boolean writeAfterMovePerformed = false;
-	
+
 	public SolsticeScanMonitor(ScanModel model) {
 		this.model = model;
 		setName(SCANNABLE_NAME_SOLSTICE_SCAN_MONITOR);
@@ -118,7 +118,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 			.collect(Collectors.toList());  // collect in a list
 
 		this.nexusObjectProviders = nexusObjectProviderList;
-		
+
 		final List<NexusObjectProvider<?>> detectors = nexusObjectProviderMap.get(ScanRole.DETECTOR);
 		// we can write the unique key for each position on move if all detectors write their own unique key
 		// TODO what about monitors?
@@ -126,15 +126,15 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 			writeAfterMovePerformed = detectors.stream().allMatch(n -> n.getPropertyValue(PROPERTY_NAME_UNIQUE_KEYS_PATH) != null);
 		}
 	}
-	
+
 	public void setNexusObjectProviders(List<NexusObjectProvider<?>> nexusObjectProviders) {
 		this.nexusObjectProviders = nexusObjectProviders;
 	}
-	
+
 	public void setMalcolmScan(boolean malcolmScan) {
 		this.malcolmScan = malcolmScan;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.eclipse.dawnsci.nexus.INexusDevice#getNexusProvider(org.eclipse.dawnsci.nexus.NexusScanInfo)
 	 */
@@ -145,25 +145,25 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 			nexusProvider = new DelegatingNexusObjectProvider<>(GROUP_NAME_SOLSTICE_SCAN,
 							NexusBaseClass.NX_COLLECTION, () -> createNexusObject(info));
 		}
-		
+
 		return nexusProvider;
 	}
-	
+
 	public NXcollection createNexusObject(NexusScanInfo info) {
 		scanStartTime = Instant.now(); // record the current time
-		
+
 		final NXcollection scanPointsCollection = NexusNodeFactory.createNXcollection();
-		
+
 		// add a field for the scan rank
 		scanPointsCollection.setField(FIELD_NAME_SCAN_RANK, info.getRank());
-		
+
 		try {
 		    String cmd = ServiceHolder.getParserService().getCommand(model.getBean().getScanRequest(), true);
 			scanPointsCollection.setField(FIELD_NAME_SCAN_CMD,  cmd);
 		} catch (Exception ne) {
 			logger.debug("Unable to write scan command", ne);
 		}
-		
+
 		try {
 			List<?> models = model.getBean().getScanRequest().getCompoundModel().getModels();
 			String json = ServiceHolder.getMarshallerService().marshal(models);
@@ -175,23 +175,23 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 		// create the scan finished dataset and set the initial value to false
 //		scanFinished = scanPointsCollection.initializeFixedSizeLazyDataset(
 //				FIELD_NAME_SCAN_FINISHED, new int[] { 1 }, Dataset.INT32);
-		// TODO: workaround for bug in HD5 loader, do not set size limit 
+		// TODO: workaround for bug in HD5 loader, do not set size limit
 		scanFinishedDataset = new LazyWriteableDataset(FIELD_NAME_SCAN_FINISHED, Integer.class,
 				new int[] { 1 }, new int[] { -1 }, new int[] { 1 }, null);
 		scanFinishedDataset.setFillValue(0);
 		scanPointsCollection.createDataNode(FIELD_NAME_SCAN_FINISHED, scanFinishedDataset);
-		
+
 		// write the scan shape
 		scanShape = info.getShape();
 		logger.info("Estimated scan shape " + Arrays.toString(scanShape));
 		scanPointsCollection.setDataset(FIELD_NAME_SCAN_SHAPE, DatasetFactory.createFromObject(scanShape));
-		
+
 		// write the estimated scan duration
 		long estimatedScanTimeMillis = model.getScanInformation().getEstimatedScanTime();
 		String estimatedScanTimeStr = durationInMillisToString(Duration.ofMillis(estimatedScanTimeMillis));
 		logger.info("Estimated scan time " + estimatedScanTimeStr);
 		scanPointsCollection.setField(FIELD_NAME_SCAN_ESTIMATED_DURATION, estimatedScanTimeStr);
-		
+
 		// create lazy datasets for actual scan duration, dead time and dead time percent
 		// these are written to at the end of the scan
 		scanDurationDataset = new LazyWriteableDataset(FIELD_NAME_SCAN_DURATION, String.class,
@@ -203,11 +203,11 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 		scanDeadTimePercentDataset = new LazyWriteableDataset(FIELD_NAME_SCAN_DEAD_TIME_PERCENT, String.class,
 				new int[] { 1 }, new int[] { -1 }, new int[] { 1 }, null);
 		scanPointsCollection.createDataNode(FIELD_NAME_SCAN_DEAD_TIME_PERCENT, scanDeadTimePercentDataset);
-		
+
 		// create a sub-collection for the unique keys field and keys from each external file
 		final NXcollection keysCollection = NexusNodeFactory.createNXcollection();
 		scanPointsCollection.addGroupNode(GROUP_NAME_KEYS, keysCollection);
-		
+
 		// create the unique keys dataset (not for malcolm scans)
 		if (!malcolmScan) {
 			uniqueKeysDataset = keysCollection.initializeLazyDataset(FIELD_NAME_UNIQUE_KEYS, info.getRank(), Integer.class);
@@ -221,27 +221,27 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 				uniqueKeysDataset.setChunking(chunk);
 			}
 		}
-		
+
 		// add external links to the unique key datasets for each external HD5 file
 		addLinksToExternalFiles(keysCollection);
-		
+
 		return scanPointsCollection;
 	}
-	
+
 	private static String durationInMillisToString(Duration duration) {
 		long days = duration.toDays(); // chop off any days as formatter can't handle them
 		duration = duration.minusDays(days);
-		
+
 		// convert duration to a time by adding it to midnight
 		LocalTime durationAsTime = LocalTime.MIDNIGHT.plus(duration);
 		String result = formatter.format(durationAsTime);
-		
+
 		if (days > 0) result = String.format("%dd ", days) + result;
 		return result;
 	}
-	
+
 	/**
-	 * Called when the scan completes to: 
+	 * Called when the scan completes to:
 	 * <ul>
 	 * <li>write the scan finished (by writing '1' to the scan finished dataset;</li>
 	 * <li>write the scan duration.</li>
@@ -257,11 +257,11 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 		} catch (Exception e) {
 			throw new ScanningException("Could not write scanFinished to NeXus file", e);
 		}
-		
+
 		Duration scanDuration = Duration.between(scanStartTime, Instant.now());
 		String scanDurationStr = durationInMillisToString(scanDuration);
 		logger.info("Scan finished in " + scanDurationStr);
-		
+
 		final Dataset scanDurationDataset = DatasetFactory.createFromObject(scanDurationStr);
 		try {
 			this.scanDurationDataset.setSlice(null, scanDurationDataset,
@@ -269,7 +269,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 		} catch (Exception e) {
 			throw new ScanningException("Could not write scan duration to NeXus file", e);
 		}
-		
+
 		final long estimatedScanTimeMillis = model.getScanInformation().getEstimatedScanTime();
 		Duration scanDeadTime = scanDuration.minus(estimatedScanTimeMillis, ChronoUnit.MILLIS);
 		String scanDeadTimeStr = durationInMillisToString(scanDeadTime);
@@ -280,7 +280,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 		} catch (Exception e) {
 			throw new ScanningException("Could not write scan dead time to NeXus file", e);
 		}
-		
+
 		double deadTimePercent = ((double) scanDeadTime.toMillis() / scanDuration.toMillis()) * 100.0;
 		final String deadTimePercentStr = String.format("%.2f", deadTimePercent);
 		final Dataset deadTimePercentDataset = DatasetFactory.createFromObject(deadTimePercentStr);
@@ -290,7 +290,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 		} catch (Exception e) {
 			throw new ScanningException("Could not write scan dead time percent to NeXus file", e);
 		}
-		
+
 		final ScanInformation scanInfo = model.getScanInformation();
 		final String filePath = scanInfo.getFilePath();
 		final String shapeStr = Arrays.toString(scanShape);
@@ -319,7 +319,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 	 */
 	private void addLinksToExternalFiles(final NXcollection uniqueKeysCollection) {
 		if (nexusObjectProviders == null) throw new IllegalStateException("nexusObjectProviders not set");
-		
+
 		for (NexusObjectProvider<?> nexusObjectProvider : nexusObjectProviders) {
 			String uniqueKeysPath = (String) nexusObjectProvider.getPropertyValue(PROPERTY_NAME_UNIQUE_KEYS_PATH);
 			if (uniqueKeysPath != null) {
@@ -340,7 +340,7 @@ public class SolsticeScanMonitor extends AbstractScannable<Object> implements IN
 			String externalFileName, String uniqueKeysPath) {
 		// we just use the final segment of the file name as the dataset name,
 		// This assumes that we won't have files with the same name in different dirs
-		// Note: the name doesn't matter for processing purposes 
+		// Note: the name doesn't matter for processing purposes
 		String datasetName = new File(externalFileName).getName();
 		if (uniqueKeysCollection.getSymbolicNode(datasetName) == null) {
 			uniqueKeysCollection.addExternalLink(datasetName, externalFileName,

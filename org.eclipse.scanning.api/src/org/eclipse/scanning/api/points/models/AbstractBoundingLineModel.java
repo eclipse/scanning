@@ -15,16 +15,16 @@ import org.eclipse.scanning.api.annotation.UiHidden;
 import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 
 public class AbstractBoundingLineModel extends AbstractMapModel implements IBoundingLineModel {
-	
+
 	@FieldDescriptor(editable=false) // We edit this with a popup.
 	private BoundingLine boundingLine;
-	
+
 	@Override
 	@UiHidden
 	public BoundingLine getBoundingLine() {
 		return boundingLine;
 	}
-	
+
 	@Override
 	public void setBoundingLine(BoundingLine boundingLine) {
 		BoundingLine oldValue = this.boundingLine;

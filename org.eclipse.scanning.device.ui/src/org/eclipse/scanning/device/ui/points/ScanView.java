@@ -176,10 +176,10 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 
 		try {
 			final List<IScanPathModel> models = getPath();
-	    	stash.stash(models);
+		stash.stash(models);
 
 	        for (String propName : trees.keySet()) {
-	        	IStashing tstash = ServiceHolder.getStashingService().createStash(propName+".json");
+			IStashing tstash = ServiceHolder.getStashingService().createStash(propName+".json");
 				tstash.stash(trees.get(propName));
 			}
 
@@ -758,13 +758,13 @@ public class ScanView  extends ViewPart implements SeriesItemView, SeriesItemLis
 
 	}
 
-   	private ToolTip         tip;
+	private ToolTip         tip;
 
-   	private void showTip(String message) {
+	private void showTip(String message) {
 		if (!store.getBoolean(DevicePreferenceConstants.SHOW_CONTROL_TOOLTIPS)) return;
         if (tip==null) this.tip = new ToolTip(seriesTable.getControl().getShell(), SWT.BALLOON);
         ViewUtil.showTip(tip, message);
-   	}
+	}
 
 	@Override
 	public void itemRemoved(SeriesItemEvent evt) {

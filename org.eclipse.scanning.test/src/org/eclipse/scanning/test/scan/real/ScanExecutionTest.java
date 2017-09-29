@@ -44,20 +44,20 @@ import org.junit.Test;
 
 /**
  * This class is an object which can be started by sprig on the GDA server.
- * 
+ *
  * I receives commands and runs a simple test scan.
- * 
+ *
  * @author fri44821
  *
  */
 public class ScanExecutionTest extends BrokerTest {
-	
+
 	private static IEventService     eventService;
 	private static IPointGeneratorService generatorService;
 	private static IRunnableDeviceService  runnableDeviceService;
 	private static IScannableDeviceService connector;
 	private static IMalcolmService   malcService;
-	
+
 
 	public static IScannableDeviceService getConnector() {
 		return connector;
@@ -68,14 +68,14 @@ public class ScanExecutionTest extends BrokerTest {
 	}
 
 	public ScanExecutionTest() {
-		
+
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param uri - for activemq, for instance BrokerTest.uri
-	 * @throws URISyntaxException 
-	 * @throws EventException 
+	 * @throws URISyntaxException
+	 * @throws EventException
 	 */
 	public ScanExecutionTest(String uri) throws URISyntaxException, EventException {
 		this();
@@ -94,13 +94,13 @@ public class ScanExecutionTest extends BrokerTest {
 	}
 
 	protected void executeTestScan(TestScanBean bean) throws Exception {
-				
+
 		MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setExposureTime(0.1);
 		dmodel.setName("swmr");
 		IWritableDetector<?> detector = (IWritableDetector<?>) runnableDeviceService.createRunnableDevice(dmodel);
 		assertNotNull(detector);
-		
+
 		detector.addRunListener(new IRunListener() {
 			@Override
 			public void runPerformed(RunEvent evt) throws ScanningException{
@@ -112,9 +112,9 @@ public class ScanExecutionTest extends BrokerTest {
 		scanner.run(null);
 		System.out.println("done");
 	}
-	
+
 	private IRunnableDevice<ScanModel> createGridScan(final IRunnableDevice<?> detector, int... size) throws Exception {
-		
+
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
 		gmodel.setFastAxisName("smx");
@@ -122,11 +122,11 @@ public class ScanExecutionTest extends BrokerTest {
 		gmodel.setSlowAxisName("smy");
 		gmodel.setSlowAxisPoints(size[size.length-1]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,2,2));
-		
+
 		IPointGenerator<?> gen = generatorService.createGenerator(gmodel);
-		
+
 		// We add the outer scans, if any
-		if (size.length > 2) { 
+		if (size.length > 2) {
 			for (int dim = size.length-3; dim>-1; dim--) {
 				final StepModel model;
 				if (size[dim]-1>0) {
@@ -138,12 +138,12 @@ public class ScanExecutionTest extends BrokerTest {
 				gen = generatorService.createCompoundGenerator(step, gen);
 			}
 		}
-	
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector);
-		
+
 		// Create a file to scan into.
 		File output = File.createTempFile("test_mandel_nexus", ".nxs");
 		output.deleteOnExit();
@@ -152,7 +152,7 @@ public class ScanExecutionTest extends BrokerTest {
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = runnableDeviceService.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override
@@ -199,7 +199,7 @@ public class ScanExecutionTest extends BrokerTest {
 	public static void setMalcService(IMalcolmService malcService) {
 		ScanExecutionTest.malcService = malcService;
 	}
-	
+
 	/**
 	 * This class is designed to be run as a spring object.
 	 * It can also be run as a junit plugin test to check OSGi services are injected.

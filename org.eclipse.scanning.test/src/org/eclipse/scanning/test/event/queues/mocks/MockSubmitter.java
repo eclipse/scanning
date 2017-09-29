@@ -26,27 +26,27 @@ import org.eclipse.scanning.api.event.status.StatusBean;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 
 public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
-	
+
 	private Map<String, List<T>> submittedBeans;
 	private Map<String, List<ReorderedBean>> reorderedBeans;
 	private String uniqueId, submitQ;
-	
+
 	private boolean sendToConsumer = false, disconnected = false;
-	
+
 	public MockSubmitter() {
 		submittedBeans = new HashMap<>();
 		reorderedBeans = new HashMap<>();
-		
+
 		//This is used in case we don't specify a queueName
 		List<T> defaultQueue = new ArrayList<>();
 		submittedBeans.put("defaultQ", defaultQueue);
 	}
-	
+
 	public void resetSubmitter() {
 		submittedBeans.clear();
 		disconnected= false;
 	}
-	
+
 	/**
 	 * Hideous hack to allow changing of the submit queue name by MockEventService
 	 * @param queueName
@@ -65,7 +65,7 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 	@Override
 	public void setStatusSetName(String queueName) throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -87,13 +87,13 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 	@Override
 	public void clearQueue(String queueName) throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void cleanQueue(String queueName) throws EventException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -121,26 +121,26 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 	@Override
 	public void setBeanClass(Class<T> beanClass) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public List<T> getQueue() throws EventException {
 		return getQueue("defaultQ");
 	}
-	
+
 	public List<T> getQueue(String queueName) {
 		if (!submittedBeans.containsKey(queueName)) {
 			submittedBeans.put(queueName, new ArrayList<T>());
 		}
 		return submittedBeans.get(queueName);
 	}
-	
+
 	public T getLastSubmitted(String queueName) throws EventException {
 		List<T> queue = getQueue(queueName);
 		return queue.get(queue.size()-1);
 	}
-	
+
 	public int getQueueSize(String queueName) {
 		return getQueue(queueName).size();
 	}
@@ -148,7 +148,7 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 	@Override
 	public void disconnect() throws EventException {
 		disconnected = true;
-		
+
 	}
 
 	@Override
@@ -188,8 +188,8 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 				for (int i = 1; i < queueIDParts.length - 2; i++) {
 					queueID = queueID+"."+queueIDParts[i];
 				}
-				
-				//Get the MockConsumer & pass bean into status set 
+
+				//Get the MockConsumer & pass bean into status set
 				IQueueService qServ = ServicesHolder.getQueueService();
 				@SuppressWarnings("unchecked")
 				MockConsumer<T> mockCons = (MockConsumer<T>) qServ.getQueue(queueID).getConsumer();
@@ -201,7 +201,7 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 	@Override
 	public void blockingSubmit(T bean) throws EventException, InterruptedException, IllegalStateException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -213,7 +213,7 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 	@Override
 	public void setStatusTopicName(String name) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -252,7 +252,7 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 	@Override
 	public void setUniqueId(String uniqueId) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -264,7 +264,7 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 	@Override
 	public void setPriority(int priority) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -276,7 +276,7 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 	@Override
 	public void setLifeTime(long lifeTime) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -288,14 +288,14 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 	@Override
 	public void setTimestamp(long timestamp) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public boolean isDisconnected() {
 		return disconnected;
 	}
-	
+
 	public boolean isBeanReordered(T bean) {
 		try {
 			getReorderedBean(bean);
@@ -305,12 +305,12 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 			return false;
 		}
 	}
-	
+
 	public int getReorderedBeanMove(T bean) throws EventException {
 		return getReorderedBean(bean).move;
-		
+
 	}
-	
+
 	private MockSubmitter<T>.ReorderedBean getReorderedBean(T bean) throws EventException {
 		List<ReorderedBean> beanList = reorderedBeans.get(submitQ);
 		for (ReorderedBean reBean : beanList){
@@ -318,15 +318,15 @@ public class MockSubmitter<T extends StatusBean> implements ISubmitter<T> {
 		}
 		throw new EventException("Bean not found");
 	}
-	
+
 	public void setSendToConsumer(boolean send) {
 		sendToConsumer = send;
 	}
-	
+
 	class ReorderedBean {
 		protected final T bean;
 		protected final int move;
-		
+
 		public ReorderedBean(T bean, int move) {
 			this.bean = bean;
 			this.move = move;

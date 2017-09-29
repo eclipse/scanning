@@ -107,20 +107,20 @@
 		<property name="activated"         value="false"/> <!-- This means it is activated as the default device to use in a scan -->
         <property name="bundle"   value="org.eclipse.scanning.example" /> <!-- Delete for real spring? -->
 	</bean>
-	
+
 	<!-- Dummy Malcolm Triggered Detector Example -->
 	<bean id="dummyMalcolmTriggeredModel" class="org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredModel">
 		<property name="name" value="dummyMalcolmTriggered"/>
 		<property name="bundle" value="org.eclipse.scanning.example"/>
 	</bean>
-	
+
 	<bean id="dummyMalcolmTriggeredInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
 		<property name="id" value="org.eclipse.scanning.example.malcolm.dummyMalcolmTriggered"/>
 		<property name="label" value="A Dummy Malcolm Triggered Detector"/>
 		<property name="description" value="A dummy detector that is triggered by a dummy malcolm device, only used for testing"/>
 		<property name="bundle" value="org.eclipse.scanning.example"/>
 	</bean>
-	
+
 	<bean id="dummyMalcolmTriggeredDetector" class="org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredDetector" init-method="register">
 		<property name="name" value="dummyMalcolmTriggered"/>
 		<property name="model" ref="dummyMalcolmTriggeredModel"/>
@@ -128,20 +128,20 @@
 		<property name="activated" value="false"/>
 		<property name="bundle" value="org.eclipse.scanning.example"/>
 	</bean>
-	
+
 	<!-- Dummy Software or Hardware Triggered Detector Example -->
 	<bean id="dummyHardwareOrSoftwareTriggeredModel" class="org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredModel">
 		<property name="name" value="dummyHardwareOrSoftwareTriggered"/>
 		<property name="bundle" value="org.eclipse.scanning.example"/>
 	</bean>
-	
+
 	<bean id="dummyHardwareOrSoftwareTriggeredInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
 		<property name="id" value="org.eclipse.scanning.example.malcolm.dummyHarwareOrSoftwareTriggered"/>
 		<property name="label" value="A Dummy Hardware or Software Triggered Detector"/>
 		<property name="description" value="A dummy detector that can be triggered by a dummy malcolm device or directly by GDA, only used for testing"/>
 		<property name="bundle" value="org.eclipse.scanning.example"/>
 	</bean>
-	
+
 	<bean id="dummyHardwareOrSoftwareTriggeredDetector" class="org.eclipse.scanning.example.malcolm.DummyMalcolmTriggeredDetector" init-method="register">
 		<property name="name" value="dummyHardwareOrSoftwareTriggered"/>
 		<property name="model" ref="dummyHardwareOrSoftwareTriggeredModel"/>

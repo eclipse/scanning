@@ -28,18 +28,18 @@ import org.eclipse.scanning.api.points.models.StaticModel;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
- * 
+ *
  * This class takes a position iterator and it is a compound generator,
  * attempts to remove the inner scans which subscan devices such as Malcolm will take care of
  * from the compound generator and return the outer scans.
- * 
- * 
- * 
+ *
+ *
+ *
  * @author Matthew Gerring
  *
  */
 public class SubscanModerator {
-	
+
 	private Iterable<IPosition>    outerIterable;
 	private Iterable<IPosition>    innerIterable;
 	private IPointGeneratorService gservice;
@@ -58,7 +58,7 @@ public class SubscanModerator {
 			throw new ScanningException("Unable to moderate scan for malcolm devices!", e);
 		}
 	}
-	
+
 	private CompoundModel<?> getModel(Iterable<IPosition> it) {
 		if (it instanceof IPointGenerator<?>) {
 			IPointGenerator<?> gen = (IPointGenerator<?>)it;
@@ -75,7 +75,7 @@ public class SubscanModerator {
 	private List<Object> inner;
 
 	private void moderate(Iterable<IPosition> generator, List<IRunnableDevice<?>> detectors) throws GeneratorException, ScanningException {
-		
+
 		outerIterable = generator; // We will reassign it to the outer scan if there is one, otherwise it is the full scan.
 		if (detectors==null || detectors.isEmpty()) {
 			return;
@@ -83,18 +83,18 @@ public class SubscanModerator {
 		if (detectors.stream().noneMatch(d -> d.getRole() == DeviceRole.MALCOLM)) {
 			return;
 		}
-		
+
 		if (!(generator instanceof IPointGenerator<?>)) {
 			return;
 		}
-		
+
 		// We need a compound model to moderate this stuff
 		List<Object> orig   = compoundModel.getModels();
 		if (orig.isEmpty()) throw new ScanningException("No models are provided in the compound model!");
-		
+
 		this.outer = new ArrayList<>();
 		this.inner = new ArrayList<>();
-		
+
 		List<String> axes = getAxes(detectors);
 		boolean reachedOuterScan = false;
 		for (int i = orig.size()-1; i > -1; i--) {
@@ -111,22 +111,22 @@ public class SubscanModerator {
 			reachedOuterScan = true; // As soon as we reach one outer scan all above are outer.
 			outer.add(0, model);
 		}
-		
+
 		if (inner.isEmpty()) {
 			// if the inner scan is empty, we need a single empty point for each point of the outer scan
 			this.innerIterable = gservice.createGenerator(new StaticModel(1));
 		} else {
 			// otherwise we create a new compound generator with the inner models and the same
-			// mutators, regions, duration, etc. as the overall scan 
+			// mutators, regions, duration, etc. as the overall scan
 			this.innerIterable = gservice.createCompoundGenerator(compoundModel.clone(inner));
 		}
-		
+
 		if (outer.isEmpty()) {
 			// if the outer scan is empty, we need a single empty point so that we perform the inner scan once
 			this.outerIterable = gservice.createGenerator(new StaticModel(1));
 			return;
 		}
-		
+
 		this.outerIterable = gservice.createCompoundGenerator(compoundModel.clone(outer));
 	}
 
@@ -140,13 +140,13 @@ public class SubscanModerator {
 				if (axes!=null) ret.addAll(Arrays.asList(axes));
 			}
 		}
-		
+
 		return ret;
 	}
 
 	/**
 	 * Returns an iterable over the outer points of the scan.
-	 * The outer iterable will not be <code>null</code> normally. Even if 
+	 * The outer iterable will not be <code>null</code> normally. Even if
 	 * all of the scan is deal with by malcolm the outer scan will still
 	 * be a static generator of one point. If there are no subscan devices,
 	 * then the outer scan is the full scan.
@@ -155,27 +155,27 @@ public class SubscanModerator {
 	public Iterable<IPosition> getOuterIterable() {
 		return outerIterable;
 	}
-	
+
 	/**
 	 * Returns an iterable over the inner points of the scan. For any scan
 	 * that contains a malcolm device the inner iterable will not be <code>null</code>.
 	 * Even if all of the scan is dealt with outside the malcolm device.
-	 * 
+	 *
 	 * Note that this method is only used in <i>dummy</i> mode, for example by
 	 * a <code>DummyMalcolmDevice</code>. The real malcolm device is passed
 	 * the point generator for the whole scan. The malcolm device will itself
-	 * determine what part of the scan it is responsible for (i.e. in python). 
-	 * 
+	 * determine what part of the scan it is responsible for (i.e. in python).
+	 *
 	 * @return an iterator over the inner scan
 	 */
 	public Iterable<IPosition> getInnerIterable() {
 		return innerIterable;
 	}
-	
+
 	public List<Object> getOuterModels() {
 		return outer;
 	}
-	
+
 	public List<Object> getInnerModels() {
 		return inner;
 	}

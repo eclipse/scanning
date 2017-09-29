@@ -23,7 +23,7 @@ import org.epics.pvmarshaller.marshaller.deserialisers.Deserialiser;
 
 /**
  * Custom deserialiser for Rectangular ROI.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -33,21 +33,21 @@ public class RectangularROIDeserialiser implements IPVStructureDeserialiser {
 	public Object fromPVStructure(Deserialiser deserialiser, PVStructure pvStructure)
 			throws InstantiationException, IllegalAccessException, IllegalArgumentException,
 			InvocationTargetException, NoSuchFieldException, SecurityException {
-		
+
 		RectangularROI rectangularRoi = new RectangularROI();
-		
+
 		PVDoubleArray pDoubleArray = pvStructure.getSubField(PVDoubleArray.class, "point");
 		DoubleArrayData pDoubleArrayData = new DoubleArrayData();
 		pDoubleArray.get(0, pDoubleArray.getLength(), pDoubleArrayData);
 		rectangularRoi.setPoint(pDoubleArrayData.data);
-		
+
 		rectangularRoi.setAngle(pvStructure.getSubField(PVDouble.class, "angle").get());
-		
+
 		PVDoubleArray lDoubleArray = pvStructure.getSubField(PVDoubleArray.class, "lengths");
 		DoubleArrayData lDoubleArrayData = new DoubleArrayData();
 		lDoubleArray.get(0, lDoubleArray.getLength(), lDoubleArrayData);
 		rectangularRoi.setLengths(lDoubleArrayData.data);
-		
+
 		return rectangularRoi;
 	}
 }
