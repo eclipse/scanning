@@ -25,15 +25,15 @@ import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositioner;
 
 public class PositionerRequestHandler implements IRequestHandler<PositionerRequest>{
-	
+
 	private static Map<String, Reference<IPositioner>> positioners;
 
 	private IRunnableDeviceService        dservice;
 	private PositionerRequest             bean;
 	private IPublisher<PositionerRequest> publisher;
 
-	public PositionerRequestHandler(IRunnableDeviceService        dservice, 
-			                  PositionerRequest             bean, 
+	public PositionerRequestHandler(IRunnableDeviceService        dservice,
+			                  PositionerRequest             bean,
 			                  IPublisher<PositionerRequest> statusNotifier) {
 
 		this.dservice    = dservice;
@@ -59,7 +59,7 @@ public class PositionerRequestHandler implements IRequestHandler<PositionerReque
 			if (request.getPositionType()==PositionRequestType.SET && request.getPosition()!=null) {
 				boolean ok = positioner.setPosition(request.getPosition());
 				if (!ok) throw new EventException("Internal Error: setPosition() did not return ok!");
-				
+
 			} else if (request.getPositionType()==PositionRequestType.ABORT) {
 				positioner.abort();
 			}else if (request.getPositionType()==PositionRequestType.CLOSE) {
@@ -68,7 +68,7 @@ public class PositionerRequestHandler implements IRequestHandler<PositionerReque
 			// Return the current position.
 			request.setPosition(positioner.getPosition());
 			return request;
-			
+
 		} catch(ScanningException | InterruptedException ne) {
 			throw new EventException("Cannot connect to positioner!", ne);
 		}

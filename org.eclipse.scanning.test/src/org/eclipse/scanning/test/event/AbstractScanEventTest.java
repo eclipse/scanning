@@ -42,7 +42,7 @@ public class AbstractScanEventTest extends BrokerTest{
 	@Test
 	public void badURITest() throws Exception {
 		try {
-			final URI uri = new URI("tcp://rubbish:5600");	
+			final URI uri = new URI("tcp://rubbish:5600");
 			publisher = eservice.createPublisher(uri, IEventService.SCAN_TOPIC);
 			final ScanBean bean = new ScanBean();
 			publisher.broadcast(bean);
@@ -66,7 +66,7 @@ public class AbstractScanEventTest extends BrokerTest{
 
 		final ScanBean bean = new ScanBean();
 		bean.setName("fred");
-		
+
 		final List<ScanBean> gotBack = new ArrayList<ScanBean>(3);
 		subscriber.addListener(new IScanListener() {
 			@Override
@@ -78,21 +78,21 @@ public class AbstractScanEventTest extends BrokerTest{
 				gotBack.add(evt.getBean());
 			}
 		});
-		
+
 		publisher.broadcast(bean);
-		
+
 		Thread.sleep(500); // The bean should go back and forth in ms anyway
-		
+
 		if (!bean.equals(gotBack.get(0))) throw new Exception("Bean did not come back!");
 	}
-	
+
 	@Test
 	public void checkedStateTest() throws Exception {
 
 		final ScanBean bean = new ScanBean();
 		bean.setName("fred");
 		bean.setDeviceState(DeviceState.READY);
-		
+
 		final List<ScanBean> gotBack = new ArrayList<ScanBean>(3);
 		subscriber.addListener(new IScanListener() {
 			@Override
@@ -100,7 +100,7 @@ public class AbstractScanEventTest extends BrokerTest{
 				gotBack.add(evt.getBean());
 			}
 		});
-		
+
 		// Mimic a scan
 		bean.setDeviceState(DeviceState.CONFIGURING);
 		publisher.broadcast(bean);
@@ -113,31 +113,31 @@ public class AbstractScanEventTest extends BrokerTest{
 			bean.setPercentComplete(i*10);
 			publisher.broadcast(bean);
 		}
-		
+
 		bean.setDeviceState(DeviceState.READY);
 		publisher.broadcast(bean);
-		
+
 		Thread.sleep(500); // The bean should go back and forth in ms anyway
 
 		if (gotBack.size()!=4) throw new Exception("The wrong number of state changes happened during the fake scan! Number found "+gotBack.size());
- 	
+
 		checkState(0, DeviceState.CONFIGURING, gotBack);
 		checkState(1, DeviceState.ARMED,       gotBack);
 		checkState(2, DeviceState.RUNNING,     gotBack);
 		checkState(3, DeviceState.READY,        gotBack);
 	}
-	
+
 	@Test
 	public void checkedStateTestScanSpecific() throws Exception {
 
 		final ScanBean bean = new ScanBean();
 		bean.setName("fred");
 		bean.setDeviceState(DeviceState.READY);
-		
+
 		final ScanBean bean2 = new ScanBean();
 		bean2.setName("fred2");
 		bean2.setDeviceState(DeviceState.READY);
-		
+
 		final List<ScanBean> gotBack = new ArrayList<ScanBean>(3);
 		subscriber.addListener(bean.getUniqueId(), new IScanListener() {
 			@Override
@@ -145,7 +145,7 @@ public class AbstractScanEventTest extends BrokerTest{
 				gotBack.add(evt.getBean());
 			}
 		});
-		
+
 		final List<ScanBean> all = new ArrayList<ScanBean>(3);
 		subscriber.addListener(new IScanListener() {
 			@Override
@@ -154,7 +154,7 @@ public class AbstractScanEventTest extends BrokerTest{
 			}
 		});
 
-		
+
 		// Mimic scan
 		bean.setDeviceState(DeviceState.CONFIGURING);
 		publisher.broadcast(bean);
@@ -174,37 +174,37 @@ public class AbstractScanEventTest extends BrokerTest{
 			bean2.setPercentComplete(i*10);
 			publisher.broadcast(bean2);
 		}
-		
+
 		bean.setDeviceState(DeviceState.READY);
 		publisher.broadcast(bean);
 		bean2.setDeviceState(DeviceState.READY);
 		publisher.broadcast(bean2);
-		
+
 		Thread.sleep(500); // The bean should go back and forth in ms anyway
 
 		if (gotBack.size()!=4) throw new Exception("The wrong number of state changes happened during the fake scan! Number found "+gotBack.size());
- 	
+
 		checkState(0, DeviceState.CONFIGURING, gotBack);
 		checkState(1, DeviceState.ARMED,       gotBack);
 		checkState(2, DeviceState.RUNNING,     gotBack);
 		checkState(3, DeviceState.READY,        gotBack);
-		
+
 		if (all.size()!=(2*gotBack.size())) {
 			throw new Exception("The size of all events was not twice as big as those for one specific scan yet we only had two scans publishing!");
 		}
 	}
-	
+
 	@Test
 	public void missedScanEventsTest() throws Exception {
 
 		final ScanBean bean = new ScanBean();
 		bean.setName("fred");
 		bean.setDeviceState(DeviceState.READY);
-		
+
 		final ScanBean bean2 = new ScanBean();
 		bean2.setName("fred2");
 		bean2.setDeviceState(DeviceState.READY);
-		
+
 		final List<ScanBean> gotBack = new ArrayList<ScanBean>();
 		subscriber.addListener(bean.getUniqueId(), new IScanListener() {
 			@Override
@@ -219,7 +219,7 @@ public class AbstractScanEventTest extends BrokerTest{
 				}
 			}
 		});
-		
+
 		final List<ScanBean> all = new ArrayList<ScanBean>();
 		subscriber.addListener(new IScanListener() {
 			@Override
@@ -252,41 +252,41 @@ public class AbstractScanEventTest extends BrokerTest{
 			bean2.setPercentComplete(i*10);
 			publisher.broadcast(bean2);
 		}
-		
+
 		bean.setPreviousDeviceState(DeviceState.RUNNING);
 		bean.setDeviceState(DeviceState.READY);
 		publisher.broadcast(bean);
-		
+
 	    bean2.setPreviousDeviceState(DeviceState.RUNNING);
 		bean2.setDeviceState(DeviceState.READY);
 		publisher.broadcast(bean2);
-		
+
 		// Wait for 1 secs > 0.2 secs
 		Thread.sleep(1000); // The bean should go back and forth in ms anyway
 
 		if (gotBack.size()!=4) throw new Exception("The wrong number of state changes happened during the fake scan! Number found "+gotBack.size());
- 	
+
 		checkState(0, DeviceState.CONFIGURING, gotBack);
 		checkState(1, DeviceState.ARMED,       gotBack);
 		checkState(2, DeviceState.RUNNING,     gotBack);
 		checkState(3, DeviceState.READY,        gotBack);
-		
+
 		if (all.size()!=(2*gotBack.size())) {
 			throw new Exception("The size of all events was not twice as big as those for one specific scan yet we only had two scans publishing!");
 		}
 	}
-	
+
 	@Test
 	public void testEventHandlerThrowsException() throws Exception {
 
 		final ScanBean bean = new ScanBean();
 		bean.setName("fred");
 		bean.setDeviceState(DeviceState.READY);
-		
+
 		final ScanBean bean2 = new ScanBean();
 		bean2.setName("fred2");
 		bean2.setDeviceState(DeviceState.READY);
-		
+
 		final List<ScanBean> gotBack = new ArrayList<ScanBean>();
 		subscriber.addListener(bean.getUniqueId(), new IScanListener() {
 			@Override
@@ -296,7 +296,7 @@ public class AbstractScanEventTest extends BrokerTest{
 				throw new RuntimeException("Test exception");
 			}
 		});
-		
+
 		final List<ScanBean> all = new ArrayList<ScanBean>();
 		subscriber.addListener(new IScanListener() {
 			@Override
@@ -329,29 +329,29 @@ public class AbstractScanEventTest extends BrokerTest{
 			bean2.setPercentComplete(i*10);
 			publisher.broadcast(bean2);
 		}
-		
+
 		bean.setPreviousDeviceState(DeviceState.RUNNING);
 		bean.setDeviceState(DeviceState.READY);
 		publisher.broadcast(bean);
-		
+
 	    bean2.setPreviousDeviceState(DeviceState.RUNNING);
 		bean2.setDeviceState(DeviceState.READY);
 		publisher.broadcast(bean2);
-		
+
 		Thread.sleep(100); // The bean should go back and forth in ms anyway
 
 		if (gotBack.size()!=4) throw new Exception("The wrong number of state changes happened during the fake scan! Number found "+gotBack.size());
- 	
+
 		checkState(0, DeviceState.CONFIGURING, gotBack);
 		checkState(1, DeviceState.ARMED,       gotBack);
 		checkState(2, DeviceState.RUNNING,     gotBack);
 		checkState(3, DeviceState.READY,        gotBack);
-		
+
 		if (all.size()!=(2*gotBack.size())) {
 			throw new Exception("The size of all events was not twice as big as those for one specific scan yet we only had two scans publishing!");
 		}
 	}
-	
+
 	private void checkState(int i, DeviceState state, List<ScanBean> gotBack) throws Exception {
 	    if (gotBack.get(i).getDeviceState()!=state) throw new Exception("The "+i+" change was not "+state);
 	}

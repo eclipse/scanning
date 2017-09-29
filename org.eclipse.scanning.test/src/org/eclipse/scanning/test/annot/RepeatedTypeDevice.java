@@ -18,12 +18,12 @@ public class RepeatedTypeDevice {
 
 	@PointStart
 	public void repeatedTypes1(String a, String b) {
-		
+
 	}
-	
+
 	@PointEnd
 	public void repeatedTypes2(int a, int b) {
-		
+
 	}
 
 }

@@ -28,26 +28,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * An editor that can edit a bean class, loading its UI dynamically using
  * the @TypeDescritor annotation
- * 
+ *
  * This editor can be used with {@link ModelPersistAction} to read and save
  * values from the UI to the bean to file.
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
  */
 public class TypeEditor<T> extends Composite implements IModelProvider<T> {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(TypeEditor.class);
 
 	private IBeanController<T> controller;
 	private IModelProvider<T>  provider;
-	
+
 	/**
-	 * 
+	 *
 	 * @param provider - may not be null
 	 * @param parent - must be set for SWT
 	 * @param style - may be SWT.NONE or other composite switches
@@ -59,12 +59,12 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 		setLayout(new GridLayout(1, false));
 		GridUtils.removeMargins(this);
 	}
-	
+
 	@Override
 	public void setModel(T model) throws Exception {
-		
+
 		deactivate();
-	
+
 		controller = BeanService.getInstance().createController(createUserInterface(model), model);
 		controller.beanToUI();
 		controller.switchState(true);
@@ -78,26 +78,26 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 			}
 		});
 	}
-	
+
 	@Override
-	public T getModel() throws Exception {	
+	public T getModel() throws Exception {
 		controller.uiToBean();
         return controller.getBean();
 	}
-	
+
 	/**
-	 * Called from 
+	 * Called from
 	 */
 	@Override
 	public void updateModel(T model) throws Exception {
         controller.setBean(model);
         if (provider!=null) provider.updateModel(model);
 	}
-	
+
 	private Object createUserInterface(Object model) throws Exception {
-		
+
 		Class<?> uiClass = getModelEditorClass(model);
-		
+
 		Object ret;
 		try {
 			Constructor<?> constructor = uiClass.getConstructor(Composite.class, int.class);
@@ -111,25 +111,25 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 			Constructor<?> constructor = uiClass.getConstructor();
 			ret = constructor.newInstance();
 		}
-		
+
 		AnnotationManager manager = new AnnotationManager(Activator.getDefault(), Inject.class);
 		manager.addContext((IScannableDeviceService)ServiceHolder.getRemote(IScannableDeviceService.class));
 		manager.addContext((IRunnableDeviceService)ServiceHolder.getRemote(IRunnableDeviceService.class));
 		manager.addContext(model);
-		manager.addDevices(ret);	
+		manager.addDevices(ret);
 		manager.invoke(Inject.class);
 
 		return ret;
 	}
 
 	private Class<?> getModelEditorClass(Object model) throws ClassNotFoundException {
-		
+
 		TypeDescriptor des = model.getClass().getAnnotation(TypeDescriptor.class);
 		final String edClass  = des.editor();
 		final String edBundle = des.bundle();
-		
+
 		Bundle bundle = edBundle!=null&&edBundle.length()>0 ? getBundle(edBundle) : null;
-		
+
 		try {
 			return bundle != null ? bundle.loadClass(edClass) : Class.forName(edClass);
 		} catch (java.lang.ClassNotFoundException ne) {
@@ -138,7 +138,7 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 	}
 
 	private Bundle getBundle(String bundleName) {
-		
+
 		BundleContext bcontext = ServiceHolder.getContext();
 		if (bcontext==null)    return null;
 		if (bundleName==null) return null;
@@ -152,7 +152,7 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 	}
 
 	private Bundle getOSGiBundle(String symbolicName, BundleContext bcontext) {
-		
+
 		ServiceReference<PackageAdmin> ref = bcontext.getServiceReference(PackageAdmin.class);
 		PackageAdmin packageAdmin = bcontext.getService(ref);
 		if (packageAdmin == null)
@@ -170,9 +170,9 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 	}
 
 	private void deactivate() throws Exception {
-		
+
 		if (controller==null) return;
-		
+
 		Object ui = controller.getUI();
 		if (ui instanceof Composite) {
 			Composite composite = (Composite)ui;
@@ -184,11 +184,11 @@ public class TypeEditor<T> extends Composite implements IModelProvider<T> {
 		}
 		controller.dispose();
 	}
-	
+
 	public boolean isCustomEditor(T model) {
 		return model.getClass().getAnnotation(TypeDescriptor.class)!=null;
 	}
-	
+
 	public Object getUI() {
 		return controller.getUI();
 	}

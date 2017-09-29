@@ -35,13 +35,13 @@ import org.eclipse.swt.graphics.Image;
 import org.osgi.framework.Bundle;
 
 /**
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
  */
 public class GeneratorDescriptor<T extends IScanPathModel> implements ISeriesItemDescriptor, IValidator<T>, IModelProvider<T> {
-	
+
 	private final IPointGenerator<T> generator;
 	private final SeriesTable        table;
 	private final IAdaptable         parent;
@@ -95,21 +95,21 @@ public class GeneratorDescriptor<T extends IScanPathModel> implements ISeriesIte
 
 	@Override
 	public <C> C getAdapter(Class<C> clazz) {
-		
+
 		if (IPointGenerator.class==clazz) return (C)generator;
 		return parent.getAdapter(clazz);
 	}
-	
+
 	private List<? extends IScanPathModel> getModels() {
-		
+
 		List<IPointGenerator<?>> gens = getGenerators();
 		List<IScanPathModel>  ret  = new ArrayList<>(gens.size());
 		for (IPointGenerator<?> gen : gens) ret.add((IScanPathModel)gen.getModel());
 		return ret;
 	}
-	
+
 	private List<IPointGenerator<?>> getGenerators() {
-		// They can only ask for a list of the series of 
+		// They can only ask for a list of the series of
 		// generators which we are editing.
 		final List<ISeriesItemDescriptor> descriptors = table.getSeriesItems();
 		final List<IPointGenerator<?>>    gens        = new ArrayList<>();
@@ -148,47 +148,47 @@ public class GeneratorDescriptor<T extends IScanPathModel> implements ISeriesIte
 
 	private static Map<String, Image> icons;
 	private static Image              defaultImage;
-	
+
 	public Image getImage() {
 		if (icons==null) createIcons();
-		
+
 		Image icon = icons.get(generator.getId());
 		if (icon != null) return icon;
-		
+
 		if (generator.getIconPath()!=null) {
 			icon = Activator.getImageDescriptor(generator.getIconPath()).createImage();
 			icons.put(generator.getId(), icon);
 			return icon;
 		}
-		
+
 		if (defaultImage==null) defaultImage = Activator.getImageDescriptor("icons/scanner--arrow.png").createImage();
 		return defaultImage;
 	}
 
 	private void createIcons() {
 		icons   = new HashMap<String, Image>(7);
-		
+
 		final IConfigurationElement[] eles = Platform.getExtensionRegistry().getConfigurationElementsFor("org.eclipse.scanning.api.generator");
 		for (IConfigurationElement e : eles) {
 			final String     identity = e.getAttribute("id");
-				
+
 			final String icon = e.getAttribute("icon");
 			if (icon !=null) {
 				final String   cont  = e.getContributor().getName();
 				final Bundle   bundle= Platform.getBundle(cont);
 				final URL      entry = bundle.getEntry(icon);
 				final ImageDescriptor des = ImageDescriptor.createFromURL(entry);
-				icons.put(identity, des.createImage());		
+				icons.put(identity, des.createImage());
 			}
-			
+
 		}
 	}
-	
+
 	@Override
 	public T getModel() {
 		return generator.getModel();
 	}
-	
+
 	@Override
 	public void validate(T model) throws ValidationException, InstantiationException, IllegalAccessException {
 		generator.validate(model);

@@ -37,10 +37,10 @@ import org.junit.Test;
 import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 /**
- * 
- * This class always runs the same nexus scan but puts in various parts of the 
+ *
+ * This class always runs the same nexus scan but puts in various parts of the
  * scanning to see what effect they make.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -49,10 +49,10 @@ public class NexusStepScanSpeedTest extends NexusTest {
 	private static EventServiceImpl eservice;
 	private static BrokerDelegate delegate;
 	private IPointGenerator<StepModel> gen;
-	
+
 	@BeforeClass
     public static void createEventService() throws Exception {
-		
+
 		delegate = new BrokerDelegate();
 		delegate.start();
 
@@ -60,7 +60,7 @@ public class NexusStepScanSpeedTest extends NexusTest {
 		// We publish an event to make sure all these libraries are loaded
 		IPublisher<ScanBean> publisher = eservice.createPublisher(delegate.getUri(), EventConstants.SCAN_TOPIC);
 		publisher.broadcast(new ScanBean());
-		
+
 		// We write a nexus file to ensure that the library is loaded
 		File file = File.createTempFile("test_nexus", ".nxs");
 		file.deleteOnExit();
@@ -79,19 +79,19 @@ public class NexusStepScanSpeedTest extends NexusTest {
 	public void before() throws GeneratorException, IOException {
 		this.gen = gservice.createGenerator(new StepModel("xNex", 0, 1000, 1));
 	}
-	
+
 	@Test
 	public void testBareNexusStepScanSpeedNoNexus() throws Exception {
-		
+
 		// We create a step scan
 		final IRunnableDevice<ScanModel> scan = dservice.createRunnableDevice(new ScanModel(gen));
 		runAndCheck("No NeXus scan", scan, 5, 1, 100L);
 	}
-	
-	
+
+
 	@Test
 	public void testBareNexusStepNoSetSlice() throws Exception {
-		
+
 		IScannable<?> scannable = connector.getScannable("xNex");
 		MockNeXusScannable xNex = (MockNeXusScannable)scannable;
 		try {
@@ -106,30 +106,30 @@ public class NexusStepScanSpeedTest extends NexusTest {
 
 	@Test
 	public void testBareNexusStepScanSpeed() throws Exception {
-		
+
 		// We create a step scan
 		final IRunnableDevice<ScanModel> scan = dservice.createRunnableDevice(new ScanModel(gen, output));
 		runAndCheck("Normal NeXus Scan", scan, 10, 2048, 2000L);
 	}
-	
+
 	@Test
 	public void testPublishedNexusStepScanSpeed() throws Exception {
-		
+
 		// We create a step scan
 		IPublisher<ScanBean> publisher = eservice.createPublisher(delegate.getUri(), EventConstants.SCAN_TOPIC);
 		final IRunnableDevice<ScanModel> scan = dservice.createRunnableDevice(new ScanModel(gen, output), publisher);
 		runAndCheck("NeXus with Publish", scan, 10, 2048, 2000L);
 	}
 
-	
+
 	private void runAndCheck(String name, final IRunnableDevice<ScanModel> scan, int pointTime, int fileSizeKB, long treeTime) throws Exception {
-		
+
 		long before = System.currentTimeMillis();
 		scan.run(null);
 		long after = System.currentTimeMillis();
-	
+
 		long time = (after-before);
-		
+
 		AbstractRunnableDevice<ScanModel> ascan = (AbstractRunnableDevice<ScanModel>)scan;
 		System.out.println("\n------------------------------");
 		System.out.println(name);
@@ -139,7 +139,7 @@ public class NexusStepScanSpeedTest extends NexusTest {
 		System.out.println("Ran "+gen.size()+" points at "+(time/gen.size())+"ms/pnt");
 		System.out.println("File size is "+output.length()/1024+"kB");
 		System.out.println();
-		
+
 		assertTrue("The configure time must be less than "+treeTime+"ms", ascan.getConfigureTime()<treeTime);
 		assertTrue("The time must be less than "+pointTime+"ms", (time/gen.size())<pointTime);
 		long sizeKB = (output.length()/1024);

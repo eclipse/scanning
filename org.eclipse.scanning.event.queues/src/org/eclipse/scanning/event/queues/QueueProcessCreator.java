@@ -19,18 +19,18 @@ import org.eclipse.scanning.api.event.queues.beans.QueueAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 
 /**
- * QueueProcessCreator creates the class which processes a given atom/bean. 
+ * QueueProcessCreator creates the class which processes a given atom/bean.
  * The processor returned depends on the type of the atom/bean.
- * 
+ *
  * @author Michael Wharmby
  *
- * @param <T> Base type of atom/bean operated on by the queue, e.g. 
+ * @param <T> Base type of atom/bean operated on by the queue, e.g.
  *            {@link QueueAtom} or {@QueueBean}.
  */
 public class QueueProcessCreator<T extends Queueable> implements IProcessCreator<T> {
 
 	private boolean blocking;
-	
+
 	public QueueProcessCreator(boolean blocking) { //TODO Do we need this?
 		this.blocking = blocking;
 	}

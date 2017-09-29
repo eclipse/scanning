@@ -18,7 +18,7 @@ import java.lang.annotation.Target;
 
 /**
  * Annotates the field should be treated as a file-name by the UI.
- * 
+ *
  * @author Matthew Dickie
  */
 @Retention(RetentionPolicy.RUNTIME)

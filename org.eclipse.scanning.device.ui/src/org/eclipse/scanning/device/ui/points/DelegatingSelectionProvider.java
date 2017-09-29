@@ -23,7 +23,7 @@ public class DelegatingSelectionProvider implements ISelectionProvider, ISelecti
 
 	private Set<ISelectionChangedListener> listeners;
 	private ISelectionProvider             wrapped;
-	
+
 	public DelegatingSelectionProvider(ISelectionProvider wrapped) {
 		this.wrapped = wrapped;
 		this.listeners = new HashSet<>();
@@ -34,7 +34,7 @@ public class DelegatingSelectionProvider implements ISelectionProvider, ISelecti
 	public void selectionChanged(SelectionChangedEvent event) {
 		fireSelection(event.getSelection());
 	}
-	
+
 	/**
 	 * Call to programmatically fire a selection.
 	 * @param selection

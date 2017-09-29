@@ -17,17 +17,17 @@ import org.eclipse.scanning.api.event.core.IPublisher;
 
 /**
  * A servlet for processing a queue.
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
  */
 public interface IConsumerServlet<T> extends IConnectable {
 
-	
+
 	/**
 	 * Creates a process for each request processed from the queue for this servlet.
-	 * 
+	 *
 	 * @param bean
 	 * @param response
 	 * @return

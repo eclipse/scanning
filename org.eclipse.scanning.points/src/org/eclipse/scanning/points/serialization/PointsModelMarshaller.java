@@ -32,12 +32,12 @@ public class PointsModelMarshaller implements IMarshaller {
 	public Class<PositionDeserializer> getDeserializerClass() {
 		return PositionDeserializer.class;
 	}
-	
+
 	@Override
 	public Class<ScanRequest> getMixinAnnotationType() {
 		return ScanRequest.class;
 	}
-	
+
 	@Override
 	public Class<ScanRequestMixIn> getMixinAnnotationClass() {
 		return ScanRequestMixIn.class;

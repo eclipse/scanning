@@ -34,7 +34,7 @@ public class PositionDeserializer extends JsonDeserializer<IPosition> {
 	@Override
 	public Object deserializeWithType(JsonParser parser, DeserializationContext context, TypeDeserializer typeDeserializer)
 			throws IOException, JsonProcessingException {
-		
+
 		return deserialize(parser, context);
 	}
 }

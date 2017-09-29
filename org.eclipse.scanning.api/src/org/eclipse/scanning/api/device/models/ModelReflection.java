@@ -63,10 +63,10 @@ public class ModelReflection {
 	        Field field = model.getClass().getDeclaredField(fieldName);
 	        isAccessible = field.isAccessible();
 	        try {
-	        	field.setAccessible(true);
+			field.setAccessible(true);
 		        return field.get(model);
 	        } finally {
-	        	field.setAccessible(isAccessible);
+			field.setAccessible(isAccessible);
 	        }
 		} catch (Exception ne) {
 			return null;

@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
 import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 
 public class DeviceModel {
-	
+
 	/**
 	 * Boxed and unboxed equivalents. Used by
-	 * {@link #isSetMethodForName(java.lang.reflect.Method) to determine 
-	 * whether the boxed type stored for a given option in deviceConfig is the 
+	 * {@link #isSetMethodForName(java.lang.reflect.Method) to determine
+	 * whether the boxed type stored for a given option in deviceConfig is the
 	 * same as the unboxed type it is trying to replace.
 	 */
 	public static final Map<Class<?>, Class<?>> UNBOXEDTYPES;
@@ -29,22 +29,22 @@ public class DeviceModel {
 		UNBOXEDTYPES.put(Long.class, long.class);
 		UNBOXEDTYPES.put(Short.class, short.class);
 	}
-	
+
 	private String name, type;
 	private Map<String, Object> deviceConfiguration;
 	private List<DeviceModel> roiConfiguration;
-	
+
 	public DeviceModel(String type, Map<String, Object> deviceConfiguration) {
 		this(type, deviceConfiguration, null);
 	}
-	
+
 	public DeviceModel(String type, Map<String, Object> deviceConfiguration, List<DeviceModel> roiConfiguration) {
 		this.type = type;
 		this.deviceConfiguration = deviceConfiguration;
 		if (roiConfiguration == null) roiConfiguration = new ArrayList<>();//NPE protection
 		this.roiConfiguration = roiConfiguration;
 	}
-	
+
 	public String getName() {
 		return name;
 	}
@@ -56,15 +56,15 @@ public class DeviceModel {
 	public String getType() {
 		return type;
 	}
-	
+
 	public void setType(String type) {
 		this.type = type;
 	}
-	
+
 	public Map<String, Object> getDeviceConfiguration() {
 		return deviceConfiguration;
 	}
-	
+
 	public void setDeviceConfiguration(Map<String, Object> deviceConfiguration) {
 		this.deviceConfiguration = deviceConfiguration;
 	}
@@ -83,22 +83,22 @@ public class DeviceModel {
 		}
 		throw new QueueModelException("No value in deviceConfiguration for reference '"+reference+"'");
 	}
-	
+
 	/**
-	 * Tests whether the given method is a setter for a String configOption 
-	 * (which is a key in the deviceConfiguration) and that the argument types 
-	 * match. 
+	 * Tests whether the given method is a setter for a String configOption
+	 * (which is a key in the deviceConfiguration) and that the argument types
+	 * match.
 	 * @param method Method with name to compare
 	 * @param configOption String name of key in deviceConfiguration map
 	 * @return true if the method name is set+{@link #getName()}.
-	 * @throws IllegalArgumentException if this {@link IQueueValue} has the 
+	 * @throws IllegalArgumentException if this {@link IQueueValue} has the
 	 *         wrong type
 	 */
 	public boolean isSetMethodForName(Method method, String configOption) {
 		if (method.getName().toLowerCase().equals(("set"+configOption).toLowerCase()) && method.getParameterCount() == 1) {
 			Class<?> parameterType = method.getParameterTypes()[0];
 			Object configValue = deviceConfiguration.get(configOption);
-			
+
 			if (parameterType.equals(configValue.getClass()) || parameterType.equals(UNBOXEDTYPES.get(configValue.getClass()))) {
 					return true; //TODO This doesn't handle arrays as I haven't included them in UNBOXEDVALUES
 			}
@@ -106,7 +106,7 @@ public class DeviceModel {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -153,15 +153,15 @@ public class DeviceModel {
 		String configString = deviceConfiguration.entrySet().stream().map(option -> option.getKey()+"="+option.getValue()).collect(Collectors.joining(", "));
 		String fullString = "DeviceModel ";
 		if (name != null) {
-			fullString = fullString+"("+name+") "; 
+			fullString = fullString+"("+name+") ";
 		}
-		fullString = fullString+"[" + type + ": deviceConfiguration={" + configString + "}"; 
+		fullString = fullString+"[" + type + ": deviceConfiguration={" + configString + "}";
 		if (roiConfiguration.size() > 0) {
 			String roiConfigString = roiConfiguration.stream().map(DeviceModel::toString).collect(Collectors.joining(", "));
 			fullString = fullString + "; roiConfiguration={" + roiConfigString + "}";
 		}
 		return fullString + "]";
 	}
-	
+
 
 }

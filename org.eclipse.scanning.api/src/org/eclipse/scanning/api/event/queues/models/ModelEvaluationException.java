@@ -2,14 +2,14 @@ package org.eclipse.scanning.api.event.queues.models;
 
 /**
  * Exception thrown during evaluation of the model arguments.
- * 
+ *
  * @author Michael Wharmby
  *
  */
 public class ModelEvaluationException extends RuntimeException {
 
 	private static final long serialVersionUID = 5563470388326655604L;
-	
+
 	public ModelEvaluationException() {
 		super();
 	}

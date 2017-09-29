@@ -29,62 +29,62 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * 
+ *
  * @author Michael Wharmby
  *
  */
 /*
- * The use of raw types instead of declared generics is not ideal, but since 
- * the T parameter is passed in from IConsumerProcess and the Q parameter is 
- * passed in from IQueueProcess, there isn't any other way to do it. 
+ * The use of raw types instead of declared generics is not ideal, but since
+ * the T parameter is passed in from IConsumerProcess and the Q parameter is
+ * passed in from IQueueProcess, there isn't any other way to do it.
  * Furthermore since all the classes only require one type to be passed in (T),
- * using IQueueProcess<?> throughout leads to errors (? should be Q). I found 
+ * using IQueueProcess<?> throughout leads to errors (? should be Q). I found
  * that using IConsumerProcess<?> also doesn't work.
- * 
+ *
  * MTW - 14.01.2016
  */
 public class QueueProcessFactory {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(QueueProcessFactory.class);
-	
+
 	@SuppressWarnings("rawtypes")
 	private static final Map<String, Class<? extends IQueueProcess>> PROCESSES;
-	
+
 	static {
 		PROCESSES = new HashMap<>();
 		initialize();
 	}
-	
+
 	/**
 	 * No argument constructor for OSGi.
 	 * As this is a static class there is no need to use it.
 	 */
 	public QueueProcessFactory() {
-		
+
 	}
-	
+
 	/**
-	 * This registers the default processors within the map. It removes any 
+	 * This registers the default processors within the map. It removes any
 	 * entries in the map before doing this (useful for tests).
 	 */
 	public static void initialize() {
 		if (PROCESSES.size() > 0) {
 			PROCESSES.clear();
 		}
-		
+
 		//Register default processors
 		try {
 			QueueProcessFactory.registerProcesses(PositionerAtomProcess.class,
-					ScanAtomProcess.class, MonitorAtomProcess.class, 
+					ScanAtomProcess.class, MonitorAtomProcess.class,
 					SubTaskAtomProcess.class, TaskBeanProcess.class);
 		} catch (EventException evEx) {
 			logger.error("Initial configuration of QueueProcessorFactory failed. Could not register processor(s): "+evEx.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Supply a series of processors to be registered with the factory.
-	 * 
+	 *
 	 * @param clazzez Two or more processors to be registered.
 	 * @throws EventException Registering processor is unsuccessful.
 	 */
@@ -95,13 +95,13 @@ public class QueueProcessFactory {
 			registerProcess(clazz);
 		}
 	}
-	
+
 	/**
-	 * Adds a given processor to the PROCESSORS map, with the key set as the 
+	 * Adds a given processor to the PROCESSORS map, with the key set as the
 	 * class name of the bean which is processes.
-	 * 
+	 *
 	 * @param clazz
-	 * @throws EventException If getting the String name of the bean or adding 
+	 * @throws EventException If getting the String name of the bean or adding
 	 *                        the processor to the map fails.
 	 */
 	@SuppressWarnings("rawtypes")
@@ -114,36 +114,36 @@ public class QueueProcessFactory {
 			logger.error("Failed to register processor '"+clazz.getName()+"': \""+ex.getMessage()+"\".");
 			throw new EventException("Failed to register processor", ex);
 		}
-		
+
 	}
-	
+
 	/**
 	 * Return the registry of processes.
-	 * 
-	 * @return Map<String, Class> of processors and with bean class names as 
+	 *
+	 * @return Map<String, Class> of processors and with bean class names as
 	 *         keys.
 	 */
 	@SuppressWarnings("rawtypes")
 	public static Map<String, Class<? extends IQueueProcess>> getProcessors() {
 		return PROCESSES;
 	}
-	
+
 	/**
-	 * Return a new instance of a processor capable of processing the supplied 
+	 * Return a new instance of a processor capable of processing the supplied
 	 * bean type.
-	 * 
+	 *
 	 * @param bean extending {@link Queueable} to be processed.
 	 * @param publisher status {@link IPublisher} to publish updates through.
-	 * @param blocking boolean indicating whether process will stop subsequent 
+	 * @param blocking boolean indicating whether process will stop subsequent
 	 *        queue processes starting.
 	 * @return IQueueProcessor instance of class capable of processing bean.
-	 * @throws EventException If no processor registered for bean type or if 
+	 * @throws EventException If no processor registered for bean type or if
 	 *                        processor cannot be instantiated.
 	 */
 	@SuppressWarnings("rawtypes")
 	public static <T extends Queueable> IQueueProcess getProcessor(T bean, IPublisher<T> publisher, Boolean blocking) throws EventException {
 		Class<? extends IQueueProcess> clazz = PROCESSES.get(bean.getClass().getName());
-		
+
 		if (clazz == null) {
 			bean.setStatus(Status.FAILED);
 			bean.setMessage("No processor registered for bean type.");

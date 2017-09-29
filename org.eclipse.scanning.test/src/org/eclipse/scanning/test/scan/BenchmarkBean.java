@@ -19,21 +19,21 @@ import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 
 public class BenchmarkBean {
-	
-	private int size; 
-	private long reqTime; 
-	private int tries; 
-	private boolean silent; 
+
+	private int size;
+	private long reqTime;
+	private int tries;
+	private boolean silent;
 	private IRunnableDevice<? extends IDetectorModel> detector;
 	private String scannableName;
 	private String filePath;
 	private long maxPointTime = Long.MAX_VALUE;
 	private IPublisher<ScanBean> publisher;
-	
+
 	public BenchmarkBean() {
-		
+
 	}
-	
+
 	public BenchmarkBean(int size, long reqTime, int tries, boolean silent,
 			IRunnableDevice<? extends IDetectorModel> detector, String scannableName) {
 		super();
@@ -44,7 +44,7 @@ public class BenchmarkBean {
 		this.detector = detector;
 		this.scannableName = scannableName;
 	}
-	
+
 	public BenchmarkBean(int size, long reqTime, int tries, boolean silent,
 			              IRunnableDevice<? extends IDetectorModel> detector) {
 		super();
@@ -55,7 +55,7 @@ public class BenchmarkBean {
 		this.detector = detector;
 		this.scannableName = "benchmark1";
 	}
-	
+
 	public BenchmarkBean(int size, long reqTime, int tries, IRunnableDevice<? extends IDetectorModel> detector) {
 		super();
 		this.size = size;
@@ -76,7 +76,7 @@ public class BenchmarkBean {
 		this.detector = detector;
 		this.scannableName = "benchmark1";
 	}
-	
+
 	public BenchmarkBean(int size, long reqTime, int tries, IRunnableDevice<? extends IDetectorModel> detector, File output) {
 		super();
 		this.size = size;
@@ -99,7 +99,7 @@ public class BenchmarkBean {
 		this.scannableName = "benchmark1";
 		this.filePath = output.getAbsolutePath();
 	}
-	
+
 	public BenchmarkBean(int size, long reqTime, long max, int tries, IRunnableDevice<? extends IDetectorModel> detector, File output, IPublisher<ScanBean> publisher) {
 		super();
 		this.size = size;

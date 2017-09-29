@@ -21,7 +21,7 @@ import org.python.core.PyDictionary;
 
 /**
  * Custom serialiser for IPointGenerator.
- * TODO - make this non 'test' and finalise custom serialisation strategy for IPointGenerator 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for IPointGenerator
  * @author Matt Taylor
  *
  */
@@ -48,5 +48,5 @@ public class IPointGeneratorSerialiser implements IPVStructureSerialiser<IPointG
 			throw new Exception("IPointGenerator wasn't PySerializable. Unable to serialise");
 		}
 	}
-	
+
 }

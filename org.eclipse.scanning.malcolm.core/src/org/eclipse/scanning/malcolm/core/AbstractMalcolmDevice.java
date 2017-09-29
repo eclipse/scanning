@@ -73,10 +73,10 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 			                     IRunnableDeviceService runnableDeviceService) throws MalcolmDeviceException {
 		super(runnableDeviceService);
 		this.connector = connector;
-   		this.connectionDelegate = connector.createDeviceConnection(this);
-   		this.eventDelegate = new MalcolmEventDelegate(getName(), connector);
-   		setRole(DeviceRole.MALCOLM);
-   		setSupportedScanMode(ScanMode.HARDWARE);
+		this.connectionDelegate = connector.createDeviceConnection(this);
+		this.eventDelegate = new MalcolmEventDelegate(getName(), connector);
+		setRole(DeviceRole.MALCOLM);
+		setSupportedScanMode(ScanMode.HARDWARE);
 	}
 
 	@Override
@@ -194,14 +194,14 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 		return connectionDelegate.createUnsubscribeMessage();
 	}
     protected void subscribe(MalcolmMessage message, IMalcolmListener<MalcolmMessage> listener) throws MalcolmDeviceException {
-    	connector.subscribe(this, message, listener);
+	connector.subscribe(this, message, listener);
     }
     @SuppressWarnings("unchecked")
 	protected MalcolmMessage unsubscribe(MalcolmMessage message, IMalcolmListener<MalcolmMessage> listener) throws MalcolmDeviceException {
-    	return connector.unsubscribe(this, message, listener);
+	return connector.unsubscribe(this, message, listener);
     }
     protected void subscribeToConnectionStateChange(IMalcolmListener<Boolean> listener) throws MalcolmDeviceException {
-    	connector.subscribeToConnectionStateChange(this, listener);
+	connector.subscribeToConnectionStateChange(this, listener);
     }
 
 	/**

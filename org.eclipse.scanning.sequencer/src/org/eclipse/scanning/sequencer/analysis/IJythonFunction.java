@@ -6,7 +6,7 @@ import org.eclipse.january.dataset.IDataset;
 public interface IJythonFunction {
 
 	/**
-	 * This interface 
+	 * This interface
 	 * @param slice
 	 * @return
 	 */

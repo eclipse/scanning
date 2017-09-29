@@ -33,7 +33,7 @@ class FilterService implements IFilterService {
 
 	private Map<String, IFilter<?>> filters;
 
- 	/**
+	/**
 	 * Intentionally package private
 	 */
 	FilterService() {

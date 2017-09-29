@@ -26,11 +26,11 @@ import org.eclipse.scanning.api.points.IPosition;
  * and datasets the dummy malcolm device should create. A {@link DummyMalcolmControlledDetectorModel}
  * should be added for each device (i.e. detector, scannable) that is being simulated by the
  * real malcolm device.
- * 
+ *
  * @author Matthew Dickie
  */
 public class DummyMalcolmModel extends MalcolmModel implements ITimeoutable {
-	
+
 	private List<DummyMalcolmControlledDetectorModel> dummyDetectorModels = Collections.emptyList();
 
 	/**
@@ -39,16 +39,16 @@ public class DummyMalcolmModel extends MalcolmModel implements ITimeoutable {
 	 * At each position in the scan the value written to that dataset will be the value for that
 	 * name in the {@link IPosition} for that point of the scan if it contains a value for that
 	 * name, otherwise a random value will be written.
-	 * 
+	 *
 	 */
 	private List<String> positionerNames;
-	
+
 	/**
 	 * The monitor datasets to write. These will be written to with random at each
-	 * position in the scan. 
+	 * position in the scan.
 	 */
 	private List<String> monitorNames;
-	
+
 	public DummyMalcolmModel() {
 		// the default model has a single detector with a single dataset
 		// this can be overridden by calling setDummyDetectorModels()
@@ -62,7 +62,7 @@ public class DummyMalcolmModel extends MalcolmModel implements ITimeoutable {
 		setPositionerNames(axes); // determines the value (a.k.a rbv) values to be written
 		setDummyDetectorModels(Arrays.asList(detModel));
 	}
-	
+
 	public List<DummyMalcolmControlledDetectorModel> getDummyDetectorModels() {
 		if (dummyDetectorModels == null) return Collections.emptyList();
 		return dummyDetectorModels;

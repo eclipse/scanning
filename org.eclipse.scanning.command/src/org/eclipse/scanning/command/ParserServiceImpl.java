@@ -25,7 +25,7 @@ import org.eclipse.scanning.api.scan.ParsingException;
 import org.eclipse.scanning.command.factory.PyExpressionFactory;
 
 public class ParserServiceImpl implements IParserService {
-	
+
 	static {
 		System.out.println("Starting Parser Service");
 	}
@@ -165,7 +165,7 @@ public class ParserServiceImpl implements IParserService {
 		return factory.pyExpress(req, verbose);
 	}
 
-	
+
 	private static IPointGeneratorService pointGeneratorService;
 
 	public static IPointGeneratorService getPointGeneratorService() {

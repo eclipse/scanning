@@ -22,49 +22,49 @@ import org.eclipse.scanning.api.event.core.ISubscriber;
 
 /**
  * Checks for the heartbeat of a named consumer.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 class HeartbeatChecker {
-		
+
 	private URI    uri;
 	private String consumerName;
 	private long   listenTime;
 	private volatile boolean ok = false;
 	private IEventService eventService;
-	
+
 	public HeartbeatChecker(IEventService eventService, URI uri, String consumerName, long listenTime) {
 		this.eventService          = eventService;
 		this.uri          = uri;
 		this.consumerName = consumerName;
 		this.listenTime   = listenTime;
 	}
-	
+
 	public void checkPulse() throws EventException, InterruptedException {
-		
+
 		ISubscriber<IHeartbeatListener>	subscriber = eventService.createSubscriber(uri, IEventService.HEARTBEAT_TOPIC);
         ok = false;
-        
+
         try {
-        	subscriber.addListener(new IHeartbeatListener() {
-        		@Override
-        		public void heartbeatPerformed(HeartbeatEvent evt) {
-        			HeartbeatBean bean = evt.getBean();
-        			if (!consumerName.equals(bean.getConsumerName())) {
-        				return;
-        			}
-        			ok = true;
-        		}
-        	});
+		subscriber.addListener(new IHeartbeatListener() {
+			@Override
+			public void heartbeatPerformed(HeartbeatEvent evt) {
+				HeartbeatBean bean = evt.getBean();
+				if (!consumerName.equals(bean.getConsumerName())) {
+					return;
+				}
+				ok = true;
+			}
+		});
 
             Thread.sleep(listenTime);
-            
+
             if (!ok) throw new EventException(consumerName+" Consumer heartbeat absent.\nIt is either stopped or unresponsive.\nPlease contact your support representative.");
-        	
+
 
         } finally {
-        	subscriber.disconnect();
+		subscriber.disconnect();
         }
 	}
 

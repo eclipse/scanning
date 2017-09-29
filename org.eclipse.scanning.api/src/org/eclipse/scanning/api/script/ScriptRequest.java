@@ -14,11 +14,11 @@ package org.eclipse.scanning.api.script;
 import java.util.Map;
 
 /**
- * 
+ *
  * This object provides the information such as file path,
- * environment, script language etc. to run a script on the 
+ * environment, script language etc. to run a script on the
  * server.
- * 
+ *
  * @author Matthew Gerring.
  *
  */
@@ -31,7 +31,7 @@ public class ScriptRequest {
 	public ScriptRequest() {
 
 	}
-	
+
 	/**
 	 * Creates a new SPEC_PASTICHE request running the file at the given path.
 	 * @param file

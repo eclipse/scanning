@@ -72,13 +72,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class AcquireRequestTest extends BrokerTest {
-	
+
 	private IRunnableDeviceService runnableDeviceService;
 	private IEventService eventService;
 	private IPointGeneratorService pointGenService;
 	private IRequester<AcquireRequest> requester;
 	private AcquireServlet acquireServlet;
-	
+
 	@Before
 	public void createServices() throws Exception {
 		setUpNonOSGIActivemqMarshaller();
@@ -86,29 +86,29 @@ public class AcquireRequestTest extends BrokerTest {
 		runnableDeviceService = new RunnableDeviceServiceImpl(new MockScannableConnector());
 		MandelbrotDetector detector = new MandelbrotDetector();
 		((RunnableDeviceServiceImpl) runnableDeviceService)._register("mandelbrot", detector);
-		
+
 		pointGenService = new PointGeneratorService();
-		
+
 		Services.setRunnableDeviceService(runnableDeviceService);
 		Services.setGeneratorService(pointGenService);
 		Services.setEventService(eventService);
 		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(new NexusFileFactoryHDF5());
 		(new org.eclipse.scanning.sequencer.ServiceHolder()).setFactory(new DefaultNexusBuilderFactory());
-		
+
 		this.acquireServlet = new AcquireServlet();
 		acquireServlet.setBroker(uri.toString());
 		acquireServlet.connect();
-		
+
 		requester = eventService.createRequestor(uri, ACQUIRE_REQUEST_TOPIC, ACQUIRE_RESPONSE_TOPIC);
 		requester.setTimeout(10, TimeUnit.SECONDS);
 	}
-	
+
 	@After
 	public void stop() throws Exception {
 		requester.disconnect();
 		acquireServlet.disconnect();
 	}
-	
+
 	@Test
 	public void testAcquire() throws Exception {
 		AcquireRequest request = createRequest();
@@ -116,49 +116,49 @@ public class AcquireRequestTest extends BrokerTest {
 		assertThat(response, is(notNullValue()));
 		assertThat(response.getStatus(), is(Status.COMPLETE));
 		assertThat(response.getMessage(), is(nullValue()));
-		
+
 		checkNexusFile(response);
 	}
-	
+
 	private AcquireRequest createRequest() throws IOException {
 		final AcquireRequest request = new AcquireRequest();
-		
+
 		final File file = File.createTempFile("acquire_servlet_test", ".nxs");
 		System.err.println("Writing to file " + file);
 		file.deleteOnExit();
 		request.setFilePath(file.getAbsolutePath());
-		
+
 		final MandelbrotModel mandyModel = new MandelbrotModel();
 		mandyModel.setName("mandelbrot");
 		mandyModel.setRealAxisName("xNex");
 		mandyModel.setImaginaryAxisName("yNex");
 		mandyModel.setExposureTime(0.01);
-		
+
 		request.setDetectorName(mandyModel.getName());
 		request.setDetectorModel(mandyModel);
-		
+
 		return request;
 	}
 
-	
+
 	private void checkNexusFile(AcquireRequest request) throws Exception {
 		String filePath = request.getFilePath();
 
 		INexusFileFactory fileFactory = org.eclipse.dawnsci.nexus.ServiceHolder.getNexusFileFactory();
 		NexusFile nf = fileFactory.newNexusFile(filePath);
 		nf.openToRead();
-		
+
 		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 		NXroot rootNode = (NXroot) nexusTree.getGroupNode();
 		NXentry entry = rootNode.getEntry();
 		NXinstrument instrument = entry.getInstrument();
-		
+
 		LinkedHashMap<String, List<String>> signalFieldAxes = new LinkedHashMap<>();
 		// axis for additional dimensions of a datafield, e.g. image
 		signalFieldAxes.put(NXdetector.NX_DATA, Arrays.asList("real", "imaginary"));
 		signalFieldAxes.put("spectrum", Arrays.asList("spectrum_axis"));
 		signalFieldAxes.put("value", Collections.emptyList());
-		
+
 		String detectorName = request.getDetectorName();
 		NXdetector detector = instrument.getDetector(detectorName);
 		// map of detector data field to name of nxData group where that field is the @signal field

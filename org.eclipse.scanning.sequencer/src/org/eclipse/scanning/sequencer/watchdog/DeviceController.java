@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 /**
  *
  * <pre>
- 	  Rules for controller:
+	  Rules for controller:
 	  o Pause proceeds and sets preference to pause.
 	  o Resume is allowed if none of the states are paused.
 	  o Seek is allowed if all names bar the current device are not paused.

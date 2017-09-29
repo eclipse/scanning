@@ -15,13 +15,13 @@ public interface IPositionListenable {
 	/**
 	 * Use to be notified as levels / positions are reached.
 	 * Not usually necessary as setPosition is blocking until
-	 * the position is reached but useful for other objects 
+	 * the position is reached but useful for other objects
 	 * which need to change when new positions are reached.
-	 * 
+	 *
 	 * @param listener
 	 */
 	void addPositionListener(IPositionListener listener);
-	
+
 	/**
 	 * Use to be notified as levels / positions are reached.
 	 * @param listener
@@ -33,7 +33,7 @@ public interface IPositionListenable {
      * Often an IPositionListenable will not implement getPositioner() or
      * may not be back by an object directly moving position.
      * <p><b>Use with Caution!</b>
-     * 
+     *
      * @return
      */
 	default IPositioner getPositioner() {
@@ -45,7 +45,7 @@ public interface IPositionListenable {
      * Often an IPositionListenable will not implement getPositioner() or
      * may not be back by an object directly moving position.
      * <p><b>Use with Caution!</b>
-     * 
+     *
      * @return
      * @throws IllegalArgumentException if there is no positioner
      */

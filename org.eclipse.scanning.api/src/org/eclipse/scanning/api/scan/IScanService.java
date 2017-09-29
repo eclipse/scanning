@@ -16,10 +16,10 @@ import java.util.Collection;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 
 /**
- * 
- * This interface is used to provide custom scanning methods 
+ *
+ * This interface is used to provide custom scanning methods
  * to the IRunnableDeviceService.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -28,16 +28,16 @@ public interface IScanService extends IRunnableDeviceService {
 	/**
 	 * Used to register a scan participant. Once registered any scan
 	 * created will use the participant.
-	 * 
+	 *
 	 * @param device
 	 */
 	void addScanParticipant(Object device);
 
-	
+
 	/**
 	 * Used to remove a scan participant. Once registered any scan
 	 * created will use the participant it must be removed to stop this.
-	 * 
+	 *
 	 * @param device
 	 */
 	void removeScanParticipant(Object device);

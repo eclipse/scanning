@@ -10,13 +10,13 @@ public final class MonitorAtomAssembler extends AbstractBeanAssembler<MonitorAto
 	public MonitorAtomAssembler(IQueueBeanFactory queueBeanFactory) {
 		super(queueBeanFactory);
 	}
-	
+
 	@Override
 	public MonitorAtom buildNewBean(MonitorAtom model) throws QueueModelException {
 		MonitorAtom atom = new MonitorAtom(model.getShortName(), false, model.getMonitor());
 		atom.setBeamline(model.getBeamline());
 		atom.setRunTime(model.getRunTime());
-		
+
 		return atom;
 	}
 

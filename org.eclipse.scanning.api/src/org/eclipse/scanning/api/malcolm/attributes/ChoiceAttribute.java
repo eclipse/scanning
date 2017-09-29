@@ -14,18 +14,18 @@ package org.eclipse.scanning.api.malcolm.attributes;
 import java.util.Arrays;
 
 /**
- * 
+ *
  * Encapsulates a choice attribute as read from a malcolm device
- * 
+ *
  * @author Matt Taylor
  *
  */
 public class ChoiceAttribute extends MalcolmAttribute<String> {
 	public static final String CHOICE_ID = "malcolm:core/ChoiceMeta:";
-	
+
 	private String[] choices;
 	private String value;
-	
+
 	public String[] getChoices() {
 		return choices;
 	}
@@ -72,5 +72,5 @@ public class ChoiceAttribute extends MalcolmAttribute<String> {
 			return false;
 		return true;
 	}
-	
+
 }

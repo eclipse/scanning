@@ -54,26 +54,26 @@ import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 
 public class ScanRequestCreationTest extends AbstractJythonTest {
-	
+
 	private IPointGeneratorService service;
-	
+
 	public ScanRequestCreationTest() {
 		super(false);
 	}
-	
+
 	@Before
 	public void before() throws Exception {
-		
+
 		createMarshaller();
 		service = new PointGeneratorService();
 		Services.setEventService(new EventServiceImpl(new ActivemqConnectorService()));
-		
+
 		RunnableDeviceServiceImpl impl = new RunnableDeviceServiceImpl(new MockScannableConnector(null));
 		impl._register(MockDetectorModel.class, MockWritableDetector.class);
 		impl._register(MockWritingMandlebrotModel.class, MockWritingMandelbrotDetector.class);
 		impl._register(MandelbrotModel.class, MandelbrotDetector.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
-		
+
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
 		dmodel.setExposureTime(0.1);
@@ -214,7 +214,7 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		assertEquals("x", monitorIterator.next());
 		assertEquals("bill", monitorIterator.next());
 	}
-	
+
 	@Test
 	public void testStepCommandWithMonitorsNoDetector() throws Exception {
 		pi.exec("sr =                               "
@@ -538,7 +538,7 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		assertEquals(1, amodel.getPositions().length);
 		assertEquals(5, amodel.getPositions()[0], 1e-8);
 	}
-	
+
 	@Test
 	public void testMoveToKeepStillCommandNoDetector() throws Exception {
 		pi.exec("sr =                                              "

@@ -14,7 +14,7 @@ package org.eclipse.scanning.api.scan;
 /**
  * This service provides useful file paths for writing to. It has method to get the
  * path of the next scan file.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -27,17 +27,17 @@ public interface IFilePathService {
 	 * @throws Exception if the next path cannot be calculated for any reason
 	 */
 	String getNextPath(String template) throws Exception;
-	
+
 	/**
-	 * 
+	 *
 	 * @return the current scan number. Same as NumTracker.getCurrentFileNumber() in GDA8.
 	 * @throws Exception
 	 */
 	int getScanNumber() throws Exception;
-	
-	
+
+
 	/**
-	 * 
+	 *
 	 * @return the current visit number LocalProperties.get(LocalProperties.GDA_DEF_VISIT, LocalProperties.DEFAULT_VISIT)
 	 * @throws Exception
 	 */
@@ -48,12 +48,12 @@ public interface IFilePathService {
 	 * the same name as the given file, minus the file extension. This folder can be used to
 	 * write linked files to for the given scan. If the filename given is a filepath, only the
 	 * last segment will be used.
-	 * @param filename the name of the file 
+	 * @param filename the name of the file
 	 * @return path of new folder
 	 * @throws Exception if the folder cannot be created for any reason
 	 */
 	String createFolderForLinkedFiles(String filename) throws Exception;
-	
+
 	/**
 	 * Returns the name of the path returned by the most recent call to
 	 * {@link #getNextPath()}. Note that this is not guaranteed to be the file for the current
@@ -62,43 +62,43 @@ public interface IFilePathService {
 	 * @throws IllegalStateException if {@link #getNextPath()} has never been called
 	 */
 	String getMostRecentPath() throws IllegalStateException;
-	
+
 	/**
 	 * Returns the location of the directory to use for temporary files for the current visit.
 	 * In GDA this is mapped to the {@code tmp} subdirectory of the current visit directory, the
 	 * contents of which are deleted every 2 days.
-	 * 
+	 *
 	 * @return location of temp directory for the current visit
 	 */
 	String getTempDir();
-	
+
 	/**
 	 * Returns the location of the directory to use for files such configuration files of
 	 * any type, saved scan files, etc. In GDA this is mapped to the {@code xml} subdirectory
 	 * of the current visit directory, the contents of which live for the lifetime of the visit.
-	 * 
-	 * @return location of the configuration directory for the current visit 
+	 *
+	 * @return location of the configuration directory for the current visit
 	 */
 	String getVisitConfigDir();
-	
+
 	/**
 	 * Returns the location of the directory in which to place processed files.
 	 * TODO: remove this method and just use a subpath of /tmp
 	 * @return processed files
 	 */
 	String getProcessedFilesDir();
-	
+
 	/**
 	 * Returns the location of persistence directory. This is the location of a global read/write
 	 * directory where persistent files can be stored.
 	 * @return location of persistence directory.
 	 */
 	String getPersistenceDir();
-	
+
 	/**
 	 * Returns the location of the directory containing templates for cluster processing.
 	 * @return location of the processing templates directory
 	 */
 	String getProcessingTemplatesDir();
-	
+
 }

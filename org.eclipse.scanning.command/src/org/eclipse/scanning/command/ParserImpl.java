@@ -20,7 +20,7 @@ import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.scan.IParserResult;
 
 class ParserImpl implements IParserResult<StepModel> {
-	
+
 	static {
 		System.out.println("Started Parser Service");
 	}

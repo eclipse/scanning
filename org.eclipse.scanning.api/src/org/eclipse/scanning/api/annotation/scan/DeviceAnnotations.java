@@ -18,11 +18,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class DeviceAnnotations {
-	
+
 	private static final Set<Class<? extends Annotation>> annotations;
 	static {
 		Set<Class<? extends Annotation>> tmp = new HashSet<>();
-		
+
 		// Alphabetic order
 		tmp.add(LevelEnd.class);
 		tmp.add(LevelStart.class);
@@ -39,9 +39,9 @@ public class DeviceAnnotations {
 		tmp.add(FileDeclared.class);
 		tmp.add(PreConfigure.class);
 		tmp.add(PostConfigure.class);
-		
+
 		annotations = Collections.unmodifiableSet(tmp);
-		
+
 		// NOTE There is no line start/end because the 9 scanning
 		// does not really have a concept of a line.
 	}

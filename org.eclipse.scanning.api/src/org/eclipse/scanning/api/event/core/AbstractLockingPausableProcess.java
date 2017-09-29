@@ -26,7 +26,7 @@ import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.event.status.StatusBean;
 
 public abstract class AbstractLockingPausableProcess<T extends StatusBean> implements IConsumerProcess<T> {
-	
+
 	protected final T                      bean;
 	protected final IPublisher<T>          publisher;
 	private boolean                        isCancelled = false;
@@ -49,7 +49,7 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 		this.lock      = new ReentrantLock();
 		this.paused    = lock.newCondition();
 	}
-	
+
 	@Override
 	public T getBean() {
 		return bean;
@@ -62,28 +62,28 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 
 	/**
 	 * Blocks until process is not paused.
-	 * 
+	 *
 	 * @throws EventException
 	 */
 	protected void checkPaused() throws EventException {
-		
+
 		// Check the locking using a condition
 		try {
-	    	if(!lock.tryLock(1, TimeUnit.SECONDS)) {
-	    		throw new EventException("Internal Error - Could not obtain lock to run device!");    		
-	    	}
-	    	try {
-	       	    if (awaitPaused) {
-	         		paused.await(); // Until unpaused
-	       	    }
-	    	} finally {
-	    		lock.unlock();
-	    	}
+		if(!lock.tryLock(1, TimeUnit.SECONDS)) {
+			throw new EventException("Internal Error - Could not obtain lock to run device!");
+		}
+		try {
+		    if (awaitPaused) {
+				paused.await(); // Until unpaused
+		    }
+		} finally {
+			lock.unlock();
+		}
 		} catch (InterruptedException ne) {
 			if (bean.getStatus().isTerminated()) return;
 			throw new EventException(ne);
 		}
-		
+
 	}
 
 	/**
@@ -93,14 +93,14 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 	public void pause() throws EventException {
 		try {
 			lock.lockInterruptibly();
-			
+
 			awaitPaused = true;
-			
+
 			doPause();
 			bean.setPreviousStatus(Status.REQUEST_PAUSE);
 			bean.setStatus(Status.PAUSED);
 			publisher.broadcast(bean);
-			
+
 		} catch (EventException ne) {
 			throw ne;
 		} catch (Exception ne) {
@@ -110,13 +110,13 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 		}
 
 	}
-	
+
 	/**
 	 * Override this method to do work on a pause once the pause lock has been received.
 	 */
 	protected void doPause()  throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
@@ -124,21 +124,21 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 	 */
 	@Override
 	public void resume() throws EventException {
-		
+
 		try {
 			lock.lockInterruptibly();
-		
+
 			try {
 				awaitPaused = false;
-				
+
 				doResume();
 				bean.setPreviousStatus(Status.REQUEST_RESUME);
 				bean.setStatus(Status.RESUMED);
 				publisher.broadcast(bean);
-				
+
 				// We don't have to actually start anything again because the getMessage(...) call reconnects automatically.
 				paused.signalAll();
-				
+
 			} finally {
 				lock.unlock();
 			}
@@ -149,7 +149,7 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 		}
 
 	}
-	
+
 	@Override
 	public boolean isPaused() {
 		return awaitPaused;
@@ -160,27 +160,27 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 	 */
 	protected void doResume()  throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	@Override
 	public void terminate() throws EventException {
-		
+
 		try {
 			lock.lockInterruptibly();
-		
+
 			try {
 				awaitPaused = false;
-				
+
 				doTerminate();
-				
+
 				bean.setPreviousStatus(bean.getStatus());
 				bean.setStatus(Status.TERMINATED);
 				publisher.broadcast(bean);
-				
+
 				// We don't have to actually start anything again because the getMessage(...) call reconnects automatically.
 				paused.signalAll();
-				
+
 			} finally {
 				lock.unlock();
 			}
@@ -197,7 +197,7 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 
 	protected void doTerminate() throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
@@ -206,7 +206,7 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 	protected final static boolean isWindowsOS() {
 		return (System.getProperty("os.name").indexOf("Windows") == 0);
 	}
-	
+
 
 
 	/**
@@ -217,7 +217,7 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 	 * @return file
 	 */
 	protected final File getUnique(final File dir, final String template, int i) {
-		
+
 		final File file = new File(dir, template + i );
 		if (!file.exists()) {
 			return file;
@@ -225,16 +225,16 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 
 		return getUnique(dir, template, ++i);
 	}
-	
+
 	protected void setLoggingFile(File logFile) throws IOException {
 		setLoggingFile(logFile, false);
 	}
 	/**
 	 * Calling this method redirects the logging of this Java object
 	 * which is available through the field 'out' to a known file.
-	 * 
+	 *
 	 * @param logFile
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	protected void setLoggingFile(File logFile, boolean append) throws IOException {
 		if (!logFile.exists()) logFile.createNewFile();
@@ -242,42 +242,42 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 		publisher.setLoggingStream(out);
 	}
 
-	
+
 
 	/**
 	 * Writes the project bean at the point where it is run.
-	 * 
+	 *
 	 * @param processingDir2
 	 * @param fileName - name of file
-	 * @throws IOException 
-	 * @throws FileNotFoundException 
-	 * @throws JsonMappingException 
-	 * @throws JsonGenerationException 
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 * @throws JsonMappingException
+	 * @throws JsonGenerationException
 	 */
 	protected void writeProjectBean(final String dir, final String fileName) throws Exception {
-		
+
 		writeProjectBean(new File(dir), fileName);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param dir
 	 * @param fileName
 	 * @throws Exception
 	 */
 	protected void writeProjectBean(final File dir, final String fileName) throws Exception {
-		
+
 		final File beanFile = new File(dir, fileName);
-     	beanFile.getParentFile().mkdirs();
-    	if (!beanFile.exists()) beanFile.createNewFile();
-    	
-    	final FileOutputStream stream = new FileOutputStream(beanFile);
-    	try {
-    		String json = publisher.getConnectorService().marshal(bean);
-    		stream.write(json.getBytes("UTF-8"));
-    	} finally {
-    		stream.close();
-    	}
+	beanFile.getParentFile().mkdirs();
+	if (!beanFile.exists()) beanFile.createNewFile();
+
+	final FileOutputStream stream = new FileOutputStream(beanFile);
+	try {
+		String json = publisher.getConnectorService().marshal(bean);
+		stream.write(json.getBytes("UTF-8"));
+	} finally {
+		stream.close();
+	}
 	}
 
 
@@ -292,7 +292,7 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 		} catch (Exception e) {
 			throw new RuntimeException("Cannot broadcast", e);
 		}
- 	}
+	}
 
 	protected void dryRun() throws EventException, InterruptedException {
 		dryRun(100);
@@ -300,15 +300,15 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 	protected void dryRun(int size) throws EventException, InterruptedException {
         dryRun(size, true);
 	}
-	
+
 	protected void dryRun(int size, boolean complete) throws EventException, InterruptedException {
-	
+
 		bean.setPreviousStatus(Status.SUBMITTED);
 		bean.setStatus(Status.RUNNING);
 		bean.setPercentComplete(0d);
-		
+
 		for (int i = 0; i < size; i++) {
-			
+
 			checkPaused();
 			if (isCancelled) {
 				bean.setStatus(Status.TERMINATED);
@@ -324,7 +324,7 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 			bean.setPercentComplete(i);
 			broadcast(bean);
 		}
-		
+
 		if (complete) {
 			bean.setStatus(Status.COMPLETE);
 			bean.setPercentComplete(100);
@@ -333,7 +333,7 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 		}
 	}
 
-	
+
 
 
 	public boolean isCancelled() {
@@ -344,7 +344,7 @@ public abstract class AbstractLockingPausableProcess<T extends StatusBean> imple
 	public void setCancelled(boolean isCancelled) {
 		this.isCancelled = isCancelled;
 	}
-	
+
 
 
 }

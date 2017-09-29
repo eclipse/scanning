@@ -48,16 +48,16 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 public class ScanAtomProcessTest {
-	
+
 	private ScanAtom scAt;
 	private QueueProcess<ScanAtom, Queueable> scAtProc;
 	private ProcessTestInfrastructure pti;
-	
+
 	private static MockPublisher<? extends StatusBean> mockPub;
 	private static MockSubscriber<? extends EventListener> mockSubsc;
 	private static MockSubmitter<? extends StatusBean> mockSub;
 	private static MockEventService mockEvServ;
-	
+
 	@BeforeClass
 	public static void setUpClass() {
 		mockPub = new MockPublisher<>(null, null);
@@ -69,21 +69,21 @@ public class ScanAtomProcessTest {
 		mockEvServ.setMockSubscriber(mockSubsc);
 		ServicesHolder.setEventService(mockEvServ);
 	}
-	
+
 	@AfterClass
 	public static void tearDownClass() {
 		mockPub = null;
 		mockSub = null;
 		mockSubsc = null;
 		mockEvServ = null;
-		
+
 		ServicesHolder.setEventService(null);
 	}
-	
+
 	@Before
 	public void setUp() throws EventException {
 		pti = new ProcessTestInfrastructure();
-		
+
 		//Create test atom & process
 		List<IScanPathModel> scanAxes = new ArrayList<>();
 		scanAxes.add(new StepModel("ocs", 290, 80, 10));
@@ -95,7 +95,7 @@ public class ScanAtomProcessTest {
 		List<String> monitors = new ArrayList<>();
 		monitors.add("bpm3");
 		monitors.add("i0");
-		
+
 		ScanRequest<?> scanReq = new ScanRequest<>();
 		scanReq.setDetectors(detectors);
 		scanReq.setCompoundModel(new CompoundModel<>(scanAxes));
@@ -117,23 +117,23 @@ public class ScanAtomProcessTest {
 			System.out.println("Failed to set broker URI"+ex.getMessage());
 		}
 		scAt.setScanSubmitQueueName("fake.test.submit"+IQueue.SUBMISSION_QUEUE_SUFFIX);
-		
+
 		scAtProc = new ScanAtomProcess<Queueable>(scAt, pti.getPublisher(), false);
-		
+
 		//Reset queue architecture
 		mockSub.resetSubmitter();
 		mockPub.resetPublisher();
 		mockSubsc.resetSubscriber();
 	}
-	
+
 	@After
 	public void tearDown() {
 		scAt = null;
 		scAtProc = null;
-		
+
 		pti = null;
 	}
-	
+
 	/**
 	 * After execution:
 	 * - first bean in statPub should be Status.RUNNING
@@ -141,7 +141,7 @@ public class ScanAtomProcessTest {
 	 * - status publisher should have: 1 RUNNING bean and 1 COMPLETE bean
 	 * - ScanBean in child queue should have ScanRequest with configuration of ScanAtom
 	 * - child queue infrastructure should be disconnected
-	 * 
+	 *
 	 * N.B. This is *NOT* an integration test, so beans don't get run.
 	 *      It only checks the processor behaves as expected
 	 */
@@ -150,22 +150,22 @@ public class ScanAtomProcessTest {
 		pti.executeProcess(scAtProc, scAt, true);
 		pti.waitForExecutionEnd(100000l);//FIXME
 		pti.checkLastBroadcastBeanStatuses(Status.COMPLETE, false);
-		
+
 		//These are the statuses & percent completes reported by the processor as it sets up the run
 		Status[] reportedStatuses = new Status[]{Status.RUNNING, Status.RUNNING,
 				Status.RUNNING, Status.RUNNING, Status.RUNNING};
-		Double[] reportedPercent = new Double[]{0d, 2d, 
+		Double[] reportedPercent = new Double[]{0d, 2d,
 				3d, 4d, 5d};
 
 		pti.checkFirstBroadcastBeanStatuses(reportedStatuses, reportedPercent);
 		pti.checkLastBroadcastBeanStatuses(Status.COMPLETE, true);
-		
+
 		assertEquals("Wrong scan submit queue on bean", "fake.test.submit"+IQueue.SUBMISSION_QUEUE_SUFFIX, ((ScanAtom)pti.getLastBroadcastBean()).getScanSubmitQueueName());
 
 		pti.checkSubmittedBeans(mockSub, "fake.test.submit");
 		checkScanInfrastructureDisconnected();
 	}
-	
+
 	/**
 	 * On terminate:
 	 * - first bean in statPub should be Status.RUNNING
@@ -181,21 +181,21 @@ public class ScanAtomProcessTest {
 		pti.waitToTerminate(100l, true);// <-- because we have child queue, this sets REQUEST_TERMINATE
 		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
-		
+
 		assertEquals("Wrong message set after termination.", "Scan requested to abort before completion", pti.getLastBroadcastBean().getMessage());
-		
+
 		assertEquals("Unexpected number of messages in publisher", 1, mockPub.getBroadcastBeans().size());
 		StatusBean pubBean = mockPub.getBroadcastBeans().get(0);
 		assertEquals("Wrong status on published bean", Status.REQUEST_TERMINATE, pubBean.getStatus());
-		
+
 		checkScanInfrastructureDisconnected();
 	}
-	
+
 //	@Test
 	public void testPauseResume() throws Exception {
 		//TODO!
 	}
-	
+
 	/**
 	 * On failure:
 	 * - first bean in statPub should be Status.RUNNING
@@ -212,14 +212,14 @@ public class ScanAtomProcessTest {
 		scAtProc.getProcessLatch().countDown();
 		//Need to give the post-match analysis time to run
 		Thread.sleep(10);
-		
+
 		/*
-		 * FAILED is always going to happen underneath - i.e. process will be 
+		 * FAILED is always going to happen underneath - i.e. process will be
 		 * running & suddenly latch will be counted down.
 		 */
-		
+
 		pti.checkLastBroadcastBeanStatuses(Status.FAILED, false);
-		
+
 		checkScanInfrastructureDisconnected();
 	}
 
@@ -229,5 +229,5 @@ public class ScanAtomProcessTest {
 		assertTrue("Subscriber not disconnected", mockSubsc.isDisconnected());
 		assertTrue("Publisher not disconnected", mockPub.isDisconnected());
 	}
-	
+
 }

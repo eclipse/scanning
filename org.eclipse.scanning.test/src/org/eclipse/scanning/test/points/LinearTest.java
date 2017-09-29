@@ -33,15 +33,15 @@ import org.junit.Test;
 public class LinearTest {
 
 	private IPointGeneratorService service;
-	
+
 	@Before
 	public void before() throws Exception {
 		service = new PointGeneratorService();
 	}
-	
+
 	@Test
 	public void testOneDEqualSpacing() throws Exception {
-		
+
 		BoundingLine line = new BoundingLine();
 		line.setxStart(0.0);
 		line.setyStart(0.0);
@@ -51,22 +51,22 @@ public class LinearTest {
         final int numPoints = 10;
         model.setPoints(numPoints);
         model.setBoundingLine(line);
-		
+
 		// Get the point list
 		IPointGenerator<OneDEqualSpacingModel> gen = service.createGenerator(model);
 		assertEquals(numPoints, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { numPoints }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
-		
+
 		assertEquals(numPoints, pointList.size());
         GeneratorUtil.testGeneratorPoints(gen);
 	}
-	
+
 	@Test
 	public void testIndicesOneDEqualSpacing() throws Exception {
-        
+
         BoundingLine line = new BoundingLine();
         line.setxStart(0.0);
         line.setyStart(0.0);
@@ -76,33 +76,33 @@ public class LinearTest {
         final int numPoints = 10;
         model.setPoints(numPoints);
         model.setBoundingLine(line);
- 		
+
 		// Get the point list
 		IPointGenerator<OneDEqualSpacingModel> gen = service.createGenerator(model);
 		assertEquals(numPoints, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { numPoints }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
-		
+
 		assertEquals(numPoints, pointList.size());
         GeneratorUtil.testGeneratorPoints(gen);
-        
+
         for (int i = 0; i < pointList.size(); i++) {
 		    IPosition pos = pointList.get(i);
 		    int xIndex = pos.getIndex(model.getFastAxisName());
 		    int yIndex = pos.getIndex(model.getSlowAxisName());
-		    
+
 		    assertEquals(i, xIndex);
 		    assertEquals(i, yIndex);
 		    assertTrue(pos.getScanRank()==1);
 		}
 	}
 
-	
+
 	@Test
 	public void testOneDEqualSpacingNoROI() throws GeneratorException {
-		
+
 		OneDEqualSpacingModel model = new OneDEqualSpacingModel();
 		final int numPoints = 10;
 		model.setPoints(numPoints);
@@ -119,14 +119,14 @@ public class LinearTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 	}
 
 	@Test(expected = ModelValidationException.class)
 	public void testOneDEqualSpacingNoPoints() throws Exception {
-        
+
         BoundingLine line = new BoundingLine();
         line.setxStart(0.0);
         line.setyStart(0.0);
@@ -135,17 +135,17 @@ public class LinearTest {
         OneDEqualSpacingModel model = new OneDEqualSpacingModel();
         model.setPoints(0);
         model.setBoundingLine(line);
-		
+
 		// Get the point list
 		IPointGenerator<OneDEqualSpacingModel> gen = service.createGenerator(model);
 		List<IPosition> pointList = gen.createPoints();
         GeneratorUtil.testGeneratorPoints(gen);
 	}
 
-	
+
 	@Test
 	public void testOneDStep() throws Exception {
-        
+
         BoundingLine line = new BoundingLine();
         line.setxStart(0.0);
         line.setyStart(0.0);
@@ -154,14 +154,14 @@ public class LinearTest {
         OneDStepModel model = new OneDStepModel();
         model.setStep(0.3);
         model.setBoundingLine(line);
-		
+
 		// Get the point list
 		IPointGenerator<OneDStepModel> gen = service.createGenerator(model);
 		final int expectedSize = 15;
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
         GeneratorUtil.testGeneratorPoints(gen);
@@ -185,13 +185,13 @@ public class LinearTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		assertEquals(expectedSize, gen.createPoints().size());
 	}
 
 	@Test(expected = ModelValidationException.class)
 	public void testOneDStepNoStep() throws Exception {
-        
+
         BoundingLine line = new BoundingLine();
         line.setxStart(0.0);
         line.setyStart(0.0);
@@ -200,17 +200,17 @@ public class LinearTest {
         OneDStepModel model = new OneDStepModel();
         model.setStep(0);
         model.setBoundingLine(line);
-		
+
 		// Get the point list
 		IPointGenerator<OneDStepModel> gen = service.createGenerator(model);
-		
+
 		List<IPosition> pointList = gen.createPoints();
         GeneratorUtil.testGeneratorPoints(gen);
 	}
-	
+
 	@Test(expected = ModelValidationException.class)
 	public void testOneDStepNegativeStep() throws Exception {
-        
+
         BoundingLine line = new BoundingLine();
         line.setxStart(0.0);
         line.setyStart(0.0);
@@ -228,19 +228,19 @@ public class LinearTest {
 
 	@Test
 	public void testOneDStepWrongROI() throws Exception {
-		
+
 		try {
 			RectangularROI roi = new RectangularROI(new double[]{0,0}, new double[]{3,3});
-	        
+
 	        BoundingLine line = new BoundingLine();
 	        line.setxStart(0.0);
 	        line.setyStart(0.0);
 	        line.setLength(Math.hypot(3.0, 3.0));
-	
+
 	        OneDStepModel model = new OneDStepModel();
 	        model.setStep(0);
 	        model.setBoundingLine(line);
-			
+
 			// Get the point list
 			IPointGenerator<OneDStepModel> gen = service.createGenerator(model, roi);
 			List<IPosition> pointList = gen.createPoints();

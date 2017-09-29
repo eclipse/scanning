@@ -46,7 +46,7 @@ public class SpiralTest extends AbstractGeneratorTest {
 		assertEquals(expectedSize, generator.size());
 		assertEquals(1, generator.getRank());
 		assertArrayEquals(new int[] { expectedSize }, generator.getShape());
-				
+
 		List<IPosition> pointList = generator.createPoints();
 		assertEquals(expectedSize, pointList.size());
 
@@ -56,7 +56,7 @@ public class SpiralTest extends AbstractGeneratorTest {
 		assertEquals(new Point("x", 3, -8.139330427516057, "y", 3, 7.991968780318976, false), pointList.get(3));
 		assertEquals(new Point("x", 15, -6.315009394139057, "y", 15, 7.399523826759042, false), pointList.get(15));
 	}
-	
+
 	@Test
 	public void testSpiralNoROIWrtCompound() throws Exception {
 
@@ -72,13 +72,13 @@ public class SpiralTest extends AbstractGeneratorTest {
 		checkWrtCompound(model, null, 20);
 	}
 
-	
+
 	// FIXME
 	@Ignore("This should pass because compound of a model should equal the points from that model directly")
 	@Test
 	public void testSpiralWrtCompound() throws Exception {
 
-		RectangularROI roi = new RectangularROI(28.5684, 24.0729, 50.4328, 54.2378, 0.0);		
+		RectangularROI roi = new RectangularROI(28.5684, 24.0729, 50.4328, 54.2378, 0.0);
 		SpiralModel model = new SpiralModel("x", "y");
 		model.setScale(2.0);
 

@@ -29,30 +29,30 @@ class DefaultResultsHandler implements IResultHandler<StatusBean> {
 	public boolean open(StatusBean bean) throws Exception {
 		try {
 			final IWorkbenchPage page = Util.getPage();
-			
+
 			final File fdir = new File(Util.getSanitizedPath(bean.getRunDirectory()));
 			if (!fdir.exists()){
 				MessageDialog.openConfirm(getShell(), "Directory Not Found", "The directory '"+bean.getRunDirectory()+"' has been moved or deleted.\n\nPlease contact your support representative.");
 			    return false;
 			}
-			
+
 			if (Util.isWindowsOS()) { // Open inside DAWN
-				final String         dir  = fdir.getAbsolutePath();		
+				final String         dir  = fdir.getAbsolutePath();
 				IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(dir+"/fred.html");
 				final IEditorInput edInput = Util.getExternalFileStoreEditorInput(dir);
 				page.openEditor(edInput, desc.getId());
-				
+
 			} else { // Linux cannot be relied on to open the browser on a directory.
 				Util.browse(fdir);
 			}
 			return true;
 		} catch (Exception e1) {
-			ErrorDialog.openError(getShell(), "Internal Error", "Cannot open "+bean.getRunDirectory()+".\n\nPlease contact your support representative.", 
+			ErrorDialog.openError(getShell(), "Internal Error", "Cannot open "+bean.getRunDirectory()+".\n\nPlease contact your support representative.",
 					new Status(IStatus.ERROR, Activator.PLUGIN_ID, e1.getMessage()));
 			return false;
 		}
 	}
-	
+
 	private Shell getShell() {
 		return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 	}

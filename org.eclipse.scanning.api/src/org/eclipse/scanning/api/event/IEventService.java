@@ -25,18 +25,18 @@ import org.eclipse.scanning.api.event.core.ISubscriber;
 import org.eclipse.scanning.api.event.status.StatusBean;
 
 /**
- * 
- * The scanning event service allows one to subscribe to 
+ *
+ * The scanning event service allows one to subscribe to
  * and broadcast events. It may be backed by the EventBus or
  * plain JMS queues and topics depending on the service implementor.
- * 
+ *
  * <pre>
  * <b>
  * o publisher/subscriber used for broadcasting to multiple clients.
  * o submitter/consumer used for processing queues
- * o request/response used for get/post synchronous interaction 
+ * o request/response used for get/post synchronous interaction
  *   (the uuid is used to ensure that the request and response match)
- *   
+ *
  * </b>
  * </pre>
  *
@@ -44,68 +44,68 @@ import org.eclipse.scanning.api.event.status.StatusBean;
  * <code>
  *   IEventService service = ... // OSGi
  *   final IEventSubscriber subscriber = service.createSubscriber(...);
- *   
+ *
  *   IScanListener listener = new IScanListener() { // Listen to any scan
  *       void scanEventPerformed(ScanEvent evt) {
  *           ScanBean scan = evt.getBean();
  *           System.out.println(scan.getName()+" @ "+scan.getPercentComplete());
- *       }    
+ *       }
  *   };
- *   
+ *
  *   subscriber.addScanListener(listener);
  *   // Subscribe to anything
  *
  *
  *
  *   IEventService service = ... // OSGi
- *   
+ *
  *   final IPublisher publisher = service.createPublisher(...);
  *   final ScanBean scan = new ScanBean(...);
- *   
+ *
  *   publisher.broadcast(scan);
- *   
+ *
  *   // An event comes internally that the scan has changed state, so we notify like this:
  *   scan.setPercentComplete(3.14);
  *   publisher.broadcast(scan);
  *   </code>
  *   </pre>
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public interface IEventService extends EventConstants {
-	
-	
+
+
     /**
      * Create an object capable of getting a queue of any objects. NOTE that
      * an ISubmitter is an IQueueConnection but it only manages queues of
      * StatusBeans.
-     * 
+     *
      * @param uri
      * @param queueName
      * @return
      */
 	public <T> IQueueReader<T> createQueueReader(URI uri, String queueName);
-	
+
 	/**
 	 * Creates an ISubscriber with the default scan event topic and default heartbeat topic.
 	 * Useful on the client for adding event listeners to be notified.
-	 * 
+	 *
 	 *  Normally this method is good enough to connect to the acquisition server
-	 *  and receive its heartbeat and scan events. 
-	 *  
+	 *  and receive its heartbeat and scan events.
+	 *
 	 *  Scan events have a unique id with which to assertain if a given scan event
 	 *  came from given scan.
-	 * 
+	 *
 	 * @param uri - the location of the JMS broker
 	 * @return IEventManager
 	 */
 	public <T extends EventListener> ISubscriber<T> createSubscriber(URI uri, String topicName);
-	
+
 
 	/**
 	 * Creates an IEventPublisher with the default scan event topic and no heartbeat events.
-	 * 
+	 *
 	 * @param uri - the location of the JMS broker
 	 * @return IEventManager
 	 */
@@ -119,7 +119,7 @@ public interface IEventService extends EventConstants {
 	 * @return
 	 */
 	public <U extends StatusBean> ISubmitter<U> createSubmitter(URI uri, String queueName);
-	
+
 
 	/**
 	 * Create a consumer with the default, status topic, submission queue, status queue and termination topic.
@@ -128,10 +128,10 @@ public interface IEventService extends EventConstants {
 	 * @return
 	 */
 	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri) throws EventException;
-	
+
 	/**
 	 * Create a consumer with the submission queue, status queue, status topic and termination topic passed in.
-	 * 
+	 *
 	 * @param uri
 	 * @param submissionQName
 	 * @param statusQName
@@ -140,13 +140,13 @@ public interface IEventService extends EventConstants {
 	 * @param service, may be null, should be null in the OSGi case
 	 * @return
 	 */
-	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri, String submissionQName, 
+	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri, String submissionQName,
 						                                        String statusQName,
 						                                        String statusTName) throws EventException;
 
 	/**
 	 * Create a consumer with the submission queue, status queue, status topic and termination topic passed in.
-	 * 
+	 *
 	 * @param uri
 	 * @param submissionQName
 	 * @param statusQName
@@ -155,17 +155,17 @@ public interface IEventService extends EventConstants {
 	 * @param service, may be null, should be null in the OSGi case
 	 * @return
 	 */
-	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri, String submissionQName, 
+	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri, String submissionQName,
 						                                        String statusQName,
 						                                        String statusTName,
-						                                        String heartbeatTName, 
+						                                        String heartbeatTName,
 						                                        String commandTName) throws EventException;
 
 	/**
-	 * A poster encapsulates sending and receiving a reply. For instance request a list of 
+	 * A poster encapsulates sending and receiving a reply. For instance request a list of
 	 * detectors on the server. This is the same as creating a broadcaster, sending an object
 	 * then subscribing to the reply.
-	 * 
+	 *
 	 * @param uri
 	 * @param requestTopic
 	 * @param responseTopic
@@ -173,10 +173,10 @@ public interface IEventService extends EventConstants {
 	 * @throws EventException
 	 */
 	public <T extends IdBean> IRequester<T> createRequestor(URI uri, String requestTopic, String responseTopic) throws EventException;
-	
+
 	/**
 	 * Creates a responder on a given topic.
-	 * 
+	 *
 	 * @param uri
 	 * @param requestTopic
 	 * @param responseTopic
@@ -184,7 +184,7 @@ public interface IEventService extends EventConstants {
 	 * @throws EventException
 	 */
 	public <T extends IdBean> IResponder<T> createResponder(URI uri, String requestTopic, String responseTopic) throws EventException;
-	
+
 	/**
 	 * Checks the heartbeat can be found and if it cannot in the given time, throws an exception.
 	 * @param uri - URI
@@ -194,9 +194,9 @@ public interface IEventService extends EventConstants {
 	 * @throws EventException
 	 */
 	public void checkHeartbeat(URI uri, String patientName, long listenTime) throws EventException, InterruptedException;
-	
+
 	/**
-	 * Checks the topic has things published on it intermittently 
+	 * Checks the topic has things published on it intermittently
 	 * If it does not, in the given time, throws an exception.
 	 * @param uri - URI
 	 * @param patientName - Name of entity we are checking the hearbeat of
@@ -208,22 +208,22 @@ public interface IEventService extends EventConstants {
 	 */
 	public <T extends INameable> void checkTopic(URI uri, String patientName, long listenTime, String topicName, Class<T> beanClass) throws EventException, InterruptedException;
 
-	
+
 	/**
-	 * The current event connector service that this event service is using to 
+	 * The current event connector service that this event service is using to
 	 * talk to messaging and to marshall objects.
-	 * 
+	 *
 	 * @return
 	 */
 	public IEventConnectorService getEventConnectorService();
-	
+
 	/**
 	 * Use this call to create a remote service. A wrapper will be created around the service
 	 * such that methods called on the client will cause an event to trigger which has a response
 	 * generated by the server.
-	 * 
+	 *
 	 * The event service caches remote services assuming that each service should exist once.
-	 * 
+	 *
 	 * @param uri
 	 * @param serviceClass
 	 * @return

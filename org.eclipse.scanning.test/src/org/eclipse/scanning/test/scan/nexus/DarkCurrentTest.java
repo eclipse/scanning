@@ -69,17 +69,17 @@ import org.junit.Test;
 
 public class DarkCurrentTest extends NexusTest {
 
-	
-	
+
+
 	private IWritableDetector<MandelbrotModel> detector;
 	private IWritableDetector<DarkImageModel>  dark;
 
 	@Before
 	public void before() throws Exception {
-		
-		
+
+
 		MandelbrotModel model = createMandelbrotModel();
-		
+
 		detector = (IWritableDetector<MandelbrotModel>)dservice.createRunnableDevice(model);
 		assertNotNull(detector);
 
@@ -91,11 +91,11 @@ public class DarkCurrentTest extends NexusTest {
 
 	/**
 	 * This test fails if the chunking is not done by the detector.
-	 *  
+	 *
 	 * @throws Exception
 	 */
 	@Test
-	public void testDarkImage() throws Exception {	
+	public void testDarkImage() throws Exception {
 
 		// Tell configure detector to write 1 image into a 2D scan
 		IRunnableDevice<ScanModel> scanner = createGridScan(8, 5);
@@ -104,45 +104,45 @@ public class DarkCurrentTest extends NexusTest {
 
 		checkNexusFile(scanner, 8, 5);
 	}
-	
+
 	private void checkNexusFile(IRunnableDevice<ScanModel> scanner, int... sizes) throws NexusException, ScanningException, DatasetException {
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
-		
+
 		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
 		NexusFile nf = fileFactory.newNexusFile(filePath);
 		nf.openToRead();
 		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 		NXroot rootNode = (NXroot) nexusTree.getGroupNode();
-		
+
 		// check that the scan points have been written correctly
 		assertSolsticeScanGroup(rootNode.getEntry(), false, false, sizes);
 
 		Collection<String> positionerNames = scanModel.getPositionIterable().iterator().next().getNames();
-		
+
 		// check the data for the dark detector
 		checkDark(rootNode, positionerNames, sizes);
-		
+
 		// check the images from the mandelbrot detector
 		checkImages(rootNode, positionerNames, sizes);
 	}
-		
+
 	private void checkDark(NXroot rootNode, Collection<String> positionerNames, int... sizes) throws NexusException, ScanningException, DatasetException {
 		String detectorName = dark.getName();
 		NXentry entry = rootNode.getEntry();
 		NXdetector detector = entry.getInstrument().getDetector(detectorName);
 		assertNotNull(detector);
 		IDataset ds = detector.getDataNode(NXdetector.NX_DATA).getDataset().getSlice();
-		int[] shape = ds.getShape();                                                                        
+		int[] shape = ds.getShape();
 
-		double size = 1; 
+		double size = 1;
 		for (double i : sizes)size*=i;
 		size = size / (((AbstractRunnableDevice<DarkImageModel>)dark).getModel().getFrequency());
 		assertEquals(shape[0], (int)size);
-		
+
 		checkNXdata(rootNode, detectorName, positionerNames);
 	}
-	
+
 	private void checkImages(NXroot rootNode, Collection<String> positionerNames, int... sizes) throws NexusException, ScanningException, DatasetException {
 		String detectorName = detector.getName();
 		NXentry entry = rootNode.getEntry();
@@ -150,40 +150,40 @@ public class DarkCurrentTest extends NexusTest {
 		NXdetector detector = instrument.getDetector(detectorName);
 		assertNotNull(detector);
 		IDataset ds = detector.getDataNode(NXdetector.NX_DATA).getDataset().getSlice();
-		
-		int[] shape = ds.getShape();                                                                        
-		for (int i = 0; i < sizes.length; i++) assertEquals(sizes[i], shape[i]);                            
-		                                                                                                    
-		// Make sure none of the numbers are NaNs. The detector                                             
-		// is expected to fill this scan with non-nulls.                                                    
-        final PositionIterator it = new PositionIterator(shape);                                            
+
+		int[] shape = ds.getShape();
+		for (int i = 0; i < sizes.length; i++) assertEquals(sizes[i], shape[i]);
+
+		// Make sure none of the numbers are NaNs. The detector
+		// is expected to fill this scan with non-nulls.
+        final PositionIterator it = new PositionIterator(shape);
         while(it.hasNext()) {
-        	int[] next = it.getPos();
-        	assertFalse(Double.isNaN(ds.getDouble(next)));
+		int[] next = it.getPos();
+		assertFalse(Double.isNaN(ds.getDouble(next)));
         }
 
 		// Check axes
         // Demand values should be 1D
 		int i = -1;
 		for (String  positionerName : positionerNames) {
-			
+
 		    i++;
-        	NXpositioner positioner = instrument.getPositioner(positionerName);
-        	assertNotNull(positioner);
-        	ds = positioner.getDataNode(NXpositioner.NX_VALUE + "_set").getDataset().getSlice();
-    		shape = ds.getShape();
+		NXpositioner positioner = instrument.getPositioner(positionerName);
+		assertNotNull(positioner);
+		ds = positioner.getDataNode(NXpositioner.NX_VALUE + "_set").getDataset().getSlice();
+		shape = ds.getShape();
 			assertEquals(1, shape.length);
 		    assertEquals(sizes[i], shape[0]);
-        
-    		// Actual values should be scanD
-        	ds = positioner.getDataNode(NXpositioner.NX_VALUE).getDataset().getSlice();
-    		shape = ds.getShape();
-    		assertArrayEquals(sizes, shape);
+
+		// Actual values should be scanD
+		ds = positioner.getDataNode(NXpositioner.NX_VALUE).getDataset().getSlice();
+		shape = ds.getShape();
+		assertArrayEquals(sizes, shape);
 		}
-        
+
         checkNXdata(rootNode, detectorName, positionerNames);
 	}
-	
+
 	private void checkNXdata(NXroot rootNode, String detectorName, Collection<String> scannableNames) {
 		NXentry entry = rootNode.getEntry();
 
@@ -195,11 +195,11 @@ public class DarkCurrentTest extends NexusTest {
 			detectorDataFields.put("spectrum", Arrays.asList("spectrum_axis"));
 			detectorDataFields.put("value", Collections.emptyList());
 		}
-		
+
 		Map<String, String> expectedDataGroupNamesForDevice =
 				detectorDataFields.keySet().stream().collect(Collectors.toMap(Function.identity(),
 						x -> detectorName + (x.equals(NXdetector.NX_DATA) ? "" : "_" + x)));
-		
+
 		Map<String, NXdata> nxDataGroups = entry.getChildren(NXdata.class);
 		List<String> dataGroupNamesForDevice = nxDataGroups.keySet().stream()
 				.filter(name -> name.startsWith(detectorName)).collect(Collectors.toList());
@@ -208,7 +208,7 @@ public class DarkCurrentTest extends NexusTest {
 				expectedDataGroupNamesForDevice.values()));
 
 		for (String dataFieldName : expectedDataGroupNamesForDevice.keySet()) {
-			String nxDataGroupName = expectedDataGroupNamesForDevice.get(dataFieldName); 
+			String nxDataGroupName = expectedDataGroupNamesForDevice.get(dataFieldName);
 			NXdata nxData = nxDataGroups.get(nxDataGroupName);
 			assertNotNull(nxData);
 
@@ -216,7 +216,7 @@ public class DarkCurrentTest extends NexusTest {
 			String sourceFieldName = nxDataGroupName.equals(detectorName) ? NXdetector.NX_DATA :
 				nxDataGroupName.substring(nxDataGroupName.indexOf('_') + 1);
 			assertSignal(nxData, sourceFieldName);
-			
+
 			assertSame(nxData.getDataNode(sourceFieldName),
 					entry.getInstrument().getDetector(detectorName).getDataNode(sourceFieldName));
 			assertTarget(nxData, sourceFieldName, rootNode, "/entry/instrument/" + detectorName
@@ -227,14 +227,14 @@ public class DarkCurrentTest extends NexusTest {
 					scannableNames.stream().map(x -> x + "_value_set"),
 					detectorDataFields.get(sourceFieldName).stream()).collect(Collectors.toList());
 			// add placeholder value "." for each additional dimension
-			
+
 			assertAxes(nxData, expectedAxesNames.toArray(new String[expectedAxesNames.size()]));
 			int[] defaultDimensionMappings = IntStream.range(0, scannableNames.size()).toArray();
 
 			// check the value_demand and value fields for each scannable
 			int i = -1;
 			for (String  positionerName : scannableNames) {
-				
+
 			    i++;
 				NXpositioner positioner = entry.getInstrument().getPositioner(positionerName);
 
@@ -258,7 +258,7 @@ public class DarkCurrentTest extends NexusTest {
 	}
 
 	private IRunnableDevice<ScanModel> createGridScan(int... size) throws Exception {
-		
+
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
 		gmodel.setFastAxisName("xNex");
@@ -266,11 +266,11 @@ public class DarkCurrentTest extends NexusTest {
 		gmodel.setSlowAxisName("yNex");
 		gmodel.setSlowAxisPoints(size[size.length-2]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
-		
+
 		// We add the outer scans, if any
-		if (size.length > 2) { 
+		if (size.length > 2) {
 			for (int dim = size.length-3; dim>-1; dim--) {
 				final StepModel model;
 				if (size[dim]-1>0) {
@@ -282,19 +282,19 @@ public class DarkCurrentTest extends NexusTest {
 				gen = gservice.createCompoundGenerator(step, gen);
 			}
 		}
-	
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector, dark);
-		
+
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());
 		System.out.println("File writing to "+smodel.getFilePath());
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override

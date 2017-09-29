@@ -29,7 +29,7 @@ public class ScanningExampleClassRegistry implements IClassRegistry {
 	private static final Map<String, Class<?>> idToClassMap;
 	static {
 		Map<String, Class<?>> tmp = new HashMap<String, Class<?>>();
-		
+
 		// detector
 		registerClass(tmp, ConstantVelocityModel.class);
 		registerClass(tmp, DarkImageModel.class);
@@ -42,7 +42,7 @@ public class ScanningExampleClassRegistry implements IClassRegistry {
 
 		idToClassMap = Collections.unmodifiableMap(tmp);
 	}
-	
+
 	private static void registerClass(Map<String, Class<?>> map, Class<?> clazz) {
 		map.put(clazz.getSimpleName(), clazz);
 	}

@@ -45,7 +45,7 @@ public class PythonUtils {
 	/**
 	 * Convert tuples/lists of tuples/lists to Java lists of lists. Also convert complex numbers to Apache Commons
 	 * version and Jython strings to strings
-	 * 
+	 *
 	 * @param obj
 	 * @return converted object
 	 */
@@ -106,7 +106,7 @@ public class PythonUtils {
 
 	/**
 	 * Convert an array of python slice objects to a slice array
-	 * 
+	 *
 	 * @param indexes
 	 * @param shape
 	 * @return slice array
@@ -208,7 +208,7 @@ public class PythonUtils {
 
 	/**
 	 * Jython method to get slice within a dataset
-	 * 
+	 *
 	 * @param a
 	 *            dataset
 	 * @param indexes
@@ -268,7 +268,7 @@ public class PythonUtils {
 
 	/**
 	 * Jython method to set slice within a dataset
-	 * 
+	 *
 	 * @param a
 	 *            dataset
 	 * @param object

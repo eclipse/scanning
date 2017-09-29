@@ -55,77 +55,77 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class AnnotationScanTest extends NexusTest {
-	
+
 	private static interface InjectionDevice {
-		
+
 		public <A extends Annotation> void annotatedMethodCalled(Class<A> annotationClass, Object... objects);
-		
+
 		public <A extends Annotation> Set<Object> getMethodContext(Class<A> annotationClass);
-		
+
 		@ScanStart
 		public default void scanStart(IPosition position, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
 			annotatedMethodCalled(ScanStart.class, position, scanInfo, moderator, scanBean, scanModel);
 		}
-		
+
 		@PointStart
 		public default void pointStart(IPosition position, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
 			annotatedMethodCalled(PointStart.class, position, scanInfo, moderator, scanBean, scanModel);
 		}
-		
+
 		@PointEnd
 		public default void pointEnd(IPosition position, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
 			annotatedMethodCalled(PointEnd.class, position, scanInfo, moderator, scanBean, scanModel);
 		}
-		
+
 		@ScanFinally
 		public default void scanFinally(IPosition position, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
 			annotatedMethodCalled(ScanFinally.class, position, scanInfo, moderator, scanBean, scanModel);
 		}
-		
+
 		@ScanEnd
 		public default void scanEnd(IPosition position, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
 			annotatedMethodCalled(ScanEnd.class, position, scanInfo, moderator, scanBean, scanModel);
 		}
-		
+
 		@PreConfigure
 		public default void preConfigure() {
 			// not called as we use AcquistionDevice directly instead of ScanProcess
 			annotatedMethodCalled(PreConfigure.class);
 		}
-		
+
 		@PostConfigure
 		public default void postConfigure() {
 			// not called as we use AcquistionDevice directly instead of ScanProcess
 			annotatedMethodCalled(PostConfigure.class);
 		}
-		
+
 		@LevelStart
 		public default void levelStart(IPosition position, LevelInformation levelInfo, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
 			annotatedMethodCalled(LevelStart.class, position, levelInfo, scanInfo, moderator, scanBean, scanModel);
 		}
-		
+
 		@LevelEnd
 		public default void levelEnd(IPosition position, LevelInformation levelInfo, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
 			annotatedMethodCalled(LevelEnd.class, position, levelInfo, scanInfo, moderator, scanBean, scanModel);
 		}
-		
+
 		@FileDeclared
 		public default void fileDeclared(String filePath, IPosition position, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
 			annotatedMethodCalled(FileDeclared.class, filePath, position, scanInfo, moderator, scanBean, scanModel);
 		}
-		
+
 		@WriteComplete
 		public default void writeComplete(IPosition position, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
 			annotatedMethodCalled(WriteComplete.class, position, scanInfo, moderator, scanBean, scanModel);
 		}
 
 	}
-	
+
 	private class InjectionDetector extends AbstractRunnableDevice<Object> implements InjectionDevice {
 
-		private final Map<Class<?>, Set<Object>> injectionContexts = new HashMap<>();	
+		private final Map<Class<?>, Set<Object>> injectionContexts = new HashMap<>();
 		private List<LevelRole> levelRoles;
-		
+
 		protected InjectionDetector() {
 			super(null);
 			setName("injectionDetector");
@@ -147,14 +147,14 @@ public class AnnotationScanTest extends NexusTest {
 		public <A extends Annotation> Set<Object> getMethodContext(Class<A> annotationClass) {
 			return injectionContexts.get(annotationClass);
 		}
-		
+
 		@Override
 		@ScanStart
 		public void scanStart(IPosition position, ScanInformation scanInfo, SubscanModerator moderator, ScanBean scanBean, ScanModel scanModel) {
 			levelRoles = new ArrayList<>();
 			annotatedMethodCalled(ScanStart.class, position, scanInfo, moderator, scanBean, scanModel);
 		}
-		
+
 		public List<LevelRole> getLevelRoles() {
 			return levelRoles;
 		}
@@ -167,9 +167,9 @@ public class AnnotationScanTest extends NexusTest {
 		}
 
 	}
-	
+
 	private class InjectionMonitor extends AbstractScannable<Object> implements InjectionDevice {
-		
+
 		private final Map<Class<?>, Set<Object>> injectionContexts = new HashMap<>();
 
 		public InjectionMonitor() {
@@ -198,23 +198,23 @@ public class AnnotationScanTest extends NexusTest {
 		public <A extends Annotation> Set<Object> getMethodContext(Class<A> annotationClass) {
 			return injectionContexts.get(annotationClass);
 		}
-		
+
 	}
-	
+
 	private InjectionMonitor injectionMonitor;
 	private InjectionDetector injectionDetector;
-	
+
 	@Before
 	public void before() {
 		injectionMonitor = new InjectionMonitor();
 		injectionDetector = new InjectionDetector();
 	}
-	
+
 	@Test
 	public void testInjectedContext() throws Exception {
 		IRunnableDevice<ScanModel> scanner = createGridScan(injectionDetector, injectionMonitor, 2, 2);
 		scanner.run(null);
-		
+
 		// check that each annotated method for each device has been invoked with objects
 		// of the expected classes. TODO: even better would be to check the objects themselves are correct
 		// not just that there is an object of the expected class
@@ -227,20 +227,20 @@ public class AnnotationScanTest extends NexusTest {
 		checkInjectedContext(WriteComplete.class, true, IPosition.class);
 		checkInjectedContext(ScanEnd.class, true, IPosition.class);
 		checkInjectedContext(ScanFinally.class, true, IPosition.class);
-		
+
 		assertEquals(Arrays.asList(RUN, WRITE, RUN, WRITE, RUN, WRITE, RUN, WRITE),
 				     injectionDetector.getLevelRoles());
 	}
-	
+
 	private <A extends Annotation> void checkInjectedContext(Class<A> annotationClass, boolean includeCommonContext, Class<?>... expectedContextClasses) {
 		checkInjectedContext(injectionDetector, annotationClass, includeCommonContext, expectedContextClasses);
 		checkInjectedContext(injectionMonitor, annotationClass, includeCommonContext, expectedContextClasses);
 	}
-	
+
 	private static final Class<?>[] COMMON_CONTEXT_CLASSES = new Class<?>[] {
 		ScanModel.class, SubscanModerator.class, ScanBean.class, ScanInformation.class
 	};
-	
+
 	private <A extends Annotation> void checkInjectedContext(InjectionDevice device, Class<A> annotationClass, boolean includeCommonContext, Class<?>... expectedContextClasses) {
 		Set<Object> injectedContext = device.getMethodContext(annotationClass);
 		assertNotNull(injectedContext);
@@ -256,7 +256,7 @@ public class AnnotationScanTest extends NexusTest {
 			Assert.fail("Context missing expected instance of: " + missingExpectedContext.get());
 		}
 	}
-	
+
 	private IRunnableDevice<ScanModel> createGridScan(IRunnableDevice<?> detector,
 			IScannable<?> monitor, int... size) throws Exception {
 		GridModel gmodel = new GridModel();
@@ -265,12 +265,12 @@ public class AnnotationScanTest extends NexusTest {
 		gmodel.setSlowAxisName("yNex");
 		gmodel.setSlowAxisPoints(size[size.length-2]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
-		
+
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length - 1];
 		// We add the outer scans, if any
-		if (size.length > 2) { 
+		if (size.length > 2) {
 			for (int dim = size.length-3; dim>-1; dim--) {
 				final StepModel model;
 				if (size[dim]-1>0) {
@@ -285,7 +285,7 @@ public class AnnotationScanTest extends NexusTest {
 		gens[size.length - 2] = gen;
 
 		gen = gservice.createCompoundGenerator(gens);
-	
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
@@ -295,14 +295,14 @@ public class AnnotationScanTest extends NexusTest {
 		if (monitor != null) {
 			smodel.setMonitors(monitor);
 		}
-		
+
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());
 		System.out.println("File writing to "+smodel.getFilePath());
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override

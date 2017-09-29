@@ -5,7 +5,7 @@ import org.eclipse.scanning.api.event.queues.models.QueueModelException;
 import org.eclipse.scanning.api.points.models.ArrayModel;
 
 public class ArrayModelAssembler extends AbstractPathModelAssembler<ArrayModel> {
-	
+
 	private double[] positions;
 
 	public ArrayModelAssembler() {
@@ -19,7 +19,7 @@ public class ArrayModelAssembler extends AbstractPathModelAssembler<ArrayModel> 
 		for (int i = 0; i < positions.length; i++) {
 			positions[i] = storedPositions[i];
 		}
-		
+
 		ArrayModel arrayModel = new ArrayModel(positions);
 		arrayModel.setName(name);
 		return arrayModel;

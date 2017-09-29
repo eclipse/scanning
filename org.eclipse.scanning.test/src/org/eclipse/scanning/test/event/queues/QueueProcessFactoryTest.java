@@ -32,49 +32,49 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class QueueProcessFactoryTest {
-	
+
 	@Before
 	public void setUp() {
 		QueueProcessFactory.initialize();
 	}
-	
+
 	@After
 	public void tearDown() {
 		//Remove Dummy*Process so it doesn't cause bad behaviour in travis
 		QueueProcessFactory.initialize();
 	}
-	
+
 	@Test
 	public void testRegisterProcessor() throws EventException {
 		int nRegistered = QueueProcessFactory.getProcessors().size();
-		
+
 		//Register a single processor
 		QueueProcessFactory.registerProcess(DummyAtomProcess.class);
 		assertEquals("No change in number of registered processors!", nRegistered+1, QueueProcessFactory.getProcessors().size());
-		
+
 		//Register multiple processors by varargs
 		QueueProcessFactory.registerProcesses(DummyBeanProcess.class, DummyHasQueueProcess.class);
 		assertEquals("Processors already registered!", nRegistered+3, QueueProcessFactory.getProcessors().size());
 	}
-	
+
 	@Test
 	public void testReturnProcessorForAtom() throws EventException {
 		QueueProcessFactory.registerProcesses(DummyAtomProcess.class, DummyBeanProcess.class);
-		
+
 		MockPublisher<Queueable> mockPub = new MockPublisher<>(null, null);
-		
+
 		DummyAtom dAt = new DummyAtom("Bill", 750);
 		IQueueProcess<?,?> processOne = QueueProcessFactory.getProcessor(dAt, mockPub, false);
 		if(!(processOne instanceof DummyAtomProcess)) fail("Wrong IProcessor type returned for DummyAtom.");
-		
+
 		DummyBean dBe = new DummyBean("Ben", 750);
 		IQueueProcess<?,?> processTwo = QueueProcessFactory.getProcessor(dBe, mockPub, false);
 		if(!(processTwo instanceof DummyBeanProcess)) fail("Wrong IProcessor type returned for DummyBean.");
-		
+
 		PositionerAtom mvAt = new PositionerAtom("Sam1", "Sam1", 3);
 		IQueueProcess<?,?> processThree = QueueProcessFactory.getProcessor(mvAt, mockPub, false);
 		if(!(processThree instanceof PositionerAtomProcess)) fail("Wrong IProcessor type returned for MoveAtom.");
-		
+
 		try {
 			DummyHasQueue dHQ = new DummyHasQueue("Dilbert", 25);
 			@SuppressWarnings("unused")

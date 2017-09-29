@@ -48,54 +48,54 @@ import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 /**
  * Class to test the API changes for AcquireRequest messaging.
- * 
+ *
  * NOTE: Change Python messaging examples accordingly, if any of these
  * tests fail. The 'examples' package can be found in:
  * org.eclipse.scanning.example.messaging/scripts
- * 
+ *
  * @author Martin Gaughran
  *
  */
 public class AcquireRequestMessagingAPITest extends BrokerTest {
-	
-	
+
+
 	protected IEventService             	eservice;
 	protected MockScannableConnector 		connector;
 	protected IRunnableDeviceService		dservice;
 	protected IPointGeneratorService 		pointGenService;
 	protected IRequester<AcquireRequest> 	requester;
 	protected AcquireServlet acquireServlet;
-	
+
 	@Before
 	public void createServices() throws Exception {
-		
-		// We wire things together without OSGi here 
+
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		setUpNonOSGIActivemqMarshaller();
-		
-		eservice = new EventServiceImpl(new ActivemqConnectorService()); // Do not copy this get the service from OSGi!	
-		
+
+		eservice = new EventServiceImpl(new ActivemqConnectorService()); // Do not copy this get the service from OSGi!
+
 		// If the publisher is not given, then the mock items are not created! Use null instead to avoid publishing.
 		connector = new MockScannableConnector(null);
 		dservice = new RunnableDeviceServiceImpl(connector);
-		
+
 		pointGenService = new PointGeneratorService();
-		
+
 		setupRunnableDeviceService();
 
 		Services.setEventService(eservice);
 		Services.setConnector(connector);
 		Services.setRunnableDeviceService(dservice);
 		Services.setGeneratorService(pointGenService);
-	
+
 		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(new NexusFileFactoryHDF5());
 		(new org.eclipse.scanning.sequencer.ServiceHolder()).setFactory(new DefaultNexusBuilderFactory());
-		
+
 		connect();
 	}
-	
+
 	protected void setupRunnableDeviceService() throws IOException, ScanningException {
-		
+
 		MandelbrotDetector mandy = new MandelbrotDetector();
 		final DeviceInformation<MandelbrotModel> info = new DeviceInformation<MandelbrotModel>(); // This comes from extension point or spring in the real world.
 		info.setName("drt_mock_mandelbrot_detector");
@@ -107,55 +107,55 @@ public class AcquireRequestMessagingAPITest extends BrokerTest {
 		mandy.setDeviceInformation(info);
 		registerRunnableDevice(mandy);
 	}
-	
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void registerRunnableDevice(IRunnableDevice device) {
 		((RunnableDeviceServiceImpl)dservice).register(device);
 	}
 
 	protected void connect() throws EventException, URISyntaxException {
-		
+
 		acquireServlet = new AcquireServlet();
 		acquireServlet.setBroker(uri.toString());
 		acquireServlet.connect();
-		
+
 		requester = eservice.createRequestor(uri, ACQUIRE_REQUEST_TOPIC, ACQUIRE_RESPONSE_TOPIC);
 		requester.setTimeout(10, TimeUnit.SECONDS);
 	}
-	
+
 	@After
 	public void stop() throws EventException {
-		
-    	if (requester!=null) requester.disconnect();
-    	if (acquireServlet!=null) acquireServlet.disconnect();
+
+	if (requester!=null) requester.disconnect();
+	if (acquireServlet!=null) acquireServlet.disconnect();
 	}
-	
+
 	public String getMessageResponse(String sentJson) throws Exception {
-		
+
 		AcquireRequest req = eservice.getEventConnectorService().unmarshal(sentJson, null);
 		AcquireRequest res = requester.post(req);
 		return eservice.getEventConnectorService().marshal(res);
 	}
-	
+
 	public File getTempFile() throws IOException {
 		final File file = File.createTempFile("art_test", ".nxs");
 		System.err.println("Writing to file " + file);
 		file.deleteOnExit();
 		return file;
 	}
-	
+
 	@Test
 	public void testAcquire() throws Exception {
-		
+
 		File tempfile = getTempFile();
-		
+
 		String sentJson = "{\"@type\":\"AcquireRequest\",\"uniqueId\":\"c8f12aee-d56a-49f6-bc03-9c7de9415674\",\"detectorName\":\"drt_mock_mandelbrot_detector\",\"detectorModel\":{\"@type\":\"MandelbrotModel\",\"name\":\"mandelbrot\",\"exposureTime\":0.01,\"maxIterations\":500,\"escapeRadius\":10.0,\"columns\":301,\"rows\":241,\"points\":1000,\"maxRealCoordinate\":1.5,\"maxImaginaryCoordinate\":1.2,\"realAxisName\":\"xNex\",\"imaginaryAxisName\":\"yNex\",\"enableNoise\":false,\"noiseFreeExposureTime\":5.0,\"timeout\":-1},\"filePath\":\"" + tempfile.getAbsolutePath().replace('\\', '/') + "\",\"status\":\"NONE\"}";
 		String expectedJson = "{\"@type\":\"AcquireRequest\",\"uniqueId\":\"c8f12aee-d56a-49f6-bc03-9c7de9415674\",\"detectorName\":\"drt_mock_mandelbrot_detector\",\"detectorModel\":{\"@type\":\"MandelbrotModel\",\"name\":\"mandelbrot\",\"exposureTime\":0.01,\"maxIterations\":500,\"escapeRadius\":10.0,\"columns\":301,\"rows\":241,\"points\":1000,\"maxRealCoordinate\":1.5,\"maxImaginaryCoordinate\":1.2,\"realAxisName\":\"xNex\",\"imaginaryAxisName\":\"yNex\",\"enableNoise\":false,\"noiseFreeExposureTime\":5.0,\"timeout\":-1},\"filePath\":\"" + tempfile.getAbsolutePath().replace('\\', '/') + "\",\"status\":\"COMPLETE\"}";
-		
+
 		String returnedJson = getMessageResponse(sentJson);
-		
+
 		SubsetStatus.assertJsonContains("Failed to return all expected scannable devices.", returnedJson, expectedJson);
-		
+
 		assertTrue("Nexus file has zero length.", tempfile.length() != 0);
 	}
 }

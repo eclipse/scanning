@@ -26,9 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class GeneratorFilter implements ISeriesItemFilter {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(GeneratorFilter.class);
-	
+
 	private final IPointGeneratorService pservice;
 	private final SeriesTable            table; // Gets the table which provides access the series via getAdapter(...)
 	private final IAdaptable             parent;
@@ -38,19 +38,19 @@ final class GeneratorFilter implements ISeriesItemFilter {
 		this.table        = table;
 		this.parent       = parent;
 	}
-	
+
 	@Override
 	public Collection<ISeriesItemDescriptor> getDescriptors(String contents, int position, ISeriesItemDescriptor previous) {
-		
+
 		try {
 			// Reassign previous, if required
-			final Collection<String> ids = pservice.getRegisteredGenerators();			
+			final Collection<String> ids = pservice.getRegisteredGenerators();
 
 			// Get sorted generator list.
 			final Collection<ISeriesItemDescriptor> ret = new ArrayList<ISeriesItemDescriptor>(7);
-			
+
 			for (String id : ids) {
-									
+
 				final GeneratorDescriptor des = new GeneratorDescriptor(table, id, pservice, parent);
 				if (!des.isVisible()) continue;
 				if (contents!=null && !des.matches(contents)) continue;
@@ -58,15 +58,15 @@ final class GeneratorFilter implements ISeriesItemFilter {
 			}
 
 			return ret;
-			
+
 		} catch (Exception e) {
 			logger.error("Cannot get operations!", e);
 			return null;
 		}
 	}
-	
+
 	public List<GeneratorDescriptor<?>> createDescriptors(List<? extends IScanPathModel> models) throws GeneratorException {
-		
+
 	    List<GeneratorDescriptor<?>> descriptions = new ArrayList<>();
 		if (models!=null && models.size()>0) {
 			for (IScanPathModel model : models) {
@@ -78,7 +78,7 @@ final class GeneratorFilter implements ISeriesItemFilter {
 		return descriptions;
 	}
 
-	
+
 	@SuppressWarnings("unchecked")
 	public <T> List<T> getModels(List<ISeriesItemDescriptor> seriesItems) {
 		if (seriesItems==null) return null;
@@ -95,5 +95,5 @@ final class GeneratorFilter implements ISeriesItemFilter {
 			return null;
 		}
 	}
-	
+
 }

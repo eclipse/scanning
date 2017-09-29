@@ -21,7 +21,7 @@ public class ViewerUtils {
 	public static void setItemHeight(Composite tree, int height) {
 		try {
 			Method method = null;
-			
+
 			Method[] methods = tree.getClass().getDeclaredMethods();
 			method = findMethod(methods, "setItemHeight", 1); //$NON-NLS-1$
 			if (method != null) {

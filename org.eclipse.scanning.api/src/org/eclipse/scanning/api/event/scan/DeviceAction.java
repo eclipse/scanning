@@ -16,44 +16,44 @@ import org.eclipse.scanning.api.ITerminatable.TerminationPreference;
 public enum DeviceAction {
 
 	VALIDATE,
-	
-	CONFIGURE, 
-	
-	RUN, 
-	
-	ABORT, 
-	
+
+	CONFIGURE,
+
+	RUN,
+
+	ABORT,
+
 	RESET,
-	
+
 	SET,
-	
+
 	/**
 	 * Stop a move if one is currently running.
 	 */
 	TCONTROLLED,
-	
+
 	/**
 	 * Stop a move if one is currently running.
 	 */
-	TPANIC, 
-	
+	TPANIC,
+
 	/**
 	 * Called to set a device as activated or not.
 	 * NOTE This does not make it run in a scan directly, it just marks it as being included
 	 * in new scans submitted to the server.
 	 */
 	ACTIVATE,
-	
+
 	/**
 	 * Disable device, stopping all activity.
 	 */
 	DISABLE,
-	
+
 	/**
 	 * Validate, with an expectation that the result will be returned
 	 */
 	VALIDATEWITHRETURN;
-	
+
 	public static DeviceAction as(TerminationPreference pref) {
 		switch(pref) {
 		case CONTROLLED:
@@ -64,7 +64,7 @@ public enum DeviceAction {
 			return null;
 		}
 	}
-	
+
 	public boolean isTerminate() {
 		return this==TCONTROLLED || this==TPANIC;
 	}

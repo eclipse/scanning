@@ -17,26 +17,26 @@ import java.util.Map;
 /**
  * Adding objects of this class to a {@link ScanDataModel} allows
  * control over how the data fields for a device are added to
- * an NXdata group (or groups) within the NeXus file for the scan. 
+ * an NXdata group (or groups) within the NeXus file for the scan.
  */
 public class ScanDeviceModel {
-	
+
 	/**
 	 * An object of this class allows control over how a data field
 	 * within the NeXus group for a device is added to a NXdata group (or groups).
 	 */
 	public static class ScanFieldModel {
-		
+
 		private Integer defaultAxisDimension = null;
-		
+
 		private int[] dimensionMappings = null;
-		
+
 		private String destinationFieldName = null;
-		
+
 		public ScanFieldModel() {
 			// do nothing
 		}
-		
+
 		public Integer getDefaultAxisDimension() {
 			return defaultAxisDimension;
 		}
@@ -60,31 +60,31 @@ public class ScanDeviceModel {
 		public void setDestinationFieldName(String destinationFieldName) {
 			this.destinationFieldName = destinationFieldName;
 		}
-		
+
 	}
-	
+
 	private Integer defaultAxisDimension = null;
-	
+
 	private int[] defaultDimensionMappings = null;
-	
+
 	private Boolean isPrimary = null;
-	
+
 	private boolean addNamedFieldsOnly = false;
 
 	private Map<String, ScanFieldModel> fieldModels = new HashMap<>();
-	
+
 	public ScanDeviceModel() {
 		// do nothing
 	}
-	
+
 	public ScanDeviceModel(boolean useDeviceName) {
 		this.isPrimary = useDeviceName;
 	}
-	
+
 	public ScanDeviceModel(int... defaultDimensionMappings) {
 		this.defaultDimensionMappings = defaultDimensionMappings;
 	}
-	
+
 	public ScanDeviceModel(boolean useDeviceName, Integer defaultAxisDimension, int... defaultDimensionMappings) {
 		this.isPrimary = useDeviceName;
 		this.defaultAxisDimension = defaultAxisDimension;
@@ -94,7 +94,7 @@ public class ScanDeviceModel {
 	public Integer getDefaultAxisDimension() {
 		return defaultAxisDimension;
 	}
-	
+
 	/**
 	 * Set the default axis dimension. This applies to the demand data field for the
 	 * device, if present, otherwise to the default writeable dataset,
@@ -139,8 +139,8 @@ public class ScanDeviceModel {
 	 * the list of all writable fields), or if
 	 * {@link #setAddNamedFieldsOnly(boolean)} has been set to true,
 	 * in which case <em>only</em> the fields added to this
-	 * {@link ScanDataModel} will be added to the NXdata group. 
-	 * 
+	 * {@link ScanDataModel} will be added to the NXdata group.
+	 *
 	 * @param sourceFieldNames source field names for this device
 	 */
 	public void addSourceFields(String... sourceFieldNames) {
@@ -148,17 +148,17 @@ public class ScanDeviceModel {
 			fieldModels.put(sourceFieldName, null);
 		}
 	}
-	
+
 	public ScanFieldModel getScanFieldModel(String sourceFieldName, boolean create) {
 		ScanFieldModel fieldModel = fieldModels.get(sourceFieldName);
 		if (fieldModel == null && create) {
 			fieldModel = new ScanFieldModel();
 			fieldModels.put(sourceFieldName, fieldModel);
 		}
-		
+
 		return fieldModel;
 	}
-	
+
 	/**
 	 * Sets the destination field name for the source field for this device with the given name
 	 * @param sourceFieldName source field name
@@ -167,16 +167,16 @@ public class ScanDeviceModel {
 	public void setDestinationFieldName(String sourceFieldName, String destinationFieldName) {
 		getScanFieldModel(sourceFieldName, true).setDestinationFieldName(destinationFieldName);
 	}
-	
+
 	public String getDestinationFieldName(String sourceFieldName) {
 		ScanFieldModel fieldModel = getScanFieldModel(sourceFieldName, false);
 		if (fieldModel != null) {
 			return fieldModel.getDestinationFieldName();
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Sets the field dimension mappings and (optionally) the default axis dimension
 	 * for the source field for this device with the given name
@@ -184,7 +184,7 @@ public class ScanDeviceModel {
 	 * @param defaultAxisDimension the axis of the default data field of the NXdata
 	 *   group for which the field with the given name provides a default axis,
 	 *   or <code>null</code> if none
-	 * @param dimensionMappings the dimension mappings between 
+	 * @param dimensionMappings the dimension mappings between
 	 */
 	public void setFieldDimensionMapping(String sourceFieldName,
 			Integer defaultAxisDimension, int... dimensionMappings) {
@@ -194,7 +194,7 @@ public class ScanDeviceModel {
 			fieldModel.setDimensionMappings(dimensionMappings);
 		}
 	}
-	
+
 	public boolean getAddNamedFieldsOnly() {
 		return addNamedFieldsOnly;
 	}

@@ -15,16 +15,16 @@ import org.slf4j.LoggerFactory;
 class  AtomQueueBuilder<P extends IHasAtomQueue<T>, T extends QueueAtom> {
 
 	private static final Logger logger = LoggerFactory.getLogger(AtomQueueBuilder.class);
-	
+
 	private IQueueBeanFactory qbf;
 	private Class<P> clazz;
-	
+
 	/**
 	 * Construct an {@link AtomQueueBuilder} to construct the given model.
 	 * @param modelInstance {@link IHasAtomQueue} instance containing atom list
-	 * @param realInstance {@link IHasAtomQueue} instance to be supplied with 
+	 * @param realInstance {@link IHasAtomQueue} instance to be supplied with
 	 *        atoms
-	 * @param config Map containing {@link IQueueValue}s used to set 
+	 * @param config Map containing {@link IQueueValue}s used to set
 	 *        parameters in the atoms
 	 * @param qbf {@link IQueueBeanFactory} containing the atom registry
 	 */
@@ -34,16 +34,16 @@ class  AtomQueueBuilder<P extends IHasAtomQueue<T>, T extends QueueAtom> {
 	}
 
 	/**
-	 * Used by {@link TaskBeanAssembler}/{@link SubTaskAtomAssembler}s to get 
-	 * atoms in the queueAtomShortNames Lists of a given model and put 
-	 * them into a new, real atomQueue in an instance of {@link TaskBean} or 
+	 * Used by {@link TaskBeanAssembler}/{@link SubTaskAtomAssembler}s to get
+	 * atoms in the queueAtomShortNames Lists of a given model and put
+	 * them into a new, real atomQueue in an instance of {@link TaskBean} or
 	 * {@link SubTaskAtom} (respectively).
 	 * @param clazz Class of bean being created (for error reporting)
 	 * @throws QueueModelException if an atom was not present in the registry
 	 */
-	protected P populateAtomQueue(P modelInstance, P realInstance, ExperimentConfiguration config) 
+	protected P populateAtomQueue(P modelInstance, P realInstance, ExperimentConfiguration config)
 			throws QueueModelException {
-		
+
 		for (QueueValue<String> stShrtNm : modelInstance.getQueueAtomShortNames()) {
 			try {
 				T at = qbf.assembleQueueAtom(stShrtNm, config);

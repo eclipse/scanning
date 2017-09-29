@@ -100,10 +100,10 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
             }
         });
         if (!cmode.isDirectlyConnected()) text.addFocusListener(new FocusAdapter() {
-        	@Override
+		@Override
 			public void focusLost(FocusEvent e) {
                 setPosition(decorator.getValue());
-        	}
+		}
         });
 
         final Composite buttons = new Composite(content, SWT.NONE);
@@ -122,10 +122,10 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
         up.setImage(Activator.getImageDescriptor("icons/up.png").createImage());
         up.setToolTipText("Nudge node up by increment amount");
         up.addSelectionListener(new SelectionAdapter() {
-        	@Override
+		@Override
 			public void widgetSelected(SelectionEvent e) {
-        		nudge(incDeco.getValue());
-        	}
+			nudge(incDeco.getValue());
+		}
         });
 
         this.down = new Button(buttons, SWT.DOWN);
@@ -134,11 +134,11 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
         down.setImage(Activator.getImageDescriptor("icons/down.png").createImage());
         down.setToolTipText("Nudge node down by increment amount");
         down.addSelectionListener(new SelectionAdapter() {
-        	@Override
+		@Override
 			public void widgetSelected(SelectionEvent e) {
-        		if (incDeco.getValue()==null) return;
-        		nudge(-1*incDeco.getValue().doubleValue());
-        	}
+			if (incDeco.getValue()==null) return;
+			nudge(-1*incDeco.getValue().doubleValue());
+		}
         });
 
         Text increment = new Text(content, SWT.RIGHT);
@@ -162,20 +162,20 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
 	        stop.setImage(Activator.getImageDescriptor("icons/cross-button.png").createImage());
 	        stop.setToolTipText("Stop current move");
 	        stop.addSelectionListener(new SelectionAdapter() {
-	        	@Override
+			@Override
 				public void widgetSelected(SelectionEvent e) {
-	        		Thread test = new Thread("Test terninate in thread") {
-	        			@Override
+				Thread test = new Thread("Test terninate in thread") {
+					@Override
 						public void run() {
-	        				try {
-	        					((ITerminatable)scannable).terminate(TerminationPreference.CONTROLLED);
-	        				} catch (Exception e1) {
-	        					logger.error("Problem stopping motor!", e1);
-	        				}
-	        			}
-	        		};
-	        		test.start();
-	        	}
+						try {
+							((ITerminatable)scannable).terminate(TerminationPreference.CONTROLLED);
+						} catch (Exception e1) {
+							logger.error("Problem stopping motor!", e1);
+						}
+					}
+				};
+				test.start();
+			}
 	        });
         }
 
@@ -207,7 +207,7 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
 		} else {
 			return scannable.getPosition();
 		}
- 	}
+	}
 
 	protected void setPosition(Number value) {
 		if (tip!=null) tip.setVisible(false);

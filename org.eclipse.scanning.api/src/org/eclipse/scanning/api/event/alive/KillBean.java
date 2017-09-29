@@ -13,17 +13,17 @@ package org.eclipse.scanning.api.event.alive;
 
 /**
  * Used to stop the consumer, optionally the process running the consumer may be exited.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class KillBean extends ConsumerCommandBean {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2504956804006283562L;
-	
+
 	private boolean restart=false;
 	private boolean exitProcess=true;
 	private boolean disconnect=true;

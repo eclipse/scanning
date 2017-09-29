@@ -20,10 +20,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class ControlValueJob<T> extends Job {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(ControlValueJob.class);
 
-	
+
 	// Data
 	private IScannable<T> scannable;
 	private T             value;
@@ -39,7 +39,7 @@ class ControlValueJob<T> extends Job {
 		super("Set Value");
 		this.editor = editor;
 	}
-	
+
 
 	public void setPosition(IScannable<T> scannable, T value) {
 		cancel();
@@ -55,15 +55,15 @@ class ControlValueJob<T> extends Job {
 			if (editor!=null) editor.setSafeEnabled(false);
 		    scannable.setPosition(value); // Blocking call
 		    if (editor!=null && value instanceof Number) {
-		    	editor.setSafeValue(((Number)value).doubleValue());
+			editor.setSafeValue(((Number)value).doubleValue());
 		    }
 		    return Status.OK_STATUS;
-		    
+
 		} catch (Exception e) {
 			editor.setSafeText(e.getMessage());
 			logger.error("Cannot set position!", e);
 		    return Status.CANCEL_STATUS;
-			
+
 		} finally {
 			editor.setSafeEnabled(true);
 		}

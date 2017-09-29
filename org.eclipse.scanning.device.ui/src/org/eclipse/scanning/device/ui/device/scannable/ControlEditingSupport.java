@@ -26,9 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class ControlEditingSupport extends EditingSupport {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ControlEditingSupport.class);
-	
+
 	private IScannableDeviceService cservice;
 	private ControlViewerMode       mode;
 
@@ -45,32 +45,32 @@ class ControlEditingSupport extends EditingSupport {
 		if (element instanceof ControlFileNode) return getFileEditor((ControlFileNode)element);
 		return null;
 	}
-	
-	private CellEditor getFileEditor(final ControlFileNode element) {
-    	FileDialogCellEditor fe = new FileDialogCellEditor((Composite) getViewer().getControl()) {
-    		@Override
-    		protected Object doGetValue() {
-    			String file = (String)super.doGetValue();
-    			element.setFile(file);
-    			return element;
-    		}
 
-    		@Override
-    		protected void doSetValue(Object value) {
-    			ControlFileNode node = (ControlFileNode)value;
-    			super.doSetValue(node.getFile());
-    		}
-    	};
-    	fe.setNewFile(false);
-    	fe.setDirectory(false);
+	private CellEditor getFileEditor(final ControlFileNode element) {
+	FileDialogCellEditor fe = new FileDialogCellEditor((Composite) getViewer().getControl()) {
+		@Override
+		protected Object doGetValue() {
+			String file = (String)super.doGetValue();
+			element.setFile(file);
+			return element;
+		}
+
+		@Override
+		protected void doSetValue(Object value) {
+			ControlFileNode node = (ControlFileNode)value;
+			super.doSetValue(node.getFile());
+		}
+	};
+	fe.setNewFile(false);
+	fe.setDirectory(false);
 		return fe;
 	}
 
 	private CellEditor getControlNodeEditor(ControlNode element) {
 
 		final Composite parent = (Composite) getViewer().getControl();
-		
-		final ControlNode controlNode = (ControlNode) element; 
+
+		final ControlNode controlNode = (ControlNode) element;
 		Object value = getValue(controlNode);
 		if (value instanceof Number) {
 			return new ControlValueCellEditor(parent, cservice, mode);
@@ -98,7 +98,7 @@ class ControlEditingSupport extends EditingSupport {
 
 	@Override
 	protected boolean canEdit(Object element) {
-		
+
 		if (mode.isDirectlyConnected()) return true;
 		if (element instanceof ControlFileNode) return true;
 		// can only edit ControlNodes and only when the value is not null
@@ -106,16 +106,16 @@ class ControlEditingSupport extends EditingSupport {
 		if (element instanceof ControlNode) {
 			ControlNode node = (ControlNode) element;
 			Object value = getValue(node);
-			
+
 			// can only edit where value is a number or string
 			// (in particular cannot edit where value is null, or where it is an array of any kind)
 			return value instanceof Number || value instanceof String;
 		}
 		return false;
 	}
-	
+
 	private Object getValue(ControlNode node) {
-		
+
 		if (mode.isDirectlyConnected()) {
 			return getScannableValue(node);
 		} else {

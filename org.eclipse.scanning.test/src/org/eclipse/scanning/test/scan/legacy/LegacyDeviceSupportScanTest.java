@@ -51,7 +51,7 @@ public class LegacyDeviceSupportScanTest {
 	private IScannableDeviceService connector;
 	private IPointGeneratorService pointGeneratorService;
 	private INexusFileFactory fileFactory;
-	
+
 	@Before
 	public void before() throws Exception {
 		fileFactory = new NexusFileFactoryHDF5();
@@ -61,7 +61,7 @@ public class LegacyDeviceSupportScanTest {
 		runnableDeviceService = new RunnableDeviceServiceImpl(connector);
 		pointGeneratorService = new PointGeneratorService();
 	}
-	
+
 	@Test
 	public void testLegacyDeviceSupportScan() throws Exception {
 		int[] shape = new int[] { 8, 5 };
@@ -69,20 +69,20 @@ public class LegacyDeviceSupportScanTest {
 		scanner.run(null);
 		checkNexusFile(scanner, shape);
 	}
-	
+
 	private void checkNexusFile(final IRunnableDevice<ScanModel> scanner, int... sizes) throws Exception {
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
-		
+
 		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
 		try (NexusFile nf = fileFactory.newNexusFile(filePath)) {
 			nf.openToRead();
-			
+
 			TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 			NXroot rootNode = (NXroot) nexusTree.getGroupNode();
 			NXentry entry = rootNode.getEntry();
 			NXinstrument instrument = entry.getInstrument();
-			
+
 			// check the expected metadata scannables have been included in the scan
 			// global metadata scannables: a, b, c, requires d, e, f
 			// required by nexusScannable1: x, requires y, z
@@ -97,10 +97,10 @@ public class LegacyDeviceSupportScanTest {
 			assertArrayEquals(expectedPositionerNames, actualPositionerNames);
 		}
 	}
-	
+
 	private IRunnableDevice<ScanModel> createStepScan(int... size) throws Exception {
 		IPointGenerator<?> gen = null;
-		
+
 		// We add the outer scans, if any
 		for (int dim = size.length-1; dim>-1; dim--) {
 			final StepModel model;
@@ -116,13 +116,13 @@ public class LegacyDeviceSupportScanTest {
 				gen = step;
 			}
 		}
-	
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 //		if (monitor!=null) smodel.setMonitors(monitor); // TODO remove
 //		if (metadataScannable != null) smodel.setMetadataScannables(metadataScannable);
-		
+
 		// Create a file to scan into.
 		File output = File.createTempFile("test_simple_nexus", ".nxs");
 		output.deleteOnExit();
@@ -131,7 +131,7 @@ public class LegacyDeviceSupportScanTest {
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = runnableDeviceService.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override

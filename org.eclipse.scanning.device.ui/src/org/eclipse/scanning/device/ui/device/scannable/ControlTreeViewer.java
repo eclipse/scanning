@@ -189,12 +189,12 @@ public class ControlTreeViewer {
         if (tree == null)      tree        = ControlTreeUtils.clone(defaultTree);
 
        if (setUseFilteredTree) {
-        	FilteredTree ftree = new FilteredTree(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE, new NamedNodeFilter(), true);
-        	this.viewer  = ftree.getViewer();
-        	this.content = ftree;
+		FilteredTree ftree = new FilteredTree(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE, new NamedNodeFilter(), true);
+		this.viewer  = ftree.getViewer();
+		this.content = ftree;
        } else {
-        	this.viewer  = new TreeViewer(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
-        	this.content = viewer.getTree();
+		this.viewer  = new TreeViewer(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
+		this.content = viewer.getTree();
         }
 
 		viewer.getTree().setLinesVisible(true);
@@ -425,8 +425,8 @@ public class ControlTreeViewer {
 	}
 
 	public void edit(INamedNode node, int index) {
-     	refresh();
-    	viewer.editElement(node, index);
+	refresh();
+	viewer.editElement(node, index);
 	}
 
 	public void refresh() {

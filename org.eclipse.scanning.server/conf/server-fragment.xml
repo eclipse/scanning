@@ -25,35 +25,35 @@
        <property name="requestTopic"    value="org.eclipse.scanning.request.device.topic" />
        <property name="responseTopic"   value="org.eclipse.scanning.response.device.topic"   />
     </bean>
-    
+
     <bean id="positionerServlet" class="org.eclipse.scanning.server.servlet.PositionerServlet" init-method="connect">
        <property name="broker"          value="${org.eclipse.scanning.broker.uri}" />
        <property name="requestTopic"    value="org.eclipse.scanning.request.positioner.topic" />
        <property name="responseTopic"   value="org.eclipse.scanning.response.positioner.topic"   />
     </bean>
-    
+
 	<bean id="acquireServlet"  class="org.eclipse.scanning.server.servlet.AcquireServlet" init-method="connect">
         <property name="broker"      value="${org.eclipse.scanning.broker.uri}" />
 	    <property name="requestTopic" value="org.eclipse.scanning.request.acquire.topic" />
 	    <property name="responseTopic"   value="org.eclipse.scanning.response.acquire.topic"   />
 	</bean>
-    
+
     <bean id="dataServer" class="org.eclipse.dawnsci.remotedataset.server.DataServer" init-method="start">
         <property name="port"     value="8690" />
         <property name="bundle"   value="org.eclipse.dawnsci.remotedataset.server" /> <!-- Delete for real spring? -->
     </bean>
-    
+
     <bean id="queueService" class="org.eclipse.scanning.event.queues.QueueServiceSpringInitializer" init-method="initialiseQueueService">
-    	<property name="bundle" value="org.eclipse.scanning.event.queues" /> <!-- Delete for real spring? -->
+	<property name="bundle" value="org.eclipse.scanning.event.queues" /> <!-- Delete for real spring? -->
     </bean>
-    
+
 
 	<import resource="example_detectors.xml"/>
 	<import resource="example_watchdogs.xml"/>
 
-	<!--  
+	<!--
 	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-	Testing/example only section config do not copy to production. 
+	Testing/example only section config do not copy to production.
 	$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	-->
 
@@ -67,8 +67,8 @@
 	    <property name="statusTopic" value="dataacq.xcen.STATUS_TOPIC" />
 	    <property name="durable"     value="true" />
 	</bean>
-	
-	<!--  
+
+	<!--
 	      This service can come in from core bundles or optionally be defined in the spring layer
 	      In this case we want a server with no hardware so we mock out all the devices.
 	      The mock service does not read other spring files for the devices as the real
@@ -78,12 +78,12 @@
         <property name="broker"  value="${org.eclipse.scanning.broker.uri}" />
 	</bean>
     <osgi:service ref="scannableDeviceService" interface="org.eclipse.scanning.api.device.IScannableDeviceService"/>
-	
+
     <bean id="filePathService" class="org.eclipse.scanning.example.file.MockFilePathService">
         <property name="bundle"  value="org.eclipse.scanning.example"/> <!-- TODO Delete for real spring? -->
 	</bean>
     <osgi:service ref="filePathService" interface="org.eclipse.scanning.api.scan.IFilePathService"/>
-	
+
 	<!--  End testing/example only-->
 
 </beans>

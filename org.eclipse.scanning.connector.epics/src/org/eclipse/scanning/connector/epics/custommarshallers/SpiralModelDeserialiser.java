@@ -21,7 +21,7 @@ import org.epics.pvmarshaller.marshaller.deserialisers.Deserialiser;
 
 /**
  * Custom deserialiser for Spiral model.
- * TODO - make this non 'test' and finalise custom serialisation strategy for models 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for models
  * @author Matt Taylor
  *
  */

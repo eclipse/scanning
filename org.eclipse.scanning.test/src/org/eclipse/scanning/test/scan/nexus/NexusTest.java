@@ -109,17 +109,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * Attempts to mock out a few services so that we can run them in junit
  * not plugin tests.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public abstract class NexusTest extends TmpTest {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(NexusTest.class);
-	
+
 	protected static IScannableDeviceService connector;
 	protected static IScanService            dservice;
 	protected static IPointGeneratorService  gservice;
@@ -128,16 +128,16 @@ public abstract class NexusTest extends TmpTest {
 
 	@BeforeClass
 	public static void setServices() throws Exception {
-		
+
 		//System.setProperty("org.eclipse.scanning.sequencer.AcquisitionDevice.Metrics", "true");
 		connector   = new MockScannableConnector(null);
 		dservice    = new RunnableDeviceServiceImpl(connector); // Not testing OSGi so using hard coded service.
 		gservice    = new PointGeneratorService();
-		fileFactory = new NexusFileFactoryHDF5();		
-		
+		fileFactory = new NexusFileFactoryHDF5();
+
 		ActivemqConnectorService.setJsonMarshaller(new MarshallerService(new PointsModelMarshaller()));
 		IEventService eservice  = new EventServiceImpl(new ActivemqConnectorService());
-		
+
 		IRunnableDeviceService dservice  = new RunnableDeviceServiceImpl(connector);
 		RunnableDeviceServiceImpl impl = (RunnableDeviceServiceImpl)dservice;
 		impl._register(MockDetectorModel.class, MockWritableDetector.class);
@@ -151,7 +151,7 @@ public abstract class NexusTest extends TmpTest {
 		impl._register(RandomLineModel.class, RandomLineDevice.class);
 		impl._register(PosDetectorModel.class, PosDetector.class);
 		impl._register(JythonModel.class, JythonDevice.class);
-		
+
 		// TODO Perhaps put service setting in super class or utility
 		Services.setEventService(eservice);
 		Services.setRunnableDeviceService(dservice);
@@ -161,24 +161,24 @@ public abstract class NexusTest extends TmpTest {
 		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(fileFactory);
 		org.eclipse.scanning.sequencer.ServiceHolder.setTestServices(new LoaderServiceMock(),
 				new DefaultNexusBuilderFactory(), new MockOperationService(), new MockFilePathService(), gservice);
-	
+
 		org.eclipse.scanning.example.Services.setEventService(eservice);
-		org.eclipse.scanning.example.Services.setPointGeneratorService(gservice);		
-		org.eclipse.scanning.example.Services.setRunnableDeviceService(dservice);		
-		org.eclipse.scanning.example.Services.setScannableDeviceService(connector);		
-		
+		org.eclipse.scanning.example.Services.setPointGeneratorService(gservice);
+		org.eclipse.scanning.example.Services.setRunnableDeviceService(dservice);
+		org.eclipse.scanning.example.Services.setScannableDeviceService(connector);
+
 	    clearTmp();
 	}
 
 
 	protected File output;
-	
+
 	@Before
 	public void createFile() throws IOException {
 		output = File.createTempFile("test_nexus", ".nxs");
 		output.deleteOnExit();
 	}
-	
+
 	@After
 	public void deleteFile() {
 		try {
@@ -205,16 +205,16 @@ public abstract class NexusTest extends TmpTest {
 
 		try (NexusFile nf =  fileFactory.newNexusFile(filePath)) {
 			nf.openToRead();
-			
+
 			TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 			return (NXroot) nexusTree.getGroupNode();
 		}
 	}
-	
+
 	protected NXentry checkNexusFile(IRunnableDevice<ScanModel> scanner, boolean snake, int... sizes) throws Exception {
 		return checkNexusFile(scanner, snake, false, sizes);
 	}
-	
+
 	/**
 	 * A folded grid is where a non-rectangular region is applied, meaning that the two grid
      * dimensions are flattened into one. In this case the sizes array passed in should be
@@ -228,21 +228,21 @@ public abstract class NexusTest extends TmpTest {
 		NXroot rootNode = getNexusRoot(scanner);
 		NXentry entry = rootNode.getEntry();
 		NXinstrument instrument = entry.getInstrument();
-		
+
 		// check that the scan points have been written correctly
 		assertSolsticeScanGroup(entry, snake, foldedGrid, sizes);
-		
+
 		LinkedHashMap<String, List<String>> signalFieldAxes = new LinkedHashMap<>();
 		// axis for additional dimensions of a datafield, e.g. image
 		signalFieldAxes.put(NXdetector.NX_DATA, Arrays.asList("real", "imaginary"));
 		signalFieldAxes.put("spectrum", Arrays.asList("spectrum_axis"));
 		signalFieldAxes.put("value", Collections.emptyList());
-		
+
 		String detectorName = scanModel.getDetectors().get(0).getName();
 		NXdetector nxDetector = instrument.getDetector(detectorName);
-		assertEquals(((IDetectorModel)scanner.getModel().getDetectors().get(0).getModel()).getExposureTime(), 
+		assertEquals(((IDetectorModel)scanner.getModel().getDetectors().get(0).getModel()).getExposureTime(),
 				     nxDetector.getCount_timeScalar().doubleValue(), 1e-15);
-		
+
 		// map of detector data field to name of nxData group where that field is the @signal field
 		Map<String, String> expectedDataGroupNames =
 				signalFieldAxes.keySet().stream().collect(Collectors.toMap(Function.identity(),
@@ -292,7 +292,7 @@ public abstract class NexusTest extends TmpTest {
 			// Append _value_demand to each name in list, then add detector axis fields to result
 			List<String> expectedAxesNames = Stream.concat(
 					scannableNames.stream().
-					filter(scannableName -> !(foldedGrid && scannableName.equals(scannableNames.get(scannableNames.size() - 2)))). // filter out inner grid scannable for folded grids 
+					filter(scannableName -> !(foldedGrid && scannableName.equals(scannableNames.get(scannableNames.size() - 2)))). // filter out inner grid scannable for folded grids
 					map(x -> x + "_value_set"),
 					signalFieldAxes.get(sourceFieldName).stream()).collect(Collectors.toList());
 			assertAxes(nxData, expectedAxesNames.toArray(new String[expectedAxesNames.size()]));
@@ -303,7 +303,7 @@ public abstract class NexusTest extends TmpTest {
 				if (!foldedGrid || i != scannableNames.size() - 2) {
 					i++; // don't increment if this is the last scannable of a folded grid scan
 				}
-				
+
 				NXpositioner positioner = instrument.getPositioner(scannableName);
 				assertNotNull(positioner);
 
@@ -333,30 +333,30 @@ public abstract class NexusTest extends TmpTest {
 								+ NXpositioner.NX_VALUE);
 			}
 		}
-		
+
 		return entry;
 	}
-	
+
 	protected IRunnableDevice<ScanModel> createGridScan(final IRunnableDevice<?> detector, File file, boolean snake, int... size) throws Exception {
-		
+
 		ScanModel smodel = createGridScanModel(detector, file, snake, size);
-		
+
 		// Create a scan and run it without publishing events
 		return dservice.createRunnableDevice(smodel, null);
 	}
-	
+
 	protected IRunnableDevice<ScanModel> createGridScan(final IRunnableDevice<?> detector, File file, IROI region, boolean snake, int... size) throws Exception {
-		
+
 		ScanModel smodel = createGridScanModel(detector, file, region, snake, size);
-		
+
 		// Create a scan and run it without publishing events
 		return dservice.createRunnableDevice(smodel, null);
 	}
-	
+
 	protected ScanModel createGridScanModel(final IRunnableDevice<?> detector, File file, boolean snake, int... size) throws Exception {
 		return createGridScanModel(detector, file, null, snake, size);
 	}
-	
+
 	protected ScanModel createGridScanModel(final IRunnableDevice<?> detector, File file, IROI region, boolean snake, int... size) throws Exception {
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
@@ -366,13 +366,13 @@ public abstract class NexusTest extends TmpTest {
 		gmodel.setSlowAxisPoints(size[size.length-2]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
 		gmodel.setSnake(snake);
-		
+
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel,
 				region == null ? Collections.emptyList() : Arrays.asList(region));
-		
+
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length - 1];
 		// We add the outer scans, if any
-		if (size.length > 2) { 
+		if (size.length > 2) {
 			for (int dim = size.length-3; dim>-1; dim--) {
 				final StepModel model;
 				if (size[dim]-1>0) {
@@ -387,42 +387,42 @@ public abstract class NexusTest extends TmpTest {
 		gens[size.length - 2] = gen;
 
 		gen = gservice.createCompoundGenerator(gens);
-	
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector);
-		
+
 		// Create a file to scan into.
 		smodel.setFilePath(file.getAbsolutePath());
 		System.out.println("File writing to "+smodel.getFilePath());
 
 		return smodel;
 	}
-	
+
 	protected IRunnableDevice<ScanModel> createSpiralScan(final IRunnableDevice<?> detector, File file) throws Exception {
 		ScanModel smodel = createSpiralScanModel(detector, file);
 		// Create a scan and run it without publishing events
 		return dservice.createRunnableDevice(smodel, null);
 	}
-		
+
 	protected ScanModel createSpiralScanModel(final IRunnableDevice<?> detector, File file) throws Exception {
 		SpiralModel spmodel = new SpiralModel("xNex","yNex");
 		spmodel.setScale(2.0);
 		spmodel.setBoundingBox(new BoundingBox(0,0,1,1));
-	
+
 		IPointGenerator<?> gen = gservice.createGenerator(spmodel);
 
 		final StepModel  model = new StepModel("neXusScannable1", 0,3,1);
 		final IPointGenerator<?> step = gservice.createGenerator(model);
 
 		gen = gservice.createCompoundGenerator(new IPointGenerator<?>[]{step,gen});
-		
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector);
-		
+
 		// Create a file to scan into.
 		smodel.setFilePath(file.getAbsolutePath());
 

@@ -22,14 +22,14 @@ import org.eclipse.scanning.api.scan.LevelRole;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
- * 
+ *
  * Reads detectors in a task.
- * 
+ *
  * This is the equivalent to the GDA8 readout() called on multiple
  * detectors with multiple threads and waiting for isBusy to be unset.
  * The latch method waits for the pool to exit if the run method is
  * called in non-blocking mode.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -39,10 +39,10 @@ final class DeviceWriter extends DeviceRunner {
 	 * Checks each detector to find the maximum time
 	 * that the await call should block for before
 	 * the csan is terminated.
-	 * 
+	 *
 	 * @param detectors
 	 */
-	DeviceWriter(Collection<IRunnableDevice<?>> detectors) {	
+	DeviceWriter(Collection<IRunnableDevice<?>> detectors) {
 		super(detectors);
 	}
 
@@ -75,7 +75,7 @@ final class DeviceWriter extends DeviceRunner {
 					}
 				}
 				return null; // faster if not adding new information
-				
+
 			} catch (Exception ne) {
 				abort(detector, position, ne);
                 throw ne;

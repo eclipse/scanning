@@ -16,4 +16,3 @@ Import-Package: org.osgi.framework;version="1.8.0",
  org.osgi.service.packageadmin;version="1.2.0",
  org.slf4j;version="[1.7.2,2.0.0)"
 Bundle-Activator: org.eclipse.scanning.server.application.Activator
-

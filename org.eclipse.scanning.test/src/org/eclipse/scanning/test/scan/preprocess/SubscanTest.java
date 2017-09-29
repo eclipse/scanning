@@ -43,20 +43,20 @@ public class SubscanTest extends TmpTest{
 
 	@BeforeClass
 	public static void setServices() throws Exception {
-		
+
 		//System.setProperty("org.eclipse.scanning.sequencer.AcquisitionDevice.Metrics", "true");
 		connector   = new MockScannableConnector(null);
 		dservice    = new RunnableDeviceServiceImpl(connector); // Not testing OSGi so using hard coded service.
 		gservice    = new PointGeneratorService();
-		
+
 		ActivemqConnectorService.setJsonMarshaller(new MarshallerService(new PointsModelMarshaller()));
 		IEventService eservice  = new EventServiceImpl(new ActivemqConnectorService());
-		
+
 		IRunnableDeviceService dservice  = new RunnableDeviceServiceImpl(connector);
 		RunnableDeviceServiceImpl impl = (RunnableDeviceServiceImpl)dservice;
 		impl._register(MandelbrotModel.class, MandelbrotDetector.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
-		
+
 		// TODO Perhaps put service setting in super class or utility
 		Services.setEventService(eservice);
 		Services.setRunnableDeviceService(dservice);
@@ -64,7 +64,7 @@ public class SubscanTest extends TmpTest{
 		Services.setConnector(connector);
 		org.eclipse.scanning.sequencer.ServiceHolder.setTestServices(new LoaderServiceMock(),
 				new DefaultNexusBuilderFactory(), new MockOperationService(), new MockFilePathService(), gservice);
-	
+
 	    clearTmp();
 	}
 

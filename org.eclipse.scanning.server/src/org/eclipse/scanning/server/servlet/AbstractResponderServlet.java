@@ -71,7 +71,7 @@ public abstract class AbstractResponderServlet<B extends IdBean> implements IRes
 
 		responder = eventService.createResponder(new URI(broker), requestTopic, responseTopic);
 		responder.setResponseCreator(createResponseCreator());
-     	logger.info("Started "+getClass().getSimpleName());
+	logger.info("Started "+getClass().getSimpleName());
     }
 
 	/**

@@ -18,11 +18,11 @@ import org.eclipse.dawnsci.nexus.NexusException;
 import org.eclipse.scanning.api.IScanAttributeContainer;
 
 /**
- * 
+ *
  * Class to deal with attribute registration into the nexus file.
- * 
+ *
  * Can be used as delegate or static method.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -33,16 +33,16 @@ public class Attributes {
 	public Attributes(IScanAttributeContainer container) {
 		this.container = container;
 	}
-	
+
 	public void registerAttributes(NXobject nexusObject) throws Exception {
 		registerAttributes(nexusObject, container);
 	}
-	
+
 	/**
 	 * Add the attributes for the given attribute container into the given nexus object.
 	 * @param nexusObject
 	 * @param container
-	 * @throws NexusException 
+	 * @throws NexusException
 	 */
 	public static void registerAttributes(NXobject nexusObject, IScanAttributeContainer container) throws NexusException {
 		// We create the attributes, if any

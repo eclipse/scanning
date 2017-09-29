@@ -14,7 +14,7 @@ package org.eclipse.scanning.api.event.bean;
 public interface IBeanListener<T> extends IBeanClassListener<T> {
 
 	/**
-	 * Called when any bean is changed and published	
+	 * Called when any bean is changed and published
 	 * @param evt
 	 */
 	void beanChangePerformed(BeanEvent<T> evt);

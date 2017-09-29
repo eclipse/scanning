@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Composite;
 
 public class MarginUtils {
 	/**
-	 * 
+	 *
 	 * @param area
 	 */
 	public static void removeMargins(Composite area) {

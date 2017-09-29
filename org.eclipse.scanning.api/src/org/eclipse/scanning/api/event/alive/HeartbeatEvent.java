@@ -16,7 +16,7 @@ import java.util.EventObject;
 public class HeartbeatEvent extends EventObject {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -120191399800024906L;
 

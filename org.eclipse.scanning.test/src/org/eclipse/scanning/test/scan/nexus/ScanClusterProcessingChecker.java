@@ -54,7 +54,7 @@ import org.eclipse.scanning.api.scan.models.ScanModel;
 import org.eclipse.scanning.test.scan.mock.DummyOperationBean;
 
 public class ScanClusterProcessingChecker {
-	
+
 	private INexusFileFactory factory;
 	private IConsumer<StatusBean> consumer;
 	private List<String> scannableNames;
@@ -66,9 +66,9 @@ public class ScanClusterProcessingChecker {
 		this.factory = factory;
 		this.consumer= consumer;
 	}
-	
+
 	public void setDevice(IRunnableDevice<ScanModel> scanner) throws Exception {
-		
+
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
 
 		final IPosition pos = scanModel.getPositionIterable().iterator().next();
@@ -78,20 +78,20 @@ public class ScanClusterProcessingChecker {
 
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 	}
-	
+
 	public void checkNexusFile(int... sizes) throws Exception {
 
 
 		NXroot rootNode = getNexusRoot();
 		NXentry entry = rootNode.getEntry();
 		NXinstrument instrument = entry.getInstrument();
-				
+
 		LinkedHashMap<String, List<String>> signalFieldAxes = new LinkedHashMap<>();
 		// axis for additional dimensions of a datafield, e.g. image
 		signalFieldAxes.put(NXdetector.NX_DATA, Arrays.asList("real", "imaginary"));
 		signalFieldAxes.put("spectrum", Arrays.asList("spectrum_axis"));
 		signalFieldAxes.put("value", Collections.emptyList());
-		
+
 		NXdetector detector = instrument.getDetector(detectorName);
 		// map of detector data field to name of nxData group where that field is the @signal field
 		Map<String, String> expectedDataGroupNames =
@@ -146,7 +146,7 @@ public class ScanClusterProcessingChecker {
 			int[] defaultDimensionMappings = IntStream.range(0, sizes.length).toArray();
 			int i = -1;
 			for (String  scannableName : scannableNames) {
-				
+
 			    i++;
 				NXpositioner positioner = instrument.getPositioner(scannableName);
 				assertNotNull(positioner);
@@ -181,18 +181,18 @@ public class ScanClusterProcessingChecker {
 
 
 	public void checkSubmittedBean(boolean allowEmpty) throws Exception {
-		
+
 		List<StatusBean> statusSet = consumer.getStatusSet();
 		if (allowEmpty && statusSet.isEmpty()) return;
-		
+
 		assertThat(statusSet.get(0), is(instanceOf(DummyOperationBean.class)));
 		DummyOperationBean operationBean = (DummyOperationBean) statusSet.get(0);
-		
+
 		assertThat(operationBean.getDataKey(), is(equalTo(DEFAULT_ENTRY_PATH + GROUP_NAME_SOLSTICE_SCAN)));
 		assertTrue(operationBean.getFilePath().contains("test_nexus"));
 		assertTrue(operationBean.getFilePath().endsWith(NEXUS_FILE_EXTENSION));
 		assertTrue(operationBean.getOutputFilePath().contains("processed"));
-		assertTrue(operationBean.getOutputFilePath(), 
+		assertTrue(operationBean.getOutputFilePath(),
 				   operationBean.getOutputFilePath().endsWith("-"+processingName+NEXUS_FILE_EXTENSION));
 		assertThat(operationBean.getDatasetPath(), is(equalTo(DEFAULT_ENTRY_PATH + detectorName)));
 		assertThat(operationBean.getSlicing(), is(nullValue()));
@@ -203,16 +203,16 @@ public class ScanClusterProcessingChecker {
 		assertThat(operationBean.getDataDimensions(), is(nullValue()));
 		assertThat(operationBean.getScanRank(), is(2));
 		assertThat(operationBean.isReadable(), is(true));
-		
+
 		assertThat(System.getProperty("java.io.tmpdir"), startsWith(operationBean.getRunDirectory()));
 		assertThat(operationBean.getNumberOfCores(), is(1));
 	}
-	
+
 	public NXroot getNexusRoot() throws Exception {
-		
+
 		NexusFile nf = factory.newNexusFile(filePath);
 		nf.openToRead();
-		
+
 		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 		return (NXroot) nexusTree.getGroupNode();
 	}

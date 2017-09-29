@@ -43,34 +43,34 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class QueueBeanFactoryTest {
-	
+
 	private IQueueBeanFactory qbf;
-	
+
 	private boolean extendedTest;
-	
+
 	@Before
 	public void setUp() {
 		qbf = new QueueBeanFactory();
 	}
-	
+
 	@After
 	public void tearDown() {
 		qbf = null;
-		
+
 		if (extendedTest) {
 			ServicesHolder.setScannableDeviceService(null);
 			ServicesHolder.setRunnableDeviceService(null);
 		}
 	}
-	
+
 	private void setUpExtendedInfrastructure() throws ScanningException {
 		IScannableDeviceService connector = new MockScannableConnector(null);
 		ServicesHolder.setScannableDeviceService(connector);
 		IRunnableDeviceService dservice = new RunnableDeviceServiceImpl(connector); // Not testing OSGi so using hard coded service.
 		ServicesHolder.setRunnableDeviceService(dservice);
-		
+
 		((RunnableDeviceServiceImpl) dservice)._register(MandelbrotModel.class, MandelbrotDetector.class);
-		
+
 		//Lifted from org.eclipse.scanning.test.scan.nexus.MandelbrotExampleTest
 		MandelbrotModel modelA = new MandelbrotModel(), modelB = new MandelbrotModel();
 		modelA.setName("mandelbrotA");
@@ -85,10 +85,10 @@ public class QueueBeanFactoryTest {
 		modelB.setColumns(64);
 		modelB.setRows(64);
 		dservice.createRunnableDevice(modelB);
-		
+
 		extendedTest = true;
 	}
-	
+
 	/**
 	 * Tests basic registration and deregistration of atoms and beans from the QueueBeanFactory
 	 * @throws QueueModelException
@@ -101,14 +101,14 @@ public class QueueBeanFactoryTest {
 		PositionerAtom positAtom = new PositionerAtom(reference, "Badger badger mushroom", 10);
 		positAtom.setName("Set dummy to 10");
 		qbf.registerAtom(positAtom);
-		
+
 		assertEquals("Should only be one queue atoms registered in the factory", 1, qbf.getQueueAtomRegister().size());
 		assertEquals("No atom with the expected reference ("+refVal+") registered!", refVal, qbf.getQueueAtomRegister().get(0));
-		
+
 		//Get the atom and check it's config
 		PositionerAtom dum = (PositionerAtom)qbf.assembleQueueAtom(refVal, null);
 		assertFalse("No atom with the expected reference registered", dum == null);
-		
+
 		//Try adding a second atom...
 		PositionerAtom detXAtom = new PositionerAtom("setDetX", "dummy", 225);
 		detXAtom.setName("Set detX to 10");//TODO this should be set automatically
@@ -137,7 +137,7 @@ public class QueueBeanFactoryTest {
 		} catch (QueueModelException qme) {
 			//Exception is expected - that' what I'm testing for
 		}
-		
+
 		//Register another atom with the same short name (this should throw an exception!)
 		try {
 			qbf.registerAtom(positAtom);
@@ -146,9 +146,9 @@ public class QueueBeanFactoryTest {
 			//Exception is expected - that' what I'm testing for
 		}
 	}
-	
+
 	/**
-	 * Tests the registration of a series of atoms, both subtasks and postioners, and 
+	 * Tests the registration of a series of atoms, both subtasks and postioners, and
 	 * their assembly into a complete taskbean
 	 * @throws QueueModelException
 	 */
@@ -161,14 +161,14 @@ public class QueueBeanFactoryTest {
 		detXAtom.setName("Set detX to 10"); //TODO this should be set automatically
 		qbf.registerAtom(positAtom);
 		qbf.registerAtom(detXAtom);
-		
+
 		//Register a simple SubTaskAtom model containing the positioner & detX setting
 		List<QueueValue<String>> atoms = new ArrayList<>();
 		atoms.add(new QueueValue<>("setDummy", true));
 		atoms.add(new QueueValue<>("setDetX", true));
 		SubTaskAtom simpleSubTask = new SubTaskAtom("mvDum", "Move dummy & set detector X position", atoms);
 		qbf.registerAtom(simpleSubTask);
-		
+
 		SubTaskAtom mvDum = qbf.assembleQueueAtom(new QueueValue<>("mvDum", true), null);
 		assertEquals("Name of returned SubTaskAtom is wrong", "Move dummy & set detector X position", mvDum.getName());
 		assertEquals("Short name of returned SubTaskAtom is wrong", "mvDum", mvDum.getShortName());
@@ -176,33 +176,33 @@ public class QueueBeanFactoryTest {
 		List<QueueAtom> atomQueue = mvDum.getAtomQueue();
 		assertEquals("First atom is not the expected 'setDummy'", positAtom, atomQueue.get(0));
 		assertEquals("Second atom is not the expected 'setDetX'", detXAtom, atomQueue.get(1));
-		
+
 		//Register a simple TaskBean model containing just the SubTaskAtom
 		List<QueueValue<String>> subTasks = new ArrayList<>();
 		subTasks.add(new QueueValue<>(simpleSubTask.getShortName(), true));
 		TaskBean simpleTask = new TaskBean("execMvDum", "Execute move dummy & detX", subTasks);
 		qbf.registerTask(simpleTask);
-		
+
 		TaskBean execDum = qbf.assembleTaskBean(new QueueValue<>("execMvDum", true), null);
 		assertEquals("Name of returned TaskBean is wrong", "Execute move dummy & detX", execDum.getName());
 		assertEquals("Short name of returned TaskBean is wrong", "execMvDum", execDum.getShortName());
 		assertEquals("Unexpected number of atoms in AtomQueue", 1, execDum.atomQueueSize());
 		SubTaskAtom atomQueueSubTaskAtom = execDum.getAtomQueue().get(0);
 		assertEquals("SubTaskAtom is not the expected 'mvDum'", mvDum, atomQueueSubTaskAtom);
-		
+
 		TaskBean secondExecDum = qbf.assembleDefaultTaskBean(null);
 		assertEquals("assembleDefault should return the same model as explicitly requested when one model registered", secondExecDum, execDum);
 	}
-	
+
 	/**
 	 * Tests registration methods for values
-	 * @throws QueueModelException 
+	 * @throws QueueModelException
 	 */
 	@Test
 	public void testRegisterUnRegisterValues() throws QueueModelException {
 		IQueueValue<?> globValA = new QueueValue<Double>("locVal", 80.);
 		IQueueValue<?> globValB = new QueueValue<Double>("homePosition", 1.235);
-		
+
 		qbf.registerGlobalValue(globValA);
 		assertEquals("Should be only 1 value registered", 1, qbf.getGlobalValuesRegister().size());
 		qbf.registerGlobalValue(globValB);
@@ -213,9 +213,9 @@ public class QueueBeanFactoryTest {
 		} catch (Exception ex) {
 			//Expected - see above
 		}
-		
+
 		assertEquals("Wrong global value returned", globValA, qbf.getGlobalValue(new QueueValue<String>("locVal", true)));
-		
+
 		qbf.unregisterGlobalValue("locVal");
 		assertEquals("Should be only 1 value registered", 1, qbf.getGlobalValuesRegister().size());
 		try {
@@ -225,7 +225,7 @@ public class QueueBeanFactoryTest {
 			//Expected - see above
 		}
 	}
-	
+
 	/**
 	 * This tests the insertion of one value registered in the global values registry into a created PositionerAtom
 	 * @throws QueueModelException
@@ -237,7 +237,7 @@ public class QueueBeanFactoryTest {
 		positAtomA.setName("Set position of 'dummy'=10");
 		PositionerAtom positAtomB = new PositionerAtom("setYummy","yummy", 80.0);
 		positAtomB.setName("Set position of 'yummy'=80.0");
-		
+
 		//... and these are the bits that are needed to make the atom
 		PositionerAtom positAModel = new PositionerAtom("setDummy", true, "dummy", new QueueValue<String>("dummyValue", true));
 		PositionerAtom positBModel = new PositionerAtom("setYummy", true, "yummy", new QueueValue<String>("locVal", true));
@@ -248,17 +248,17 @@ public class QueueBeanFactoryTest {
 		//Try to populate from global values
 		PositionerAtom dum = (PositionerAtom)qbf.assembleQueueAtom(new QueueValue<String>("setDummy", true), new ExperimentConfiguration(null, null, null)); //null since we're after a global value
 		assertEquals("PositionerAtom configured from global values is wrong", positAtomA, dum);
-		
+
 		//Try to populate from local values
 		ExperimentConfiguration config = new ExperimentConfiguration(Arrays.asList(new QueueValue<Double>("locVal", 80.)), null, null);
 		dum = (PositionerAtom)qbf.assembleQueueAtom(new QueueValue<String>("setYummy", true), config);
 		assertEquals("PositionerAtom configured from local values is wrong", positAtomB, dum);
 	}
-	
-	
+
+
 	/**
 	 * A more extended test, which to test the default XBeanAssemblers
-	 * @throws QueueModelException 
+	 * @throws QueueModelException
 	 */
 	@Test
 	public void testAllBeansSimpleConfigPseudoIntegrationTest() throws Exception {
@@ -270,7 +270,7 @@ public class QueueBeanFactoryTest {
 		 * 					  and a Monitor(monitor2)
 		 * Values: exposureTime = 30s; homePosition = 1.235
 		 */
-		
+
 		//ScanAtom model
 		Map<String, DeviceModel> pMods = new LinkedHashMap<>();
 		Map<String, Object> pathConf = new HashMap<>();
@@ -287,17 +287,17 @@ public class QueueBeanFactoryTest {
 		Collection<Object> mons = Arrays.asList(new QueueValue<String>("monitor2"));
 		ScanAtom scAtMod = new ScanAtom("testScan", pMods, dMods, mons);
 		qbf.registerAtom(scAtMod);
-		
+
 		//MonitorAtom models
-		MonitorAtom monAtMod1 = new MonitorAtom("testMon1", true, "monitor1"), 
+		MonitorAtom monAtMod1 = new MonitorAtom("testMon1", true, "monitor1"),
 					monAtMod2 = new MonitorAtom("testMon2", true, "monitor2");
 		qbf.registerAtom(monAtMod1);
 		qbf.registerAtom(monAtMod2);
-		
+
 		//PositionerAtom model
 		PositionerAtom posAtMod = new PositionerAtom("testHomer", true, "stage_x", new QueueValue<String>("homePosition", true));
 		qbf.registerAtom(posAtMod);
-		
+
 		//SubTaskAtom models
 		SubTaskAtom stAtMod1 = new SubTaskAtom("testSubTask1", "Reset stage x position", true);
 		stAtMod1.addAtom(new QueueValue<String>("testHomer", true));
@@ -305,20 +305,20 @@ public class QueueBeanFactoryTest {
 		SubTaskAtom stAtMod2 = new SubTaskAtom("testSubTask2", "Run MScan then monitor", Arrays.asList(new QueueValue<String>("testScan", true), new QueueValue<String>("testMon2", true)));
 		qbf.registerAtom(stAtMod1);
 		qbf.registerAtom(stAtMod2);
-		
+
 		//TaskBean model
 		TaskBean tbMod = new TaskBean("testDefaultTask", "Reset stage and measure task", true);
 		tbMod.addAtom(new QueueValue<String>("testSubTask1", true));
 		tbMod.addAtom(new QueueValue<String>("testSubTask2", true));
 		qbf.registerTask(tbMod);
-		
+
 		//Register global value
 		qbf.registerGlobalValue(new QueueValue<Double>("homePosition", 1.235));
-		
+
 		ExperimentConfiguration config = new ExperimentConfiguration(Arrays.asList(new QueueValue<Double>("exposureTime", 30.0)), null, null);
-		
+
 		TaskBean exemplar = createCompleteDefaultTask(), produced = qbf.assembleDefaultTaskBean(config);
-		
+
 		if (!exemplar.equals(produced)) {
 			assertTrue("Atom queue of "+produced.getName()+" are different lengths", exemplar.atomQueueSize() == produced.atomQueueSize());
 			for (int i=0; i < produced.getAtomQueue().size(); i++) {
@@ -329,10 +329,10 @@ public class QueueBeanFactoryTest {
 				}
 			}
 		}
-		
+
 		assertEquals("Produced task is not correctly configured", exemplar, produced);
 	}
-	
+
 	private void analyseAtomQueues(SubTaskAtom produced, SubTaskAtom exemplar) {
 		List<QueueAtom> exemplarAtomQueue = exemplar.getAtomQueue();
 		List<QueueAtom> producedAtomQueue = produced.getAtomQueue();
@@ -341,31 +341,31 @@ public class QueueBeanFactoryTest {
 			assertEquals(exemplarAtomQueue.get(i), producedAtomQueue.get(i));
 		}
 	}
-	
+
 	private TaskBean createCompleteDefaultTask() throws ScanningException {
 		ScanAtom scAt = createScanAtom();
-		
-		MonitorAtom monAt1 = new MonitorAtom("testMon1", "monitor1"), 
+
+		MonitorAtom monAt1 = new MonitorAtom("testMon1", "monitor1"),
 					monAt2 = new MonitorAtom("testMon2", "monitor2");
 		monAt1.setName("Measure current value of 'monitor1'");
 		monAt2.setName("Measure current value of 'monitor2'");
-		
+
 		PositionerAtom posAt = new PositionerAtom("testHomer", "stage_x", 1.235);
 		posAt.setName("Set position of 'stage_x'=1.235");
-		
+
 		SubTaskAtom stAt1 = new SubTaskAtom("testSubTask1", "Reset stage x position");
 		stAt1.addAtom(posAt);
 		stAt1.addAtom(monAt1);
 		SubTaskAtom stAt2 = new SubTaskAtom("testSubTask2", "Run MScan then monitor");
 		stAt2.addAtom(scAt);
 		stAt2.addAtom(monAt2);
-		
+
 		TaskBean defaultTB = new TaskBean("testDefaultTask", "Reset stage and measure task");
 		defaultTB.addAtom(stAt1);
 		defaultTB.addAtom(stAt2);
 		return defaultTB;
 	}
-	
+
 	private <T> ScanAtom createScanAtom() throws ScanningException {
 		ScanRequest<T> scanReq = new ScanRequest<>();
 		CompoundModel<T> cMod = new CompoundModel<>();
@@ -382,7 +382,7 @@ public class QueueBeanFactoryTest {
 		scAt.setName("Scan of 'stage_x' (Step) collecting data with 'mandelbrotB', 'mandelbrotA' detector(s)");
 		return scAt;
 	}
-	
+
 //	TODO OLDprivate ScanAtom createScanAtom() throws ScanningException {
 //		ScanRequest<?> scanReq = new ScanRequest<>();
 //		scanReq.setCompoundModel(new CompoundModel<>(Arrays.asList(new StepModel("stage_x", 0.0, 10.5, 1.5))));
@@ -395,22 +395,22 @@ public class QueueBeanFactoryTest {
 //		scanReq.setMonitorNames(Arrays.asList("monitor2"));
 //		return new ScanAtom("testScan", scanReq);
 //	}
-		
-		
+
+
 //		//This example taken from /dls_sw/i15-1/scripts/m1.py; is for setting the voltages on the I15-1 bimorph mirror
 //		Map<String, Object> sesoVoltages = makeSesoMap();
 //		Map<String, Object> offVoltages = makeOffMap();
-//		
+//
 //		//These are what we are trying to make
 //		PositionerAtom sesoAtom = new PositionerAtom("setMirror", sesoVoltages);
 //		PositionerAtom offAtom = new PositionerAtom("setMirror", offVoltages);
-//		
+//
 //		//The template we're going to populate
 //		PositionerAtom mirrorTempl = new PositionerAtom("setMirror")
 //	}
 
-	
-	
+
+
 //	private Map<String, Object> makeSesoMap() {
 //		Map<String, Object> sesoVoltages = new HashMap<>();
 //		sesoVoltages.put("CH1", 1415);
@@ -449,5 +449,5 @@ public class QueueBeanFactoryTest {
 //		offVoltages.put("CH15", 0);
 //		return offVoltages;
 //	}
-	
+
 }

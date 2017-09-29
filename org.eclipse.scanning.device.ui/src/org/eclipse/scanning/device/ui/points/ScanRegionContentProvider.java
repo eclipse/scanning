@@ -22,7 +22,7 @@ import org.eclipse.scanning.device.ui.util.ScanRegions;
 
 class ScanRegionContentProvider implements IStructuredContentProvider {
 
-	
+
 	private IPlottingSystem<?> system;
 
 	@Override

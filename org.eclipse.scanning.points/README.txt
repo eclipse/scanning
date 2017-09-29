@@ -1,6 +1,6 @@
-This bundle requires Jython to create the point generators. 
+This bundle requires Jython to create the point generators.
 
-The point generators are cpython and jython runnable classes which define the order of points generation. 
+The point generators are cpython and jython runnable classes which define the order of points generation.
 This approach is used so that point generators may be passed down to hardware devices such as Malcolm and
 entirely the same sequence of points is used. It allows the hardware to iterate down the fast direction
 ahead of time an construct fast scans using custom devices. On the Java side it is possible to create

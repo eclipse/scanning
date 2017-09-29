@@ -42,17 +42,17 @@ import org.junit.runner.RunWith;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class KnownModelsTest extends ShellTest{
-	
+
 	private static IInterfaceService interfaceService; // We really get this from OSGi services!
-	
+
 	@BeforeClass
-	public static void createServices() throws Exception {	
+	public static void createServices() throws Exception {
 		interfaceService = new InterfaceService(); // Just for testing! This comes from OSGi really.
 		UISuite.createTestServices(false);
 	}
-	
+
 	@AfterClass
-	public static void disposeServices() throws Exception {	
+	public static void disposeServices() throws Exception {
 		interfaceService = null;
 		UISuite.disposeTestServices();
 	}
@@ -61,14 +61,14 @@ public class KnownModelsTest extends ShellTest{
 
 	@Override
 	protected Shell createShell(Display display) throws Exception {
-				
+
 		this.viewer = interfaceService.createModelViewer();
 
 		Shell shell = new Shell(display);
 		shell.setText("Point Model");
 		shell.setLayout(new GridLayout(1, false));
         viewer.createPartControl(shell);
-		
+
 		shell.pack();
 		shell.setSize(500, 500);
 		shell.open();
@@ -84,7 +84,7 @@ public class KnownModelsTest extends ShellTest{
 	@Test
 	public void testVariousPointsModels() throws Exception {
 		assertNotNull(bot.shell("Point Model"));
-		
+
 		List<ModelTest> models = createTestPointsModels();
 		testModels(models);
 	}
@@ -98,7 +98,7 @@ public class KnownModelsTest extends ShellTest{
 					e.printStackTrace();
 				}
 			});
-			
+
 			String className = tcase.getModel().getClass().getSimpleName();
 			assertEquals("Checking editable fields of "+className, tcase.getFieldCount(), bot.table(0).rowCount());
 			System.out.println(className+" Passed");
@@ -110,22 +110,22 @@ public class KnownModelsTest extends ShellTest{
 		models.add(new ModelTest(new StepModel("x", 0, 10, 1), 4));
 		models.add(new ModelTest(new CollatedStepModel(0, 10, 1, "x1", "y1"), 5));
 		models.add(new ModelTest(new ArrayModel(0,1,2,3,4,5,6,7,8,9), 1));
-		models.add(new ModelTest(new GridModel("x", "y"), 6));	
+		models.add(new ModelTest(new GridModel("x", "y"), 6));
 		models.add(new ModelTest(new RasterModel("x", "y"), 6));
 		models.add(new ModelTest(new SpiralModel("x", "y", 2, null), 4));
 		models.add(new ModelTest(new LissajousModel(), 8));
 		return models;
 	}
-	
+
 	@Test
 	public void testVariousDetectorModels() throws Exception {
 		assertNotNull(bot.shell("Point Model"));
-		
+
 		List<ModelTest> models = createTestDetectorModels();
 		testModels(models);
 
 	}
-	
+
 	private List<ModelTest> createTestDetectorModels() {
 		List<ModelTest> models = new ArrayList<>();
 		models.add(new ModelTest(new MandelbrotModel("x", "y"), 17));

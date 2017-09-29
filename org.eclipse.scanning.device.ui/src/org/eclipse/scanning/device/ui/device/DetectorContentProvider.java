@@ -29,30 +29,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * Connects to server and gets the list of detectors with their current
  * models.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 class DetectorContentProvider implements IStructuredContentProvider {
 
 	private static final Logger logger = LoggerFactory.getLogger(DetectorContentProvider.class);
-	
+
 	/**
 	 * Remote device service.
 	 */
 	private IRunnableDeviceService dservice;
 	private Collection<DeviceInformation<?>> infos;
-	
+
 	public DetectorContentProvider(IRunnableDeviceService dservice) throws EventException, ScanningException {
 		this.dservice = dservice;
 	}
 
 	@Override
 	public void dispose() {
-		
+
 	}
 
 	@Override
@@ -66,33 +66,33 @@ class DetectorContentProvider implements IStructuredContentProvider {
 
 	@Override
 	public Object[] getElements(Object inputElement) {
-		
+
 		try {
 		    final List<DeviceInformation<?>> devices = new ArrayList<>(infos.size());
 		    final boolean isHardware   = Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_HARDWARE);
 		    final boolean isMalcolm    = Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_MALCOLM);
 		    final boolean isProcessing = Activator.getDefault().getPreferenceStore().getBoolean(DevicePreferenceConstants.SHOW_PROCESSING);
 		    infos.forEach(info-> {
-		    	if (info.getDeviceRole()==DeviceRole.HARDWARE) {
-		    		if (isHardware) devices.add(info);
-		    	} else if (info.getDeviceRole()==DeviceRole.PROCESSING) {
-		    		if (isProcessing) devices.add(info);
-		    	}else if (info.getDeviceRole()==DeviceRole.MALCOLM) {
-		    		if (isMalcolm) devices.add(info);
-		    	}
+			if (info.getDeviceRole()==DeviceRole.HARDWARE) {
+				if (isHardware) devices.add(info);
+			} else if (info.getDeviceRole()==DeviceRole.PROCESSING) {
+				if (isProcessing) devices.add(info);
+			}else if (info.getDeviceRole()==DeviceRole.MALCOLM) {
+				if (isMalcolm) devices.add(info);
+			}
 		    });
-		    // Since infos will be iterated through in an arbitrary order (from a user perspective), return a sorted 
-		    // list for display 
+		    // Since infos will be iterated through in an arbitrary order (from a user perspective), return a sorted
+		    // list for display
 		    devices.sort(Comparator.comparing(e -> e.getLabel()));
 		    return devices.toArray(new DeviceInformation[devices.size()]);
-		    
+
 		} catch (Exception ne) {
 			ne.printStackTrace();
 			logger.error("Cannot get devices!", ne);
 			return new DeviceInformation<?>[]{new DeviceInformation<Object>("No devices found")};
 		}
 	}
-	
+
 	public Collection<DeviceInformation<?>> getInfo() {
 		return infos;
 	}

@@ -24,8 +24,8 @@ import org.eclipse.scanning.api.scan.ScanningException;
 IPositioner     pos    = sservice.createPositioner();
 pos.setPosition(new MapPosition("x:1, y:2"));
 
-//'sservice' is the scanning service.  setPosition moves the motors to their positions by level until they are all there and then returns. It is the same thing as used to move to a scan point during a scan. 
-//The MapPosition is just a convenience for Java. 
+//'sservice' is the scanning service.  setPosition moves the motors to their positions by level until they are all there and then returns. It is the same thing as used to move to a scan point during a scan.
+//The MapPosition is just a convenience for Java.
 //In Jython since the MapPosition also takes a map, a dictionary can be used:
 
 pos.setPosition(new MapPosition({'x':1, 'y':2}));
@@ -40,14 +40,14 @@ public interface IPositioner extends IPositionListenable {
 	/**
 	 * This method moves to the position passed in and returns when the move
 	 * is complete.
-	 * 
+	 *
 	 * It takes into account the levels of the scannbles and moves them
-	 * using a separate thread for each one. An executor service is used 
+	 * using a separate thread for each one. An executor service is used
 	 * for each level and attempts to process all motors on a given level
 	 * before existing.
-	 * 
+	 *
 	 * It is blocking until all the scannables have reached the desired location.
-	 * 
+	 *
 	 * @param position
 	 * @return
 	 * @return false if the position could not be reached. Normally an exception will be thrown if this is the case.
@@ -57,33 +57,33 @@ public interface IPositioner extends IPositionListenable {
 
 	/**
 	 * This method will return null if the positioner has not been told to move to a
-	 * position. If it has it will read the scannable values from the last position it 
+	 * position. If it has it will read the scannable values from the last position it
 	 * was told to go to and return a position of those values. For instance if the
 	 * IPositioner was last told to go to x:1 and y:2, it would return the current values
 	 * of the scannables x and y by reading them again.
-	 * 
+	 *
 	 * @param position
 	 * @return Read position
 	 * @throws ScanningException
 	 */
 	IPosition getPosition() throws ScanningException;
-	
+
 	/**
 	 * Monitors are a set of scannables which will have setPosition(null, IPosition) called and
-	 * may block until happy or write an additional record during the scan. 
-	 * 
+	 * may block until happy or write an additional record during the scan.
+	 *
 	 * For instance the beam current or ambient temperature could be monitors which are written
 	 * to the NeXus file. Monitors are sorted into level with the scannbles of the current position.
-	 * 
+	 *
 	 * @return monitors
 	 * @throws ScanningException
 	 */
 	List<IScannable<?>> getMonitors()  throws ScanningException;
-	
+
 	/**
 	 * Monitors are a set of scannables which will have setPosition(null, IPosition) called and
-	 * may block until happy or write an additional record during the scan. 
-	 * 
+	 * may block until happy or write an additional record during the scan.
+	 *
 	 * For instance the beam current or ambient temperature could be monitors which are written
 	 * to the NeXus file. Monitors are sorted into level with the scannbles of the current position.
      *
@@ -93,8 +93,8 @@ public interface IPositioner extends IPositionListenable {
 
 	/**
 	 * Monitors are a set of scannables which will have setPosition(null, IPosition) called and
-	 * may block until happy or write an additional record during the scan. 
-	 * 
+	 * may block until happy or write an additional record during the scan.
+	 *
 	 * For instance the beam current or ambient temperature could be monitors which are written
 	 * to the NeXus file. Monitors are sorted into level with the scannbles of the current position.
      *
@@ -106,13 +106,13 @@ public interface IPositioner extends IPositionListenable {
 
 	/**
 	 * Calling this method instructs the ExecutorService running the levels to shutdownNow().
-	 * 
+	 *
 	 * from ExecutorService.shutdownNow() : "Attempts to stop all actively executing tasks, halts the
      * processing of waiting tasks, and returns a list of the tasks
      * that were awaiting execution."
 	 */
 	void abort();
-	
+
 	/**
 	 * Calling this method tells the thread pool to close in the positioner.
 	 * This frees up threads and the positioner may still be used (it will create

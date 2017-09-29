@@ -14,12 +14,12 @@ import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.models.ScanModel;
 
 /**
- * 
+ *
  * This class manages the location of
  * various parts of the scan as the scan runs.
- * 
- * It maintains a count of levels and creates a 
- * 
+ *
+ * It maintains a count of levels and creates a
+ *
  * @author Matthew Gerring
  *
  */
@@ -34,19 +34,19 @@ public final class LocationManager {
 	private int innerSize  = 0;
 	private int totalSize  = 0;
 	private int stepNumber = -1;
-	
+
 	// External data
 	private final ScanBean bean;
 	private final ScanModel model;
 	private final AnnotationManager manager;
-	
+
 	public LocationManager(ScanBean bean, ScanModel model, AnnotationManager manager) {
 		this.bean    = bean;
 		this.model   = model;
 		this.manager = manager;
 		manager.addDevices(this);
 	}
-	
+
 	public int getOuterSize() {
 		return outerSize;
 	}
@@ -77,29 +77,29 @@ public final class LocationManager {
 	public void setStepNumber(int stepNumber) {
 		this.stepNumber = stepNumber;
 	}
-	
+
 	/**
 	 * Called during the scan to increment counts.
 	 */
 	@PointEnd
 	public void increment() {
-    	outerCount++;
+	outerCount++;
 		stepNumber+=Math.max(innerSize, 1);
 	}
 
 	/**
 	 * Method used to generate an iterator for the scan.
 	 * It sets counts which are incremented during the scan.
-	 * 
+	 *
 	 * @return
 	 * @throws ScanningException
 	 */
 	public Iterator<IPosition> createPositionIterator() throws ScanningException {
-		
+
 		CompoundModel<?> cmodel = bean.getScanRequest()!=null ? bean.getScanRequest().getCompoundModel() : null;
 		SubscanModerator moderator = new SubscanModerator(model.getPositionIterable(), cmodel, model.getDetectors(), ServiceHolder.getGeneratorService());
 		manager.addContext(moderator);
-		
+
 		try {
 			stepNumber = 0;
 			outerSize  = getEstimatedSize(moderator.getOuterIterable());
@@ -114,18 +114,18 @@ public final class LocationManager {
 
 
 	private int getEstimatedSize(Iterable<IPosition> gen) throws GeneratorException {
-		
+
 		int size=0;
 		if (gen instanceof IDeviceDependentIterable) {
 			size = ((IDeviceDependentIterable)gen).size();
-			
+
 		} else if (gen instanceof IPointGenerator<?>) {
 			size = ((IPointGenerator<?>)gen).size();
-			
+
 		} else if (gen!=null) {
 		    for (IPosition unused : gen) size++; // Fast even for large stuff providing they do not check hardware on the next() call.
 		}
-		return size;   		
+		return size;
 	}
 
 	/**
@@ -135,7 +135,7 @@ public final class LocationManager {
 	 * @return null if position not found.
 	 */
 	public IPosition seek(int location, Iterator<IPosition> iterator) {
-		
+
 		stepNumber=0;
 		/*
 		 * IMPORTANT We do not keep the positions in memory because there can be millions.
@@ -143,7 +143,7 @@ public final class LocationManager {
 		 */
 		while(iterator.hasNext()) {
 			IPosition pos = iterator.next();
-        	pos.setStepIndex(stepNumber);
+		pos.setStepIndex(stepNumber);
 			if (stepNumber == location) return pos;
 			stepNumber+=Math.max(innerSize, 1);
 		}
@@ -155,7 +155,7 @@ public final class LocationManager {
 	}
 
 	public int getOverallCount() {
-		return getStepNumber(); 
+		return getStepNumber();
 	}
 
 	/**

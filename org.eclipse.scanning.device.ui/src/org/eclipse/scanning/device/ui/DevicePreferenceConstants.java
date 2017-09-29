@@ -17,12 +17,12 @@ public class DevicePreferenceConstants {
 	 * Preference for showing tooltips in control table.
 	 */
 	public final static String SHOW_CONTROL_TOOLTIPS = "org.eclipse.scanning.device.ui.control.showTips";
-	
+
 	/**
 	 * Preference for number format.
 	 */
 	public static final String NUMBER_FORMAT = "org.eclipse.scanning.device.ui.device.numberFormat";
-	
+
 	/**
 	 * Topic for publishing the result of an event calculation.
 	 */
@@ -47,7 +47,7 @@ public class DevicePreferenceConstants {
 	 * If a start position should be set when the user edits the value.
 	 */
 	public static final String START_POSITION = "org.eclipse.scanning.device.ui.scan.startPosition";
-	
+
 	/**
 	 * If an end position should be set when the user edits the value.
 	 */
@@ -62,7 +62,7 @@ public class DevicePreferenceConstants {
 	 * Record if the user would like to see scan command
 	 */
 	public static final String SHOW_SCAN_CMD = "org.eclipse.scanning.device.ui.scan.showScanCommand";
-	
+
 	/**
 	 * Record if the user would like to see scan command
 	 */
@@ -92,7 +92,7 @@ public class DevicePreferenceConstants {
 	 * If the user wants to see processing detectors in the UI.
 	 */
 	public static final String SHOW_PROCESSING = "org.eclipse.scanning.device.ui.scan.showProcessing";
-	
+
 	/**
 	 * If the user wants to see processing detectors in the UI.
 	 */
@@ -104,7 +104,7 @@ public class DevicePreferenceConstants {
 	public static final String SHOW_MALCOLM = "org.eclipse.scanning.device.ui.scan.showMalcolm";
 
 	/**
-	 * 
+	 *
 	 */
 	public static final String SHOW_ACTIVATED_ONLY = "org.eclipse.scanning.device.ui.scan.monitor.showActivatedOnly";
 

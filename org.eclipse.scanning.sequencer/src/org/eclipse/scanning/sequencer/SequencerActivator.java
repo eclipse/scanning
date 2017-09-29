@@ -43,7 +43,7 @@ public class SequencerActivator implements BundleActivator, IServiceResolver {
 		ServiceReference<T> ref = context.getServiceReference(serviceClass);
 		return context.getService(ref);
 	}
-	
+
 	public Object getService(String serviceClass) {
 		if (context==null) return null;
 		ServiceReference<?> ref = context.getServiceReference(serviceClass);

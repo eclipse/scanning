@@ -28,11 +28,11 @@ public class SetPositionTest {
 		cpsBad  = new MockCountingPositionScannable("cpsBad", 10, false);
 		msc.register(cpsGood);
 		msc.register(cpsBad);
-		
+
 		connector = msc;
 		dservice  = new RunnableDeviceServiceImpl(connector);
 	}
-	
+
 	@After
 	public void reset() throws Exception {
 		cpsGood.setPosition(10, null);
@@ -40,14 +40,14 @@ public class SetPositionTest {
 		cpsGood.resetCount();
 		cpsBad.resetCount();
 	}
-	
+
 	@Test
 	public void testMoveNoExtraGetPosition() throws Exception {
-		
-		// Something without 
+
+		// Something without
 		IPositioner     pos    = dservice.createPositioner();
         pos.setPosition(new MapPosition("cpsGood:0:20"));
-        
+
         assertEquals(0, cpsGood.getCount("getPosition"));
         assertEquals(20d, cpsGood.getPosition().doubleValue(), 0.0000001);
         assertEquals(1, cpsGood.getCount("setPosition"));
@@ -56,11 +56,11 @@ public class SetPositionTest {
 
 	@Test
 	public void testMoveExtraGetPosition() throws Exception {
-		
-		// Something without 
+
+		// Something without
 		IPositioner     pos    = dservice.createPositioner();
         pos.setPosition(new MapPosition("cpsBad:0:20"));
-        
+
         assertEquals(1, cpsBad.getCount("getPosition"));
         assertEquals(20d, cpsBad.getPosition().doubleValue(), 0.0000001);
         assertEquals(1, cpsBad.getCount("setPosition"));
@@ -70,11 +70,11 @@ public class SetPositionTest {
 
 	@Test
 	public void testMoveTwoThingsTogether() throws Exception {
-		
-		// Something without 
+
+		// Something without
 		IPositioner     pos    = dservice.createPositioner();
         pos.setPosition(new MapPosition("cpsBad:0:20, cpsGood:0:20"));
-        
+
         assertEquals(0, cpsGood.getCount("getPosition"));
         assertEquals(20d, cpsGood.getPosition().doubleValue(), 0.0000001);
         assertEquals(1, cpsGood.getCount("setPosition"));

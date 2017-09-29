@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class FieldUtils {
 
-	
+
 	public static boolean isFileType(Class<? extends Object> clazz) {
 		if (File.class.isAssignableFrom(clazz))       return true;
 		if (Path.class.isAssignableFrom(clazz))       return true;
@@ -46,54 +46,54 @@ public class FieldUtils {
 		return null;
 
 	}
-	
+
 	public static Field getField(Object model, String fieldName) throws NoSuchFieldException, SecurityException {
-		
-    	Field field;
-    	Class<? extends Object> cls = model.getClass();
-    	while (!cls.equals(Object.class)) {
+
+	Field field;
+	Class<? extends Object> cls = model.getClass();
+	while (!cls.equals(Object.class)) {
 			try {
 				field = cls.getDeclaredField(fieldName);
 				return field;
 			} catch (Exception ne) {
 				cls = cls.getSuperclass();
 			}
-    	}
-    	throw new NoSuchFieldException(fieldName);
 	}
-	
+	throw new NoSuchFieldException(fieldName);
+	}
+
 	/**
 	 * Get a collection of the fields of the model that should be edited in the User interface
 	 * for editing the model.
-	 * 
+	 *
 	 * @return collection of fields.
 	 * @throws Exception
 	 */
 	public static Collection<FieldValue> getModelFields(Object model) throws Exception {
-		
+
 		// Decided not to use the obvious BeanMap here because class problems with
 		// GDA and we have to read annotations anyway.
 		final List<Field> allFields = new ArrayList<Field>(31);
 		Class<? extends Object> cls = model.getClass();
 
-		while (!cls.equals(Object.class)) { 
+		while (!cls.equals(Object.class)) {
 			allFields.addAll(Arrays.asList(cls.getDeclaredFields()));
 			cls = cls.getSuperclass();
-		}		
-		
+		}
+
 		// The returned descriptor
 		final Map<String, FieldValue> map = new HashMap<>();
-		
+
 		// fields
 		for (Field field : allFields) {
 			if (map.containsKey(field.getName())) continue; // We do not overwrite repeats from the super.
-			
+
 			// If there is a getter/isser for the field we assume it is a model field.
-			if (FieldValue.isModelField(model, field.getName())) {			
+			if (FieldValue.isModelField(model, field.getName())) {
 				map.put(field.getName(), new FieldValue(model, field.getName()));
 			}
 		}
-		
+
 		List<FieldValue> ret = new ArrayList<>(map.values());
 		Collections.sort(ret, new Comparator<FieldValue>() {
 			@Override
@@ -119,7 +119,7 @@ public class FieldUtils {
 				return o1.getDisplayName().toLowerCase().compareTo(o2.getDisplayName().toLowerCase());
 			}
 		});
-		
+
 		return ret;
 	}
 

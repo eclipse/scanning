@@ -89,27 +89,27 @@ import org.epics.pvmarshaller.marshaller.PVMarshaller;
 import org.python.core.PyDictionary;
 
 public class EpicsV4MessageMapper {
-	
+
 	private PVMarshaller marshaller;
-	
+
 	private static String ERROR_TYPE = "malcolm:core/Error:";
-	
+
 	private static String TYPE_ID_KEY = "typeid";
-	
+
 	public EpicsV4MessageMapper() {
 		marshaller = new PVMarshaller();
 		marshaller.registerMapTypeIdKey(TYPE_ID_KEY);
 		marshaller.registerSerialiser(IPointGenerator.class, new IPointGeneratorSerialiser());
 		marshaller.registerSerialiser(PyDictionary.class, new PyDictionarySerialiser());
 		marshaller.registerSerialiser(MalcolmMessage.class, new MalcolmMessageSerialiser());
-		
+
 		marshaller.registerSerialiser(SpiralModel.class, new SpiralModelSerialiser());
 		marshaller.registerDeserialiser("SpiralModel", new SpiralModelDeserialiser());
 		marshaller.registerSerialiser(StepModel.class, new StepModelSerialiser());
 		marshaller.registerDeserialiser("StepModel", new StepModelDeserialiser());
 		marshaller.registerSerialiser(GridModel.class, new GridModelSerialiser());
 		marshaller.registerDeserialiser("GridModel", new GridModelDeserialiser());
-		
+
 		marshaller.registerSerialiser(CircularROI.class, new CircularROISerialiser());
 		marshaller.registerDeserialiser("CircularROI", new CircularROIDeserialiser());
 		marshaller.registerSerialiser(EllipticalROI.class, new EllipticalROISerialiser());
@@ -141,7 +141,7 @@ public class EpicsV4MessageMapper {
 		marshaller.registerDeserialiser("XAxisBoxROI", new XAxisBoxROIDeserialiser());
 		marshaller.registerSerialiser(YAxisBoxROI.class, new YAxisBoxROISerialiser());
 		marshaller.registerDeserialiser("YAxisBoxROI", new YAxisBoxROIDeserialiser());
-		
+
 		marshaller.registerSerialiser(BoundingBox.class, new BoundingBoxSerialiser());
 		marshaller.registerDeserialiser("BoundingBox", new BoundingBoxDeserialiser());
 
@@ -150,48 +150,48 @@ public class EpicsV4MessageMapper {
 		marshaller.registerDeserialiser("epics:nt/NTTable:1.0", new NTTableDeserialiser());
 		marshaller.registerDeserialiser("malcolm:core/PointGenerator:1.0", new MalcolmPointGeneratorDeserialiser());
 	}
-	
+
 	public PVStructure convertMalcolmMessageToPVStructure(MalcolmMessage malcolmMessage) throws Exception {
-				
+
 		PVStructure pvRequest = marshaller.toPVStructure(malcolmMessage);
-				
+
 		return pvRequest;
 	}
-	
+
 	public MalcolmMessage convertCallPVStructureToMalcolmMessage(PVStructure structure, MalcolmMessage message) throws Exception {
 		MalcolmMessage result = new MalcolmMessage();
 		result.setType(Type.RETURN);
 		result.setEndpoint(message.getEndpoint());
 		result.setId(message.getId());
 		result.setRawValue(structure.toString());
-				
+
 		if (structure.getStructure().getID().startsWith(ERROR_TYPE)) {
 			result.setType(Type.ERROR);
 			PVString errorMessage = structure.getSubField(PVString.class, "message");
 			result.setMessage(errorMessage.get());
 		} else {
 			Object returnedObject = marshaller.fromPVStructure(structure, Object.class);
-			
+
 			result.setValue(returnedObject);
 		}
-		
+
 		return result;
 	}
-	
+
 	public MalcolmMessage convertSubscribeUpdatePVStructureToMalcolmMessage(PVStructure structure, MalcolmMessage message) throws Exception {
 		MalcolmMessage result = new MalcolmMessage();
 		result.setType(Type.UPDATE);
 		result.setEndpoint(message.getEndpoint());
 		result.setId(message.getId());
 		result.setRawValue(structure.toString());
-				
+
 		Object returnedObject = getEndpointObjectFromPVStructure(structure, message.getEndpoint());
-		
+
 		result.setValue(returnedObject);
-		
+
 		return result;
 	}
-	
+
 	public MalcolmMessage convertGetPVStructureToMalcolmMessage(PVStructure structure, MalcolmMessage message)
 	{
 		MalcolmMessage result = new MalcolmMessage();
@@ -199,7 +199,7 @@ public class EpicsV4MessageMapper {
 		result.setEndpoint(message.getEndpoint());
 		result.setId(message.getId());
 		result.setRawValue(structure.toString());
-						
+
 		if (structure.getStructure().getID().startsWith(ERROR_TYPE)) {
 			result.setType(Type.ERROR);
 			PVString errorMessage = structure.getSubField(PVString.class, "message");
@@ -210,13 +210,13 @@ public class EpicsV4MessageMapper {
 			} catch (Exception e) {
 				e.printStackTrace();
 				result.setMessage("Error converting " + message.getEndpoint() + ": " + e.getMessage());
-				result.setType(Type.ERROR); 
+				result.setType(Type.ERROR);
 			}
 		}
-		
+
 		return result;
 	}
-	
+
 	public void populatePutPVStructure(PVStructure pvStructure, MalcolmMessage message) throws Exception {
 		PVField endPointField = pvStructure.getSubField(message.getEndpoint());
 		if (endPointField.getField().getType().equals(org.epics.pvdata.pv.Type.union)) {
@@ -228,15 +228,15 @@ public class EpicsV4MessageMapper {
 			marshaller.setFieldWithValue(pvStructure, message.getEndpoint(), message.getValue());
 		}
 	}
-	
+
 	public PVStructure pvMarshal(Object anyObject) throws Exception {
 		return marshaller.toPVStructure(anyObject);
 	}
 
 	public <U> U pvUnmarshal(PVStructure anyObject, Class<U> beanClass) throws Exception {
 		return marshaller.fromPVStructure(anyObject, beanClass);
-	} 
-	
+	}
+
 	private Object getEndpointObjectFromPVStructure(PVStructure pvStructure, String endpoint) throws Exception {
 
 		if (endpoint.isEmpty()) {
@@ -246,7 +246,7 @@ public class EpicsV4MessageMapper {
 		} else {
 			PVStructure parentStructure = null;
 			String[] requestArray = endpoint.split("\\.");
-			
+
 			if (requestArray.length == 1) {
 				parentStructure = pvStructure;
 			} else {

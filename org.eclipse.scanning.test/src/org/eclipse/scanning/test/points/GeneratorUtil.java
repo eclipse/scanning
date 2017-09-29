@@ -32,41 +32,41 @@ class GeneratorUtil {
 	/**
 	 * Checks the points list vs the iterator
 	 * @param gen
-	 * @param expectedShape 
-	 * @throws Exception 
+	 * @param expectedShape
+	 * @throws Exception
 	 */
 	public static void testGeneratorPoints(IPointGenerator<?> gen, int... expectedShape) throws Exception {
 		testGeneratorPoints(gen, 0, expectedShape);
 	}
-	
+
 	/**
 	 * Checks the points list vs the iterator
 	 * @param gen
 	 * @param exposureTime
-	 * @param expectedShape 
-	 * @throws Exception 
+	 * @param expectedShape
+	 * @throws Exception
 	 */
 	public static void testGeneratorPoints(IPointGenerator<?> gen, double exposureTime, int... expectedShape) throws Exception {
-		
+
 		final List<IPosition> points = gen.createPoints();
 		final List<IPosition> its   = new ArrayList<>(gen.size());
 		final Iterator<IPosition> it = gen.iterator();
 		while(it.hasNext()) its.add(it.next());
-		
+
 		IPosition[] pnts1 = array(points);
 		IPosition[] pnts2 = array(its);
-		
+
 		if (exposureTime>0) for (IPosition iPosition : its) {
 			assertEquals(exposureTime, iPosition.getExposureTime(), 0.0001);
 		}
-		
+
 		if (pnts2.length!=pnts1.length) throw new Exception("Not the same size! Iterator size is "+its.size()+" full list size is "+points.size());
         for (int i = 0; i < pnts1.length; i++) {
 			if (!pnts1[i].equals(pnts2[i])) {
 				throw new Exception(pnts1[i]+" does not equal "+pnts2[i]);
 			}
 		}
-		
+
 		// Check the estimator. In this case it is not doing anything
 		// that we don't already know, so we can test it.
 		final ScanEstimator estimator = new ScanEstimator(gen, (Map) null, 100);
@@ -76,7 +76,7 @@ class GeneratorUtil {
 		    int[] shape = estimator.getShape();
 		    assertArrayEquals(expectedShape, shape);
 		}
- 	}
+	}
 
 	private static IPosition[] array(List<IPosition> p) {
 		return p.toArray(new IPosition[p.size()]);

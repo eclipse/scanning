@@ -19,16 +19,16 @@ import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 public class MockWritableDetector extends AbstractRunnableDevice<MockDetectorModel> implements IWritableDetector<MockDetectorModel> {
-	
+
 	public MockWritableDetector() {
 		super(null);
 	}
-	
+
 	public MockWritableDetector(String name) {
 		this();
 		setName(name);
 	}
-		
+
 	@Override
 	public void run(IPosition pos) throws ScanningException {
 		try {
@@ -37,22 +37,22 @@ public class MockWritableDetector extends AbstractRunnableDevice<MockDetectorMod
 		} catch (Exception ne) {
 			throw new ScanningException("Cannot to do readout", ne);
 		}
-		
+
 		if (getModel().getAbortCount()>-1 && getModel().getAbortCount()<=getModel().getRan()) {
 			throw new ScanningException("The detector had a problem running! This exception should stop the scan running!");
 		}
 	}
-	
+
 	@Override
 	public boolean write(IPosition position) throws ScanningException {
-		
+
 		// Grab some memory for a given image size to simulate a CPU detector.
 		if (model.isCreateImage()) {
 			Random.rand(model.getImageSize());
 		}
-		
+
 		getModel().setWritten(getModel().getWritten()+1);
-		
+
 		return true;
 	}
 
@@ -89,5 +89,5 @@ public class MockWritableDetector extends AbstractRunnableDevice<MockDetectorMod
 		} catch (Exception e) {
 			throw new ScanningException(this, e);
 		}
-  	}
+	}
 }

@@ -168,23 +168,23 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 			@Override
 			public void run() {
 
-	    		try {
-		    		IModelDialog<AxisConfiguration>  dialog = ServiceHolder.getInterfaceService().createModelDialog(site.getShell());
-		    		dialog.setPreamble("Please define the axes and their ranges we will map within.");
-		    		dialog.create();
-		    		dialog.setSize(550,450); // As needed
-		    		dialog.setText("Scan Area");
-		    		dialog.setModel(getAxisConfiguration());
-		    		int ok = dialog.open();
-		    		if (ok==IModelDialog.OK) {
-		    			AxisConfiguration conf = dialog.getModel();
-		    			setAxisConfiguration(conf);
-		    		}
-	    		} catch (Exception ne) {
-	    			ErrorDialog.openError(site.getShell(), "Error Showing Plot Configuration", "Please contact your support representative.", new Status(IStatus.ERROR, "org.eclipse.scanning.device.ui", ne.getMessage(), ne));
-	    			logger.error("Cannot configure plot!", ne);
-	    		}
-	    	}
+			try {
+				IModelDialog<AxisConfiguration>  dialog = ServiceHolder.getInterfaceService().createModelDialog(site.getShell());
+				dialog.setPreamble("Please define the axes and their ranges we will map within.");
+				dialog.create();
+				dialog.setSize(550,450); // As needed
+				dialog.setText("Scan Area");
+				dialog.setModel(getAxisConfiguration());
+				int ok = dialog.open();
+				if (ok==IModelDialog.OK) {
+					AxisConfiguration conf = dialog.getModel();
+					setAxisConfiguration(conf);
+				}
+			} catch (Exception ne) {
+				ErrorDialog.openError(site.getShell(), "Error Showing Plot Configuration", "Please contact your support representative.", new Status(IStatus.ERROR, "org.eclipse.scanning.device.ui", ne.getMessage(), ne));
+				logger.error("Cannot configure plot!", ne);
+			}
+		}
 		};
 		ViewUtil.addGroups("configure", mans, configureAxes);
 	}
@@ -215,13 +215,13 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 				if (part==null) continue;
 				IPointGenerator<?>[] pa = part.getAdapter(IPointGenerator[].class);
                 if (pa !=null) {
-                	for (int i = 0; i < pa.length; i++) {
-                    	final Object model = pa[i].getModel();
-                    	if (model instanceof IBoundingBoxModel) {
-                    		IBoundingBoxModel bmodel = (IBoundingBoxModel)model;
-                    		bmodel.setFastAxisName(conf.getFastAxisName());
-                    		bmodel.setSlowAxisName(conf.getSlowAxisName());
-                    	}
+			for (int i = 0; i < pa.length; i++) {
+			final Object model = pa[i].getModel();
+			if (model instanceof IBoundingBoxModel) {
+				IBoundingBoxModel bmodel = (IBoundingBoxModel)model;
+				bmodel.setFastAxisName(conf.getFastAxisName());
+				bmodel.setSlowAxisName(conf.getSlowAxisName());
+			}
 					}
                 }
 			}
@@ -451,7 +451,7 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 		if (system!=null) {
 		    system.removeRegionListener(regionListener);
 		    for (IRegion region : system.getRegions()) {
-		    	if (region.getUserObject() instanceof ScanRegion) region.removeROIListener(roiListener);
+			if (region.getUserObject() instanceof ScanRegion) region.removeROIListener(roiListener);
 			}
 			system.dispose();
 		}
@@ -480,7 +480,7 @@ public class PlottingController implements ISelectionProvider, IAdaptable {
 
 	private void connectRegions() {
 		for (IRegion region : system.getRegions()) {
-	    	if (region.getUserObject() instanceof ScanRegion) region.addROIListener(roiListener);
+		if (region.getUserObject() instanceof ScanRegion) region.addROIListener(roiListener);
 		}
         system.addRegionListener(regionListener);
 	}

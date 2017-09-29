@@ -114,9 +114,9 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 			IRunnableDeviceService runnableDeviceService,
 			IPublisher<ScanBean> publisher) throws MalcolmDeviceException {
 		super(service, runnableDeviceService);
-    	setName(name);
-       	this.publisher = publisher;
-       	setAlive(false);
+	setName(name);
+	this.publisher = publisher;
+	setAlive(false);
 	}
 
 	@Override
@@ -132,7 +132,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	public void initialize() throws MalcolmDeviceException {
 		try {
 			setAlive(false);
-	    	final DeviceState currentState = getDeviceState();
+		final DeviceState currentState = getDeviceState();
 			logger.debug("Connecting to '"+getName()+"'. Current state: "+currentState);
 
 			stateSubscriber = createSubscribeMessage(STATE_ENDPOINT);
@@ -196,7 +196,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	 */
     @PointStart
     public void scanPoint(SubscanModerator moderator) {
-    	Iterable<IPosition> scanPositions = moderator.getInnerIterable();
+	Iterable<IPosition> scanPositions = moderator.getInnerIterable();
         scanPositionIterator = scanPositions.iterator();
     }
 
@@ -242,7 +242,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 			if (scanPosition != null && currentTime - lastBroadcastTime >= POSITION_COMPLETE_FREQ) {
 				scanPosition.setStepIndex(point);
-            	firePositionComplete(scanPosition);
+		firePositionComplete(scanPosition);
 
 	            lastBroadcastTime = System.currentTimeMillis();
 			}

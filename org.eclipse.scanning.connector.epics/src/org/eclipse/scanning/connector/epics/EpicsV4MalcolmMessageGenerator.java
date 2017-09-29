@@ -22,7 +22,7 @@ import org.eclipse.scanning.api.malcolm.message.Type;
 
 /**
  * Class to encapsulate the details of sending stuff.
- * 
+ *
  * @author Matthew Taylor
  *
  */
@@ -41,7 +41,7 @@ class EpicsV4MalcolmMessageGenerator implements MessageGenerator<MalcolmMessage>
 	}
 
 	private static volatile long callCount = 0;
-	
+
 	private MalcolmMessage createMalcolmMessage() {
 		MalcolmMessage ret = new MalcolmMessage();
 		ret.setId(callCount++);
@@ -62,7 +62,7 @@ class EpicsV4MalcolmMessageGenerator implements MessageGenerator<MalcolmMessage>
 		msg.setType(Type.UNSUBSCRIBE);
 		return msg;
 	}
-	
+
 	@Override
 	public MalcolmMessage createGetMessage(String cmd) throws MalcolmDeviceException {
 		final MalcolmMessage msg = createMalcolmMessage();
@@ -70,11 +70,11 @@ class EpicsV4MalcolmMessageGenerator implements MessageGenerator<MalcolmMessage>
 		msg.setEndpoint(cmd);
 		return msg;
 	}
-	
+
 	private MalcolmMessage createCallMessage(final MalcolmMethod method) throws MalcolmDeviceException {
 		final MalcolmMessage msg = createMalcolmMessage();
 		msg.setType(Type.CALL);
-		msg.setMethod(method); 
+		msg.setMethod(method);
 		return msg;
 	}
 	@Override
@@ -83,7 +83,7 @@ class EpicsV4MalcolmMessageGenerator implements MessageGenerator<MalcolmMessage>
 		msg.setArguments(arg);
 		return msg;
 	}
-	
+
 	@Override
 	public MalcolmMessage call(MalcolmMethod method, DeviceState... latches) throws MalcolmDeviceException {
 		final MalcolmMessage msg   = createCallMessage(method);

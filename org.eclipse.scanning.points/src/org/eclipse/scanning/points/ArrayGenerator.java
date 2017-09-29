@@ -19,7 +19,7 @@ import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.ArrayModel;
 
 public class ArrayGenerator extends AbstractGenerator<ArrayModel> {
-	
+
 	public ArrayGenerator() {
 		setLabel("Array Scan");
 		setDescription("Creates a scan from an array of positions");
@@ -40,7 +40,7 @@ public class ArrayGenerator extends AbstractGenerator<ArrayModel> {
 		}
 		return model.getPositions().length;
 	}
-	
+
 	@Override
 	protected ScanPointIterator iteratorFromValidModel() {
 		return new ArrayIterator(this);

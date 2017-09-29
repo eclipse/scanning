@@ -18,17 +18,17 @@ import org.eclipse.scanning.api.event.core.IRequestHandler;
 
 /**
  * A servlet for processing a queue.
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
  */
 public interface IResponderServlet<T extends IdBean> extends IConnectable {
 
-	
+
 	/**
 	 * Creates a response for each request processedfor this topic.
-	 * 
+	 *
 	 * @param bean
 	 * @param response
 	 * @return

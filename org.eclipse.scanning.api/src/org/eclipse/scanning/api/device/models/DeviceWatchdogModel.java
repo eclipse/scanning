@@ -12,14 +12,14 @@
 package org.eclipse.scanning.api.device.models;
 
 /**
- * 
+ *
  * Model for confuring a watchdog.
- * 
+ *
 <pre>
 Topup watchdogs should watch the following PV:
 
 SR-CS-FILL-01:COUNTDOWN: this is a float-valued counter that runs to zero
-at the start of TopUp and remains there until the fill is complete when 
+at the start of TopUp and remains there until the fill is complete when
 it resets to time before next TopUp fill,
  Example XML configuration
     <pre>
@@ -27,7 +27,7 @@ it resets to time before next TopUp fill,
 	{@literal <bean id="topupModel" class="org.eclipse.scanning.api.device.models.DeviceWatchdogModel">}
 	{@literal 	<property name="countdownName"          value="topup"/>}
 	{@literal 	<property name="cooloff"                value="4000"/>}
-	{@literal 	<property name="warmup"                 value="5000"/>} 
+	{@literal 	<property name="warmup"                 value="5000"/>}
 
     {@literal   <!-- Optional, recommended but not compulsory a scannable linked to SR-CS-RING-01:MODE, checks the mode is right -->}
     {@literal 	<property name="modeName"               value="mode"/>}
@@ -46,9 +46,9 @@ it resets to time before next TopUp fill,
     </pre>
 
 
-<h3>Calculation of scannable parts of topup  </h3>  
+<h3>Calculation of scannable parts of topup  </h3>
     <pre>
-    
+
     |<-w->|
     |.
     |  .
@@ -64,31 +64,31 @@ it resets to time before next TopUp fill,
     |                      .
     |                        . |<-Tf->|
     |                          ........    t
-    |                            
+    |
     |__________________________________(time)
-    
+
     |<-              p              ->|
-    
+
     w  - warmup
     c  - cooloff
     t  - time until next topup next occurs
     Tf - Topup fill time (variable but max 15s in normal mode)
     p  - Period of cycle, usually 10mins or so.
-    
+
     In order for scanning to run, all of the following conditions must be satisfied:
-    
+
     1. Mode is normal (8)
     2. t > c
     3. t < (p-Tf)-w
-    
+
     </pre>
-    
+
 <h3>Ring Mode</h3>
 
 The "Ring Mode" PV is SR-CS-RING-01:MODE.
 
-This PV has various states: 
-<img src="./doc/modes.png" /> 
+This PV has various states:
+<img src="./doc/modes.png" />
 
 In brief though, the only one you need to care about is state 8 = VMX. This is "normal" mode now that we've installed the new VMX (AKA DDBA) components.
 
@@ -107,25 +107,25 @@ public class DeviceWatchdogModel {
 	 */
 	private String expression; // e.g. 'beamcurrent >= 1.0 && !portshutter.equalsIgnoreCase("Closed")'
 	private String message;
-	
+
 	// t
 	private String countdownName; // e.g. "topup", "countdown" PV likely to be SR-CS-FILL-01:COUNTDOWN which is in s
-	
+
 	// c in ms
 	private long   cooloff;       // time in ms before topup for which the scan should be paused.
-	
+
 	// w in ms
 	private long   warmup;        // time in ms after topup the scan should wait before starting.
-	
+
 	// p in ms
 	private long   period = 10*60*1000; // Period in ms, default is 10min
-	
+
 	// Tf in ms
 	private long   topupTime = 15*1000; // The time that a topup takes. This is varible but in normal mode <= 15s
-	
-	// The name of the mode pv, if any. 
+
+	// The name of the mode pv, if any.
 	private String modeName;            // If this is set the PV will be checked to ensure that the topup mode is as expected.
-	
+
 	public String getCountdownName() {
 		return countdownName;
 	}
@@ -215,5 +215,5 @@ public class DeviceWatchdogModel {
 	public void setModeName(String modeName) {
 		this.modeName = modeName;
 	}
-	
+
 }

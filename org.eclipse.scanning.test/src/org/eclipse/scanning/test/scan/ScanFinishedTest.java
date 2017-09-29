@@ -66,7 +66,7 @@ import org.junit.Test;
 import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 public class ScanFinishedTest {
-	
+
 	protected IRunnableDeviceService      dservice;
 	protected IScannableDeviceService     connector;
 	protected IPointGeneratorService      gservice;
@@ -83,7 +83,7 @@ public class ScanFinishedTest {
 				Arrays.asList(new PointsModelMarshaller())
 				));
 		eservice  = new EventServiceImpl(new ActivemqConnectorService());
-		
+
 		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE
 		connector = new MockScannableConnector(null);
@@ -94,9 +94,9 @@ public class ScanFinishedTest {
 		impl._register(MandelbrotModel.class, MandelbrotDetector.class);
 
 		gservice  = new PointGeneratorService();
-		
+
 		lservice = new LoaderServiceMock();
-		
+
 		// Provide lots of services that OSGi would normally.
 		Services.setEventService(eservice);
 		Services.setRunnableDeviceService(dservice);
@@ -105,25 +105,25 @@ public class ScanFinishedTest {
 		ServiceHolder.setTestServices(lservice, new DefaultNexusBuilderFactory(), null);
 		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(new NexusFileFactoryHDF5());
 	}
-	
+
 	@Test
 	public void testScanCompletedNormally() throws Exception {
 		IRunnableDevice<ScanModel> scanner = createStepScan(8, 5);
 		NXentry entry = getNexusEntry(scanner);
 		assertScanNotFinished(entry);
-		
+
 		scanner.run(null);
-		
+
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 		assertScanFinished(entry);
 	}
-	
+
 	@Test
 	public void testScanAborted() throws Exception {
 		IRunnableDevice<ScanModel> scanner = createStepScan(8, 5);
 		NXentry entry = getNexusEntry(scanner);
 		assertScanNotFinished(entry);
-		
+
 		((AbstractRunnableDevice<ScanModel>) scanner).start(null);
 		Thread.sleep(1000);
 		scanner.abort();
@@ -132,33 +132,33 @@ public class ScanFinishedTest {
 
 		assertScanFinished(entry);
 	}
-	
+
 	@Test
 	public void testScanFinally() throws Exception {
-		
+
 		ScanModel smodel = createStepModel(2, 2);
 		MandelbrotModel mmodel = new MandelbrotModel("neXusScannable1", "neXusScannable2");
 		smodel.setDetectors(dservice.createRunnableDevice(mmodel));
-		
+
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
 		scanner.run(null);
-		
+
 		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
-		
+
 		@SuppressWarnings("rawtypes")
 		IRunnableDevice device = dservice.getRunnableDevice(mmodel.getName());
 		MandelbrotDetector detector = (MandelbrotDetector)device;
 		assertTrue(detector._isScanFinallyCalled());
-		
+
 	}
 
-	
+
 	private NXentry getNexusEntry(IRunnableDevice<ScanModel> scanner) throws Exception {
 		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
 		NexusFile nf = org.eclipse.dawnsci.nexus.ServiceHolder.getNexusFileFactory().newNexusFile(filePath);
 		nf.openToRead();
-		
+
 		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 		NXroot nxRoot = (NXroot) nexusTree.getGroupNode();
 		return nxRoot.getEntry();
@@ -166,7 +166,7 @@ public class ScanFinishedTest {
 
 	private ScanModel createStepModel(int... size) throws Exception {
 		IPointGenerator<?> gen = null;
-		
+
 		// We add the outer scans, if any
 		for (int dim = size.length-1; dim>-1; dim--) {
 			final StepModel model;
@@ -182,11 +182,11 @@ public class ScanFinishedTest {
 				gen = step;
 			}
 		}
-	
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
-		
+
 		// Create a file to scan into.
 		File output = File.createTempFile("test_abort_nexus", ".nxs");
 		output.deleteOnExit();
@@ -196,12 +196,12 @@ public class ScanFinishedTest {
 		return smodel;
 	}
 	private IRunnableDevice<ScanModel> createStepScan(int... size) throws Exception {
-		
+
 		ScanModel smodel = createStepModel(size);
-		
+
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = (IPointGenerator<?>)smodel.getPositionIterable();
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override

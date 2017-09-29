@@ -39,18 +39,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class QueueControllerServiceTest {
-	
+
 	private String qRoot;
 	private String uri;
-	
+
 	private MockPublisher<ConsumerCommandBean> mockCmdPub;
 	private MockPublisher<Queueable> mockPub;
 	private MockSubmitter<Queueable> mockSub;
 	private MockEventService mockEvServ;
 	private String jqID, jqSubmQ, aqID, aqSubmQ;
-	
-	private IQueueControllerService testController; 
-	
+
+	private IQueueControllerService testController;
+
 	@Before
 	public void setUp() throws EventException {
 		//Configure the MockEventService
@@ -63,7 +63,7 @@ public class QueueControllerServiceTest {
 		mockSub = new MockSubmitter<>();
 		mockEvServ.setMockSubmitter(mockSub);
 		ServicesHolder.setEventService(mockEvServ);
-		
+
 		//A bit of boilerplate to start the service under test
 		qRoot = "test-queue-root";
 		uri = "file:///foo/bar";
@@ -71,14 +71,14 @@ public class QueueControllerServiceTest {
 		ServicesHolder.setQueueService((IQueueService) testController);
 		testController.init();
 		testController.startQueueService();
-		
+
 		//Get our queue names
 		jqID = testController.getJobQueueID();
 		jqSubmQ = testController.getJobQueue().getSubmissionQueueName();
 		aqID = ((IQueueService)testController).registerNewActiveQueue();
 		aqSubmQ = testController.getQueue(aqID).getSubmissionQueueName();
 	}
-	
+
 	@After
 	public void tearDown() throws EventException {
 		//Clear destination names
@@ -88,22 +88,22 @@ public class QueueControllerServiceTest {
 		jqSubmQ = null;
 		aqID = null;
 		aqSubmQ = null;
-		
+
 		testController.stopQueueService(true);
 		testController = null;
-		
+
 		ServicesHolder.setEventService(null);
-		
+
 		//Set mock services null
 		mockPub = null;
 		mockCmdPub = null;
 		mockSub = null;
 		mockEvServ = null;
 	}
-	
+
 	/**
-	 * Test submission and removal of beans in queues. 
-	 * @throws Exception 
+	 * Test submission and removal of beans in queues.
+	 * @throws Exception
 	 */
 	@Test
 	public void testSubmitRemove() throws Exception {
@@ -111,40 +111,40 @@ public class QueueControllerServiceTest {
 		DummyBean albert = new DummyBean("Albert", 10),bernard = new DummyBean("Bernard", 20);
 		DummyAtom carlos = new DummyAtom("Carlos", 30), duncan = new DummyAtom("Duncan", 40);
 		DummyAtom xavier = new DummyAtom("Xavier", 100);
-		
+
 		/*
 		 * Submit:
 		 * - new DummyBean in job-queue with a particular name
 		 * - 2nd and we have two in submit queue (second has particular name)
-		 * - two DummyBeans in active-queue with particular names 
+		 * - two DummyBeans in active-queue with particular names
 		 */
 		//job-queue
 		testController.submit(albert, jqID);
 		assertEquals("No beans in job-queue after 1 submission", 1, mockSub.getQueueSize(jqSubmQ));
 		assertEquals("Bean has wrong name", "Albert", mockSub.getLastSubmitted(jqSubmQ).getName());
-		
+
 		testController.submit(bernard, jqID);
 		assertEquals("Bean has wrong name", "Bernard", mockSub.getLastSubmitted(jqSubmQ).getName());
-		
+
 		//active-queue
 		testController.submit(carlos, aqID);
 		assertEquals("No beans in active-queue after 1 submission", 1, mockSub.getQueueSize(aqSubmQ));
 		assertEquals("Bean has wrong name", "Carlos", mockSub.getLastSubmitted(aqSubmQ).getName());
 
 		testController.submit(duncan, aqID);//Needed for remove test...
-		
+
 		/*
 		 * Remove:
 		 * - now only one bean left and it job-queue (1st)
 		 * - now only one bean left in active-queue (2nd)
-		 * - throw an exception if the removed bean is no-longer removeable 
+		 * - throw an exception if the removed bean is no-longer removeable
 		 *   (or not in the queue in the first place)
 		 */
 		//job-queue
 		testController.remove(bernard, jqID);
 		assertEquals("Should only be one bean left in active-queue", 1, mockSub.getQueueSize(jqSubmQ));
 		assertEquals("Wrong bean found in queue", "Albert", mockSub.getLastSubmitted(jqSubmQ).getName());
-		
+
 		//active-queue
 		testController.remove(carlos, aqID);
 		assertEquals("Should only be one bean left in active-queue", 1, mockSub.getQueueSize(aqSubmQ));
@@ -155,7 +155,7 @@ public class QueueControllerServiceTest {
 		} catch (EventException evEx) {
 			System.out.println("^---- Expected exception");
 		}
-		
+
 		/*
 		 * Prevent submission/removal of wrong bean type to wrong queue
 		 */
@@ -178,7 +178,7 @@ public class QueueControllerServiceTest {
 			System.out.println("^---- Expected exception");
 		}
 	}
-	
+
 	/**
 	 * Tests request of reordering processes in a queue
 	 * @throws EventException
@@ -189,7 +189,7 @@ public class QueueControllerServiceTest {
 		DummyBean albert = new DummyBean("Albert", 10);
 		DummyAtom carlos = new DummyAtom("Carlos", 30);
 		DummyAtom xavier = new DummyAtom("Xavier", 100);
-		
+
 		//Add two beans to the queues
 		testController.submit(albert, jqID);
 		testController.submit(carlos, aqID);
@@ -199,16 +199,16 @@ public class QueueControllerServiceTest {
 		 */
 		assertFalse("Albert indicated reordered, but no reordering done", mockSub.isBeanReordered(albert));
 		assertFalse("Carlos indicated reordered, but no reordering done", mockSub.isBeanReordered(carlos));
-		
+
 		testController.reorder(albert, 4, jqID);
 		assertTrue("Albert not reordered after reordering done", mockSub.isBeanReordered(albert));
 		assertEquals("Incorrect number of moves after reordering", 4, mockSub.getReorderedBeanMove(albert));
 		assertFalse("Carlos indicated reordered, but no reordering done", mockSub.isBeanReordered(carlos));
-		
+
 		testController.reorder(carlos, 3, aqID);
 		assertTrue("Carlos not reordered after reordering done", mockSub.isBeanReordered(carlos));
 		assertEquals("Incorrect number of moves after reordering", 3, mockSub.getReorderedBeanMove(carlos));
-		
+
 		/*
 		 * Check EventException thrown when bean wrong type or not present.
 		 */
@@ -225,7 +225,7 @@ public class QueueControllerServiceTest {
 			System.out.println("^---- Expected exception");
 		}
 	}
-	
+
 	/**
 	 * Tests requests for pausing/resumption of processes within a queue.
 	 * @throws EventException
@@ -236,18 +236,18 @@ public class QueueControllerServiceTest {
 		DummyBean albert = new DummyBean("Albert", 10);
 		DummyAtom carlos = new DummyAtom("Carlos", 30);
 		DummyAtom xavier = new DummyAtom("Xavier", 100);
-		
+
 		//Set up beans in right queues
 		setUpTwoBeanStatusSet(albert, carlos);
-		
+
 		/*
 		 * Pause process in job-queue
 		 * - check published bean has REQUEST_PAUSE status
-		 * - check EventException thrown when bean with isPaused status is paused   
+		 * - check EventException thrown when bean with isPaused status is paused
 		 */
 		testController.pause(albert, jqID);
 		assertEquals("Published bean has wrong Status", Status.REQUEST_PAUSE, mockPub.getLastQueueable().getStatus());
-		
+
 		//Try pausing the bean again (should throw a runtime exception)
 		try {
 			testController.pause(albert, jqID);
@@ -255,7 +255,7 @@ public class QueueControllerServiceTest {
 		} catch (IllegalStateException isEx) {
 			System.out.println("^---- Expected exception");
 		}
-		
+
 		/*
 		 * Resume process in job-queue
 		 * - check published bean has REQUEST_RESUME status
@@ -263,7 +263,7 @@ public class QueueControllerServiceTest {
 		 */
 		testController.resume(albert, jqID);
 		assertEquals("Published bean has wrong Status", Status.REQUEST_RESUME, mockPub.getLastQueueable().getStatus());
-		
+
 		//Try resuming the bean again (should throw a runtime exception)
 		try {
 			testController.resume(albert, jqID);
@@ -271,12 +271,12 @@ public class QueueControllerServiceTest {
 		} catch (IllegalStateException isEx) {
 			System.out.println("^---- Expected exception");
 		}
-		
+
 		/*
 		 * We'll assume that everything works fine for the active-queue, since
 		 * the same code calls the terminate requests and that is tested.
 		 */
-		
+
 		/*
 		 * Test wrong bean type to wrong queue & non-existent paused/resumed bean
 		 */
@@ -304,11 +304,11 @@ public class QueueControllerServiceTest {
 			fail("Expected EventException: Xavier not right bean type, should not be able to resume");
 		} catch (EventException evEx) {
 			System.out.println("^---- Expected exception");
-			assertTrue("Got unexpected exception - should be an EventException containing message '", 
+			assertTrue("Got unexpected exception - should be an EventException containing message '",
 					(evEx.getMessage().contains("Bean type") && evEx.getMessage().contains("not supported by queue")));
 		}
 	}
-	
+
 	/**
 	 * Tests requesting termination of processes within a queue.
 	 * @throws EventException
@@ -319,14 +319,14 @@ public class QueueControllerServiceTest {
 		DummyBean albert = new DummyBean("Albert", 10);
 		DummyAtom carlos = new DummyAtom("Carlos", 30);
 		DummyAtom xavier = new DummyAtom("Xavier", 100);
-		
+
 		//Set up beans in right queues
 		setUpTwoBeanStatusSet(albert, carlos);
-		
+
 		/*
 		 * Pause process in job-queue
 		 * - check published bean has REQUEST_PAUSE status
-		 * - check EventException thrown when bean with isPaused status is paused   
+		 * - check EventException thrown when bean with isPaused status is paused
 		 */
 		testController.terminate(albert, jqID);
 		assertEquals("Published bean has wrong Status", Status.REQUEST_TERMINATE, mockPub.getLastQueueable().getStatus());
@@ -339,7 +339,7 @@ public class QueueControllerServiceTest {
 
 		/*
 		 * Terminate process in active-queue
-		 * - check published bean has REQUEST_PAUSE status 
+		 * - check published bean has REQUEST_PAUSE status
 		 */
 		testController.terminate(carlos, aqID);
 		assertEquals("Published bean has wrong Status", Status.REQUEST_TERMINATE, mockPub.getLastQueueable().getStatus());
@@ -364,12 +364,12 @@ public class QueueControllerServiceTest {
 			fail("Expected EventException: Xavier not right bean type, should not be able to terminate");
 		} catch (EventException evEx) {
 			System.out.println("^---- Expected exception");
-			assertTrue("Got unexpected exception - should be an EventException containing message '", 
+			assertTrue("Got unexpected exception - should be an EventException containing message '",
 					(evEx.getMessage().contains("Bean type") && evEx.getMessage().contains("not supported by queue")));
-		}		
+		}
 	}
-	
-	private void setUpTwoBeanStatusSet(QueueBean albert, QueueAtom carlos) throws EventException {		
+
+	private void setUpTwoBeanStatusSet(QueueBean albert, QueueAtom carlos) throws EventException {
 		//Set up beans in right queues
 		MockConsumer<QueueBean> jCons = (MockConsumer<QueueBean>) testController.getJobQueue().getConsumer();
 		jCons.addToStatusSet(albert);
@@ -377,7 +377,7 @@ public class QueueControllerServiceTest {
 		MockConsumer<QueueAtom> aCons = (MockConsumer<QueueAtom>) testController.getQueue(aqID).getConsumer();
 		aCons.addToStatusSet(carlos);
 	}
-	
+
 	/**
 	 * Test configuration & publishing of PauseBeans to pause/resume whole queues.
 	 * @throws EventException
@@ -396,7 +396,7 @@ public class QueueControllerServiceTest {
 		analysePauser(jqID, true);
 		testController.resumeQueue(jqID);
 		analysePauser(jqID, false);
-		
+
 		/*
 		 * Pause the active-queue
 		 * - check PauseBean sent
@@ -410,7 +410,7 @@ public class QueueControllerServiceTest {
 		testController.resumeQueue(aqID);
 		analysePauser(aqID, false);
 	}
-	
+
 	private void analysePauser(String queueID, boolean pause) throws EventException {
 		if (mockCmdPub.getLastCmdBean() instanceof PauseBean) {
 			PauseBean pauser = (PauseBean)mockCmdPub.getLastCmdBean();
@@ -420,12 +420,12 @@ public class QueueControllerServiceTest {
 			fail("Last command bean was not a PauseBean.");
 		}
 	}
-	
+
 	/**
 	 * Test configuration & publishing of KillBeans to kill queues.
 	 * @throws EventException
 	 */
-	@Test	
+	@Test
 	public void testKillQueue() throws EventException {
 		/*
 		 * Kill the job-queue
@@ -435,7 +435,7 @@ public class QueueControllerServiceTest {
 		 */
 		testController.killQueue(jqID, true, false, false);
 		analyseKiller(jqID, true, false);
-		
+
 		/*
 		 * Kill active-queue
 		 * - check KillBean sent
@@ -445,11 +445,11 @@ public class QueueControllerServiceTest {
 		testController.killQueue(aqID, false, false, true);
 		analyseKiller(aqID, false, true);
 	}
-	
+
 	/**
 	 * Checks KillBean configured as expected
 	 * @param queueID
-	 * @throws EventException 
+	 * @throws EventException
 	 */
 	private void analyseKiller(String queueID, boolean disconnect, boolean exitProc) throws EventException {
 		if (mockCmdPub.getLastCmdBean() instanceof KillBean) {

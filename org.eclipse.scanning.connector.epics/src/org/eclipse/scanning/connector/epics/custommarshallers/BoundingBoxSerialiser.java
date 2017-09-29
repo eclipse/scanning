@@ -23,7 +23,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom serialiser for Bounding Box.
- * TODO - make this non 'test' and finalise custom serialisation strategy for models 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for models
  * @author Matt Taylor
  *
  */
@@ -32,7 +32,7 @@ public class BoundingBoxSerialiser implements IPVStructureSerialiser<BoundingBox
 	@Override
 	public Structure buildStructure(Serialiser serialiser, BoundingBox model) throws Exception {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-				
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			add("fastAxisStart", ScalarType.pvDouble).
 			add("slowAxisStart", ScalarType.pvDouble).
@@ -54,5 +54,5 @@ public class BoundingBoxSerialiser implements IPVStructureSerialiser<BoundingBox
 		PVDouble slowAxisLength = pvStructure.getSubField(PVDouble.class, "slowAxisLength");
 		slowAxisLength.put(model.getSlowAxisLength());
 	}
-	
+
 }

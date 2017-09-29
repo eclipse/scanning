@@ -21,20 +21,20 @@ import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.junit.BeforeClass;
 
 public class SubTaskAtomProcessorIntegrationTest extends SubTaskAtomProcessorIntegrationPluginTest {
-	
+
 
 	@BeforeClass
 	public static void fakeOSGiSetup() {
 		setUpNonOSGIActivemqMarshaller();
-		
+
 		IEventService evServ =  new EventServiceImpl(new ActivemqConnectorService());
 		ServicesHolder.setEventService(evServ);
-		
+
 		IQueueService qServ = new QueueService();
 		ServicesHolder.setQueueService(qServ);
 		IQueueControllerService qCont = (IQueueControllerService) qServ;
 		ServicesHolder.setQueueControllerService(qCont);
-		
+
 	}
 
 }

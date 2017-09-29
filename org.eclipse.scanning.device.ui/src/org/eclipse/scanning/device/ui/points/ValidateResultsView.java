@@ -125,7 +125,7 @@ public class ValidateResultsView extends ViewPart implements ISelectionListener 
 
 		try {
 
-    		StyledString styledString = new StyledString();
+		StyledString styledString = new StyledString();
 
 			styledString.append("Results received from '");
 			styledString.append(results.getDeviceName(), FontStyler.BOLD);
@@ -189,7 +189,7 @@ public class ValidateResultsView extends ViewPart implements ISelectionListener 
 			if (indexOfNewLine == -1) {
 				indexOfNewLine = resultString.substring(durationIndex).length() - 1;
 			}
-	    	styledString.setStyle(durationIndex + "double".length(), indexOfNewLine - "double".length(), FontStyler.BOLD);
+		styledString.setStyle(durationIndex + "double".length(), indexOfNewLine - "double".length(), FontStyler.BOLD);
 		}
 	}
 
@@ -205,7 +205,7 @@ public class ValidateResultsView extends ViewPart implements ISelectionListener 
 			if (indexOfNewLine == -1) {
 				indexOfNewLine = resultString.substring(axesToMoveIndex).length();
 			}
-	    	styledString.setStyle(axesToMoveIndex + "string[]".length(), indexOfNewLine - "string[]".length(), FontStyler.BOLD);
+		styledString.setStyle(axesToMoveIndex + "string[]".length(), indexOfNewLine - "string[]".length(), FontStyler.BOLD);
 		}
 	}
 
@@ -227,13 +227,13 @@ public class ValidateResultsView extends ViewPart implements ISelectionListener 
 		if (text.isDisposed()) {
 			return;
 		}
-    	text.getDisplay().syncExec(() -> {
+	text.getDisplay().syncExec(() -> {
 			if (text.isDisposed()) {
 				return;
 			}
-	    	text.setText(styledString.toString());
-	    	text.setStyleRanges(styledString.getStyleRanges());
-    	});
+		text.setText(styledString.toString());
+		text.setStyleRanges(styledString.getStyleRanges());
+	});
     }
 
 	@Override

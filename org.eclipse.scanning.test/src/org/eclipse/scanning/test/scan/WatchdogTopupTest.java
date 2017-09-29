@@ -231,10 +231,10 @@ public class WatchdogTopupTest extends AbstractWatchdogTest {
 
 		// x and y are level 3
         if (detectorModel!=null && detectorModel instanceof IDetectorModel) {
-        	((IDetectorModel)detectorModel).setExposureTime(exposureTime);
+		((IDetectorModel)detectorModel).setExposureTime(exposureTime);
         }
         if (device!=null && device.getModel()!=null && device.getModel() instanceof IDetectorModel) {
-        	((IDetectorModel)device.getModel()).setExposureTime(exposureTime);
+		((IDetectorModel)device.getModel()).setExposureTime(exposureTime);
         }
 		IDeviceController controller = createTestScanner(null, device, detectorModel, size);
 		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();

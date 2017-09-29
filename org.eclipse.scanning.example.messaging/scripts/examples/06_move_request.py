@@ -4,7 +4,7 @@ from utilities.connections import create_connection, set_handlers, subscribe_all
 
 conn_dict = {'device-response-topic': "/topic/org.eclipse.scanning.response.device.topic",
              'device-request-topic': "/topic/org.eclipse.scanning.request.device.topic",
-             
+
              # This one is used for position reports
              'position-response-topic': "/topic/org.eclipse.scanning.request.position.topic",
              # Use this one to request a position
@@ -65,12 +65,12 @@ get_message = {'@type':'PositionerRequest',
 messages = [
             ('positioner-request-topic', set_message_1, 1),
             ('positioner-request-topic', set_message_2, 1),
-            
+
             # This doesn't actually abort the move. Instead, it aborts the series of movements demanded by the
             # ScannablePositioner. You need to send a TERMINATE message on the request.device topic to stop the
             # actual movement.
             ('positioner-request-topic', abort_message, 1),
-            
+
             # Need to plug in the unique id from before to get the positioner to use the GET command
             ('positioner-request-topic', get_message, 1),
             ]

@@ -20,8 +20,8 @@ public class OpenHandler extends XcenHandler implements IResultHandler<XcenBean>
 
 	@Override
 	public boolean open(XcenBean bean) throws Exception {
-		
-	   MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Position '"+bean.getName()+"'", 
+
+	   MessageDialog.openInformation(Display.getCurrent().getActiveShell(), "Position '"+bean.getName()+"'",
                    "The center was [x,y]: "+bean.getX()+","+bean.getY());
 	   return true; // We handled it
 	}

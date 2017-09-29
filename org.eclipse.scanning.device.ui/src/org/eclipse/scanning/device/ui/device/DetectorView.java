@@ -220,7 +220,7 @@ public class DetectorView extends EventConnectionView {
 				if (label==null) label = info.getName();
 				if (label==null) label = info.getId();
 				if (label==null) label = "Unamed Device "+info;
- 				return label;
+				return label;
 			}
 		});
 

@@ -46,14 +46,14 @@ public interface IReflectedModel {
 		buf.append(ModelReflection.getTime(this));
 
 	    if (verbose) {
-	    	final List<String> fieldStrings = Arrays.stream(getClass().getDeclaredFields()).
-		    	map(Field::getName).
-    			filter(name -> !EXCLUDED_FIELD_NAMES.contains(name)).
-    			map(name -> ModelReflection.stringifyField(this,name)).
-    			filter(Objects::nonNull).
-    			collect(toList());
-	    	if (!fieldStrings.isEmpty()) buf.append(", ");
-	    	buf.append(String.join(", ", fieldStrings));
+		final List<String> fieldStrings = Arrays.stream(getClass().getDeclaredFields()).
+			map(Field::getName).
+			filter(name -> !EXCLUDED_FIELD_NAMES.contains(name)).
+			map(name -> ModelReflection.stringifyField(this,name)).
+			filter(Objects::nonNull).
+			collect(toList());
+		if (!fieldStrings.isEmpty()) buf.append(", ");
+		buf.append(String.join(", ", fieldStrings));
 	    }
 	    buf.append(")");
 	    return buf.toString();

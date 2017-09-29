@@ -21,13 +21,13 @@ public class XcenBeanClassRegistry implements IClassRegistry {
 	private static final Map<String, Class<?>> idToClassMap;
 	static {
 		Map<String, Class<?>> tmp = new HashMap<String, Class<?>>();
-		
+
 		// beans
 		registerClass(tmp, XcenBean.class);
 
 		idToClassMap = Collections.unmodifiableMap(tmp);
 	}
-	
+
 	private static void registerClass(Map<String, Class<?>> map, Class<?> clazz) {
 		map.put(clazz.getSimpleName(), clazz);
 	}

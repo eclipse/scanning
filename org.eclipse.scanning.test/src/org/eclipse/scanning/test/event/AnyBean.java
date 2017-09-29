@@ -93,5 +93,5 @@ public class AnyBean {
 				+ ", telephoneNumber=" + telephoneNumber + ", dob=" + dob
 				+ ", marriagedate=" + marriagedate + "]";
 	}
-	
+
 }

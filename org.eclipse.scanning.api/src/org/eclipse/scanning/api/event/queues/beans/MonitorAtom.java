@@ -16,50 +16,50 @@ import java.util.Arrays;
 import org.eclipse.scanning.api.event.queues.IQueueService;
 
 /**
- * MonitorAtom is a type of {@link QueueAtom} which may be processed within an 
+ * MonitorAtom is a type of {@link QueueAtom} which may be processed within an
  * active-queue of an {@link IQueueService}. It contains name of a monitor the
- * current value of which will be on execution as a dataset within a file 
+ * current value of which will be on execution as a dataset within a file
  * (located at filePath).
- * 
+ *
  * @author Michael Wharmby
  *
  */
 public class MonitorAtom extends QueueAtom {
-	
+
 	/**
-	 * Version ID for serialization. Should be updated when class changed. 
+	 * Version ID for serialization. Should be updated when class changed.
 	 */
 	private static final long serialVersionUID = 20161021L;
-	
+
 	private String monitor;
 	private int[] dataShape;
 	private String filePath;
 	private String dataset;
-	
+
 	/**
 	 * No arg constructor for JSON
 	 */
 	public MonitorAtom() {
 		super();
 	}
-	
+
 	/**
-	 * Constructor with arguments required to fully configure this atom to 
+	 * Constructor with arguments required to fully configure this atom to
 	 * read from a monitor providing data with shape 1.
-	 * 
+	 *
 	 * @param monShrtNm String short name used within the QueueBeanFactory
 	 * @param dev String name of monitor
 	 */
 	public MonitorAtom(String monShrtNm, String dev) {
 		this(monShrtNm, false, dev, new int[]{1});
 	}
-	
+
 	/**
-	 * Constructor with arguments required to configure a model or real 
-	 * instance of this atom. Resulting atom will read from a monitor 
+	 * Constructor with arguments required to configure a model or real
+	 * instance of this atom. Resulting atom will read from a monitor
 	 * providing data with shape 1.
-	 * 
-	 * @param monShrtNm String short name used within the 
+	 *
+	 * @param monShrtNm String short name used within the
 	 *        {@link IQueueBeanFactory}
 	 * @param model boolean flag indicating whether this is a model
 	 * @param dev String name of monitor
@@ -67,12 +67,12 @@ public class MonitorAtom extends QueueAtom {
 	public MonitorAtom(String monShrtNm, boolean model, String dev) {
 		this(monShrtNm, model, dev, new int[]{1});
 	}
-	
+
 	/**
-	 * Constructor with arguments required to configure a model or real 
-	 * instance of this atom. 
-	 * 
-	 * @param monShrtNm String short name used within the 
+	 * Constructor with arguments required to configure a model or real
+	 * instance of this atom.
+	 *
+	 * @param monShrtNm String short name used within the
 	 *        {@link IQueueBeanFactory}
 	 * @param model boolean flag indicating whether this is a model
 	 * @param dev String name of monitor
@@ -84,11 +84,11 @@ public class MonitorAtom extends QueueAtom {
 		setModel(model);
 		monitor = dev;
 		this.dataShape = dataShape;
-		
+
 	}
 
 	/**
-	 * Return the monitor which will be polled by this atom 
+	 * Return the monitor which will be polled by this atom
 	 * @return the monitor to be polled
 	 */
 	public String getMonitor() {
@@ -166,16 +166,16 @@ public class MonitorAtom extends QueueAtom {
 			return false;
 		return true;
 	}
-	
+
 	@Override
 	public String toString() {
 		String clazzName = this.getClass().getSimpleName();
 		return clazzName + " [name=" + name + "(shortName=" + shortName + "), monitor=" + monitor
 				+ ", filePath=" + filePath + ", dataset=" + dataset + ", status=" + status
-				+ ", message=" + message + ", percentComplete=" + percentComplete + ", previousStatus=" 
-				+ previousStatus + ", runTime=" + runTime + ", userName=" + userName + ", hostName=" 
-				+ hostName + ", beamline="+ beamline + ", submissionTime=" + submissionTime 
+				+ ", message=" + message + ", percentComplete=" + percentComplete + ", previousStatus="
+				+ previousStatus + ", runTime=" + runTime + ", userName=" + userName + ", hostName="
+				+ hostName + ", beamline="+ beamline + ", submissionTime=" + submissionTime
 				+ ", properties=" + getProperties() + ", id=" + getUniqueId() + "]";
 	}
-	
+
 }

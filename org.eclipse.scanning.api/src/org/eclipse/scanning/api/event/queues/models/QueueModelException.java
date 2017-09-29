@@ -2,7 +2,7 @@ package org.eclipse.scanning.api.event.queues.models;
 
 /**
  * Exception thrown during construction of models or beans from a model.
- * 
+ *
  * @author Michael Wharmby
  *
  */

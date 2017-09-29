@@ -38,27 +38,27 @@ import java.util.Map;
  * IRunnableDevice<ScanModel> scanner = sservice.createScanner(...);<br>
  * scanner.configure(model);<br>
  * scanner.run();<br>
- * 
+ *
  * </code></usage>
- * 
+ *
  * @see http://confluence.diamond.ac.uk/pages/viewpage.action?spaceKey=MAP&title=discussion+item%3A+generality+of+continuous+scans
  * @author Matthew Gerring
  *
  */
 public interface IParserResult<T> {
-	
+
 	/**
 	 * The original scan command which this parser is processing.
 	 * @return
 	 */
 	String getCommand();
-	
+
 	/**
 	 * Get the names of the scannables in order. For instance:
 	 * Scan x 0 5 0.1 y 0 5 0.1 analyser
 	 * would give:
 	 * ["x","y"]
-	 * 
+	 *
 	 * @return
 	 */
 	List<String> getScannableNames();
@@ -68,17 +68,17 @@ public interface IParserResult<T> {
 	 * Scan x 0 5 0.1 y 0 5 0.1 analyser 0.1 det 0.2
 	 * would give:
 	 * ["analyser","det"]
-	 * 
+	 *
 	 * @return
 	 */
 	List<String> getDetectorNames();
-	
+
 	/**
 	 * Get the exposures of the detectors, keys are ordered (LinkedHashMap). For instance:
 	 * scan x 0 5 0.1 y 0 5 0.1 analyser 0.1 det 0.2
 	 * would give the map:
 	 * ["analyser":0.1,"det":0.2]
-	 * 
+	 *
 	 * @return map of exposures
 	 */
 	Map<String, Number> getExposures();
@@ -89,7 +89,7 @@ public interface IParserResult<T> {
 	 * For instance in the example:
 	 * scan x 0 5 0.1 analyser
 	 * Would be getModel("x") giving a StepModel with start stop and step set to  0, 5 and 0.1 respectively.
-	 * 
+	 *
 	 * @param scannableName
 	 * @return
 	 */

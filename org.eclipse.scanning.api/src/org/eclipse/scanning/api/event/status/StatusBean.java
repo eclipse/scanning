@@ -17,16 +17,16 @@ import org.eclipse.scanning.api.event.IdBean;
 
 
 /**
- * A bean whose JSON value can sit in a queue on the JMS server and 
+ * A bean whose JSON value can sit in a queue on the JMS server and
  * provide information about state.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class StatusBean extends IdBean {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 7753482435874684328L;
 
@@ -41,17 +41,17 @@ public class StatusBean extends IdBean {
 	protected String hostName;
 	protected long estimatedTime;
 	protected long startTime;
-	
+
 	/**
 	 * Directory of rerun, may be null
 	 */
 	private String   runDirectory;
-	
+
 	/**
 	 * We intentionally ignore the JMS version of this
 	 */
 	protected long   submissionTime;
-	
+
 	/**
 	 * Additional properties which may be set.
 	 */
@@ -59,7 +59,7 @@ public class StatusBean extends IdBean {
 
 	private StatusBean( Status none,String name, String message, double percentComplete,
 			            String userName, String uniqueId, long submissionTime) {
-		
+
 		this.status          = none;
 		this.name            = name;
 		this.percentComplete = percentComplete;
@@ -67,10 +67,10 @@ public class StatusBean extends IdBean {
         this.submissionTime  = submissionTime;
 	}
 
-	
+
 	/**
 	 * Subclasses must override this method calling super.merge(...)
-	 * 
+	 *
 	 * @param with
 	 */
 	public void merge(StatusBean with) {
@@ -88,13 +88,13 @@ public class StatusBean extends IdBean {
         this.estimatedTime   = with.estimatedTime;
 	}
 
-	
+
 	public StatusBean() {
 		super();
 		this.status          = Status.SUBMITTED;
 		this.percentComplete = 0;
 	}
-	
+
 	public StatusBean(String name) {
 		this();
 		this.name = name;
@@ -121,7 +121,7 @@ public class StatusBean extends IdBean {
 	public void setStartTime(long startTime) {
 		this.startTime = startTime;
 	}
-	
+
 	public long getEstimatedTime() {
 		return estimatedTime;
 	}
@@ -129,7 +129,7 @@ public class StatusBean extends IdBean {
 	public void setEstimatedTime(long estimatedTime) {
 		this.estimatedTime = estimatedTime;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -216,13 +216,13 @@ public class StatusBean extends IdBean {
      */
 	protected void createName() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 
 	public String getUserName() {
 		return userName;
@@ -263,7 +263,7 @@ public class StatusBean extends IdBean {
 				+ ", properties=" + properties
 		        + ", id=" + getUniqueId() + "]";
 	}
-	
+
 
 	public String getRunDirectory() {
 		return runDirectory;

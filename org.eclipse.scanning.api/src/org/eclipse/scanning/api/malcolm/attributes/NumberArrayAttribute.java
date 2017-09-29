@@ -12,18 +12,18 @@
 package org.eclipse.scanning.api.malcolm.attributes;
 
 /**
- * 
+ *
  * Encapsulates a number array attribute as read from a malcolm device
- * 
+ *
  * @author Matt Taylor
  *
  */
 public class NumberArrayAttribute extends MalcolmAttribute<Number[]> {
 	public static final String NUMBERARRAY_ID = "malcolm:core/NumberArrayMeta:";
-	
+
 	private String dtype;
 	private Number value[];
-	
+
 	public String getDtype() {
 		return dtype;
 	}
@@ -40,5 +40,5 @@ public class NumberArrayAttribute extends MalcolmAttribute<Number[]> {
 	public void setValue(Number[] value) {
 		this.value = value;
 	}
-	
+
 }

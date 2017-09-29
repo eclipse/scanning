@@ -23,15 +23,15 @@ public class TestClassRegistry implements IClassRegistry {
 	private static final Map<String, Class<?>> idToClassMap;
 	static {
 		Map<String, Class<?>> tmp = new HashMap<String, Class<?>>();
-		
+
 		// scan.mock
 		registerClass(tmp, RegisteredTypeBeanV0.class);
 		registerClass(tmp, RegisteredTypeBeanV1.class);
-		registerClass(tmp, RegisteredTypeBeanV2.class);	
+		registerClass(tmp, RegisteredTypeBeanV2.class);
 
 		idToClassMap = Collections.unmodifiableMap(tmp);
 	}
-	
+
 	private static void registerClass(Map<String, Class<?>> map, Class<?> clazz) {
 		map.put(clazz.getSimpleName(), clazz);
 	}

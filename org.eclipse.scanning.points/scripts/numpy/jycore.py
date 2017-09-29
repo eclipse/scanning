@@ -8,7 +8,7 @@
 #
 # Contributors:
 #    Peter Chang - initial API and implementation and/or initial documentation
-# 
+#
 ###
 
 '''
@@ -216,7 +216,7 @@ def _wrapin(func, *args, **kwargs): # strip input
     for k,v in kwargs.iteritems():
         nkwargs[k] = _jinput(v)
 
-#    return func(*nargs, **nkwargs) if nkwargs else func(*nargs) 
+#    return func(*nargs, **nkwargs) if nkwargs else func(*nargs)
     return func(*nargs, **nkwargs)
 
 @_decorator
@@ -386,7 +386,7 @@ def _isslice(rank, key):
         if nk > 0:
             if key[0] is Ellipsis:
                 return True
-            raise ValueError, "Cannot slice 0-d dataset" 
+            raise ValueError, "Cannot slice 0-d dataset"
 
     for k in key:
         if isinstance(k, slice) or k is Ellipsis or k is newaxis:
@@ -1038,7 +1038,7 @@ class ndarray(object):
                 if _contains_ints_bools_newaxis(key):
                     return self.__dataset.getByIndexes(key)
                 return self.__dataset.getObject(key)
-    
+
             return _getslice(self.__dataset, key)
         except _jarrayindex_exception:
             raise IndexError
@@ -1061,7 +1061,7 @@ class ndarray(object):
                 if _contains_ints_bools_newaxis(key):
                     return self.__dataset.setByIndexes(value, key)
                 return self.__dataset.set(value, key)
-    
+
             _setslice(self.__dataset, value, key)
             return self
         except _jarrayindex_exception:
@@ -1158,7 +1158,7 @@ class ndarrayRGB(ndarray):
     @_wrapout
     def get_grey(self, cweights=None, dtype=None):
         '''Get grey image
-        
+
         Arguments:
         cweights -- optional set of weight for combining the colour channel
         dtype    -- optional dataset type (default is int16)'''
@@ -1199,11 +1199,11 @@ def arange(start, stop=None, step=1, dtype=None):
         start = 0
     dtype = _translatenativetype(dtype)
     if dtype is None:
-        if type(start) is _types.ComplexType or type(stop) is _types.ComplexType or type(step) is _types.ComplexType: 
+        if type(start) is _types.ComplexType or type(stop) is _types.ComplexType or type(step) is _types.ComplexType:
             dtype = complex128
-        elif type(start) is _types.FloatType or type(stop) is _types.FloatType or type(step) is _types.FloatType: 
+        elif type(start) is _types.FloatType or type(stop) is _types.FloatType or type(step) is _types.FloatType:
             dtype = float64
-        elif type(start) is _types.IntType or type(stop) is _types.IntType or type(step) is _types.IntType: 
+        elif type(start) is _types.IntType or type(stop) is _types.IntType or type(step) is _types.IntType:
             dtype = int32
         else:
             raise ValueError, "Unknown or invalid type of input value"
@@ -1280,7 +1280,7 @@ def full_like(a, fill_value, dtype=None, elements=None):
 
 def linspace(start, stop, num=50, endpoint=True, retstep=False, dtype=None):
     '''Create a 1D dataset from start to stop in given number of steps
-    
+
     Arguments:
     start    -- starting value
     stop     -- stopping value
@@ -1495,7 +1495,7 @@ def repeat(a, repeats, axis=-1):
 def append(arr, values, axis=None):
     '''Append values to end of array
     Keyword argument:
-    axis -- if None, then append flattened values to flattened array 
+    axis -- if None, then append flattened values to flattened array
     '''
     if not isinstance(values, _ds):
         values = __cvt_jobj(values, dtype=None, copy=False, force=True)
@@ -1562,7 +1562,7 @@ def meshgrid(*a, **kwargs):
     elif indexing != 'xy':
         raise ValueError, 'indexing value is not valid'
     axes = [ asDataset(x)._jdataset() for x in reversed(a) ]
-        
+
     coords = _dsutils.meshGrid(axes)
     if indexing == 'ij':
         coords = [coords[1], coords[0]] + (coords[2:] if len(coords) > 2 else [])
@@ -1622,7 +1622,7 @@ def unravel_index(indices, dims):
 
 
 _prep_mode = {'raise':0, 'wrap':1, 'clip':2}
-    
+
 @_wrap
 def ravel_multi_index(multi_index, dims, mode='raise'):
     '''Converts a tuple of coordinate arrays to an array of flat indexes

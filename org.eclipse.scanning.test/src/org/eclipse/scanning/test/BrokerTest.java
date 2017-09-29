@@ -26,28 +26,28 @@ import org.junit.BeforeClass;
 
 /**
  * Doing this works better than using vm:// uris.
- * 
+ *
  * Please do not use vm:// as it does not work when many tests are started and stopped
  * in a big unit testing system because each test uses the same in VM broker.
  *
  *
  *  TODO Should have static start of broker or per test start for problematic tests
- * 
+ *
  * @author Matthew Gerring.
  *
  */
 public class BrokerTest extends TmpTest {
 
-	protected static URI uri;     
+	protected static URI uri;
 
 	private static BrokerDelegate delegate;
 
 	private boolean startEveryTime;
-	
+
 	protected BrokerTest() {
 		this(false);
 	}
-	
+
 	protected BrokerTest(boolean startEveryTime) {
 		this.startEveryTime = startEveryTime;
 	}
@@ -58,7 +58,7 @@ public class BrokerTest extends TmpTest {
 		delegate.start();
 		uri      = delegate.getUri();
 	}
-	
+
 	@Before
 	public final void startLocalBroker() throws Exception {
 		if (startEveryTime) {
@@ -68,7 +68,7 @@ public class BrokerTest extends TmpTest {
 			uri      = delegate.getUri();
 		}
 	}
-	
+
 	public final static void setUpNonOSGIActivemqMarshaller(Class<?>...extras) {
 		ActivemqConnectorService.setJsonMarshaller(new MarshallerService(
 				Arrays.asList(new ScanningAPIClassRegistry(),

@@ -27,4 +27,3 @@ Name: Scanning (Fat+ISPyB)
 What? Extends fat to include dependencies for the git@github.com:DiamondLightSource/gda-ispyb-api.git respository such as MariaDB
 Why? Allows bundles to be developed which depend on scanning and ispyb-api
 When? You want to talk to ISPyB using the API
-

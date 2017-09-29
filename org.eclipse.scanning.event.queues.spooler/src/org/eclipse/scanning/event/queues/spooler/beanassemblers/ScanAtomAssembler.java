@@ -35,17 +35,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ScanAtomAssembler.class);
-	
+
 	//We always want to set this value for the detectors
 	private static final String EXPOSURETIME = "exposureTime";
-	
+
 	private Map<String, IScanObjectModelAssembler<? extends IScanPathModel>> pathAssemblerRegister;
 
 	public ScanAtomAssembler(IQueueBeanFactory queueBeanFactory) {
 		super(queueBeanFactory);
-		
+
 		pathAssemblerRegister = new HashMap<>();
 		pathAssemblerRegister.put("step", new StepModelAssembler());
 		pathAssemblerRegister.put("array", new ArrayModelAssembler());
@@ -59,7 +59,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		//0) Check for duplicates
 		//1) We update these against their respective Maps in ExpConfig
 		//2) We search the results for values that need replacing from localValues
-		
+
 		//Paths
 		updateModelMap(model.getPathModelsModel(), config.getPathModelValues(), config);
 		updateModelMap(model.getDetectorModelsModel(), config.getDetectorModelValues(), config);
@@ -73,13 +73,13 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		atom.setScanBrokerURI(model.getScanBrokerURI());
 		atom.setScanStatusTopicName(model.getScanStatusTopicName());
 		atom.setScanSubmitQueueName(model.getScanSubmitQueueName());
-		
+
 		ScanRequest<?> scanReq = new ScanRequest<>();
 		scanReq.setCompoundModel(prepareScanPaths(model.getPathModelsModel()));
 		scanReq.setDetectors(prepareDetectors(model.getDetectorModelsModel()));
 		scanReq.setMonitorNames(prepareMonitors(model.getMonitorsModel()));
 		atom.setScanReq(scanReq);
-		
+
 		return atom;
 	}
 
@@ -87,7 +87,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 	public void setBeanName(ScanAtom bean) {
 		StringJoiner name = new StringJoiner(" ");
 		name.add("Scan of");
-		
+
 		ScanRequest<?> scanReq = bean.getScanReq();
 		StringJoiner paths = new StringJoiner(", ");
 		for (Object pathModel : scanReq.getCompoundModel().getModels()) {
@@ -101,10 +101,10 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		name.add("collecting data with");
 		name.add(scanReq.getDetectors().keySet().stream().map(detName -> "'"+detName+"'").collect(Collectors.joining(", ")));
 		name.add("detector(s)");
-		
+
 		bean.setName(name.toString());
 	}
-	
+
 	private void updateModelMap(Map<String, DeviceModel> modelMap, Map<String, DeviceModel> configMap, ExperimentConfiguration config) throws QueueModelException {
 		Set<String> extraPaths = new HashSet<>(configMap.keySet());
 		extraPaths.removeAll(modelMap.keySet());
@@ -115,7 +115,7 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 			logger.error("Both stored and experiment models configure '"+deviceName.get()+"'. Cannot specify multiple configurations for same device");
 			throw new QueueModelException("Cannot specify multiple configurations for same device ('"+deviceName.get()+"')");
 		}
-		
+
 		for (Map.Entry<String, DeviceModel> pathModel : modelMap.entrySet()) {
 			Map<String, Object> modelDevConf = pathModel.getValue().getDeviceConfiguration();
 			replaceMapIQueueValues(modelDevConf, config);
@@ -124,19 +124,19 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 			pathModel.getValue().setDeviceConfiguration(modelDevConf);
 		}
 	}
-	
+
 	private <R> CompoundModel<R> prepareScanPaths(Map<String, DeviceModel> pathModels) throws QueueModelException {
 		CompoundModel<R> paths = new CompoundModel<>(new ArrayList<Object>(7));//Sets empty model to avoid NPE when building the bean name and there are no paths
-		
+
 		for (String deviceName : pathModels.keySet()) {
 			DeviceModel devModel = pathModels.get(deviceName);
-			
+
 			//Create the IScanPathModel
 			IScanObjectModelAssembler<? extends IScanPathModel> pathAssembler = pathAssemblerRegister.get(devModel.getType().toLowerCase());
 			Object path = pathAssembler.assemble(deviceName, devModel);
 			configureObject(path, devModel, pathAssembler.getRequiredArgReferences());
-			
-			//Create the ROIs, if there 
+
+			//Create the ROIs, if there
 			List<R> rois = null;
 			if (devModel.getRoiConfiguration().size() > 0 ) {
 				//TODO
@@ -145,17 +145,17 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 		}
 		return paths;
 	}
-	
+
 	/**
-	 * For each detector in the supplied map, get the model from the 
-	 * {@link IRunnableDeviceService} and attempt to set all the fields that 
-	 * have been passed as {@link IQueueValue}s as part of the map to their 
+	 * For each detector in the supplied map, get the model from the
+	 * {@link IRunnableDeviceService} and attempt to set all the fields that
+	 * have been passed as {@link IQueueValue}s as part of the map to their
 	 * evaluated values.
-	 * @param detectorModels Map of String names of detectors with a List of 
-	 *        {@link IQueueValue}s which provides the configuration 
-	 * @return Map of String names of detectors against Object configured 
+	 * @param detectorModels Map of String names of detectors with a List of
+	 *        {@link IQueueValue}s which provides the configuration
+	 * @return Map of String names of detectors against Object configured
 	 *         detector models
-	 * @throws QueueModelException if the detector could not be configured or 
+	 * @throws QueueModelException if the detector could not be configured or
 	 *         no value for EXPOSURETIME is set
 	 */
 	private Map<String, Object> prepareDetectors(Map<String, DeviceModel> detectorModels) throws QueueModelException {
@@ -183,10 +183,10 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 			detModel = configureObject(detModel, detConfig, Arrays.asList(EXPOSURETIME));
 			detectors.put(detName, detModel);
 		}
-		
+
 		return detectors;
 	}
-	
+
 	private Collection<String> prepareMonitors(Collection<Object> monitorsModel) throws QueueModelException {
 		List<String> monitors = new ArrayList<>();
 		for (Object monitor : monitorsModel) {
@@ -206,33 +206,33 @@ public final class ScanAtomAssembler extends AbstractBeanAssembler<ScanAtom> {
 
 		return monitors;
 	}
-	
+
 	/**
-	 * For a given object and List of {@link IQueueValues}, determine which 
-	 * items in the list represent values which can be set on the object and 
-	 * set them. If an item in the configuration appears in the ignoreArray, it 
-	 * will not be set by this method. The method only considers methods on the 
+	 * For a given object and List of {@link IQueueValues}, determine which
+	 * items in the list represent values which can be set on the object and
+	 * set them. If an item in the configuration appears in the ignoreArray, it
+	 * will not be set by this method. The method only considers methods on the
 	 * target obj with names that start with set.
 	 * @param obj T to be configured
-	 * @param configuration List of {@link IQueueValues} representing 
+	 * @param configuration List of {@link IQueueValues} representing
 	 *        configuration
-	 * @param ignoreArray array of {@link IQueueValue} parameters which should 
+	 * @param ignoreArray array of {@link IQueueValue} parameters which should
 	 *        not be set by this method
 	 * @return T obj which has been fully configured
 	 */
 	private <T> T configureObject(T obj, DeviceModel configuration, List<String> ignoreList) throws QueueModelException {
 		List<Method> allMethods = Arrays.asList(obj.getClass().getMethods());
 		Map<String, Object> devConf = configuration.getDeviceConfiguration();
-		
+
 		devConf.entrySet().stream().filter(option -> !ignoreList.contains(option.getKey())) //Is this option in the ignore list?
 			.forEach(option ->allMethods.stream().filter(method -> method.getName().startsWith("set")) //Does this method start with set?
 					  .filter(method -> configuration.isSetMethodForName(method, option.getKey())) //Is this the set method for this option?
-					  .forEach(method -> setField(method, obj, option)));		
+					  .forEach(method -> setField(method, obj, option)));
 		return obj;
 	}
-	
+
 	/**
-	 * Use the supplied set method to configure a field on the given object to 
+	 * Use the supplied set method to configure a field on the given object to
 	 * the value obtained by evaluating {@link IQueueValue} value.
 	 * @param setter Method object, should be a setter
 	 * @param obj T on which the setter method will be called

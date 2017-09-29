@@ -25,7 +25,7 @@ import org.python.core.PyObject;
 class LissajousIterator extends AbstractScanPointIterator {
 
 	private LissajousModel model;
-	
+
 	private Point currentPoint;
 
 	public LissajousIterator(LissajousGenerator gen) {
@@ -35,20 +35,20 @@ class LissajousIterator extends AbstractScanPointIterator {
 		String yName = model.getSlowAxisName();
 		double width = model.getBoundingBox().getFastAxisLength();
 		double height = model.getBoundingBox().getSlowAxisLength();
-		
+
         JythonObjectFactory<ScanPointIterator> lissajousGeneratorFactory = ScanPointGeneratorFactory.JLissajousGeneratorFactory();
 
         PyDictionary box = new PyDictionary();
         box.put("width", width);
         box.put("height", height);
         box.put("centre", new double[] {model.getBoundingBox().getFastAxisStart() + width / 2,
-        								model.getBoundingBox().getSlowAxisStart() + height / 2});
+									model.getBoundingBox().getSlowAxisStart() + height / 2});
 
         PyList names =  new PyList(Arrays.asList(new String[] {xName, yName}));
         PyList units = new PyList(Arrays.asList(new String[] {"mm", "mm"}));
         int numLobes = (int) (model.getA() / model.getB());
         int numPoints = model.getPoints();
-        
+
         ScanPointIterator lissajous = lissajousGeneratorFactory.createObject(
 				names, units, box, numLobes, numPoints);
 		pyIterator = createSpgCompoundGenerator(new Iterator[] {lissajous}, gen.getRegions().toArray(),
@@ -61,7 +61,7 @@ class LissajousIterator extends AbstractScanPointIterator {
 			currentPoint = (Point) pyIterator.next();
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -75,7 +75,7 @@ class LissajousIterator extends AbstractScanPointIterator {
 		}
 		Point point = currentPoint;
 		currentPoint = null;
-		
+
 		return point;
 	}
 

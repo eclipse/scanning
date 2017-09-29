@@ -97,7 +97,7 @@ public class PVDataSerializationTest {
 				add("units", ScalarType.pvString).
 				add("axis", ScalarType.pvString).
 				addArray("points", ScalarType.pvDouble).
-				setId("scanpointgenerator:generator/ArrayGenerator:1.0").					
+				setId("scanpointgenerator:generator/ArrayGenerator:1.0").
 				createStructure();
 
 		Union union = fieldCreate.createVariantUnion();
@@ -105,7 +105,7 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
-				addArray("generators", union).				
+				addArray("generators", union).
 				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
@@ -165,7 +165,7 @@ public class PVDataSerializationTest {
 		Structure expectedCircularRoiStructure = fieldCreate.createFieldBuilder().
 				addArray("centre", ScalarType.pvDouble).
 				add("radius", ScalarType.pvDouble).
-				setId("scanpointgenerator:roi/CircularROI:1.0").					
+				setId("scanpointgenerator:roi/CircularROI:1.0").
 				createStructure();
 
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
@@ -176,9 +176,9 @@ public class PVDataSerializationTest {
 
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				add("duration", ScalarType.pvDouble).
-				addArray("mutators", union).				
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("mutators", union).
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -258,9 +258,9 @@ public class PVDataSerializationTest {
 				createStructure();
 
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("mutators", union).
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -330,9 +330,9 @@ public class PVDataSerializationTest {
 		Union union = fieldCreate.createVariantUnion();
 
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("mutators", union).
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -372,31 +372,31 @@ public class PVDataSerializationTest {
 
 		Structure expectedPointRoiStructure = fieldCreate.createFieldBuilder().
 				addArray("point", ScalarType.pvDouble).
-				setId("scanpointgenerator:roi/PointROI:1.0").					
+				setId("scanpointgenerator:roi/PointROI:1.0").
 				createStructure();
 
 		Structure expectedCircularRoiStructure = fieldCreate.createFieldBuilder().
 				addArray("centre", ScalarType.pvDouble).
 				add("radius", ScalarType.pvDouble).
-				setId("scanpointgenerator:roi/CircularROI:1.0").					
+				setId("scanpointgenerator:roi/CircularROI:1.0").
 				createStructure();
 
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
 				addArray("axes", ScalarType.pvString).
-				add("roi", expectedPointRoiStructure).				
+				add("roi", expectedPointRoiStructure).
 				createStructure();
 
 		Structure expectedCircleExcluderStructure = fieldCreate.createFieldBuilder().
 				addArray("axes", ScalarType.pvString).
-				add("roi", expectedCircularRoiStructure).				
+				add("roi", expectedCircularRoiStructure).
 				createStructure();
 
 		Union union = fieldCreate.createVariantUnion();
 
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("mutators", union).
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -409,7 +409,7 @@ public class PVDataSerializationTest {
 
 		PVDoubleArray pointVal = expectedROIPVStructure.getSubField(PVDoubleArray.class, "point");
 		double[] point = new double[] {5, 9.4};
-		pointVal.put(0, point.length, point, 0);	
+		pointVal.put(0, point.length, point, 0);
 
 		// Create Expected for Circle too
 		PVStructure expectedCircleExcluderPVStructure = pvDataCreate.createPVStructure(expectedCircleExcluderStructure);
@@ -486,8 +486,8 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -558,7 +558,7 @@ public class PVDataSerializationTest {
 				add("width", ScalarType.pvDouble).
 				add("angle", ScalarType.pvDouble).
 				add("height", ScalarType.pvDouble).
-				setId("scanpointgenerator:roi/RectangularROI:1.0").					
+				setId("scanpointgenerator:roi/RectangularROI:1.0").
 				createStructure();
 
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
@@ -569,9 +569,9 @@ public class PVDataSerializationTest {
 
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				add("duration", ScalarType.pvDouble).
-				addArray("mutators", union).				
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("mutators", union).
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -645,7 +645,7 @@ public class PVDataSerializationTest {
 				addArray("radii", ScalarType.pvDouble).
 				addArray("angles", ScalarType.pvDouble).
 				addArray("centre", ScalarType.pvDouble).
-				setId("scanpointgenerator:roi/SectorROI:1.0").					
+				setId("scanpointgenerator:roi/SectorROI:1.0").
 				createStructure();
 
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
@@ -657,8 +657,8 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -737,22 +737,22 @@ public class PVDataSerializationTest {
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
 
 		Structure maxOffsetStructure = fieldCreate.createFieldBuilder().
-				add("x", ScalarType.pvDouble).				
+				add("x", ScalarType.pvDouble).
 				createStructure();
 
 		Structure expectedRandomOffsetMutatorStructure = fieldCreate.createFieldBuilder().
 				add("seed", ScalarType.pvInt).
 				addArray("axes", ScalarType.pvString).
 				add("max_offset", maxOffsetStructure).
-				setId("scanpointgenerator:mutator/RandomOffsetMutator:1.0").					
+				setId("scanpointgenerator:mutator/RandomOffsetMutator:1.0").
 				createStructure();
 
 		Union union = fieldCreate.createVariantUnion();
 
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
-				addArray("mutators", union).				
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("mutators", union).
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -786,7 +786,7 @@ public class PVDataSerializationTest {
 	@Test
 	public void testLineGenerator() throws Exception {
 
-		// Create test generator			
+		// Create test generator
 		IPointGeneratorService pgService = new PointGeneratorService();
 		StepModel stepModel = new StepModel("x", 3, 4, 0.25);
 		IPointGenerator<StepModel> temp = pgService.createGenerator(stepModel);
@@ -804,7 +804,7 @@ public class PVDataSerializationTest {
 				addArray("units", ScalarType.pvString).
 				addArray("stop", ScalarType.pvDouble).
 				add("size", ScalarType.pvInt).
-				setId("scanpointgenerator:generator/LineGenerator:1.0").					
+				setId("scanpointgenerator:generator/LineGenerator:1.0").
 				createStructure();
 
 		Union union = fieldCreate.createVariantUnion();
@@ -812,8 +812,8 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -874,7 +874,7 @@ public class PVDataSerializationTest {
 		Structure expectedBoxStructure = fieldCreate.createFieldBuilder().
 				addArray("centre", ScalarType.pvDouble).
 				add("width", ScalarType.pvDouble).
-				add("height", ScalarType.pvDouble).				
+				add("height", ScalarType.pvDouble).
 				createStructure();
 
 		Structure expectedGeneratorsStructure = fieldCreate.createFieldBuilder().
@@ -954,7 +954,7 @@ public class PVDataSerializationTest {
 				add("alternate", ScalarType.pvBoolean).
 				addArray("units", ScalarType.pvString).
 				add("radius", ScalarType.pvDouble).
-				setId("scanpointgenerator:generator/SpiralGenerator:1.0").					
+				setId("scanpointgenerator:generator/SpiralGenerator:1.0").
 				createStructure();
 
 		Union union = fieldCreate.createVariantUnion();
@@ -962,8 +962,8 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -1025,7 +1025,7 @@ public class PVDataSerializationTest {
 				addArray("units", ScalarType.pvString).
 				addArray("stop", ScalarType.pvDouble).
 				add("size", ScalarType.pvInt).
-				setId("scanpointgenerator:generator/LineGenerator:1.0").					
+				setId("scanpointgenerator:generator/LineGenerator:1.0").
 				createStructure();
 
 		Union union = fieldCreate.createVariantUnion();
@@ -1033,7 +1033,7 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
-				addArray("generators", union).				
+				addArray("generators", union).
 				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
@@ -1123,7 +1123,7 @@ public class PVDataSerializationTest {
 				add("width", ScalarType.pvDouble).
 				add("angle", ScalarType.pvDouble).
 				add("height", ScalarType.pvDouble).
-				setId("scanpointgenerator:roi/RectangularROI:1.0").					
+				setId("scanpointgenerator:roi/RectangularROI:1.0").
 				createStructure();
 
 		Structure expectedExcluderStructure = fieldCreate.createFieldBuilder().
@@ -1149,14 +1149,14 @@ public class PVDataSerializationTest {
 				addArray("units", ScalarType.pvString).
 				addArray("stop", ScalarType.pvDouble).
 				add("size", ScalarType.pvInt).
-				setId("scanpointgenerator:generator/LineGenerator:1.0").					
+				setId("scanpointgenerator:generator/LineGenerator:1.0").
 				createStructure();
 
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
-				addArray("generators", union).				
-				addArray("excluders", union).	
+				addArray("generators", union).
+				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
 				createStructure();
 
@@ -1281,4 +1281,3 @@ public class PVDataSerializationTest {
 	}
 
 }
-

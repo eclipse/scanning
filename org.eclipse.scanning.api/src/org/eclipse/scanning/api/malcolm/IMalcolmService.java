@@ -18,7 +18,7 @@ import org.eclipse.scanning.api.event.scan.ScanBean;
 
 /**
  * An OSGi service for creating Malcolm connections
- * 
+ *
  * Usage:
  * <code>
  <p>
@@ -35,34 +35,34 @@ import org.eclipse.scanning.api.event.scan.ScanBean;
 		<br>
 		final State state = zebra.getState();<br>
         // ... We did something!<br>
-</p>        
+</p>
 </code>
 
  * @author Matthew Gerring
  *
  */
 public interface IMalcolmService {
-	
+
 	/**
 	 * Get a device by name. At the point where the device is retrieved the
 	 * caller may know the type of device and use a generic to declare its model.
-	 * 
+	 *
 	 * @param name
 	 * @return
 	 * @throws MalcolmDeviceException
 	 */
 	public <M extends IMalcolmModel> IMalcolmDevice<M> getDevice(String name) throws MalcolmDeviceException;
-	
+
 	/**
 	 * Get a device by name. At the point where the device is retrieved the
 	 * caller may know the type of device and use a generic to declare it.
-	 * 
+	 *
 	 * @param name
 	 * @param publisher
 	 * @return
 	 * @throws MalcolmDeviceException
 	 */
-	public <M extends IMalcolmModel> IMalcolmDevice<M> getDevice(String name, IPublisher<ScanBean> publisher) throws MalcolmDeviceException;	
+	public <M extends IMalcolmModel> IMalcolmDevice<M> getDevice(String name, IPublisher<ScanBean> publisher) throws MalcolmDeviceException;
 
 	/**
 	 * Disposes the service

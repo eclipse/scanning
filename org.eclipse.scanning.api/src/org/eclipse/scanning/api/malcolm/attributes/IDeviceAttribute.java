@@ -3,7 +3,7 @@ package org.eclipse.scanning.api.malcolm.attributes;
 /**
  * Interface for device attributes. At the time of writing this is only used by
  * Malcolm devices.
- * 
+ *
  * @author Matthew Dickie
  * @param <T> the type of the attribute's value
  */
@@ -28,7 +28,7 @@ public interface IDeviceAttribute<T> {
 	 * @return a human-readable label for this attribute
 	 */
 	public String getLabel();
-	
+
 	/**
 	 * @return <code>true</code> if this attribute is writeable, <code>false</code> otherwise
 	 */

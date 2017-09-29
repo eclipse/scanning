@@ -22,7 +22,7 @@ public interface IURIConnection extends IDisconnectable{
 	 * @return
 	 */
 	public URI getUri();
-	
+
 	/**
 	 * The underlyng service which the uri is connected using
 	 */

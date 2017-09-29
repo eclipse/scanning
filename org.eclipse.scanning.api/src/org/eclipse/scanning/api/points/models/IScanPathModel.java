@@ -29,13 +29,13 @@ public interface IScanPathModel {
 	 * @return the name of this path
 	 */
 	public String getName();
-	
+
     /**
      * The names of the axes which will be scanned by this model.
      * @return
      */
 	default List<String> getScannableNames() {
-		return Arrays.asList(getName()); 
+		return Arrays.asList(getName());
 	}
 
 	/**

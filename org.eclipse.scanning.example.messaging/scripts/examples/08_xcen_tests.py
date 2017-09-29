@@ -15,7 +15,7 @@ latest_message = ""
 
 
 class StatusQueueHandler(object):
-    
+
     def on_message(self, headers, data):
         if (data['uniqueId'] != unique_id):
             return
@@ -25,15 +25,15 @@ class StatusQueueHandler(object):
 
 
 class StatusTopicHandler(object):
-    
+
     def on_message(self, headers, data):
         if (data['uniqueId'] != unique_id):
             return
         global latest_message
         latest_message = data
-        
+
         pc = data['percentComplete']
-        
+
         print("Percentage complete: " + str(pc) + "%")
 #         pprint(data)
 
@@ -56,7 +56,7 @@ set_handlers(conn, handlers)
 subscribe_all(conn, conn_dict, handlers)
 
 submission_time = int(time.time() * 1000)
- 
+
 xcen_bean = {"@type":"XcenBean",
                            "uniqueId":unique_id,
                            "status":"SUBMITTED",
@@ -86,7 +86,7 @@ def create_request(new_status):
     msg = latest_message
     msg['previousStatus'] = msg['status']
     msg['status'] = new_status
-    return msg 
+    return msg
 
 
 # This is a list of requests to make during my test run.

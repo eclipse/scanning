@@ -75,64 +75,64 @@ public class AttributeTest extends NexusTest{
 
 	protected IEventService               eservice;
 	private IWritableDetector<MandelbrotModel> detector;
-	
+
 	@Before
 	public void before() throws ScanningException {
-		
+
 		MandelbrotModel model = createMandelbrotModel();
-		
+
 		detector = (IWritableDetector<MandelbrotModel>)dservice.createRunnableDevice(model);
 		assertNotNull(detector);
 	}
 
-	@Test 
+	@Test
 	public void testName() throws Exception {
-		
+
 		// All scannables should have their name set ok
 		IRunnableDevice<ScanModel> scanner = createGridScan(detector, 2, 2);
 		scanner.run(null);
-		
+
 		checkNexusFile(scanner, 2, 2);
 		checkAttribute(scanner, "xNex", "name");
 	}
 
-	@Test 
+	@Test
 	public void testDescription() throws Exception {
-		
+
 		IScannable<?> x = connector.getScannable("xNex");
 		if (!(x instanceof IScanAttributeContainer)) throw new Exception("xNex is not "+IScanAttributeContainer.class.getSimpleName());
 		IScanAttributeContainer xc = (IScanAttributeContainer)x;
 		xc.setScanAttribute("description", "Reality is a shapeless unity.\nThe mind which distinguishes between aspects of this unity, sees only disunity.\nRemain unconcerned.");
-	
+
 		IRunnableDevice<ScanModel> scanner = createGridScan(detector, 2, 2);
 		scanner.run(null);
-		
+
 		checkNexusFile(scanner, 2, 2);
 		checkAttribute(scanner, "xNex", "description");
 	}
-	
-	@Test 
+
+	@Test
 	public void testFred() throws Exception {
-		
+
 		IScannable<?> x = connector.getScannable("xNex");
 		if (!(x instanceof IScanAttributeContainer)) throw new Exception("xNex is not "+IScanAttributeContainer.class.getSimpleName());
 		IScanAttributeContainer xc = (IScanAttributeContainer)x;
 		xc.setScanAttribute("fred", "Fred this is your conscious speaking.");
-	
+
 		IRunnableDevice<ScanModel> scanner = createGridScan(detector, 2, 2);
 		scanner.run(null);
-		
+
 		checkNexusFile(scanner, 2, 2);
 		checkAttribute(scanner, "xNex", "fred");
 	}
 
-	@Test 
+	@Test
 	public void testSetMultipleAttributes() throws Exception {
-		
+
 		IScannable<?> x = connector.getScannable("xNex");
 		if (!(x instanceof IScanAttributeContainer)) throw new Exception("xNex is not "+IScanAttributeContainer.class.getSimpleName());
 		IScanAttributeContainer xc = (IScanAttributeContainer)x;
-		
+
 		// @see http://download.nexusformat.org/doc/html/classes/base_classes/NXpositioner.html
 		//description: NX_CHAR
 		xc.setScanAttribute("description", "Reality is a shapeless unity.\nThe mind which distinguishes between aspects of this unity, sees only disunity.\nRemain unconcerned.");
@@ -150,35 +150,35 @@ public class AttributeTest extends NexusTest{
 
 		// velocity: NX_NUMBER {units=NX_ANY}
 		xc.setScanAttribute("velocity", 1.2);
-		
+
 		// acceleration_time: NX_NUMBER {units=NX_ANY}
 		xc.setScanAttribute("acceleration_time", 0.1);
 
 		// controller_record: NX_CHAR
 		xc.setScanAttribute("controller_record", "Homer Simpson");
-	
+
 		IRunnableDevice<ScanModel> scanner = createGridScan(detector, 2, 2);
 		scanner.run(null);
-		
+
 		checkNexusFile(scanner, 2, 2);
-		
+
 		for(String aName : xc.getScanAttributeNames()) {
 		    checkAttribute(scanner, "xNex", aName);
 		}
 	}
 
 	private void checkAttribute(IRunnableDevice<ScanModel> scanner, String sName, String attrName) throws Exception {
-		
+
 		IScannable<?> s = connector.getScannable(sName);
 		if (!(s instanceof IScanAttributeContainer)) throw new Exception(sName+" is not "+IScanAttributeContainer.class.getSimpleName());
-		
-		IScanAttributeContainer sc = (IScanAttributeContainer)s;		
+
+		IScanAttributeContainer sc = (IScanAttributeContainer)s;
 		Object attrValue = sc.getScanAttribute(attrName);
-		
+
 		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
 		NexusFile nf = fileFactory.newNexusFile(filePath);
 		nf.openToRead();
-		
+
 		DataNode node = nf.getData("/entry/instrument/" + sName + "/"+attrName);
 		Dataset sData =  DatasetUtils.sliceAndConvertLazyDataset(node.getDataset());
 
@@ -189,7 +189,7 @@ public class AttributeTest extends NexusTest{
 		} else {
 			assertEquals(sData.getStringAbs(0), (String)attrValue);
 		}
-		
+
 	}
 
 	private void checkNexusFile(IRunnableDevice<ScanModel> scanner,
@@ -201,7 +201,7 @@ public class AttributeTest extends NexusTest{
 		String filePath = ((AbstractRunnableDevice<ScanModel>) scanner).getModel().getFilePath();
 		NexusFile nf = fileFactory.newNexusFile(filePath);
 		nf.openToRead();
-		
+
 		TreeFile nexusTree = NexusUtils.loadNexusTree(nf);
 		NXroot rootNode = (NXroot) nexusTree.getGroupNode();
 		NXentry entry = rootNode.getEntry();
@@ -260,10 +260,10 @@ public class AttributeTest extends NexusTest{
 
 			int[] defaultDimensionMappings = IntStream.range(0, sizes.length)
 					.toArray();
-			
+
 			int i = -1;
 			for (String  scannableName : scannableNames) {
-				
+
 			    i++;
 				// Demand values should be 1D
 				NXpositioner positioner = instrument
@@ -296,12 +296,12 @@ public class AttributeTest extends NexusTest{
 								+ NXpositioner.NX_VALUE);
 			}
 		}
-		
+
 		nf.close();
 	}
 
 	private IRunnableDevice<ScanModel> createGridScan(final IRunnableDevice<?> detector, int... size) throws Exception {
-		
+
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
 		gmodel.setFastAxisName("xNex");
@@ -309,11 +309,11 @@ public class AttributeTest extends NexusTest{
 		gmodel.setSlowAxisName("yNex");
 		gmodel.setSlowAxisPoints(size[size.length-2]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
-		
+
 		// We add the outer scans, if any
-		if (size.length > 2) { 
+		if (size.length > 2) {
 			for (int dim = size.length-3; dim>-1; dim--) {
 				final StepModel model;
 				if (size[dim]-1>0) {
@@ -325,19 +325,19 @@ public class AttributeTest extends NexusTest{
 				gen = gservice.createCompoundGenerator(step, gen);
 			}
 		}
-	
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector);
-		
+
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());
 		System.out.println("File writing to "+smodel.getFilePath());
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override

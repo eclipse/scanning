@@ -28,12 +28,12 @@ import org.eclipse.scanning.api.scan.event.IRunListener;
 import org.eclipse.scanning.api.scan.event.RunEvent;
 
 public class MalcolmEventDelegate {
-	
+
 	private String          topicName;
-	
+
 	// listeners
 	private Collection<IMalcolmListener<MalcolmEventBean>> mlisteners;
-	
+
 	// Bean to contain all the settings for a given
 	// scan and to hold data for scan events
 	private MalcolmEventBean templateBean;
@@ -41,12 +41,12 @@ public class MalcolmEventDelegate {
 	private IMalcolmConnectorService<MalcolmMessage> service;
 
 	public MalcolmEventDelegate(String deviceName, IMalcolmConnectorService<MalcolmMessage> service) {
-		
+
 		this.service = service;
-		
+
 		String beamline = System.getenv("BEAMLINE");
 		if (beamline == null) beamline = "test";
-		
+
 		topicName = "malcolm.topic."+beamline+"."+deviceName;
 	}
 
@@ -54,7 +54,7 @@ public class MalcolmEventDelegate {
      * Call to publish an event. If the topic is not opened, this
      * call prompts the delegate to open a connection. After this
      * the close method *must* be called.
-     * 
+     *
      * @param event
      * @throws Exception
      */
@@ -69,16 +69,16 @@ public class MalcolmEventDelegate {
 		if (mlisteners==null) mlisteners = Collections.synchronizedCollection(new LinkedHashSet<IMalcolmListener<MalcolmEventBean>>());
 		mlisteners.add(l);
 	}
-	
+
 	public void removeMalcolmListener(IMalcolmListener<MalcolmEventBean> l) {
 		if (mlisteners==null) return;
 		mlisteners.remove(l);
 	}
-	
+
 	private void fireMalcolmListeners(MalcolmEventBean message) {
-		
+
 		if (mlisteners==null) return;
-		
+
 		// Make array, avoid multi-threading issues.
 		final IMalcolmListener<MalcolmEventBean>[] la = mlisteners.toArray(new IMalcolmListener[mlisteners.size()]);
 		final MalcolmEvent<MalcolmEventBean> evt = new MalcolmEvent<MalcolmEventBean>(message);

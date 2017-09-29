@@ -16,7 +16,7 @@ import org.eclipse.scanning.api.device.IRunnableDevice;
 public class ScanningException extends Exception {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2587074494060854407L;
 	private IRunnableDevice<?> device;
@@ -51,7 +51,7 @@ public class ScanningException extends Exception {
 	}
 
 	/**
-	 *  
+	 *
 	 * @return the device, may be null.
 	 */
 	public IRunnableDevice<?> getDevice() {

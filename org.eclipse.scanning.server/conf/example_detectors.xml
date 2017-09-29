@@ -114,7 +114,7 @@
 	<bean id="clusterProcessingInfo" class="org.eclipse.scanning.api.event.scan.DeviceInformation">
 		<property name="label"       value="Processing"/>
 		<property name="description" value="A device which submits a job to execute results processing. This is usually done on the cluster."/>
-		<property name="icon"        value="org.eclipse.scanning.sequencer/icons/processing.png"/> 
+		<property name="icon"        value="org.eclipse.scanning.sequencer/icons/processing.png"/>
 	</bean>
 	<bean id="clusterProcessingDevice" class="org.eclipse.scanning.sequencer.analysis.ClusterProcessingRunnableDevice" init-method="register">
 		<property name="name"              value="processing"/>

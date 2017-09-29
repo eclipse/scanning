@@ -13,7 +13,7 @@ public abstract class AbstractEPICSv4Device implements IEPICSv4Device {
     protected DummyMalcolmRecord pvRecord = null;
 
     public AbstractEPICSv4Device(String deviceName) {
-    	recordName = deviceName;
+	recordName = deviceName;
     }
 
     @Override
@@ -23,12 +23,12 @@ public abstract class AbstractEPICSv4Device implements IEPICSv4Device {
 
     @Override
 	public void stop() {
-    	latch.countDown();
+	latch.countDown();
     }
 
     @Override
 	public Map<String, PVStructure> getReceivedRPCCalls() {
-    	return pvRecord.getReceivedRPCCalls();
+	return pvRecord.getReceivedRPCCalls();
     }
 
 }

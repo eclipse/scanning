@@ -28,7 +28,7 @@ import org.eclipse.scanning.test.BrokerTest;
 import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 /**
- * Manages Broker service through the BrokerTest class and allows 
+ * Manages Broker service through the BrokerTest class and allows
  * instantiation of a "Dummy" consumer.
  *
  * @author Michael Wharmby
@@ -36,30 +36,30 @@ import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
  */
 @Deprecated
 public class EventInfrastructureFactoryService extends BrokerTest {
-	
+
 	private boolean active = false, unitTest = false;
 	private IEventService evServ;
-	
+
 	/**
 	 * Start the broker service & optionally set up the Event Service too.
-	 * 
+	 *
 	 * @param unitTest true if this is a unit test, will set up EventService.
 	 * @throws Exception
 	 */
 	public void start(boolean unitTest) throws Exception {
 		startBroker();
 		this.unitTest = unitTest;
-		
+
 		if (unitTest) {
-			
+
 			setUpNonOSGIActivemqMarshaller();
-			
+
 			evServ =  new EventServiceImpl(new ActivemqConnectorService());
 		}
-		
+
 		active = true;
 	}
-	
+
 	/**
 	 * Stop the current BrokerService instance.
 	 * @throws Exception
@@ -68,11 +68,11 @@ public class EventInfrastructureFactoryService extends BrokerTest {
 		if (unitTest) {
 			evServ = null;
 		}
-		
+
 		stopBroker();
 		active = false;
 	}
-	
+
 	/**
 	 * Is this service started?
 	 * @return
@@ -80,7 +80,7 @@ public class EventInfrastructureFactoryService extends BrokerTest {
 	public boolean isActive() {
 		return active;
 	}
-	
+
 	/**
 	 * The URI of the currently active BrokerService
 	 * @return
@@ -93,7 +93,7 @@ public class EventInfrastructureFactoryService extends BrokerTest {
 		}
 		return uri;
 	}
-	
+
 	/**
 	 * EventService configured for the currently active BrokerService.
 	 * @return
@@ -101,22 +101,22 @@ public class EventInfrastructureFactoryService extends BrokerTest {
 	public IEventService getEventService() {
 		return evServ;
 	}
-	
+
 	/**
 	 * Create a consumer with generic configuration
-	 * 
+	 *
 	 * @param bean only needed if creating a runner.
 	 * @param withRunner true for a non-functional fake/
 	 * @return
 	 * @throws Exception
 	 */
-	public <T extends StatusBean> IConsumer<T> makeConsumer(T bean, 
+	public <T extends StatusBean> IConsumer<T> makeConsumer(T bean,
 			boolean withRunner) throws Exception {
 		if (!isActive()) {
 			System.out.println("TestBroker not started; starting (is unit test?: "+unitTest+")...");
 			start(unitTest);
 		}
-		
+
 		IConsumer<T> cons;
 		try {
 			cons = evServ.createConsumer(uri);
@@ -128,7 +128,7 @@ public class EventInfrastructureFactoryService extends BrokerTest {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Create a fake, non-functional runner.
 	 * @param bean
@@ -146,7 +146,7 @@ public class EventInfrastructureFactoryService extends BrokerTest {
 			}
 		};
 	}
-	
+
 	/**
 	 * Create a publisher configured for the running BrokerService
 	 * @param topic to publish to
@@ -156,7 +156,7 @@ public class EventInfrastructureFactoryService extends BrokerTest {
 		if (topic == null) topic = IEventService.STATUS_TOPIC;
 		return evServ.createPublisher(uri, topic);
 	}
-	
+
 	/**
 	 * Create a publisher configured for the running BrokerService
 	 * @param topic to listen on

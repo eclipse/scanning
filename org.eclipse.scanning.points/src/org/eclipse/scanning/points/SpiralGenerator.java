@@ -21,9 +21,9 @@ class SpiralGenerator extends AbstractGenerator<SpiralModel> {
 	SpiralGenerator() {
 		setLabel("Fermat Spiral");
 		setDescription("Creates a spiral scaled around the center of a bounding box.");
-		setIconPath("icons/scanner--spiral.png"); // This icon exists in the rendering bundle 
+		setIconPath("icons/scanner--spiral.png"); // This icon exists in the rendering bundle
 	}
-	
+
 	@Override
 	public ScanPointIterator iteratorFromValidModel() {
 		return new SpiralIterator(this);

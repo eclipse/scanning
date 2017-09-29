@@ -16,18 +16,18 @@ import java.util.List;
 
 /**
  * A single value position.
- * 
- * @param <T> the type of the value of this position 
+ *
+ * @param <T> the type of the value of this position
  * @author Matthew Gerring
  */
 public class Scalar<T> extends AbstractPosition {
-	
+
 	private static final long serialVersionUID = 9078732007535500363L;
-	
+
 	private final String name;
 	private final int index;
 	private final T value;
-	
+
 	public Scalar(String name, int index, T value) {
 		this(name, index, value, 0d);
 	}
@@ -39,7 +39,7 @@ public class Scalar<T> extends AbstractPosition {
 		this.setStepIndex(index);
 		this.setExposureTime(exposureTime);
 	}
-	
+
 	@Override
 	public int size() {
 		return 1;
@@ -47,7 +47,7 @@ public class Scalar<T> extends AbstractPosition {
 
 	@Override
 	public List<String> getNames() {
-  	    return Arrays.asList(new String[]{name});
+	    return Arrays.asList(new String[]{name});
 	}
 
 	@Override
@@ -58,12 +58,12 @@ public class Scalar<T> extends AbstractPosition {
 	public T getValue() {
 		return value;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public Class<T> getType() {
 		return (Class<T>) value.getClass();
 	}
-	
+
 	@Override
 	public int getIndex(String name) {
 		return name.equals(this.name) ? index : -1;

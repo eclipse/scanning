@@ -21,24 +21,24 @@ import org.eclipse.scanning.api.event.queues.models.ModelEvaluationException;
 import org.eclipse.scanning.api.event.queues.models.arguments.QueueValue;
 
 /**
- * SubTaskAtom is a type of {@link QueueAtom} implementing an 
- * {@link IHasAtomQueue}. As a {@link QueueAtom} it can only be passed 
+ * SubTaskAtom is a type of {@link QueueAtom} implementing an
+ * {@link IHasAtomQueue}. As a {@link QueueAtom} it can only be passed
  * into an active-queue of an {@link IQueueService}.
- * 
- * This class of bean is used to describe a part of an experiment, for example 
- * motor moves and an I0 measurement before a scan or a series of motor moves, 
- * a scan and post-processing. It should be able to provide a pointer to the 
+ *
+ * This class of bean is used to describe a part of an experiment, for example
+ * motor moves and an I0 measurement before a scan or a series of motor moves,
+ * a scan and post-processing. It should be able to provide a pointer to the
  * parent queue's sample metadata.
- * 
+ *
  * SubTaskAtoms may be nested inside of SubTaskAtoms to provide a hierarchy.
- * 
+ *
  * @author Michael Wharmby
- * 
+ *
  */
 public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 
 	/**
-	 * Version ID for serialization. Should be updated when class changed. 
+	 * Version ID for serialization. Should be updated when class changed.
 	 */
 	private static final long serialVersionUID = 20170503L;
 
@@ -52,24 +52,24 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 	public SubTaskAtom() {
 		super();
 	}
-	
+
 	/**
-	 * Create an instance with a shortname (reference) and a more verbose name 
+	 * Create an instance with a shortname (reference) and a more verbose name
 	 * to be used in UI etc.
-	 * @param stShrtNm String short name used within the 
+	 * @param stShrtNm String short name used within the
 	 *        {@link IQueueBeanFactory}
 	 * @param name String user-supplied name
 	 */
 	public SubTaskAtom(String stShrtNm, String name) {
 		this(stShrtNm, name, false);
 	}
-	
+
 	/**
-	 * Create an instance with a shortname (reference) and a more verbose name 
-	 * to be used in UI etc. This may be a model which can be used by the 
-	 * {@link IQueueBeanFactory} to create a real {@link SubTaskAtom} or it 
+	 * Create an instance with a shortname (reference) and a more verbose name
+	 * to be used in UI etc. This may be a model which can be used by the
+	 * {@link IQueueBeanFactory} to create a real {@link SubTaskAtom} or it
 	 * may itself be a real {@link SubTaskAtom}.
-	 * @param stShrtNm String short name used within the 
+	 * @param stShrtNm String short name used within the
 	 *        {@link IQueueBeanFactory}
 	 * @param name String user-supplied name
 	 * @param model boolean flag indicating whether this is a model
@@ -85,16 +85,16 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 			atomQueue = new LinkedList<>();
 		}
 	}
-	
+
 	/**
-	 * Create a model instance with a shortname (reference), a more verbose 
-	 * name and a list of shortnames (references) of atoms which will be used 
-	 * by the {@link IQueueBeanFactory} during the creation of a real 
+	 * Create a model instance with a shortname (reference), a more verbose
+	 * name and a list of shortnames (references) of atoms which will be used
+	 * by the {@link IQueueBeanFactory} during the creation of a real
 	 * {@link SubTaskAtom} instance.
-	 * @param stShrtNm String short name used within the 
+	 * @param stShrtNm String short name used within the
 	 *        {@link IQueueBeanFactory}
 	 * @param name String user-supplied name
-	 * @param queueAtomShortNames List of String references which will be 
+	 * @param queueAtomShortNames List of String references which will be
 	 *        converted into an atomQueue
 	 */
 	public SubTaskAtom(String stShrtNm, String name, List<QueueValue<String>> queueAtomShortNames) {
@@ -112,7 +112,7 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 		this.atomQueue = new LinkedList<>(atomQueue);
 		setRunTime(calculateRunTime());
 	}
-	
+
 	@Override
 	public List<QueueValue<String>> getQueueAtomShortNames() {
 		return queueAtomShortNames;
@@ -137,26 +137,26 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 		//Check this SubTaskAtom is real and the atom is not a non-duplicate
 		if (model) throw new IllegalArgumentException("Cannot add non-model atom to a model SubTaskAtom");
 		if(isAtomPresent(atom)) throw new IllegalArgumentException("Atom with identical UID already in queue.");
-		
+
 		boolean result = addAtom(atom, atomQueue);
 		setRunTime(calculateRunTime());
 		return result;
 	}
-	
+
 	/**
-	 * When the {@link SubTaskAtom} is a model, add the String name of an atom 
+	 * When the {@link SubTaskAtom} is a model, add the String name of an atom
 	 * to the queue model list.
 	 * @param atomShortName String name of atom model
 	 * @return true if the atom was added successfully
 	 */
 	public boolean addAtom(QueueValue<String> atomShortName) {
-		//Check this SubTaskAtom is a model 
+		//Check this SubTaskAtom is a model
 		if (!model) throw new IllegalArgumentException("Cannot add model atom to a non-model SubTaskAtom");
 		return addAtom(atomShortName, queueAtomShortNames);
 	}
-	
+
 	/**
-	 * Generic method to add either an atom or a model name to this 
+	 * Generic method to add either an atom or a model name to this
 	 * {@link SubTaskAtom}.
 	 * @param atom T being added to queue (String or {@link QueueAtom})
 	 * @param atomList List describing the queue
@@ -253,7 +253,7 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 	@Override
 	public String toString() {
 		String clazzName = this.getClass().getSimpleName();
-		
+
 		StringBuffer atomQueueStrBuff = new StringBuffer("{");
 		if (model) {
 			clazzName = clazzName + " (MODEL)";
@@ -267,15 +267,15 @@ public class SubTaskAtom extends QueueAtom implements IHasAtomQueue<QueueAtom> {
 		} else {
 			atomQueueStrBuff.append(atomQueue.stream().map(qa -> qa.getShortName() + "('" + qa.getName() + "')")
 					.collect(Collectors.joining(", ")));
-		} 
+		}
 		atomQueueStrBuff.append("}");
 		String atomQueueStr = atomQueueStrBuff.toString();
 		atomQueueStr = atomQueueStr.replaceAll(", }$", "}"); //Replace trailing ", "
-		
-		return clazzName + " [name=" + name + " (shortName="+shortName+"), atomQueue=" + atomQueueStr 
-				+ ", status=" + status + ", message=" + message + ", queueMessage=" + queueMessage 
-				+ ", percentComplete=" + percentComplete + ", previousStatus=" + previousStatus 
-				+ ", runTime=" + runTime + ", userName=" + userName+ ", hostName=" + hostName 
+
+		return clazzName + " [name=" + name + " (shortName="+shortName+"), atomQueue=" + atomQueueStr
+				+ ", status=" + status + ", message=" + message + ", queueMessage=" + queueMessage
+				+ ", percentComplete=" + percentComplete + ", previousStatus=" + previousStatus
+				+ ", runTime=" + runTime + ", userName=" + userName+ ", hostName=" + hostName
 				+ ", beamline="+ beamline + ", submissionTime=" + submissionTime + "]";
 	}
 

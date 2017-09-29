@@ -61,9 +61,9 @@ class EnableIfColumnLabelProvider extends ColumnLabelProvider {
 	}
 
 	private static boolean isEnabled(FieldValue field) {
-    	final FieldDescriptor anot  = field.getAnnotation();
-    	final Object      model = field.getModel();
-    	return ModelFieldEditorFactory.isEnabled(model, anot);
+	final FieldDescriptor anot  = field.getAnnotation();
+	final Object      model = field.getModel();
+	return ModelFieldEditorFactory.isEnabled(model, anot);
 	}
 
 

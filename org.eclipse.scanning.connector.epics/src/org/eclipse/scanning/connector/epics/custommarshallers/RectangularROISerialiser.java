@@ -26,7 +26,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom serialiser for rectangular ROIs.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -35,7 +35,7 @@ public class RectangularROISerialiser implements IPVStructureSerialiser<Rectangu
 	@Override
 	public Structure buildStructure(Serialiser serialiser, RectangularROI rectangularROI) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-		
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			addArray("lengths", ScalarType.pvDouble).
 			add("angle", ScalarType.pvDouble).
@@ -50,9 +50,9 @@ public class RectangularROISerialiser implements IPVStructureSerialiser<Rectangu
 		PVDoubleArray lengths = pvStructure.getSubField(PVDoubleArray.class, "lengths");
 		lengths.put(0, rectangularROI.getLengths().length, rectangularROI.getLengths(), 0);
 		PVDouble angle = pvStructure.getSubField(PVDouble.class, "angle");
-		angle.put(rectangularROI.getAngle());		
+		angle.put(rectangularROI.getAngle());
 		PVDoubleArray point = pvStructure.getSubField(PVDoubleArray.class, "point");
 		point.put(0, rectangularROI.getPoint().length, rectangularROI.getPoint(), 0);
 	}
-	
+
 }

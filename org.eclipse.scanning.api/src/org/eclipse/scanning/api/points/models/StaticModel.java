@@ -15,17 +15,17 @@ package org.eclipse.scanning.api.points.models;
 /**
  * A model for one or more positions where nothing is moved. This can be used to expose detectors
  * without moving any scannables.
- * 
+ *
  * @author Matthew Gerring
  */
 public class StaticModel extends AbstractPointsModel {
 
 	private int size = 1;
-	
+
 	public StaticModel() {
 		setName("Static");
 	}
-	
+
 	public StaticModel(int size) {
 		this.size = size;
 	}
@@ -59,5 +59,5 @@ public class StaticModel extends AbstractPointsModel {
 			return false;
 		return true;
 	}
-	
+
 }

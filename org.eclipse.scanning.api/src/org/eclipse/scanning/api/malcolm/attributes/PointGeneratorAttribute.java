@@ -14,16 +14,16 @@ package org.eclipse.scanning.api.malcolm.attributes;
 import java.util.Map;
 
 /**
- * 
+ *
  * Encapsulates a PointGenerator attribute as read from a malcolm device.
  * The point generator is stored as a map.
- * 
+ *
  * @author Matt Taylor
  *
  */
 public class PointGeneratorAttribute extends MalcolmAttribute<Map<?,?>> {
 	public static final String POINTGENERATOR_ID = "malcolm:core/PointGenerator:";
-	
+
 	private Map<?,?> value;
 
 	@Override
@@ -34,5 +34,5 @@ public class PointGeneratorAttribute extends MalcolmAttribute<Map<?,?>> {
 	public void setValue(Map<?,?> value) {
 		this.value = value;
 	}
-	
+
 }

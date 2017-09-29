@@ -67,17 +67,17 @@ import org.junit.Test;
 
 
 public class SolsticeScanMonitorTest {
-	
+
 	public static class MockLazySaver implements ILazySaver {
 
 		private static final long serialVersionUID = 1L;
 
 		private IDataset lastWrittenData = null;
-		
+
 		private SliceND lastSlice = null;
-		
+
 		private int numWrites = 0;
-		
+
 		@Override
 		public boolean isFileReadable() {
 			return true;
@@ -105,42 +105,42 @@ public class SolsticeScanMonitorTest {
 			lastSlice = slice;
 			numWrites++;
 		}
-		
+
 		public IDataset getLastWrittenData() {
 			return lastWrittenData;
 		}
-		
+
 		public SliceND getLastSlice() {
 			return lastSlice;
 		}
-		
+
 		public int getNumberOfWrites() {
 			return numWrites;
 		}
-		
+
 	}
-	
+
 	public static class ExternalFileWritingPositioner extends AbstractNexusObjectProvider<NXpositioner> {
-		
+
 		public ExternalFileWritingPositioner(String name) {
 			super(name, NexusBaseClass.NX_POSITIONER, NXpositioner.NX_VALUE);
 			addExternalFileName("panda.nxs");
 			setPropertyValue("uniqueKeys", MALCOLM_UNIQUE_KEYS_PATH);
 		}
-		
+
 		@Override
 		protected NXpositioner createNexusObject() {
 			final NXpositioner positioner = NexusNodeFactory.createNXpositioner();
 			addExternalLink(positioner, NXpositioner.NX_VALUE, "/entry/data", 2);
-			
+
 			return positioner;
 		}
 	}
-	
+
 	public static class ExternalFileWritingDetector extends AbstractNexusObjectProvider<NXdetector> {
-		
+
 		public static final String EXTERNAL_FILE_NAME = "detector.nxs";
-		
+
 		public ExternalFileWritingDetector() {
 			super("detector", NexusBaseClass.NX_DETECTOR);
 			addExternalFileName(EXTERNAL_FILE_NAME);
@@ -151,15 +151,15 @@ public class SolsticeScanMonitorTest {
 		protected NXdetector createNexusObject() {
 			final NXdetector detector = NexusNodeFactory.createNXdetector();
 			addExternalLink(detector, NXdetector.NX_DATA, "/entry/data", 4);
-			
+
 			return detector;
 		}
-		
+
 	}
-	
+
 	private static final String MALCOLM_UNIQUE_KEYS_PATH = "/entry/NDAttributes/NDArrayUniqueId";
-	
-	
+
+
 	@Test
 	public void testCreateNexusObject() throws Exception {
 		// Arrange
@@ -176,7 +176,7 @@ public class SolsticeScanMonitorTest {
 		scanModel.setScanInformation(new ScanInformation(scanEstimator));
 		SolsticeScanMonitor solsticeScanMonitor = new SolsticeScanMonitor(scanModel);
 		solsticeScanMonitor.setNexusObjectProviders(nexusObjectProviders);
-		
+
 		final int[] scanShape = new int[] { 8, 5 };
 		final int scanRank = scanShape.length;
 		NexusScanInfo scanInfo = new NexusScanInfo();
@@ -188,7 +188,7 @@ public class SolsticeScanMonitorTest {
 
 		// Act
 		NXcollection solsticeScanCollection = solsticeScanMonitor.createNexusObject(scanInfo);
-		
+
 		// Assert
 		assertNotNull(solsticeScanCollection);
 
@@ -201,11 +201,11 @@ public class SolsticeScanMonitorTest {
 		assertTrue(Arrays.equals(scanFinishedDataset.getShape(), new int[] { 1 }));
 		MockLazySaver scanFinishedSaver = new MockLazySaver();
 		scanFinishedDataset.setSaver(scanFinishedSaver);
-		
+
 		// assert scan rank set correctly
 		DataNode scanRankDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_RANK);
 		assertEquals(scanRank, scanRankDataNode.getDataset().getSlice().getInt());
-		
+
 		// assert scan shape set correctly
 		DataNode scanShapeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_SHAPE);
 		assertNotNull(scanFinishedDataNode);
@@ -217,7 +217,7 @@ public class SolsticeScanMonitorTest {
 		for (int i = 0; i < scanShape.length; i++) {
 			assertEquals(scanShape[i], shapeDataset.getInt(i));
 		}
-		
+
 		// assert that the estimated time has been written
 		DataNode estimatedTimeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_ESTIMATED_DURATION);
 		assertNotNull(estimatedTimeDataNode);
@@ -227,39 +227,39 @@ public class SolsticeScanMonitorTest {
 		} catch (DatasetException e) {
 			throw new AssertionError("Could not get data from lazy dataset", e);
 		}
-		
+
 		assertEquals(String.class, estimatedTimeDataset.getElementClass());
 		assertEquals(0, estimatedTimeDataset.getRank());
 		assertArrayEquals(new int[]{}, estimatedTimeDataset.getShape());
 		String estimatedTime = estimatedTimeDataset.getString();
 		assertNotNull(estimatedTime);
 		assertEquals("00:00:02.500", estimatedTime);
-		
+
 		// assert the actual time dataset has been created - note it hasn't been written to yet
 		DataNode actualTimeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_DURATION);
 		assertNotNull(actualTimeDataNode);
 		ILazyDataset actualTimeDataset = actualTimeDataNode.getDataset();
 		assertNotNull(actualTimeDataset);
 		assertEquals(String.class, actualTimeDataset.getElementClass());
-		
+
 		// assert the dead time dataset has been created - note it hasn't been written to yet
 		DataNode deadTimeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_DEAD_TIME);
 		assertNotNull(deadTimeDataNode);
 		ILazyDataset deadTimeDataset = deadTimeDataNode.getDataset();
 		assertNotNull(deadTimeDataset);
 		assertEquals(String.class, deadTimeDataset.getElementClass());
-		
+
 		// assert the dead time percent dataset has been created - again note it hasn't been written to yet
 		DataNode deadTimePercentDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_DEAD_TIME_PERCENT);
 		assertNotNull(deadTimePercentDataNode);
 		ILazyDataset deadTimePercentDataset = deadTimePercentDataNode.getDataset();
 		assertNotNull(deadTimePercentDataset);
 		assertEquals(String.class, deadTimePercentDataset.getElementClass());
-		
+
 		// assert unique keys dataset created correctly
 		NXcollection keysCollection = (NXcollection) solsticeScanCollection.getGroupNode(GROUP_NAME_KEYS);
 		assertNotNull(keysCollection);
-		
+
 		DataNode uniqueKeysDataNode = keysCollection.getDataNode(FIELD_NAME_UNIQUE_KEYS);
 		assertTrue(uniqueKeysDataNode!=null);
 		assertTrue(uniqueKeysDataNode.getDataset()!=null && uniqueKeysDataNode.getDataset() instanceof ILazyWriteableDataset);
@@ -269,7 +269,7 @@ public class SolsticeScanMonitorTest {
 		assertTrue(Arrays.equals(uniqueKeysDataset.getChunking(), expectedChunking));
 		MockLazySaver uniqueKeysSaver = new MockLazySaver();
 		uniqueKeysDataset.setSaver(uniqueKeysSaver);
-		
+
 		// assert links to external nodes
 		assertEquals(3, keysCollection.getNumberOfNodelinks());
 		for (NexusObjectProvider<?> objectProvider : nexusObjectProviders) {
@@ -281,10 +281,10 @@ public class SolsticeScanMonitorTest {
 			}
 		}
 	}
-	
+
 	@Test
 	public void testWriteScanPoints() throws Exception {
-		// Arrange - we have to create the nexus object first 
+		// Arrange - we have to create the nexus object first
 		List<NexusObjectProvider<?>> nexusObjectProviders = new ArrayList<>();
 		nexusObjectProviders.add(new ExternalFileWritingDetector());
 		String[] positionerNames = new String[] { "xPos", "yPos" };
@@ -298,7 +298,7 @@ public class SolsticeScanMonitorTest {
 		scanModel.setScanInformation(new ScanInformation(scanEstimator));
 		SolsticeScanMonitor solsticeScanMonitor = new SolsticeScanMonitor(scanModel);
 		solsticeScanMonitor.setNexusObjectProviders(nexusObjectProviders);
-		
+
 		final int[] scanShape = new int[] { 8, 5 };
 		final int scanRank = scanShape.length;
 		NexusScanInfo scanInfo = new NexusScanInfo();
@@ -309,7 +309,7 @@ public class SolsticeScanMonitorTest {
 
 		// Act
 		NXcollection solsticeScanCollection = solsticeScanMonitor.createNexusObject(scanInfo);
-		
+
 		// Assert
 		assertNotNull(solsticeScanCollection);
 		DataNode scanFinishedDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_FINISHED);
@@ -328,7 +328,7 @@ public class SolsticeScanMonitorTest {
 		ILazyWriteableDataset deadTimePercentDataset = (ILazyWriteableDataset) deadTimePercentDataNode.getDataset();
 		MockLazySaver deadTimePercentSaver = new MockLazySaver();
 		deadTimePercentDataset.setSaver(deadTimePercentSaver);
-		
+
 		// assert scan shape set correctly
 		DataNode scanShapeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_SHAPE);
 		assertNotNull(scanFinishedDataNode);
@@ -340,7 +340,7 @@ public class SolsticeScanMonitorTest {
 		for (int i = 0; i < scanShape.length; i++) {
 			assertEquals(scanShape[i], shapeDataset.getInt(i));
 		}
-		
+
 		DataNode estimatedTimeDataNode = solsticeScanCollection.getDataNode(FIELD_NAME_SCAN_ESTIMATED_DURATION);
 		assertNotNull(estimatedTimeDataNode);
 		IDataset estimatedTimeDataset;
@@ -349,7 +349,7 @@ public class SolsticeScanMonitorTest {
 		} catch (DatasetException e) {
 			throw new AssertionError("Could not get data from lazy dataset", e);
 		}
-		
+
 		// assert that the estimated time has been written
 		assertEquals(String.class, estimatedTimeDataset.getElementClass());
 		assertEquals(0, estimatedTimeDataset.getRank());
@@ -357,24 +357,24 @@ public class SolsticeScanMonitorTest {
 		String estimatedTime = estimatedTimeDataset.getString();
 		assertNotNull(estimatedTime);
 		assertEquals("00:00:02.500", estimatedTime);
-		
+
 		// assert the actual time dataset has been created - note it hasn't been written to yet
 		assertNotNull(actualTimeDataset);
 		assertEquals(String.class, actualTimeDataset.getElementClass());
-		
+
 		assertNotNull(deadTimeDataset);
 		assertEquals(String.class, deadTimePercentDataset.getElementClass());
 
-		// TODO what can we assert about the value		
+		// TODO what can we assert about the value
 		// assert unique keys dataset created correctly
 		NXcollection keysCollection = (NXcollection) solsticeScanCollection.getGroupNode(GROUP_NAME_KEYS);
 		assertNotNull(keysCollection);
-		
+
 		DataNode uniqueKeysDataNode = keysCollection.getDataNode(FIELD_NAME_UNIQUE_KEYS);
 		ILazyWriteableDataset uniqueKeysDataset = (ILazyWriteableDataset) uniqueKeysDataNode.getDataset();
 		MockLazySaver uniqueKeysSaver = new MockLazySaver();
 		uniqueKeysDataset.setSaver(uniqueKeysSaver);
-		
+
 		// assert links to external nodes
 		assertEquals(3, keysCollection.getNumberOfNodelinks());
 		for (NexusObjectProvider<?> objectProvider : nexusObjectProviders) {
@@ -385,7 +385,7 @@ public class SolsticeScanMonitorTest {
 				assertEquals(objectProvider.getPropertyValue("uniqueKeys"), symbolicNode.getPath());
 			}
 		}
-		
+
 		// test calling setPosition
 		// arrange
 		double[] pos = new double[] { 172.5, 56.3 };
@@ -400,7 +400,7 @@ public class SolsticeScanMonitorTest {
 			names.add(Arrays.asList(positionerNames[i]));
 		}
 		position.setDimensionNames(names);
-		
+
 		// act
 		solsticeScanMonitor.setPosition(null, position);
 		solsticeScanMonitor.scanFinished();
@@ -413,33 +413,33 @@ public class SolsticeScanMonitorTest {
 		assertArrayEquals(new int[0], writtenToScanFinishedData.getShape());
 		assertEquals(Dataset.INT, DTypeUtils.getDType(writtenToScanFinishedData));
 		assertEquals(1, writtenToScanFinishedData.getInt());
-		
+
 		// check data written to actual time dataset
 		IDataset writtenToActualTimeDataset = actualTimeSaver.getLastWrittenData();
 		assertNotNull(writtenToActualTimeDataset);
 		assertEquals(0, writtenToActualTimeDataset.getRank());
 		assertArrayEquals(new int[0], writtenToActualTimeDataset.getShape());
 		assertEquals(Dataset.STRING, DTypeUtils.getDType(writtenToActualTimeDataset));
-		
+
 		DateTimeFormatter formatter = new DateTimeFormatterBuilder().
 				appendPattern("HH:mm:ss").appendFraction(ChronoField.NANO_OF_SECOND, 3, 3, true).toFormatter();
 		String actualTime = writtenToActualTimeDataset.getString();
 		formatter.parse(actualTime); // throws exception if not valid time
-		
+
 		// check data written to dead time dataset
 		IDataset writtenToDeadTimeDataset = deadTimeSaver.getLastWrittenData();
 		assertNotNull(writtenToActualTimeDataset);
 		assertEquals(0, writtenToActualTimeDataset.getRank());
 		assertArrayEquals(new int[0], writtenToDeadTimeDataset.getShape());
 		assertEquals(Dataset.STRING, DTypeUtils.getDType(writtenToDeadTimeDataset));
-		
+
 		// check data written to dead time percent dataset
 		IDataset writtenToDeadTimePercentDataset = deadTimePercentSaver.getLastWrittenData();
 		assertNotNull(writtenToDeadTimePercentDataset);
 		assertEquals(0, writtenToDeadTimePercentDataset.getRank());
 		assertArrayEquals(new int[0], writtenToDeadTimePercentDataset.getShape());
 		assertEquals(Dataset.STRING, DTypeUtils.getDType(writtenToDeadTimePercentDataset));
-		
+
 		// check data written to unique keys dataset
 		IDataset writtenToUniqueKeysData = uniqueKeysSaver.getLastWrittenData();
 		assertNotNull(writtenToUniqueKeysData);
@@ -455,8 +455,8 @@ public class SolsticeScanMonitorTest {
 		assertArrayEquals(uniqueKeysSlice.getShape(), expectedShape);
 		assertArrayEquals(uniqueKeysSlice.getStart(), indices);
 		assertArrayEquals(uniqueKeysSlice.getStep(), expectedShape); // all ones
-		int[] stopIndices = Arrays.stream(indices).map(x -> x + 1).toArray(); 
+		int[] stopIndices = Arrays.stream(indices).map(x -> x + 1).toArray();
 		assertArrayEquals(uniqueKeysSlice.getStop(), stopIndices);
 	}
-	
+
 }

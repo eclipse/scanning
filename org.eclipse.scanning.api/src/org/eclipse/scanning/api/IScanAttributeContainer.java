@@ -17,14 +17,14 @@ import java.util.Set;
 /**
  * Interface to allow the getting and setting of scan attributes.
  * These are the attributes that should be written when the scan is performed, e.g. to a NeXus file
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public interface IScanAttributeContainer extends INameable {
-	
+
 	/**
-	 * 
+	 *
 	 * @return null if no attributes, otherwise collection of the names of the attributes set
 	 */
 	default Set<String> getScanAttributeNames() {
@@ -33,7 +33,7 @@ public interface IScanAttributeContainer extends INameable {
 
 	/**
 	 * Set any attribute the implementing classes may provide
-	 * 
+	 *
 	 * @param attributeName
 	 *            is the name of the attribute
 	 * @param value
@@ -47,7 +47,7 @@ public interface IScanAttributeContainer extends INameable {
 
 	/**
 	 * Get the value of the specified attribute
-	 * 
+	 *
 	 * @param attributeName
 	 *            is the name of the attribute
 	 * @return the value of the attribute

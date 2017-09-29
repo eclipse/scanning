@@ -17,12 +17,12 @@ import org.eclipse.scanning.api.event.IdBean;
 
 /**
  * This bean is designed to send commands to consumers such as terminate and
- * pause. The command may either be directed at a specific consumer, in which 
+ * pause. The command may either be directed at a specific consumer, in which
  * case the user sets the consumerId, an example of this is terminating a consumer
  * from the 'Active Consumers' UI, or the user may set the queue name. If the
- * queue name is set all consumers looking a a given queue will respond to the 
+ * queue name is set all consumers looking a a given queue will respond to the
  * command.
- *  * 
+ *  *
  * @author Matthew Gerring
  *
  */

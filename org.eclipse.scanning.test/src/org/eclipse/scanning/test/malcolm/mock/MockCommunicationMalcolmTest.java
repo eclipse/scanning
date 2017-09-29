@@ -21,7 +21,7 @@ import org.junit.Ignore;
 @Ignore("TODO Get this running but needs more work.")
 public class MockCommunicationMalcolmTest extends AbstractCommunicationMalcolmTest {
 
-	
+
 	@Override
 	@Before
 	public void create() throws Exception {

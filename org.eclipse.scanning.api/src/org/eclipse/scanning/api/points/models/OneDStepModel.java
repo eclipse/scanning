@@ -19,10 +19,10 @@ package org.eclipse.scanning.api.points.models;
  *
  */
 public class OneDStepModel extends AbstractBoundingLineModel implements IBoundingLineModel {
-    
+
 
 	private double step = 1;
-	
+
 	public OneDStepModel() {
 		setName("Step");
 	}

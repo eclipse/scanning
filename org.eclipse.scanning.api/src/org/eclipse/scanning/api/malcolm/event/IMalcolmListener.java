@@ -14,10 +14,10 @@ package org.eclipse.scanning.api.malcolm.event;
 import java.util.EventListener;
 
 /**
- * 
+ *
  * This is a plain old event which can be used to get the
- * events during a scan. 
- * 
+ * events during a scan.
+ *
  * @author Matthew Gerring
  *
  */

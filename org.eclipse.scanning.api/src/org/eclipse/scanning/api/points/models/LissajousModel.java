@@ -22,7 +22,7 @@ public class LissajousModel extends AbstractBoundingBoxModel {
 	public LissajousModel() {
 		setName("Lissajous Curve");
 	}
-	
+
 	public double getA() {
 		return a;
 	}

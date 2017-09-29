@@ -115,35 +115,35 @@ public class StreamView extends ViewPart implements IAdaptable {
 
 				final String iconPath = e.getAttribute("icon");
 				ImageDescriptor icon=null;
-		    	if (iconPath!=null) {
-			    	final String   id    = e.getContributor().getName();
-			    	final Bundle   bundle= Platform.getBundle(id);
-			    	final URL      entry = bundle.getEntry(iconPath);
-			    	icon = ImageDescriptor.createFromURL(entry);
-		    	}
+			if (iconPath!=null) {
+				final String   id    = e.getContributor().getName();
+				final Bundle   bundle= Platform.getBundle(id);
+				final URL      entry = bundle.getEntry(iconPath);
+				icon = ImageDescriptor.createFromURL(entry);
+			}
 
-		    	final MenuAction menu = new MenuAction(connection.getLabel());
-		    	final IAction connect = new Action(connection.getLabel(), IAction.AS_CHECK_BOX) {
-		    		@Override
+			final MenuAction menu = new MenuAction(connection.getLabel());
+			final IAction connect = new Action(connection.getLabel(), IAction.AS_CHECK_BOX) {
+				@Override
 					public void run() {
-		    			connect(connection);
-		    		}
-		    	};
-		    	connect.setImageDescriptor(icon);
-		    	connect.setChecked(lastId!=null && lastId.equals(connection.getId()));
-		    	group.add(connect);
-		    	menu.add(connect);
-		    	menu.setSelectedAction(connect);
+					connect(connection);
+				}
+			};
+			connect.setImageDescriptor(icon);
+			connect.setChecked(lastId!=null && lastId.equals(connection.getId()));
+			group.add(connect);
+			menu.add(connect);
+			menu.setSelectedAction(connect);
 
-		    	final IAction configure = new Action("Configure...") {
-		    		@Override
+			final IAction configure = new Action("Configure...") {
+				@Override
 					public void run() {
-		    			configure(connection);
-		    		}
-		    	};
-		    	menu.add(configure);
+					configure(connection);
+				}
+			};
+			menu.add(configure);
 
-		    	getViewSite().getActionBars().getToolBarManager().add(menu);
+			getViewSite().getActionBars().getToolBarManager().add(menu);
 
 			} catch (Exception ne) {
 				logger.error("Problem creating stream connection for "+e, ne);

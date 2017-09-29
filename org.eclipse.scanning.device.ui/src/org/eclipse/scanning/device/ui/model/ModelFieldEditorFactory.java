@@ -137,58 +137,58 @@ public class ModelFieldEditorFactory {
 		}
 
 		CellEditor ed = null;
-    	final FieldDescriptor anot = field.getAnnotation();
-    	if (!isEnabled(field.getModel(), anot)) return null;
+	final FieldDescriptor anot = field.getAnnotation();
+	if (!isEnabled(field.getModel(), anot)) return null;
 
         if (clazz == Boolean.class) {
-        	ed = new CheckboxCellEditor(parent, SWT.NONE);
+		ed = new CheckboxCellEditor(parent, SWT.NONE);
 
         } else if (anot!=null && anot.edit()==EditType.COMPOUND) {
-        	ed = new ModelCellEditor(parent, field, labelProvider);
+		ed = new ModelCellEditor(parent, field, labelProvider);
 
         } else if (Number.class.isAssignableFrom(clazz) || isNumberArray(clazz)) {
-        	ed = getNumberEditor(field, clazz, parent);
+		ed = getNumberEditor(field, clazz, parent);
 
         } else if (IROI.class.isAssignableFrom(clazz)) {
-        	throw new IllegalArgumentException("Have not ported RegionCellEditor to scanning yet!");
-        	// TODO FIXME Need way of editing regions.
-        	//ed = new RegionCellEditor(parent);
+		throw new IllegalArgumentException("Have not ported RegionCellEditor to scanning yet!");
+		// TODO FIXME Need way of editing regions.
+		//ed = new RegionCellEditor(parent);
 
         } else if (Enum.class.isAssignableFrom(clazz)) {
-        	ed = getChoiceEditor((Class<? extends Enum>)clazz, parent);
+		ed = getChoiceEditor((Class<? extends Enum>)clazz, parent);
 
         } else if (CComboWithEntryCellEditorData.class.isAssignableFrom(clazz)) {
-        	ed = getChoiceWithEntryEditor((CComboWithEntryCellEditorData) value, parent);
+		ed = getChoiceWithEntryEditor((CComboWithEntryCellEditorData) value, parent);
 
         } else if (FileDialogCellEditor.isEditorFor(clazz) || (anot!=null && anot.file()!=FileType.NONE)) {
-        	FileDialogCellEditor fe = new FileDialogCellEditor(parent);
-        	fe.setValueClass(clazz);
-        	ed = fe;
-        	if (anot!=null) {
-        		fe.setDirectory(anot.file().isDirectory());
-        		fe.setNewFile(anot.file().isNewFile());
-        	}
+		FileDialogCellEditor fe = new FileDialogCellEditor(parent);
+		fe.setValueClass(clazz);
+		ed = fe;
+		if (anot!=null) {
+			fe.setDirectory(anot.file().isDirectory());
+			fe.setNewFile(anot.file().isNewFile());
+		}
         } else if (String.class.equals(clazz) && anot!=null && anot.device() != DeviceType.NONE) {
-        	ed = getDeviceEditor(anot.device(), parent);
+		ed = getDeviceEditor(anot.device(), parent);
 
         } else if (String.class.equals(clazz) && anot!=null && anot.dataset() != null &&!anot.dataset().isEmpty()) {
-        	ed = getDatasetEditor(field, parent);
+		ed = getDatasetEditor(field, parent);
 
         } else if (String.class.equals(clazz) && anot!=null && anot.edit()==EditType.LONG) {
-        	ed = getLongTextEditor(parent, anot);
+		ed = getLongTextEditor(parent, anot);
 
         }else if (String.class.equals(clazz)) {
-        	ed = getSimpleTextEditor(parent, anot);
+		ed = getSimpleTextEditor(parent, anot);
         }
 
         // Show the tooltip, if there is one
         if (ed!=null) {
-        	if (anot!=null) {
-        		String hint = anot.hint();
-        		if (hint!=null && !"".equals(hint)) {
-        			showHint(hint, parent);
-        		}
-        	}
+		if (anot!=null) {
+			String hint = anot.hint();
+			if (hint!=null && !"".equals(hint)) {
+				showHint(hint, parent);
+			}
+		}
         }
 
         return ed;
@@ -201,18 +201,18 @@ public class ModelFieldEditorFactory {
 
 	private CellEditor getSimpleTextEditor(Composite parent, FieldDescriptor anot) {
 		TextCellEditor ed = new TextCellEditor(parent) {
-    	    @Override
-    		protected void doSetValue(Object value) {
-    	    	String string = value!=null ? value.toString() : "";
-    	    	super.doSetValue(string);
-    	    }
-    	};
-    	if (anot!=null && anot.regex().length()>0) {
-    	    Text text = (Text)ed.getControl();
-    	    RegexDecorator deco = new RegexDecorator(text, anot.regex());
-    	    deco.setAllowInvalidValues(false);
-    	}
-    	return ed;
+	    @Override
+		protected void doSetValue(Object value) {
+		String string = value!=null ? value.toString() : "";
+		super.doSetValue(string);
+	    }
+	};
+	if (anot!=null && anot.regex().length()>0) {
+	    Text text = (Text)ed.getControl();
+	    RegexDecorator deco = new RegexDecorator(text, anot.regex());
+	    deco.setAllowInvalidValues(false);
+	}
+	return ed;
     }
 
 	public CellEditor getDeviceEditor(DeviceType deviceType, Composite parent) throws ScanningException {
@@ -236,21 +236,21 @@ public class ModelFieldEditorFactory {
 
 			return new CComboCellEditor(parent, finalItems) {
 				private Object lastValue;
-	    	    @Override
+		    @Override
 				protected void doSetValue(Object value) {
 	                if (value instanceof Integer) value = finalItems[((Integer) value).intValue()];
 	                lastValue = value;
 	                super.doSetValue(value);
-	    	    }
-	    		@Override
+		    }
+			@Override
 				protected Object doGetValue() {
-	    			try {
-		    			Integer ordinal = (Integer)super.doGetValue();
-		    			return finalItems[ordinal];
-	    			} catch (IndexOutOfBoundsException ne) {
-	    				return lastValue;
-	    			}
-	    		}
+				try {
+					Integer ordinal = (Integer)super.doGetValue();
+					return finalItems[ordinal];
+				} catch (IndexOutOfBoundsException ne) {
+					return lastValue;
+				}
+			}
 			};
 		} else {
 			return new TextCellEditor(parent) {
@@ -269,28 +269,28 @@ public class ModelFieldEditorFactory {
 		if (anot == null) return true;
 		if (!anot.editable()) return false;
 
-	   	String enableIf = anot.enableif();
-	   	if (enableIf!=null && !"".equals(enableIf)) {
+		String enableIf = anot.enableif();
+		if (enableIf!=null && !"".equals(enableIf)) {
 
-	   		try {
-		   		final IExpressionService service = ServiceHolder.getExpressionService();
-		   		final IExpressionEngine  engine  = service.getExpressionEngine();
-		   		engine.createExpression(enableIf);
+			try {
+				final IExpressionService service = ServiceHolder.getExpressionService();
+				final IExpressionEngine  engine  = service.getExpressionEngine();
+				engine.createExpression(enableIf);
 
-		   		final Map<String, Object>    values = new HashMap<>();
-		   		final Collection<FieldValue> fields = FieldUtils.getModelFields(model);
-		   		for (FieldValue field : fields) {
-		   			Object value = field.get();
-		   			if (value instanceof Enum) value = ((Enum)value).name();
-		   			values.put(field.getName(), value);
+				final Map<String, Object>    values = new HashMap<>();
+				final Collection<FieldValue> fields = FieldUtils.getModelFields(model);
+				for (FieldValue field : fields) {
+					Object value = field.get();
+					if (value instanceof Enum) value = ((Enum)value).name();
+					values.put(field.getName(), value);
 				}
-		   		engine.setLoadedVariables(values);
-		   		return (Boolean)engine.evaluate();
+				engine.setLoadedVariables(values);
+				return (Boolean)engine.evaluate();
 
-	   		} catch (Exception ne) {
-	   			logger.error("Cannot evaluate expression "+enableIf, ne);
-	   		}
-	   	}
+			} catch (Exception ne) {
+				logger.error("Cannot evaluate expression "+enableIf, ne);
+			}
+		}
 
 	    return true;
 	}
@@ -339,16 +339,16 @@ public class ModelFieldEditorFactory {
 	    final String[] items  = Arrays.toString(values).replaceAll("^.|.$", "").split(", ");
 
 		CComboCellEditor cellEd = new CComboCellEditor(parent, items) {
-    	    @Override
+	    @Override
 			protected void doSetValue(Object value) {
                 if (value instanceof Enum) value = ((Enum) value).ordinal();
                 super.doSetValue(value);
-    	    }
-    		@Override
+	    }
+		@Override
 			protected Object doGetValue() {
-    			Integer ordinal = (Integer)super.doGetValue();
-    			return values[ordinal];
-    		}
+			Integer ordinal = (Integer)super.doGetValue();
+			return values[ordinal];
+		}
 		};
 
 		return cellEd;
@@ -359,14 +359,14 @@ public class ModelFieldEditorFactory {
 	    final String[] items  = data.getItems();
 
 		CComboWithEntryCellEditor cellEd = new CComboWithEntryCellEditor(parent, items) {
-    	    @Override
+	    @Override
 			protected void doSetValue(Object value) {
                 super.doSetValue(((CComboWithEntryCellEditorData)value).getActiveItem());
-    	    }
-    		@Override
+	    }
+		@Override
 			protected Object doGetValue() {
-    			return new CComboWithEntryCellEditorData(data, (String)super.doGetValue());
-    		}
+			return new CComboWithEntryCellEditorData(data, (String)super.doGetValue());
+		}
 		};
 
 		return cellEd;
@@ -377,23 +377,23 @@ public class ModelFieldEditorFactory {
 		FieldDescriptor anot = field.getAnnotation();
 		NumberCellEditor textEd = null;
 	    if (anot!=null) {
-	    	textEd = new NumberCellEditor(parent, clazz, getMinimum(field, anot), getMaximum(field, anot), getUnit(field, anot), SWT.NONE);
+		textEd = new NumberCellEditor(parent, clazz, getMinimum(field, anot), getMaximum(field, anot), getUnit(field, anot), SWT.NONE);
 
-	    	if (anot.numberFormat()!=null && !"".equals(anot.numberFormat())) {
-	    		textEd.setDecimalFormat(anot.numberFormat());
+		if (anot.numberFormat()!=null && !"".equals(anot.numberFormat())) {
+			textEd.setDecimalFormat(anot.numberFormat());
 		    }
 
 	    } else {
-	    	textEd = new NumberCellEditor(parent, clazz, SWT.NONE);
+		textEd = new NumberCellEditor(parent, clazz, SWT.NONE);
 	    }
 
 	    //textEd.setAllowInvalidValues(true);
 	    if (anot!=null && anot.validif().length()>0) {
-	    	final ValidIfDecorator deco = new ValidIfDecorator(field.getName(), field.getModel(), anot.validif());
-	    	textEd.setDelegateDecorator(deco);
+		final ValidIfDecorator deco = new ValidIfDecorator(field.getName(), field.getModel(), anot.validif());
+		textEd.setDelegateDecorator(deco);
 	    }
 
-    	return textEd;
+	return textEd;
 	}
 
 	private String getUnit(FieldValue field, FieldDescriptor anot) {
@@ -425,11 +425,11 @@ public class ModelFieldEditorFactory {
 		}
 
 	    if (scannableName!=null && scannableName.length()>0) {
-	    	try {
+		try {
 		        return cservice.getScannable(scannableName);
-	    	} catch (Exception ne) {
-	    		return null;
-	    	}
+		} catch (Exception ne) {
+			return null;
+		}
 	    }
 	    return null;
 	}

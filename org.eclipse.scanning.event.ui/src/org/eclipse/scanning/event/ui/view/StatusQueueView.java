@@ -169,16 +169,16 @@ public class StatusQueueView extends EventConnectionView {
 		viewer.setContentProvider(createContentProvider());
 
         try {
-    		queueConnection = service.createSubmitter(getUri(), getSubmissionQueueName());
-    		queueConnection.setStatusTopicName(getTopicName());
-    		updateQueue(getUri());
+		queueConnection = service.createSubmitter(getUri(), getSubmissionQueueName());
+		queueConnection.setStatusTopicName(getTopicName());
+		updateQueue(getUri());
 
-    		String name = getSecondaryIdAttribute("partName");
+		String name = getSecondaryIdAttribute("partName");
             if (name!=null) setPartName(name);
 
             createActions();
 
-    		// We just use this submitter to read the queue
+		// We just use this submitter to read the queue
             createTopicListener(getUri());
 
 		} catch (Exception e) {
@@ -240,16 +240,16 @@ public class StatusQueueView extends EventConnectionView {
 						@Override
 						public void beanChangePerformed(BeanEvent<AdministratorMessage> evt) {
 							final AdministratorMessage bean = evt.getBean();
-	        				getSite().getShell().getDisplay().syncExec(new Runnable() {
-	        					@Override
+						getSite().getShell().getDisplay().syncExec(new Runnable() {
+							@Override
 								public void run() {
 	                                   MessageDialog.openError(getViewSite().getShell(),
-	                                		                   bean.getTitle(),
-	                                		                   bean.getMessage());
+							                   bean.getTitle(),
+							                   bean.getMessage());
 
 	                                   viewer.refresh();
-	        					}
-	        				});
+							}
+						});
 						}
 					});
 
@@ -878,20 +878,20 @@ public class StatusQueueView extends EventConnectionView {
 			        // want newest submissions first.
 					final Map<String,StatusBean> ret = new LinkedHashMap<String,StatusBean>();
 					for (StatusBean bean : submittedList) {
-			        	ret.put(bean.getUniqueId(), bean);
+					ret.put(bean.getUniqueId(), bean);
 					}
 					monitor.worked(1);
 			        for (StatusBean bean : runningList) {
-			        	ret.put(bean.getUniqueId(), bean);
+					ret.put(bean.getUniqueId(), bean);
 					}
 					monitor.worked(1);
 
 			        getSite().getShell().getDisplay().syncExec(new Runnable() {
-			        	@Override
+					@Override
 						public void run() {
-			        		viewer.setInput(ret);
-			        		viewer.refresh();
-			        	}
+						viewer.setInput(ret);
+						viewer.refresh();
+					}
 			        });
 			        monitor.done();
 
@@ -903,11 +903,11 @@ public class StatusQueueView extends EventConnectionView {
 			        monitor.done();
 			        logger.error("Updating changed bean from topic", e);
 			        getSite().getShell().getDisplay().syncExec(new Runnable() {
-			        	@Override
+					@Override
 						public void run() {
 							ErrorDialog.openError(getViewSite().getShell(), "Cannot connect to queue", "The server is unavailable at "+getUriString()+".\n\nPlease contact your support representative.",
 						              new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
-			        	}
+					}
 			        });
 			        return Status.CANCEL_STATUS;
 

@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Opens a Model Table on an additional popup for those
  * fields which are an almagom of values. For instance BoundingBox.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -64,7 +64,7 @@ public class ModelCellEditor extends CellEditor {
 	 * Image registry key for three dot image (value <code>"cell_editor_dots_button_image"</code>).
 	 */
 	public static final String CELL_EDITOR_IMG_DOTS_BUTTON = "cell_editor_dots_button_image";//$NON-NLS-1$
-	
+
 	static {
 		ImageRegistry reg = JFaceResources.getImageRegistry();
 		reg.put(CELL_EDITOR_IMG_DOTS_BUTTON, ImageDescriptor.createFromFile(
@@ -90,11 +90,11 @@ public class ModelCellEditor extends CellEditor {
 	private FieldValue fvalue;
 	private Object     value;
 
-	// UI 
+	// UI
 	private ILabelProvider labelProv;
 
-	public ModelCellEditor(Composite      parent, 
-			               FieldValue     value, 
+	public ModelCellEditor(Composite      parent,
+			               FieldValue     value,
 			               ILabelProvider labelProv) {
 		super();
 		this.fvalue     = value;
@@ -142,16 +142,16 @@ public class ModelCellEditor extends CellEditor {
 
         contents = createTextContents(area);
         updateContents(value);
-        
+
         KeyListener exit = new KeyAdapter() {
-        	@Override
-        	public void keyReleased(KeyEvent e) {
-        		if (e.character == '\u001b') { // Escape
-        			fireCancelEditor();
-        		}
-        	}
+		@Override
+		public void keyReleased(KeyEvent e) {
+			if (e.character == '\u001b') { // Escape
+				fireCancelEditor();
+			}
+		}
         };
-        
+
         if (fvalue.getModel() instanceof IBoundingBoxModel) {
             Button rbutton = new Button(area, SWT.DOWN);
             rbutton.setImage(Activator.getImageDescriptor("icons/ProfileBox.png").createImage());
@@ -159,14 +159,14 @@ public class ModelCellEditor extends CellEditor {
             rbutton.addKeyListener(exit);
             rbutton.addSelectionListener(new SelectionAdapter() {
 
-            	@Override
-            	public void widgetSelected(SelectionEvent event) {
-            		try {
-            			createBoundingBox();
-            		} catch (GeneratorException e) {
-            			logger.error("Unable to get the box from the plot", e);
-            		}
-            	}
+		@Override
+		public void widgetSelected(SelectionEvent event) {
+			try {
+				createBoundingBox();
+			} catch (GeneratorException e) {
+				logger.error("Unable to get the box from the plot", e);
+			}
+		}
             });
             GridData gdata = new GridData(SWT.CENTER, SWT.CENTER, false, false);
             gdata.heightHint = 22;
@@ -182,10 +182,10 @@ public class ModelCellEditor extends CellEditor {
 
 			@Override
 			public void widgetSelected(SelectionEvent event) {
- 
-            	Object newValue = openDialogBox(area);
 
-            	if (newValue != null) {
+		Object newValue = openDialogBox(area);
+
+		if (newValue != null) {
                     boolean newValidState = isCorrect(newValue);
                     if (newValidState) {
                         markDirty();
@@ -204,7 +204,7 @@ public class ModelCellEditor extends CellEditor {
 
         return area;
     }
-    
+
     /**
      * Creates the controls used to show the value of this cell area.
      * <p>
@@ -220,30 +220,30 @@ public class ModelCellEditor extends CellEditor {
      * @return the underlying control
      */
     protected Control createTextContents(Composite cell) {
-    	Text txt = new Text(cell, SWT.LEFT);
-    	txt.setFont(cell.getFont());
-    	txt.setBackground(cell.getBackground());
-    	txt.setEditable(false);
-    	GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
-    	gData.widthHint = 100;
-    	txt.setLayoutData(gData);
-    	defaultLabel = txt;
+	Text txt = new Text(cell, SWT.LEFT);
+	txt.setFont(cell.getFont());
+	txt.setBackground(cell.getBackground());
+	txt.setEditable(false);
+	GridData gData = new GridData(SWT.FILL, SWT.FILL, true, true);
+	gData.widthHint = 100;
+	txt.setLayoutData(gData);
+	defaultLabel = txt;
         return txt;
     }
 
     protected void createBoundingBox() throws GeneratorException {
-    	this.value = ScanRegions.createBoxFromPlot();
-    	if (value!=null) {
-	     	setValueValid(true);
-	    	fireApplyEditorValue();
-    	} else {
-    		try {
+	this.value = ScanRegions.createBoxFromPlot();
+	if (value!=null) {
+		setValueValid(true);
+		fireApplyEditorValue();
+	} else {
+		try {
 				ScanRegions.createRegion(PlotUtil.getRegionSystem(), RegionType.BOX, null);
 				ViewUtil.showTip(new ToolTip(defaultLabel.getShell(), SWT.BALLOON), "Drag a box in the '"+PlotUtil.getRegionSystem().getPlotName()+"' to create a scan region.");
 			} catch (Exception e) {
 				logger.error("Unable to create region!", e);
 			}
-    	}
+	}
 	}
 
 	@Override
@@ -284,13 +284,13 @@ public class ModelCellEditor extends CellEditor {
      *   canceled or no selection was made in the dialog
      */
 	protected Object openDialogBox(Control cellEditorWindow) {
-		
+
 		try {
 			final IModelDialog<Serializable> dialog = ServiceHolder.getInterfaceService().createModelDialog(cellEditorWindow.getShell()); // extends BeanDialog
 			dialog.create();
 			dialog.setSize(550,450); // As needed
 			dialog.setText("Edit "+fvalue.getAnnotation().label());
-		
+
 			dialog.setModel((Serializable)fvalue.get(true));
 	        final int ok = dialog.open();
 	        if (ok == IModelDialog.OK) {

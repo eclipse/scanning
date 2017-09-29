@@ -17,41 +17,41 @@ import java.sql.SQLException;
 import java.util.concurrent.Future;
 
 /**
- * 
- * This is a service to bridge between the needs of 
+ *
+ * This is a service to bridge between the needs of
  * experimental information and the features of the API's.
- * 
+ *
  * The database we refer to here is 'Ispyb' although any
  * database recording experimental data could implement this
  * front end.
- * 
+ *
  * This service is designed to be exposed as a microservice
  * operating over activemq. It may either be incorporated directly
  * as an OSGi service or exposed remotely by using the request-respond
  * features of Eclipse Scanning {@link https://github.com/eclipse/scanning}
- * 
- * There is an ISPyB specific implementation of this service in the 
+ *
+ * There is an ISPyB specific implementation of this service in the
  * project https://github.com/DiamondLightSource/gda-ispyb-api. The class
  * uk.ac.diamond.ispyb.scanning.ExperimentCommunicationService is the
  * main/only implementation for ISPyB
- * 
+ *
  * @author Matthew Gerring
  *
  * @see {@link http://confluence.diamond.ac.uk/display/I151/GDA-Database+Communications+Concept}
  * @see {@link http://confluence.diamond.ac.uk/display/I151/GDA-Database+Communications+Specification}
- * 
+ *
  */
 public interface IExperimentDatabaseService extends Closeable, ISampleDescriptionService {
-	
+
 
 	/**
-	 * Open the connection. 
+	 * Open the connection.
 	 * A connection must be opened before it may be used
 	 * A service may be open and closed multiple times
 	 * @throws SQLException
 	 */
 	public void open() throws SQLException;
-	
+
 	/**
 	 * Close the connection to the database
 	 * A connection must be closed after use
@@ -77,19 +77,19 @@ public interface IExperimentDatabaseService extends Closeable, ISampleDescriptio
 		beamlineAction.set("Status", "PAUSED");
 		long code = service.insert(beamlineAction, true);
 	 </pre></code>
-     * 
-     * 
+     *
+     *
      * @param action
      * @param blocking
- 	 * @return insert code or -1 if the upsert was asynchronous (non-blocking)
+	 * @return insert code or -1 if the upsert was asynchronous (non-blocking)
      * @throws IllegalArgumentException
      * @throws Exception
      */
     <T> Future<Id> insert(T action, boolean blocking)  throws IllegalArgumentException, Exception;
- 
+
     /**
 	 * The method can be used to create new records for instance:
-	 
+
 	 <code><pre>
 	    Bean grp = new Bean("uk.ac.diamond.ispyb.api.DataCollectionGroup");
 		grp.set("ProposalCode", "cm");
@@ -98,7 +98,7 @@ public interface IExperimentDatabaseService extends Closeable, ISampleDescriptio
 		grp.set("SampleId", 11550L);
 		Long dataCollectionGrpId = service.upsert(grp, true);
 	 </pre></code>
-		
+
 	   This method can be used to update records for instance:
 	 <code><pre>
 	    Bean grp = new Bean("uk.ac.diamond.ispyb.api.DataCollectionGroup");
@@ -107,17 +107,17 @@ public interface IExperimentDatabaseService extends Closeable, ISampleDescriptio
 		long code = service.upsert(grp, false); // Add the job to a queue to be processed later.
 	 </pre></code>
 
-	 * 
+	 *
 	 * @param entry
-	 * @param blocking - true if operation should be blocking. If false 
+	 * @param blocking - true if operation should be blocking. If false
 	 * @return upsert code or -1 if the upsert was asynchronous (non-blocking)
      * @throws IllegalArgumentException
      * @throws Exception
 	 */
     <T> Future<Id> upsert(T entry, boolean blocking) throws IllegalArgumentException, Exception;
-	
+
 	/**
-	 * The method cannot be used to create new records.		
+	 * The method cannot be used to create new records.
 	   This method can be used to update records for instance:
 	 <code><pre>
 	    Bean experiment = new Bean("uk.ac.diamond.ispyb.api.DataCollectionExperiment");
@@ -126,29 +126,29 @@ public interface IExperimentDatabaseService extends Closeable, ISampleDescriptio
 		long code = service.upsert(grp, false); // Add the job to a queue to be processed later.
 	 </pre></code>
 
-	 * 
+	 *
 	 * @param entry
-	 * @param blocking - true if operation should be blocking. If false 
+	 * @param blocking - true if operation should be blocking. If false
 	 * @return upsert code or -1 if the upsert was asynchronous (non-blocking)
      * @throws IllegalArgumentException
      * @throws Exception
 	 */
     <T> Future<Id> update(T entry, boolean blocking) throws IllegalArgumentException, Exception;
-	
-   
+
+
     /**
      * This action allows several operations to be completed in one action.
-     * The other operations allow one or more actions of the same type but 
+     * The other operations allow one or more actions of the same type but
      * this 'composite' operation allows one or more upsert/update/insert
-     * to be completed. The order of processing is insert/upsert/update 
+     * to be completed. The order of processing is insert/upsert/update
      * for a composite operation list because this allows an insert and
      * update of a record (similar to upsert!).
-     * 
+     *
      * T in the case of this operation will normally be a CompositeBean.
      * There are currently no other implementations of the Composite but
      * we have decided not to hard code the required type in order to match
      * the other methods.
-     * 
+     *
      * @param action
      * @param blocking
      * @return

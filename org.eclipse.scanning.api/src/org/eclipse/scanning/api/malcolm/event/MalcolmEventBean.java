@@ -19,43 +19,43 @@ import org.eclipse.scanning.api.event.scan.DeviceState;
 /**
  * This bean is used to disseminate messages about what has happened
  * to the scan while it is being written.
- * 
+ *
  * Do not extend this class to allow arbitrary information to be sent.
  * The event encapsulated by this bean should be sending just the information
- * defined here, metadata that cannot circumvent the nexus file. 
- * 
+ * defined here, metadata that cannot circumvent the nexus file.
+ *
  * For instance adding a dynamic set of information, a map perhaps, would
  * allow information which should be saved in the Nexus file to circumvent
  * the file and be set in the event. It was decided in various meetings
  * that doing this could mean that some data is not recorded as it should be
  * in nexus.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public final class MalcolmEventBean {
-	
+
 
 	// General Information
 	private String  deviceName;
 	private String  beamline;
 	private double  percentComplete;
 	private String  message;
-	
+
 	// State information
 	private DeviceState   deviceState;
 	private DeviceState   previousState;
-	
+
 	// Dataset information
 	private String  filePath;
 	private String  datasetPath;
     private int[]   oldShape;
     private int[]   newShape;
-		
+
 	public MalcolmEventBean() {
 
 	}
-	
+
 	public MalcolmEventBean(DeviceState state) {
 		this.deviceState     = state;
 	}
@@ -64,7 +64,7 @@ public final class MalcolmEventBean {
 		this(state);
 		this.message = message;
 	}
-	
+
 	public String getFilePath() {
 		return filePath;
 	}
@@ -77,7 +77,7 @@ public final class MalcolmEventBean {
 	public void setDatasetPath(String datasetPath) {
 		this.datasetPath = datasetPath;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -220,7 +220,7 @@ public final class MalcolmEventBean {
 	public boolean isScanStart() {
 		return getDeviceState()==DeviceState.RUNNING && getDeviceState()!=getPreviousState();
 	}
-	
+
 	public boolean isScanEnd() {
 		return getDeviceState()!=getPreviousState() && getPreviousState()== DeviceState.RUNNING;
 	}

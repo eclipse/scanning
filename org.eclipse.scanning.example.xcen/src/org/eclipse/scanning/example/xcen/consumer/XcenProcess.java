@@ -60,13 +60,13 @@ public class XcenProcess extends AbstractLockingPausableProcess<XcenBean>{
 			runDir  = "/tmp/"+bean.getRunDirectory();
 		}
 
- 		final File   xcenDir = getUnique(new File(runDir), "Xcen_", 1);
- 		xcenDir.mkdirs();
+		final File   xcenDir = getUnique(new File(runDir), "Xcen_", 1);
+		xcenDir.mkdirs();
 
 	    processingDir = xcenDir.getAbsolutePath();
 		bean.setRunDirectory(processingDir);
 
- 		try {
+		try {
 			setLoggingFile(new File(xcenDir, "xcenJavaProcessLog.txt"));
 		} catch (IOException e1) {
 			e1.printStackTrace();

@@ -17,14 +17,14 @@ public class DarkImageModel {
 	private int    columns;
 	private int    rows;
 	private int    frequency;
-	
+
 	public DarkImageModel() {
 		name          = "dkExmpl";
 		columns       = 64;
 		rows          = 60;
 		frequency     = 10;
 	}
-	
+
 	public String getName() {
 		return name;
 	}

@@ -3,12 +3,12 @@ package org.eclipse.scanning.api.malcolm.connector;
 import org.eclipse.scanning.api.malcolm.message.MalcolmMessage;
 
 /**
- * An enumeration of the malcolm methods that can be set in a {@link MalcolmMessage}. 
- * 
+ * An enumeration of the malcolm methods that can be set in a {@link MalcolmMessage}.
+ *
  * @author Matthew Dickie
  */
 public enum MalcolmMethod {
-	
+
 	ABORT,
 	CONFIGURE,
 	DISABLE,
@@ -17,7 +17,7 @@ public enum MalcolmMethod {
 	RESUME,
 	RUN,
 	VALIDATE;
-	
+
 	/**
 	 * Returns the name of this message in lower case, as expected by the malcolm device
 	 * over a communication channel.

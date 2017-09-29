@@ -18,7 +18,7 @@ import org.eclipse.scanning.api.scan.ui.ControlTree;
 
 class ControlContentProvider implements ITreeContentProvider {
 
-	
+
 	private ControlTree factory;
 
 	@Override

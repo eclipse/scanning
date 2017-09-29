@@ -13,7 +13,7 @@
 package org.eclipse.scanning.api.annotation.ui;
 
 public enum RangeType {
-	
+
 	NONE,
 	XRANGE,
 	XSINGLE,

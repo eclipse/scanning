@@ -21,10 +21,10 @@ import org.eclipse.scanning.api.points.models.IScanPathModel;
 
 /**
  * Class to be used for editing the field of a Model
- * 
- * Reads annotations used on the models field and provides 
+ *
+ * Reads annotations used on the models field and provides
  * discovery information about the field.
- * 
+ *
  */
 public class FieldValue {
 
@@ -51,22 +51,22 @@ public class FieldValue {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public String getDisplayName() {
-    	
-    	FieldDescriptor anot;
+
+	FieldDescriptor anot;
 		try {
 			anot = FieldUtils.getAnnotation(model, name);
 		} catch (NoSuchFieldException | SecurityException e) {
 			return e.getMessage();
 		}
-    	if (anot!=null) {
-    		String label = anot.label();
-    		if (label!=null && !"".equals(label)) return label;
-    	}
-    	return decamel(name);
+	if (anot!=null) {
+		String label = anot.label();
+		if (label!=null && !"".equals(label)) return label;
 	}
-	
+	return decamel(name);
+	}
+
 	/**
 	 * Method to decamel case field names.
 	 * @param fieldName
@@ -77,9 +77,9 @@ public class FieldValue {
 		    String[] words = fieldName.split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])");
 		    StringBuilder buf = new StringBuilder();
 		    for (String string : words) {
-		    	buf.append(String.valueOf(string.charAt(0)).toUpperCase());
-		    	buf.append(string.substring(1));
-		    	buf.append(" ");
+			buf.append(String.valueOf(string.charAt(0)).toUpperCase());
+			buf.append(string.substring(1));
+			buf.append(" ");
 			}
 		    return buf.toString();
 		} catch (Exception ne) {
@@ -124,7 +124,7 @@ public class FieldValue {
 		Field field = FieldUtils.getField(model, name);
 		return field.getType();
 	}
-	
+
 
 	public FieldDescriptor getAnnotation() {
 		try {
@@ -135,9 +135,9 @@ public class FieldValue {
 	}
 
 	public boolean isFileProperty() {
-		
-    	final FieldDescriptor anot = getAnnotation();
-    	if (anot!=null && anot.file()!=FileType.NONE) return true;
+
+	final FieldDescriptor anot = getAnnotation();
+	if (anot!=null && anot.file()!=FileType.NONE) return true;
 
 		Class<? extends Object> clazz;
 		try {
@@ -168,7 +168,7 @@ public class FieldValue {
 			return null;
 		}
 	}
-	
+
 
 	public Object get(boolean create) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, InstantiationException {
 		Object value = get();
@@ -179,14 +179,14 @@ public class FieldValue {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Tries to find the no-argument getter for this field, ignoring case
 	 * so that camel case may be used in method names. This means that this
 	 * method is not particularly fast, so avoid calling in big loops!
-	 * @throws InvocationTargetException 
-	 * @throws IllegalArgumentException 
-	 * @throws IllegalAccessException 
+	 * @throws InvocationTargetException
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
 	 */
 	public static Object get(Object model, String name) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		Class<? extends Object> cls = model.getClass();
@@ -197,81 +197,81 @@ public class FieldValue {
 		}
 		return null;
 	}
-	
-	private static Object get(Object model, Class<?> clazz, String name) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		
-		if (clazz==null || clazz.equals(Object.class)) return null;
-		
-		final String getter = getGetterName(name).toLowerCase();
-		Method[] methods = clazz.getMethods();
-		for (Method method : methods) {
-			if (method.getName().toLowerCase().equals(getter)) {
-				if (method.getParameterTypes().length<1) {
-					method.setAccessible(true);
-					return method.invoke(model);
-				}
-			}
-		}
-		
-		final String isser  = getIsserName(name).toLowerCase();
-		for (Method method : methods) {
-			if (method.getName().toLowerCase().equals(isser)) {
-				if (method.getParameterTypes().length<1) {
-					method.setAccessible(true);
-					return method.invoke(model);
-				}
-			}
-		}
-		return null;
-	}
-	
-	private static Method getMethod(Class<?> clazz, String name) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		
-		if (clazz==null || clazz.equals(Object.class)) return null;
-		
-		final String getter = getGetterName(name).toLowerCase();
-		Method[] methods = clazz.getMethods();
-		for (Method method : methods) {
-			if (method.getName().toLowerCase().equals(getter)) {
-				if (method.getParameterTypes().length<1) {
-					return method;
-				}
-			}
-		}
-		
-		final String isser  = getIsserName(name).toLowerCase();
-		for (Method method : methods) {
-			if (method.getName().toLowerCase().equals(isser)) {
-				if (method.getParameterTypes().length<1) {
-					return method;
-				}
-			}
-		}
-		return null;
-	}
-	
 
-	
+	private static Object get(Object model, Class<?> clazz, String name) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+		if (clazz==null || clazz.equals(Object.class)) return null;
+
+		final String getter = getGetterName(name).toLowerCase();
+		Method[] methods = clazz.getMethods();
+		for (Method method : methods) {
+			if (method.getName().toLowerCase().equals(getter)) {
+				if (method.getParameterTypes().length<1) {
+					method.setAccessible(true);
+					return method.invoke(model);
+				}
+			}
+		}
+
+		final String isser  = getIsserName(name).toLowerCase();
+		for (Method method : methods) {
+			if (method.getName().toLowerCase().equals(isser)) {
+				if (method.getParameterTypes().length<1) {
+					method.setAccessible(true);
+					return method.invoke(model);
+				}
+			}
+		}
+		return null;
+	}
+
+	private static Method getMethod(Class<?> clazz, String name) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+		if (clazz==null || clazz.equals(Object.class)) return null;
+
+		final String getter = getGetterName(name).toLowerCase();
+		Method[] methods = clazz.getMethods();
+		for (Method method : methods) {
+			if (method.getName().toLowerCase().equals(getter)) {
+				if (method.getParameterTypes().length<1) {
+					return method;
+				}
+			}
+		}
+
+		final String isser  = getIsserName(name).toLowerCase();
+		for (Method method : methods) {
+			if (method.getName().toLowerCase().equals(isser)) {
+				if (method.getParameterTypes().length<1) {
+					return method;
+				}
+			}
+		}
+		return null;
+	}
+
+
+
 	public boolean isModelField(String name) throws NoSuchFieldException, SecurityException {
         return isModelField(model, name);
 	}
 
 	public static boolean isModelField(Object model, String name) throws NoSuchFieldException, SecurityException {
-		
+
 		Field field = null;
 		Class<? extends Object> cls = model.getClass();
-    	while (!cls.equals(Object.class)) {
-    		try {
-    			field = cls.getDeclaredField(name);
-    			break;
-    		} catch (Exception ne) {
-    			cls = cls.getSuperclass();
-    		}
-    	}
+	while (!cls.equals(Object.class)) {
+		try {
+			field = cls.getDeclaredField(name);
+			break;
+		} catch (Exception ne) {
+			cls = cls.getSuperclass();
+		}
+	}
 
 		FieldDescriptor omf = field.getAnnotation(FieldDescriptor.class);
 		if (omf!=null && !omf.visible()) return false;
-		
+
 		final String getter = getGetterName(name).toLowerCase();
 		Method[] methods = model.getClass().getMethods();
 		for (Method method : methods) {
@@ -281,7 +281,7 @@ public class FieldValue {
 				}
 			}
 		}
-		
+
 		final String isser  = getIsserName(name).toLowerCase();
 		for (Method method : methods) {
 			if (method.getName().toLowerCase().equals(isser)) {
@@ -300,9 +300,9 @@ public class FieldValue {
 	 * @return fields old value, or null
 	 */
 	private static Object set(Object model, String name, Object value)throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		
+
 		Object oldValue = get(model, name);
-		
+
 		final String setter = getSetterName(name).toLowerCase();
 		Method[] methods = model.getClass().getMethods();
 		for (Method method : methods) {
@@ -316,7 +316,7 @@ public class FieldValue {
 		return oldValue;
 	}
 
-	
+
 	private static String getSetterName(final String fieldName) {
 		if (fieldName == null) return null;
 		return getName("set", fieldName);
@@ -324,7 +324,7 @@ public class FieldValue {
 	/**
 	 * There must be a smarter way of doing this i.e. a JDK method I cannot find. However it is one line of Java so
 	 * after spending some time looking have coded self.
-	 * 
+	 *
 	 * @param fieldName
 	 * @return String
 	 */
@@ -332,7 +332,7 @@ public class FieldValue {
 		if (fieldName == null) return null;
 		return getName("get", fieldName);
 	}
-	
+
 	private static String getIsserName(final String fieldName) {
 		if (fieldName == null)
 			return null;

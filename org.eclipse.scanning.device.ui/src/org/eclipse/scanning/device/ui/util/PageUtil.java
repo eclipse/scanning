@@ -20,7 +20,7 @@ import org.eclipse.ui.PlatformUI;
 
 public class PageUtil {
 
-	
+
 	/**
 	 * Gets the page, even during startup.
 	 * @return the page
@@ -28,7 +28,7 @@ public class PageUtil {
 	public static IWorkbenchPage getPage() {
 		return getPage(null);
 	}
-	
+
 	/**
 	 * Gets the page, even during startup.
 	 * @return the page
@@ -42,7 +42,7 @@ public class PageUtil {
 		if (activePage!=null) return activePage;
 		return PageUtil.getDefaultPage();
 	}
-	
+
 	/**
 	 * @return IWorkbenchPage
 	 */
@@ -58,7 +58,7 @@ public class PageUtil {
 		if (window==null) return null;
 		return window.getActivePage();
 	}
-	
+
 	/**
 	 * @return IEditorPart
 	 */
@@ -67,7 +67,7 @@ public class PageUtil {
 		return page.getActiveEditor();
 	}
 
-	
+
 	/**
 	 * @return IWorkbenchPage
 	 */
@@ -81,8 +81,8 @@ public class PageUtil {
 		if (bench==null) return null;
 		final IWorkbenchWindow[] windows = bench.getWorkbenchWindows();
 		if (windows==null) return null;
-		
+
 		return windows[0].getActivePage();
-	}	
+	}
 
 }

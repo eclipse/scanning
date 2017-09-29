@@ -21,9 +21,9 @@ import java.util.Map;
  * over how the NXdata group or groups are created in the NeXus file for the scan.
  */
 public class ScanDataModel extends ScanModel {
-	
+
 	private Map<String, ScanDeviceModel> scanDevices = new HashMap<String, ScanDeviceModel>();
-	
+
 	/**
 	 * Adds a {@link ScanDeviceModel} for the device with the given name to this model.
 	 * @param deviceName device name
@@ -32,7 +32,7 @@ public class ScanDataModel extends ScanModel {
 	public void addScanDevice(String deviceName, ScanDeviceModel scanDeviceModel) {
 		scanDevices.put(deviceName, scanDeviceModel);
 	}
-	
+
 	/**
 	 * Returns the {@link ScanDeviceModel} for the device with the given name,
 	 * or <code>null</code> if none
@@ -42,9 +42,9 @@ public class ScanDataModel extends ScanModel {
 	public ScanDeviceModel getScanDevice(String deviceName) {
 		return scanDevices.get(deviceName);
 	}
-	
+
 	/**
-	 * Returns the list of names of those scan devices for which 
+	 * Returns the list of names of those scan devices for which
 	 * {@link ScanDeviceModel}s have been added to this this {@link ScanDataModel}.
 	 * Note that this is not the full list of devices
 	 * in the scan, just those which have a {@link ScanDeviceModel} customizing
@@ -54,5 +54,5 @@ public class ScanDataModel extends ScanModel {
 	public List<String> getScanDeviceNames() {
 		return new ArrayList<>(scanDevices.keySet());
 	}
-	
+
 }

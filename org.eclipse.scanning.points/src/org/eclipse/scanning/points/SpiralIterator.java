@@ -29,11 +29,11 @@ class SpiralIterator extends AbstractScanPointIterator {
 	private final double xCentre;
 	private final double yCentre;
 	private final double maxRadius;
-	
+
 	private Point currentPoint;
 
 	public SpiralIterator(SpiralGenerator gen) {
-		
+
 		SpiralModel model = gen.getModel();
 		this.xName = model.getFastAxisName();
 		this.yName = model.getSlowAxisName();
@@ -43,7 +43,7 @@ class SpiralIterator extends AbstractScanPointIterator {
 		xCentre = model.getBoundingBox().getFastAxisStart() + radiusX;
 		yCentre = model.getBoundingBox().getSlowAxisStart() + radiusY;
 		maxRadius = Math.sqrt(radiusX * radiusX + radiusY * radiusY);
-        
+
         JythonObjectFactory<ScanPointIterator> spiralGeneratorFactory = ScanPointGeneratorFactory.JSpiralGeneratorFactory();
 
         PyList names =  new PyList(Arrays.asList(new String[] {xName, yName}));
@@ -52,7 +52,7 @@ class SpiralIterator extends AbstractScanPointIterator {
         double radius = maxRadius;
         double scale = model.getScale();
         boolean alternate = false;
-        
+
 		ScanPointIterator spiral = spiralGeneratorFactory.createObject(
 				names, units, centre, radius, scale, alternate);
 		pyIterator = createSpgCompoundGenerator(new Iterator<?>[] {spiral}, gen.getRegions().toArray(),
@@ -78,7 +78,7 @@ class SpiralIterator extends AbstractScanPointIterator {
 		}
 		Point point = currentPoint;
 		currentPoint = null;
-		
+
 		return point;
 	}
 

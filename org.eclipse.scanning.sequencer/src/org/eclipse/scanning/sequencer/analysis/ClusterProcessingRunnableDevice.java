@@ -42,43 +42,43 @@ public class ClusterProcessingRunnableDevice extends AbstractRunnableDevice<Clus
 		implements IWritableDetector<ClusterProcessingModel> {
 
 	private static final Logger logger = LoggerFactory.getLogger(ClusterProcessingRunnableDevice.class);
-	
+
 	public static final String DEFAULT_ENTRY_PATH = "/entry/";
-	
+
 	public static final String PROCESSING_QUEUE_NAME = "scisoft.operation.SUBMISSION_QUEUE";
-	
+
 	public static final String NEXUS_FILE_EXTENSION = ".nxs";
-	
+
 	private static ISubmitter<StatusBean> submitter = null;
-	
+
 	private IOperationBean operationBean;
-	
+
 	public ClusterProcessingRunnableDevice() {
 		super(ServiceHolder.getRunnableDeviceService());
 		setRole(DeviceRole.PROCESSING);
 		setSupportedScanModes(ScanMode.SOFTWARE, ScanMode.HARDWARE);
 	}
-	
+
 	@ScanStart
 	public void submitProcessingOperation(ScanInformation scanInfo) {
 		 operationBean = createOperationBean(scanInfo);
 	}
-	
+
 	@Override
 	public void validate(ClusterProcessingModel model) throws ValidationException {
         super.validate(model);
         if (model.getDetectorName()==null || model.getDetectorName().length()<1) {
-        	throw new ModelValidationException("The detector must be set", model, "detectorName");
+		throw new ModelValidationException("The detector must be set", model, "detectorName");
         }
 	}
-	
+
 	private ISubmitter<StatusBean> getSubmitter() throws Exception {
 		if (submitter == null) {
 			submitter = createSubmitter();
 		}
 		return submitter;
 	}
-	
+
 	private ISubmitter<StatusBean> createSubmitter() throws Exception {
 		try {
 			URI uri = new URI(CommandConstants.getScanningBrokerUri());
@@ -89,13 +89,13 @@ public class ClusterProcessingRunnableDevice extends AbstractRunnableDevice<Clus
 			throw e;
 		}
 	}
-	
+
 	private IOperationBean createOperationBean(ScanInformation scanInfo) {
 		final ClusterProcessingModel model = getModel();
-		
+
 		final IOperationBean operationBean = ServiceHolder.getOperationService().createBean();
 		operationBean.setName(model.getName());
-		
+
 		final IFilePathService filePathService = ServiceHolder.getFilePathService();
 		operationBean.setRunDirectory(filePathService.getTempDir()); // temp dir in visit
 		String scanFilePath = scanInfo.getFilePath();
@@ -114,41 +114,41 @@ public class ClusterProcessingRunnableDevice extends AbstractRunnableDevice<Clus
 		operationBean.setNumberOfCores(model.getNumberOfCores());
 		operationBean.setTimeOut(model.getTimeOut());
 		operationBean.setMonitorForOverwrite(model.isMonitorForOverwrite());
-		
+
 		return operationBean;
 	}
-	
+
 	private String getOutputFilePath(String inputFilePath) {
 		// append input file name with processing name
 		final String inputFileNameNoExt = getFileNameWithoutExtension(inputFilePath);
 		// if this is a file path, we just get the name. If it's a name, no change
 		final String processingName = getFileNameWithoutExtension(getModel().getName());
-		
+
 		String outputFileNamePrefix = inputFileNameNoExt + "-" + processingName;
 		String outputDirStr = ServiceHolder.getFilePathService().getProcessedFilesDir();
 		File outputDir = new File(outputDirStr);
-		
-		//  
+
+		//
 		File outputFile = new File(outputDir, outputFileNamePrefix + NEXUS_FILE_EXTENSION);
 		int suffix = 0;
 		while (outputFile.exists()) {
 			suffix++;
 			outputFile = new File(outputDir, outputFileNamePrefix + "-" + suffix + NEXUS_FILE_EXTENSION);
 		}
-		
+
 		return outputFile.toString();
 	}
-	
+
 	private String getFileNameWithoutExtension(String filePath) {
 		String fileName = new File(filePath).getName();
 		int i = fileName.lastIndexOf('.');
 		if (i != -1) {
 			fileName = fileName.substring(0, i);
 		}
-		
+
 		return fileName;
 	}
-	
+
 	@Override
 	public void run(IPosition position) throws ScanningException, InterruptedException {
 		if (operationBean != null) {

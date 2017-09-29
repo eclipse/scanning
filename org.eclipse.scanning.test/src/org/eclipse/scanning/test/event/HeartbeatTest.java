@@ -38,25 +38,25 @@ public class HeartbeatTest extends BrokerTest {
 
 	@Before
 	public void createServices() throws Exception {
-		
+
 		Constants.setNotificationFrequency(100);
 		Constants.setTimeout(500);
 
-		// We wire things together without OSGi here 
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		setUpNonOSGIActivemqMarshaller();
-		
+
 		eservice = new EventServiceImpl(new ActivemqConnectorService()); // Do not copy this get the service from OSGi!
-		
+
 		// Use in memory broker removes requirement on network and external ActiveMQ process
 		// http://activemq.apache.org/how-to-unit-test-jms-code.html
-		
+
 		// We use the long winded constructor because we need to pass in the connector.
-		// In production we would normally 
-		publisher  = eservice.createPublisher(uri, IEventService.HEARTBEAT_TOPIC);		
+		// In production we would normally
+		publisher  = eservice.createPublisher(uri, IEventService.HEARTBEAT_TOPIC);
 		subscriber = eservice.createSubscriber(uri, IEventService.HEARTBEAT_TOPIC);
 	}
-	
+
 	@After
 	public void dispose() throws EventException {
 		publisher.disconnect();
@@ -86,7 +86,7 @@ public class HeartbeatTest extends BrokerTest {
 	public void checkedHeartbeatTest() throws Exception {
 
 		publisher.setAlive(true);
-		
+
 		final List<HeartbeatBean> gotBack = new ArrayList<>(3);
 		subscriber.addListener(new IHeartbeatListener() {
 			@Override
@@ -107,12 +107,12 @@ public class HeartbeatTest extends BrokerTest {
 		if (gotBack.size()<6) throw new Exception("Not enough heartbeats were detected!");
 		System.out.println("Encountered "+gotBack.size()+" beats");
 	}
-	
+
 	@Test
 	public void timeoutHeartbeatTest() throws Exception {
 
 		try {
-			final URI uri = new URI("tcp://rubbish:5600");	
+			final URI uri = new URI("tcp://rubbish:5600");
 			publisher = eservice.createPublisher(uri, IEventService.HEARTBEAT_TOPIC);
 			publisher.setAlive(true);
 

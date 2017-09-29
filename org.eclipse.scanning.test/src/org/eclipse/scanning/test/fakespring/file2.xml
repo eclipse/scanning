@@ -9,7 +9,7 @@
             http://www.springframework.org/schema/osgi
             http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 
-	<!--  
+	<!--
 	      This service can come in from core bundles or optionally be defined in the spring layer
 	      In this case we want a server with no hardware so we mock out all the devices.
 	      The mock service does not read other spring files for the devices as the real
@@ -19,12 +19,12 @@
         <property name="broker"  value="${org.eclipse.scanning.broker.uri}" />
 	</bean>
     <osgi:service ref="scannableDeviceService" interface="org.eclipse.scanning.api.device.IScannableDeviceService"/>
-	
+
     <bean id="filePathService" class="org.eclipse.scanning.example.file.MockFilePathService">
         <property name="bundle"  value="org.eclipse.scanning.example"/> <!-- TODO Delete for real spring? -->
 	</bean>
     <osgi:service ref="filePathService" interface="org.eclipse.scanning.api.scan.IFilePathService"/>
-	
+
 	<!--  End testing/example only-->
 
 </beans>

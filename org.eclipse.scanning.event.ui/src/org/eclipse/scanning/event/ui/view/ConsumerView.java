@@ -129,8 +129,8 @@ public class ConsumerView extends EventConnectionView {
 						public void heartbeatPerformed(HeartbeatEvent evt) {
 
 							HeartbeatBean bean = evt.getBean();
-	        				bean.setLastAlive(System.currentTimeMillis());
-	        				sync(bean);
+						bean.setLastAlive(System.currentTimeMillis());
+						sync(bean);
 						}
 
 					});
@@ -145,12 +145,12 @@ public class ConsumerView extends EventConnectionView {
 
 							ConsumerBean cbean = evt.getBean();
 							HeartbeatBean bean  = cbean.toHeartbeat();
-	        				bean.setLastAlive(System.currentTimeMillis());
-	        				sync(bean);
+						bean.setLastAlive(System.currentTimeMillis());
+						sync(bean);
 						}
                         @Override
 						public Class<ConsumerBean> getBeanClass() {
-                        	return ConsumerBean.class;
+				return ConsumerBean.class;
                         }
 					});
 
@@ -262,16 +262,16 @@ public class ConsumerView extends EventConnectionView {
 						                        + "If you say yes, a popup will open on users clients to warn about the imminent stop.");
         if (notify) {
 
-        	final AdministratorMessage msg = new AdministratorMessage();
-        	msg.setTitle("'"+bean.getConsumerName()+"' will shutdown.");
-        	msg.setMessage("'"+bean.getConsumerName()+"' is about to shutdown.\n\n"+
-        	               "Any runs corrently running may loose progress notification,\n"+
-        			       "however they should complete.\n\n"+
-        	               "Runs yet to be started will be picked up when\n"+
-        	               "'"+bean.getConsumerName()+"' restarts.");
-        	try {
-        		final IPublisher<AdministratorMessage> send = service.createPublisher(new URI(Activator.getJmsUri()), IEventService.ADMIN_MESSAGE_TOPIC);
-        		send.broadcast(msg);
+		final AdministratorMessage msg = new AdministratorMessage();
+		msg.setTitle("'"+bean.getConsumerName()+"' will shutdown.");
+		msg.setMessage("'"+bean.getConsumerName()+"' is about to shutdown.\n\n"+
+		               "Any runs corrently running may loose progress notification,\n"+
+				       "however they should complete.\n\n"+
+		               "Runs yet to be started will be picked up when\n"+
+		               "'"+bean.getConsumerName()+"' restarts.");
+		try {
+			final IPublisher<AdministratorMessage> send = service.createPublisher(new URI(Activator.getJmsUri()), IEventService.ADMIN_MESSAGE_TOPIC);
+			send.broadcast(msg);
 			} catch (Exception e) {
 				logger.error("Cannot notify of shutdown!", e);
 			}
@@ -440,7 +440,7 @@ public class ConsumerView extends EventConnectionView {
 				try {
 					final HeartbeatBean cbean = (HeartbeatBean)element;
 					long time = cbean.getLastAlive()-cbean.getConceptionTime();
-        			Format format = (time<HOUR_IN_MS) ? new SimpleDateFormat("mm'm' ss's'") : new SimpleDateFormat("dd'd' mm'm' ss's'");
+				Format format = (time<HOUR_IN_MS) ? new SimpleDateFormat("mm'm' ss's'") : new SimpleDateFormat("dd'd' mm'm' ss's'");
 					return format.format(new Date(time));
 				} catch (Exception e) {
 					return e.getMessage();

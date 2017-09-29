@@ -35,11 +35,11 @@ import org.eclipse.scanning.example.Services;
 /**
  * This device mimicks telling EPICS to do a constant velcity scan down a line.
  * It basically is like a 1D malcolm device running in a scan. This allows I18
- * to continue doing a CVscan with the new scanning for mapping by creating a 
+ * to continue doing a CVscan with the new scanning for mapping by creating a
  * device to do the cv scan.
- * 
+ *
  * It writes an HDF5 file for the line (actually random data)
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -47,7 +47,7 @@ public class ConstantVelocityDevice extends AbstractRunnableDevice<ConstantVeloc
 
 	private ILazyWriteableDataset context;
 	private IDataset              data;
-	
+
 	public ConstantVelocityDevice() throws ScanningException {
 		super(Services.getRunnableDeviceService()); // So that spring will work.
 		this.model = new ConstantVelocityModel();
@@ -69,13 +69,13 @@ public class ConstantVelocityDevice extends AbstractRunnableDevice<ConstantVeloc
 		final NXdetector detector = NexusNodeFactory.createNXdetector();
 		// We add 2 to the scan rank to include the image
 		int rank = info.getRank()+3; // scan rank plus three dimensions for the CV scan.
-		
+
 		context = detector.initializeLazyDataset(NXdetector.NX_DATA, rank, Double.class);
-		
+
 		// Setting chunking is a very good idea if speed is required.
 		int[] chunk = info.createChunk(model.getLineSize(), model.getChannelCount(), model.getSpectraSize());
 		context.setChunking(chunk);
-		
+
 		Attributes.registerAttributes(detector, this);
 
 		return detector;
@@ -85,7 +85,7 @@ public class ConstantVelocityDevice extends AbstractRunnableDevice<ConstantVeloc
 	public void run(IPosition pos) throws ScanningException, InterruptedException {
 		// TODO Real device would tell EPICS to run the line scan now.
 		// To simulate this, we create a line using the definition in the model
-		// EPICS might write an HDF5 file with this data rather than the data 
+		// EPICS might write an HDF5 file with this data rather than the data
 		// being in memory.
 		data = Random.rand(new int[]{model.getLineSize(), model.getChannelCount(), model.getSpectraSize()});
 	}
@@ -93,21 +93,21 @@ public class ConstantVelocityDevice extends AbstractRunnableDevice<ConstantVeloc
 	@Override
 	public boolean write(IPosition pos) throws ScanningException {
 		try {
-			// In a real CV Scan the write step could be to either link in the HDF5 or read in its data 
+			// In a real CV Scan the write step could be to either link in the HDF5 or read in its data
 			// and write a new record. Avoiding reading in the HDF5 being preferable.
 			final IScanSlice rslice = IScanRankService.getScanRankService().createScanSlice(pos, model.getLineSize(), model.getChannelCount(), model.getSpectraSize());
 			SliceND sliceND = new SliceND(context.getShape(), context.getMaxShape(), rslice.getStart(), rslice.getStop(), rslice.getStep());
 			context.setSlice(null, data, sliceND);
 
 		} catch (Exception e) {
-			throw new ScanningException(e.getMessage(), e); 
+			throw new ScanningException(e.getMessage(), e);
 		}
 
 		return true;
 	}
 
 	@Override
-	public void configure(ConstantVelocityModel model) throws ScanningException {	
+	public void configure(ConstantVelocityModel model) throws ScanningException {
 		super.configure(model);
 		setName(model.getName());
 	}

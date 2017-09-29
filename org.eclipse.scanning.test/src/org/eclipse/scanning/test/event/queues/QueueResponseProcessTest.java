@@ -39,76 +39,76 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class QueueResponseProcessTest {
-	
+
 	private DummyBean submDummy, statDummy;
 	private MockPublisher<QueueRequest> mockPub;
 	private MockConsumer<Queueable> mockCons;
 	private MockEventService mockEvServ;
-	
+
 	private String qRoot = IQueueService.DEFAULT_QUEUE_ROOT;
-	
+
 	private IQueueService qServ;
 	private IQueueControllerService qControl;
-	
+
 	private QueueRequest qReq, qAns;
 	private IResponseCreator<QueueRequest> qResponseCreator;
 	private IRequestHandler<QueueRequest> responseProc;
-	
+
 	@Before
 	public void setUp() throws EventException {
 		mockCons = new MockConsumer<>();
-		
+
 		//Make sure we have clear queues before we start
 		mockCons.clearQueue(mockCons.getStatusSetName());
 		mockCons.clearQueue(mockCons.getSubmitQueueName());
-		
+
 		//A bean to interrogate
 		submDummy = new DummyBean(); //Should have a uID & Status.NONE
 		mockCons.addToSubmitQueue(submDummy);
 		statDummy = new DummyBean();
 		mockCons.addToStatusSet(statDummy);
-		
+
 		//Set up all the underlying queue service infrastructure
 		mockPub = new MockPublisher<>(null, null);
 		mockEvServ = new MockEventService();
 		mockEvServ.setMockConsumer(mockCons);
 		ServicesHolder.setEventService(mockEvServ);
-		
+
 		//This is the REAL queue service, because the Mock is too complex
 		qServ = new QueueService("file:///foo/bar");
 		qServ.init();
 		ServicesHolder.setQueueService(qServ);
 		qControl = (IQueueControllerService) qServ;
 		ServicesHolder.setQueueControllerService(qControl);
-		
+
 		//Create the QueueResponseProcess creator
 		qResponseCreator = new QueueResponseCreator();
 	}
-	
+
 	@After
 	public void tearDown() throws EventException {
 		submDummy = null;
 		statDummy = null;
-		
+
 		qResponseCreator = null;
-		
+
 		qControl.stopQueueService(true);
 		qServ.disposeService();
 		qServ = null;
 		qControl = null;
-		
+
 		mockPub = null;
 		mockCons = null;
 		mockEvServ = null;
-		
+
 		ServicesHolder.setQueueService(null);
 		ServicesHolder.setQueueControllerService(null);
 		ServicesHolder.setEventService(null);
-		
+
 		qReq = null;
 		qAns = null;
 	}
-	
+
 	@Test
 	public void testResponseGetStringConfig() throws EventException {
 		//Expected values
@@ -116,52 +116,52 @@ public class QueueResponseProcessTest {
 		String realCommandTopicName = qRoot+IQueueService.COMMAND_TOPIC_SUFFIX;
 		String realHeartbeatTopicName = qRoot+IQueueService.HEARTBEAT_TOPIC_SUFFIX;
 		String realJobQueueID = qRoot+IQueueService.JOB_QUEUE_SUFFIX;
-		
+
 		/*
 		 * Get command set
 		 */
 		qReq = new QueueRequest();
 		qReq.setRequestType(QueueRequestType.COMMAND_SET);
-		
+
 		//Create the response & process the request; check answer is correct
 		responseProc = qResponseCreator.createResponder(qReq, mockPub);
 		qAns = responseProc.process(qReq);
 		assertEquals("Response command set is incorrect", realCommandSetName, qAns.getCommandSetName());
-		
+
 		/*
 		 * Get command topic
 		 */
 		qReq = new QueueRequest();
 		qReq.setRequestType(QueueRequestType.COMMAND_TOPIC);
-		
+
 		//Create the response & process the request; check answer is correct
 		responseProc = qResponseCreator.createResponder(qReq, mockPub);
 		qAns = responseProc.process(qReq);
 		assertEquals("Response command topic is incorrect", realCommandTopicName, qAns.getCommandTopicName());
-		
+
 		/*
 		 * Get heartbeat topic
 		 */
 		qReq = new QueueRequest();
 		qReq.setRequestType(QueueRequestType.HEARTBEAT_TOPIC);
-		
+
 		//Create the response & process the request; check answer is correct
 		responseProc = qResponseCreator.createResponder(qReq, mockPub);
 		qAns = responseProc.process(qReq);
 		assertEquals("Response heartbeat topic is incorrect", realHeartbeatTopicName, qAns.getHeartbeatTopicName());
-		
+
 		/*
 		 * Get job-queue ID
 		 */
 		qReq = new QueueRequest();
 		qReq.setRequestType(QueueRequestType.JOB_QUEUE_ID);
-		
+
 		//Create the response & process the request; check answer is correct
 		responseProc = qResponseCreator.createResponder(qReq, mockPub);
 		qAns = responseProc.process(qReq);
 		assertEquals("Response job-queue ID is incorrect", realJobQueueID, qAns.getJobQueueID());
 	}
-	
+
 	@Test
 	public void testResponseGetBeanStatus() throws EventException {
 		/*
@@ -169,7 +169,7 @@ public class QueueResponseProcessTest {
 		 */
 		submDummy.setStatus(Status.SUBMITTED);
 		statDummy.setStatus(Status.RUNNING);
-		
+
 		/*
 		 * Try getting a bean which is in the submit queue
 		 */
@@ -178,14 +178,14 @@ public class QueueResponseProcessTest {
 		qReq.setRequestType(QueueRequestType.BEAN_STATUS);
 		qReq.setQueueID(qRoot+IQueueService.JOB_QUEUE_SUFFIX);
 		qReq.setBeanID(submDummy.getUniqueId());
-		
+
 		//Create the response & process the request
 		responseProc = qResponseCreator.createResponder(qReq, mockPub);
 		qAns = responseProc.process(qReq);
-	
+
 		//Check response from server
 		assertEquals("Response has wrong bean status", Status.SUBMITTED, qAns.getBeanStatus());
-		
+
 		/*
 		 * Same as above, but get a bean which is in the status queue
 		 */
@@ -194,14 +194,14 @@ public class QueueResponseProcessTest {
 		qReq.setRequestType(QueueRequestType.BEAN_STATUS);
 		qReq.setQueueID(qRoot+IQueueService.JOB_QUEUE_SUFFIX);
 		qReq.setBeanID(statDummy.getUniqueId());
-		
+
 		//Create the response & process the request
 		responseProc = qResponseCreator.createResponder(qReq, mockPub);
 		qAns = responseProc.process(qReq);
 
 		//Check response from server
 		assertEquals("Response has wrong bean status", Status.RUNNING, qAns.getBeanStatus());
-		
+
 		/*
 		 * Same as above, but with a non-existent bean
 		 */
@@ -211,33 +211,33 @@ public class QueueResponseProcessTest {
 			qReq.setRequestType(QueueRequestType.BEAN_STATUS);
 			qReq.setQueueID(qRoot+IQueueService.JOB_QUEUE_SUFFIX);
 			qReq.setBeanID(bilbo.getUniqueId());
-			
+
 			//Create the response & process the request
 			responseProc = qResponseCreator.createResponder(qReq, mockPub);
 			qAns = responseProc.process(qReq);
-			
+
 			fail("Bean 'bilbo' shouldn't be findable in the consumer");
 		} catch (EventException evEx) {
 			//Expected
 		}
 	}
-	
+
 	@Test
 	public void testResponseQueueServiceStartStop() throws EventException {
 		//Initially QueueService should not be running
 		assertFalse("QueueService should not initially be active", qServ.isActive());
-		
+
 		//Create a request to start the queue service...
 		qReq = new QueueRequest();
 		qReq.setRequestType(QueueRequestType.SERVICE_START_STOP);
 		qReq.setStartQueueService(true);
 		responseProc = qResponseCreator.createResponder(qReq, mockPub);
 		qAns = responseProc.process(qReq);
-		
+
 		//...has it started?
 		assertTrue("QueueService should be active", qServ.isActive());
 		assertEquals("Request & answer should not have changed", qAns, qReq);
-		
+
 		//Create a request to restart the queue service...
 		qReq = new QueueRequest();
 		qReq.setRequestType(QueueRequestType.SERVICE_START_STOP);
@@ -245,23 +245,23 @@ public class QueueResponseProcessTest {
 		qReq.setStopQueueService(true);
 		responseProc = qResponseCreator.createResponder(qReq, mockPub);
 		qAns = responseProc.process(qReq);
-		
+
 		//...is it still started?
 		assertTrue("QueueService should be active", qServ.isActive());
 		assertEquals("Request & answer should not have changed", qAns, qReq);
-		
+
 		//Create a request to stop the queue service...
 		qReq = new QueueRequest();
 		qReq.setRequestType(QueueRequestType.SERVICE_START_STOP);
 		qReq.setStopQueueService(true);
 		responseProc = qResponseCreator.createResponder(qReq, mockPub);
 		qAns = responseProc.process(qReq);
-		
+
 		//...has it stopped?
 		assertFalse("QueueService should not be active", qServ.isActive());
 		assertEquals("Request & answer should not have changed", qAns, qReq);
 	}
-	
+
 	@Test
 	public void testResponseGetQueue() throws EventException {
 		//Create bean status request & post
@@ -276,7 +276,7 @@ public class QueueResponseProcessTest {
 		//Get the job-queue & compare it's config
 		IQueue<QueueBean> jobQueue = qServ.getJobQueue();
 		IQueue<? extends Queueable> remoteJobQueue = qControl.getQueue(qAns.getQueueID());
-		
+
 		assertEquals("CommandSetName different", jobQueue.getCommandSetName(), remoteJobQueue.getCommandSetName());
 		assertEquals("CommandTopicName different", jobQueue.getCommandTopicName(), remoteJobQueue.getCommandTopicName());
 		assertEquals("ConsumerID different", jobQueue.getConsumerID(), remoteJobQueue.getConsumerID());
@@ -287,7 +287,7 @@ public class QueueResponseProcessTest {
 		assertEquals("StatusTopicName different", jobQueue.getStatusTopicName(), remoteJobQueue.getStatusTopicName());
 		assertEquals("SubmissionTopicName different", jobQueue.getSubmissionQueueName(), remoteJobQueue.getSubmissionQueueName());
 		assertEquals("URI different", jobQueue.getURI(), remoteJobQueue.getURI());
-		
+
 		//Check that we can't access the consumer.
 		try {
 			remoteJobQueue.getConsumer();

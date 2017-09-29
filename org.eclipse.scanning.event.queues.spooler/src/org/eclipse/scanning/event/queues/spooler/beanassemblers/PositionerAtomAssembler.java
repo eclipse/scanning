@@ -18,10 +18,10 @@ public final class PositionerAtomAssembler extends AbstractBeanAssembler<Positio
 		PositionerAtom atom = new PositionerAtom(model.getShortName(), false);
 		atom.setBeamline(model.getBeamline());
 		atom.setRunTime(model.getRunTime());
-		
+
 		/*
-		 * Loop through the positionerConfig in the model replacing any 
-		 * targets which have references in the localValues or the 
+		 * Loop through the positionerConfig in the model replacing any
+		 * targets which have references in the localValues or the
 		 * globalValues (see {@link QueueBeanFactory})
 		 */
 		model.getPositionerNames().stream().forEach(dev -> atom.addPositioner(dev, model.getPositionerTarget(dev)));

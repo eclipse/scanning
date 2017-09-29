@@ -92,22 +92,22 @@ public abstract class AbstractConsumerServlet<B extends StatusBean> implements I
 	@PostConstruct  // Requires spring 3 or better
     public void connect() throws EventException, URISyntaxException {
 
-    	consumer = eventService.createConsumer(new URI(getBroker()), getSubmitQueue(), getStatusSet(), getStatusTopic(), getHeartbeatTopic(), getKillTopic());
-    	consumer.setName(getName());
-    	consumer.setDurable(isDurable());
-    	consumer.setRunner(new DoObjectCreator<B>());
-    	consumer.setPauseOnStart(pauseOnStart);
+	consumer = eventService.createConsumer(new URI(getBroker()), getSubmitQueue(), getStatusSet(), getStatusTopic(), getHeartbeatTopic(), getKillTopic());
+	consumer.setName(getName());
+	consumer.setDurable(isDurable());
+	consumer.setRunner(new DoObjectCreator<B>());
+	consumer.setPauseOnStart(pauseOnStart);
 
-    	// Purge old jobs, we wouldn't want those running.
-    	// This suggests that DAQ should have one
-    	// AbstractConsumerServlet for each queue or when
-    	// another one starts, it might purge the old one.
-    	// Use setPurgeQueue(false) to stop it.
-     	if (isPurgeQueue()) consumer.cleanQueue(getStatusSet());
+	// Purge old jobs, we wouldn't want those running.
+	// This suggests that DAQ should have one
+	// AbstractConsumerServlet for each queue or when
+	// another one starts, it might purge the old one.
+	// Use setPurgeQueue(false) to stop it.
+	if (isPurgeQueue()) consumer.cleanQueue(getStatusSet());
 
-     	consumer.start();
-     	isConnected = true;
-     	logger.info("Started "+getClass().getSimpleName());
+	consumer.start();
+	isConnected = true;
+	logger.info("Started "+getClass().getSimpleName());
 
    }
 
@@ -124,7 +124,7 @@ public abstract class AbstractConsumerServlet<B extends StatusBean> implements I
 	@PreDestroy
     public void disconnect() throws EventException {
 		if (!isConnected) return; // Nothing to disconnect
-    	consumer.disconnect();
+	consumer.disconnect();
     }
 
 	public IConsumer<B> getConsumer() {

@@ -30,13 +30,13 @@ public class ScanningTestClassRegistry implements IClassRegistry {
 	private static final Map<String, Class<?>> idToClassMap;
 	static {
 		Map<String, Class<?>> tmp = new HashMap<String, Class<?>>();
-		
+
 		// scan.mock
 		registerClass(tmp, AnnotatedMockDetectorModel.class);
 		registerClass(tmp, MockDetectorModel.class);
-		registerClass(tmp, MockWritingMandlebrotModel.class);	
+		registerClass(tmp, MockWritingMandlebrotModel.class);
 		registerClass(tmp, MapMalcolmModel.class);
-		
+
 		// event.queues.dummy
 		registerClass(tmp, DummyAtom.class);
 		registerClass(tmp, DummyBean.class);
@@ -48,9 +48,9 @@ public class ScanningTestClassRegistry implements IClassRegistry {
 
 		idToClassMap = tmp;
 	}
-	
+
 	public ScanningTestClassRegistry() {
-		
+
 	}
 	public ScanningTestClassRegistry(Class<?>... extras) {
 		if (extras!=null) {
@@ -59,7 +59,7 @@ public class ScanningTestClassRegistry implements IClassRegistry {
 			}
 		}
 	}
-	
+
 	private static void registerClass(Map<String, Class<?>> map, Class<?> clazz) {
 		map.put(clazz.getSimpleName(), clazz);
 	}
