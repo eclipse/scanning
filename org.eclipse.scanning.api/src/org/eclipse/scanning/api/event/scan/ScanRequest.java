@@ -145,7 +145,7 @@ public class ScanRequest<T> implements Serializable {
 	}
 
 	public void setMonitorNames(Collection<String> monitorNames) {
-		logger.info("setMonitorNames({}) was {} ({})", monitorNames, this.monitorNames, this);
+		logger.trace("setMonitorNames({}) was {} ({})", monitorNames, this.monitorNames, this);
 		this.monitorNames = monitorNames;
 	}
 
