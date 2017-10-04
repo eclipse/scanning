@@ -21,12 +21,21 @@ package org.eclipse.scanning.api.scan;
 public interface IFilePathService {
 
 	/**
-	 * Determine and return the next file path to write to.
+	 * Determine and return the next file path to write to. The file will be in the default output directory.
+	 * @param template for instance the sample name, may be null or empty string if no template is required.
 	 * @return next file path
-	 * @param template, for instance the sample name, may be null or empty string if no template is required.
 	 * @throws Exception if the next path cannot be calculated for any reason
 	 */
 	String getNextPath(String template) throws Exception;
+
+	/**
+	 * Determine and return the next file path to write to within the given output directory.
+	 * @param dir directory to create the file in
+	 * @param template for instance the sample name, may be null or empty string if no template is required
+	 * @return next file path
+	 * @throws Exception if the next path cannot be calculated for any reason
+	 */
+	String getNextPath(String dir, String template) throws Exception;
 
 	/**
 	 *

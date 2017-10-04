@@ -31,6 +31,13 @@ public class MockFilePathService implements IFilePathService {
 	}
 
 	@Override
+	public String getNextPath(String dir, String template) throws Exception {
+		if (template==null) template = "";
+		mostRecentPath = getUnique(new File(dir), "Scan-"+template, "nxs").getAbsolutePath();
+		return mostRecentPath;
+	}
+
+	@Override
 	public String createFolderForLinkedFiles(String filename) throws Exception {
 		String bareFilename = getBareFilename(filename);
 		File newDir = new File(dir, bareFilename);
