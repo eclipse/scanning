@@ -98,6 +98,12 @@ public interface IFilePathService {
 	String getProcessedFilesDir();
 
 	/**
+	 * Returns the location of the directory where processing file live.
+	 * @return location of directory containing processing files
+	 */
+	String getProcessingDir();
+
+	/**
 	 * Returns the location of persistence directory. This is the location of a global read/write
 	 * directory where persistent files can be stored.
 	 * @return location of persistence directory.

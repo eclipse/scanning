@@ -109,6 +109,11 @@ public class MockFilePathService implements IFilePathService {
 	}
 
 	@Override
+	public String getProcessingDir() {
+		return new File(dir, "processing").toString();
+	}
+
+	@Override
 	public String getPersistenceDir() {
 		return new File(dir, "var").toString();
 	}
