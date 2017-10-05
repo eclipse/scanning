@@ -92,21 +92,22 @@ class _Positioner extends AbstractRemoteService implements IPositioner {
 		}
 	}
 
+	@SuppressWarnings("squid:S1168")
 	@Override
-	public List<IScannable<?>> getMonitors() throws ScanningException {
+	public List<IScannable<?>> getMonitorsPerPoint() throws ScanningException {
 		// TODO Use the _Scannable which is a remote scannable connection.
 		return null;
 	}
 
 	@Override
-	public void setMonitors(List<IScannable<?>> monitors) {
+	public void setMonitorsPerPoint(List<IScannable<?>> monitors) {
 		// TODO Use the _Scannable which is a remote scannable connection.
 		throw new UnsupportedOperationException("Monitors may not be set on a remote positioner!");
 	}
 
 	@Override
-	public void setMonitors(IScannable<?>... monitors) {
-		setMonitors(Arrays.asList(monitors));
+	public void setMonitorsPerPoint(IScannable<?>... monitor) {
+		setMonitorsPerPoint(Arrays.asList(monitor));
 	}
 
 	@Override

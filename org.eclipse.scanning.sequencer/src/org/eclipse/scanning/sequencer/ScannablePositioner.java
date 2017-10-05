@@ -185,19 +185,19 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 	}
 
 	@Override
-	public List<IScannable<?>> getMonitors() {
+	public List<IScannable<?>> getMonitorsPerPoint() {
 		return monitors;
 	}
 
 	@Override
-	public void setMonitors(List<IScannable<?>> monitors) {
-		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
+	public void setMonitorsPerPoint(List<IScannable<?>> monitors) {
+		logger.info("setMonitorsPerPoint({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = monitors;
 	}
 
 	@Override
-	public void setMonitors(IScannable<?>... monitors) {
-		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
+	public void setMonitorsPerPoint(IScannable<?>... monitors) {
+		logger.info("setMonitorsPerPoint({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = Arrays.asList(monitors);
 	}
 

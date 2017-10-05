@@ -175,7 +175,7 @@ public abstract class AbstractAcquisitionTest {
 	}
 
 	protected <T> IDeviceController createTestScanner(IScannable<?> monitor, IRunnableDevice<T> device, T dmodel, int dims) throws Exception {
-		return createTestScanner(monitor, device, dmodel, dims, null, null);
+		return createTestScanner(monitor, null, device, dmodel, dims, null, null);
 	}
 
 	protected <T> IDeviceController createTestScanner(IRunnableDevice<T> device, double exposureTime, List<String> axisNames, String filePath) throws Exception {
@@ -183,10 +183,11 @@ public abstract class AbstractAcquisitionTest {
 		if (device.getModel()!=null && device.getModel() instanceof IDetectorModel) {
 			((IDetectorModel)device.getModel()).setExposureTime(exposureTime);
 		}
-		return createTestScanner(null, device, null, 2, axisNames, filePath);
+		return createTestScanner(null, null, device, null, 2, axisNames, filePath);
 	}
 
-    private <T> IDeviceController createTestScanner(IScannable<?>     monitor,
+    private <T> IDeviceController createTestScanner(IScannable<?>     monitorPerPoint,
+		                                         IScannable<?>     monitorPerScan,
 		                                         IRunnableDevice<T> device,
 		                                         T dmodel,
 		                                         int dims,
@@ -233,7 +234,8 @@ public abstract class AbstractAcquisitionTest {
 
 		if (device==null) device = (IRunnableDevice<T>)detector;
 		smodel.setDetectors(device);
-		if (monitor!=null) smodel.setMonitors(monitor);
+		smodel.setMonitorsPerPoint(monitorPerPoint);
+		smodel.setMonitorsPerScan(monitorPerScan);
 
 		// Create a scan and run it without publishing events
 		// Create a scan and run it without publishing events

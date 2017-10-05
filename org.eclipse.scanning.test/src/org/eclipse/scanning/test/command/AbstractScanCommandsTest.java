@@ -409,7 +409,7 @@ public abstract class AbstractScanCommandsTest extends AbstractJythonTest {
 
 		final ScanRequest<?> req = new ScanRequest<>();
 		req.setCompoundModel(new CompoundModel(new StepModel("fred", 0, 9, 1)));
-		req.setMonitorNames(Arrays.asList("monitor"));
+		req.setMonitorNamesPerPoint(Arrays.asList("monitor"));
 
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");

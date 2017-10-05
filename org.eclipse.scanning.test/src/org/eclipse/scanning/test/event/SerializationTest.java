@@ -216,7 +216,8 @@ public class SerializationTest {
 
 		final ScanRequest<?> req = new ScanRequest<IROI>();
 		req.setCompoundModel(new CompoundModel(new StepModel("fred", 0, 9, 1)));
-		req.setMonitorNames(Arrays.asList("monitor", "metadata"));
+		req.setMonitorNamesPerPoint(Arrays.asList("monitor"));
+		req.setMonitorNamesPerScan(Arrays.asList("metadata"));
 
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
@@ -250,7 +251,7 @@ public class SerializationTest {
 
 		IROI roi = new RectangularROI(0, 0, 3, 3, 0);
 		req.setCompoundModel(new CompoundModel(gmodel, roi));
-		req.setMonitorNames(Arrays.asList("monitor"));
+		req.setMonitorNamesPerPoint(Arrays.asList("monitor"));
 
 		final File tmp = File.createTempFile("scan_servlet_test", ".nxs");
 		tmp.deleteOnExit();

@@ -229,7 +229,7 @@ public class QueueServiceScanServletIntegrationTest extends BrokerTest {
 		dmodel.setExposureTime(0.001);
 		Map<String, Object> detectors = new HashMap<>();
 		detectors.put("detector", dmodel);
-		ScanAtom scAt = new ScanAtom("testScan", paths, detectors, null);
+		ScanAtom scAt = new ScanAtom("testScan", paths, detectors, null, null);
 
 		//... and an enclosing SubTaskAtom...
 		SubTaskAtom stAt = new SubTaskAtom(null, "testSubTask");

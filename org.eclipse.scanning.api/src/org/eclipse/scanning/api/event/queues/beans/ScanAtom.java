@@ -99,12 +99,14 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 	 *        IRunnableDeviceService.getRunnableDevice(detector_name)
 	 * @param monitors List<String> names of monitors to use during scan
 	 */
-	public ScanAtom(String scShrtNm, List<IScanPathModel> pathModels, Map<String,Object> detectorModels, Collection<String> monitors) {
+	public ScanAtom(String scShrtNm, List<IScanPathModel> pathModels, Map<String,Object> detectorModels,
+			Collection<String> monitorNamesPerPoint, Collection<String> monitorNamesPerScan) {
 		this(scShrtNm, false);
 		scanReq = new ScanRequest<>();
 		scanReq.setCompoundModel(new CompoundModel<>(pathModels));
 		scanReq.setDetectors(detectorModels);
-		scanReq.setMonitorNames(monitors);
+		scanReq.setMonitorNamesPerPoint(monitorNamesPerPoint);
+		scanReq.setMonitorNamesPerScan(monitorNamesPerScan);
 	}
 
 	/**
@@ -128,6 +130,7 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		monitorsModel = monitors;
 	}
 
+	@SuppressWarnings("squid:S1452")
 	public ScanRequest<?> getScanReq() {
 		return scanReq;
 	}
@@ -209,6 +212,7 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		return result;
 	}
 
+	@SuppressWarnings("squid:S3776")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

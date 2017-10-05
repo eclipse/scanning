@@ -119,7 +119,7 @@ public class MonitorTest extends NexusTest {
 		List<String> perScan = Arrays.asList("z", "monitor1");
 		for (String monName : perScan) connector.getScannable(monName).setMonitorRole(MonitorRole.PER_SCAN);
 
-		IRunnableDevice<ScanModel> scanner = runScan(Arrays.asList("monitor0", "monitor1", "monitor3", "z"), 5);
+		IRunnableDevice<ScanModel> scanner = runScan(Arrays.asList("monitor3", "monitor0"), Arrays.asList("monitor1", "z"), 5);
 
         assertPerPointMonitors(scanner, perPoint, 5);
         assertPerScanMonitors(scanner, perScan);
@@ -151,16 +151,19 @@ public class MonitorTest extends NexusTest {
 		final List<String>        monitors = Arrays.asList("monitor1", "monitor2");
 		for (String monName : monitors) connector.getScannable(monName).setMonitorRole(mrole);
 
-		IRunnableDevice<ScanModel> scanner = runScan(monitors, shape);
-
+		IRunnableDevice<ScanModel> scanner;
+		if (mrole == MonitorRole.PER_POINT) {
+			scanner = runScan(monitors, null, shape);
+		} else {
+			scanner = runScan(null, monitors, shape);
+		}
 		// Check we reached ready (it will normally throw an exception on error)
         checkNexusFile(scanner, monitors, testedRole, shape); // Step model is +1 on the size
 	}
 
-	private IRunnableDevice<ScanModel>runScan(List<String> monitors, int... shape) throws Exception {
+	private IRunnableDevice<ScanModel>runScan(List<String> monitorsPerPoint, List<String> monitorsPerScan, int... shape) throws Exception {
 
-
-		IRunnableDevice<ScanModel> scanner = createNestedStepScanWithMonitors(detector, monitors, shape); // Outer scan of another scannable, for instance temp.
+		IRunnableDevice<ScanModel> scanner = createNestedStepScanWithMonitors(detector, monitorsPerPoint, monitorsPerScan, shape); // Outer scan of another scannable, for instance temp.
 		assertScanNotFinished(getNexusRoot(scanner).getEntry());
 
 		scanner.run(null);
@@ -274,7 +277,7 @@ public class MonitorTest extends NexusTest {
 		NXentry entry = rootNode.getEntry();
 		NXinstrument instrument = entry.getInstrument();
 
-		Collection<IScannable<?>> perScan  = scanner.getModel().getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN).collect(Collectors.toList());
+		Collection<IScannable<?>> perScan  = scanner.getModel().getMonitorsPerScan();
 
 		// check each metadata scannable has been written correctly
 		for (IScannable<?> scannable : perScan) {
@@ -300,7 +303,7 @@ public class MonitorTest extends NexusTest {
 	}
 
 
-	private IRunnableDevice<ScanModel> createNestedStepScanWithMonitors(final IRunnableDevice<?> detector, List<String> monitorNames, int... size) throws Exception {
+	private IRunnableDevice<ScanModel> createNestedStepScanWithMonitors(final IRunnableDevice<?> detector, List<String> monitorNamesPerPoint, List<String> monitorNamesPerScan, int... size) throws Exception {
 
 		// Create scan points for a grid and make a generator
 		StepModel smodel;
@@ -336,7 +339,8 @@ public class MonitorTest extends NexusTest {
 		final ScanModel  scanModel = new ScanModel();
 		scanModel.setPositionIterable(gen);
 		scanModel.setDetectors(detector);
-		scanModel.setMonitors(createMonitors(monitorNames));
+		scanModel.setMonitorsPerPoint(createMonitors(monitorNamesPerPoint));
+		scanModel.setMonitorsPerScan(createMonitors(monitorNamesPerScan));
 
 		// Create a file to scan into.
 		scanModel.setFilePath(output.getAbsolutePath());
@@ -361,6 +365,7 @@ public class MonitorTest extends NexusTest {
 	}
 
 	private List<IScannable<?>> createMonitors(List<String> monitorNames) throws ScanningException {
+		if (monitorNames == null) return null;
 		final List<IScannable<?>> ret = new ArrayList<IScannable<?>>(monitorNames.size());
 		for (String name : monitorNames) ret.add(connector.getScannable(name));
 		return ret;

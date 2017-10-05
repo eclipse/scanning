@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.eclipse.scanning.api.IScannable;
+import org.eclipse.scanning.api.MonitorRole;
 import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.annotation.scan.AnnotationManager;
 import org.eclipse.scanning.api.annotation.scan.PostConfigure;
@@ -32,6 +33,7 @@ import org.eclipse.scanning.api.device.IDeviceController;
 import org.eclipse.scanning.api.device.IPausableDevice;
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
+import org.eclipse.scanning.api.device.models.DeviceRole;
 import org.eclipse.scanning.api.device.models.IMalcolmModel;
 import org.eclipse.scanning.api.device.models.MalcolmModel;
 import org.eclipse.scanning.api.event.EventException;
@@ -226,31 +228,43 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 	 * @throws Exception
 	 */
 	private void checkMonitors(IPointGenerator<?> gen) throws Exception {
-		Collection<String> monitorNames = bean.getScanRequest().getMonitorNames();
+		Collection<String> monitorNamesPerPoint = bean.getScanRequest().getMonitorNamesPerPoint();
+		Collection<String> monitorNamesPerScan = bean.getScanRequest().getMonitorNamesPerScan();
 
 		// We set any activated monitors in the request if none have been specified.
 		if (Boolean.getBoolean("org.eclipse.scanning.server.useDefaultActivatedMonitors")) {
-			if (bean.getScanRequest().getMonitorNames()==null) {
-				monitorNames = getMonitors();
-				logger.debug("Using default monitors: {}", monitorNames);
+			if (monitorNamesPerPoint == null) {
+				monitorNamesPerPoint = getMonitors(MonitorRole.PER_POINT);
+				logger.debug("Using default per point monitors: {}", monitorNamesPerPoint);
+			}
+			if (monitorNamesPerScan == null) {
+				monitorNamesPerScan = getMonitors(MonitorRole.PER_SCAN);
+				logger.debug("Using default per scan monitors: {}", monitorNamesPerScan);
 			}
 		}
 
-		if (monitorNames != null) {
+		if (monitorNamesPerPoint != null) {
 			// remove any monitors
 			Collection<String> scannableNames = getScannableNames(gen);
-			monitorNames = monitorNames.stream().filter(mon -> !scannableNames.contains(mon)).collect(Collectors.toList());
+			monitorNamesPerPoint = monitorNamesPerPoint.stream().filter(mon -> !scannableNames.contains(mon)).collect(Collectors.toList());
 
-			bean.getScanRequest().setMonitorNames(monitorNames);
+			bean.getScanRequest().setMonitorNamesPerPoint(monitorNamesPerPoint);
+		}
+		if (monitorNamesPerScan != null) {
+			// remove any monitors
+			Collection<String> scannableNames = getScannableNames(gen);
+			monitorNamesPerScan = monitorNamesPerScan.stream().filter(mon -> !scannableNames.contains(mon)).collect(Collectors.toList());
+
+			bean.getScanRequest().setMonitorNamesPerScan(monitorNamesPerScan);
 		}
 	}
 
-	private Collection<String> getMonitors() throws Exception {
+	private Collection<String> getMonitors(MonitorRole monitorRole) throws Exception {
 
 		final Collection<DeviceInformation<?>> scannables = Services.getConnector().getDeviceInformation();
 		final List<String> ret = new ArrayList<String>();
 		for (DeviceInformation<?> info : scannables) {
-			if (info.isActivated()) ret.add(info.getName());
+			if (info.isActivated() && info.getMonitorRole() == monitorRole) ret.add(info.getName());
 		}
 		return ret;
 	}
@@ -357,7 +371,8 @@ public class ScanProcess implements IConsumerProcess<ScanBean> {
 
 			scanModel.setDetectors(getDetectors(req.getDetectors()));
 			scanModel.setScannables(getScannables(getScannableNames(generator)));
-			scanModel.setMonitors(getScannables(req.getMonitorNames()));
+			scanModel.setMonitorsPerPoint(getScannables(req.getMonitorNamesPerPoint()));
+			scanModel.setMonitorsPerScan(getScannables(req.getMonitorNamesPerScan()));
 			scanModel.setScanMetadata(req.getScanMetadata());
 			scanModel.setBean(bean);
 

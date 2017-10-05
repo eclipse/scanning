@@ -78,7 +78,8 @@ public interface IPositioner extends IPositionListenable {
 	 * @return monitors
 	 * @throws ScanningException
 	 */
-	List<IScannable<?>> getMonitors()  throws ScanningException;
+	@SuppressWarnings("squid:S1452")
+	List<IScannable<?>> getMonitorsPerPoint()  throws ScanningException;
 
 	/**
 	 * Monitors are a set of scannables which will have setPosition(null, IPosition) called and
@@ -89,7 +90,7 @@ public interface IPositioner extends IPositionListenable {
      *
 	 * @param monitors
 	 */
-	void setMonitors(List<IScannable<?>> monitors);
+	void setMonitorsPerPoint(List<IScannable<?>> monitors);
 
 	/**
 	 * Monitors are a set of scannables which will have setPosition(null, IPosition) called and
@@ -100,7 +101,7 @@ public interface IPositioner extends IPositionListenable {
      *
 	 * @param monitors
 	 */
-	void setMonitors(IScannable<?>... monitors);
+	void setMonitorsPerPoint(IScannable<?>... monitors);
 
 	void setScannables(List<IScannable<?>> scannables);
 

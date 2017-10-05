@@ -174,6 +174,7 @@ public abstract class AbstractServletTest extends BrokerTest {
 		}
 	}
 
+	@SuppressWarnings("sonar:S1192")
 	protected ScanBean createStepScan() throws IOException {
 		// We write some pojos together to define the scan
 		final ScanBean bean = new ScanBean();
@@ -181,7 +182,7 @@ public abstract class AbstractServletTest extends BrokerTest {
 
 		final ScanRequest<?> req = new ScanRequest<>();
 		req.setCompoundModel(new CompoundModel(new StepModel("fred", 0, 9, 1)));
-		req.setMonitorNames(Arrays.asList("monitor"));
+		req.setMonitorNamesPerPoint(Arrays.asList("monitor"));
 
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
@@ -220,7 +221,7 @@ public abstract class AbstractServletTest extends BrokerTest {
 		}
 		models.add(gmodel);
 		req.setCompoundModel(new CompoundModel(models.toArray(new IScanPathModel[models.size()])));
-		req.setMonitorNames(Arrays.asList("monitor"));
+		req.setMonitorNamesPerPoint(Arrays.asList("monitor"));
 
 		final File tmp = File.createTempFile("scan_servlet_test", ".nxs");
 		tmp.deleteOnExit();
@@ -266,7 +267,7 @@ public abstract class AbstractServletTest extends BrokerTest {
 		gmodel.setSlowAxisName("yNex");
 
 		req.setCompoundModel(new CompoundModel(gmodel));
-		req.setMonitorNames(Arrays.asList("monitor"));
+		req.setMonitorNamesPerPoint(Arrays.asList("monitor"));
 
 		final File tmp = File.createTempFile("scan_servlet_test", ".nxs");
 		tmp.deleteOnExit();

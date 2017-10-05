@@ -78,13 +78,14 @@ public class ScanModel {
 	private List<IScannable<?>> scannables;
 
 	/**
-	 * A set of scannables may optionally be 'readout' during
+	 * Sets of scannables may optionally be 'readout' during
 	 * the scan without being told a value for their location.
 	 * They have {@code setPosition(null, IPosition)} called and should
 	 * ensure that if their value is {@code null}, they do not move but
 	 * still readout position
 	 */
-	private List<IScannable<?>> monitors;
+	private List<IScannable<?>> monitorsPerPoint;
+	private List<IScannable<?>> monitorsPerScan;
 
 	/**
 	 * Scan metadata that is not produced by a particular device, e.g.
@@ -123,7 +124,9 @@ public class ScanModel {
 		result = prime * result
 				+ ((filePath == null) ? 0 : filePath.hashCode());
 		result = prime * result
-				+ ((monitors == null) ? 0 : monitors.hashCode());
+				+ ((monitorsPerPoint == null) ? 0 : monitorsPerPoint.hashCode());
+		result = prime * result
+				+ ((monitorsPerScan == null) ? 0 : monitorsPerScan.hashCode());
 		result = prime
 				* result
 				+ ((positionIterable == null) ? 0 : positionIterable.hashCode());
@@ -132,6 +135,7 @@ public class ScanModel {
 		return result;
 	}
 
+	@SuppressWarnings("squid:S3776")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -156,10 +160,15 @@ public class ScanModel {
 				return false;
 		} else if (!filePath.equals(other.filePath))
 			return false;
-		if (monitors == null) {
-			if (other.monitors != null)
+		if (monitorsPerPoint == null) {
+			if (other.monitorsPerPoint != null)
 				return false;
-		} else if (!monitors.equals(other.monitors))
+		} else if (!monitorsPerPoint.equals(other.monitorsPerPoint))
+			return false;
+		if (monitorsPerScan == null) {
+			if (other.monitorsPerScan != null)
+				return false;
+		} else if (!monitorsPerScan.equals(other.monitorsPerScan))
 			return false;
 		if (scanMetadata == null) {
 			if (other.scanMetadata != null)
@@ -193,6 +202,7 @@ public class ScanModel {
 		this.positionIterable = positionIterator;
 	}
 
+	@SuppressWarnings("squid:S1452")
 	public List<IScannable<?>> getScannables() {
 		return scannables;
 	}
@@ -201,6 +211,7 @@ public class ScanModel {
 		this.scannables = scannables;
 	}
 
+	@SuppressWarnings("squid:S1452")
 	public List<IRunnableDevice<?>> getDetectors() {
 		if (detectors == null) {
 			return Collections.emptyList();
@@ -216,22 +227,44 @@ public class ScanModel {
 		this.detectors = Arrays.asList(detectors);
 	}
 
-	public List<IScannable<?>> getMonitors() {
-		if (monitors == null) {
+	@SuppressWarnings("squid:S1452")
+	public List<IScannable<?>> getMonitorsPerPoint() {
+		if (monitorsPerPoint == null) {
 			return Collections.emptyList();
 		}
-		return monitors;
+		return monitorsPerPoint;
 	}
 
-	public void setMonitors(List<IScannable<?>> monitors) {
-		logger.info("setMonitors({}) was {} ({})", monitors, this.monitors, this);
-		this.monitors = monitors;
+	public void setMonitorsPerPoint(List<IScannable<?>> monitors) {
+		logger.info("setMonitorsPerPoint({}) was {} ({})", monitors, this.monitorsPerPoint, this);
+		this.monitorsPerPoint = monitors;
 	}
 
-	public void setMonitors(IScannable<?>... monitors) {
-		logger.info("setMonitors({}) was {} ({})", this, monitors, this.monitors, this);
-		this.monitors = new ArrayList<>(Arrays.asList(monitors));
-		for (Iterator<IScannable<?>> iterator = this.monitors.iterator(); iterator.hasNext();) {
+	public void setMonitorsPerPoint(IScannable<?>... monitors) {
+		logger.info("setMonitorsPerPoint({}) was {} ({})", this, monitors, this.monitorsPerPoint, this);
+		this.monitorsPerPoint = new ArrayList<>(Arrays.asList(monitors));
+		for (Iterator<IScannable<?>> iterator = this.monitorsPerPoint.iterator(); iterator.hasNext();) {
+			if (iterator.next()==null) iterator.remove();
+		}
+	}
+
+	@SuppressWarnings("squid:S1452")
+	public List<IScannable<?>> getMonitorsPerScan() {
+		if (monitorsPerScan == null) {
+			return Collections.emptyList();
+		}
+		return monitorsPerScan;
+	}
+
+	public void setMonitorsPerScan(List<IScannable<?>> monitors) {
+		logger.info("setMonitorsPerScan({}) was {} ({})", monitors, this.monitorsPerScan, this);
+		this.monitorsPerScan = monitors;
+	}
+
+	public void setMonitorsPerScan(IScannable<?>... monitors) {
+		logger.info("setMonitorsPerScan({}) was {} ({})", monitors, this.monitorsPerScan, this);
+		this.monitorsPerScan = new ArrayList<>(Arrays.asList(monitors));
+		for (Iterator<IScannable<?>> iterator = this.monitorsPerScan.iterator(); iterator.hasNext();) {
 			if (iterator.next()==null) iterator.remove();
 		}
 	}
@@ -262,6 +295,7 @@ public class ScanModel {
 		this.scanMetadata.add(scanMetadata);
 	}
 
+	@SuppressWarnings("squid:S1452")
 	public List<?> getAnnotationParticipants() {
 		if (annotationParticipants == null) {
 			return Collections.emptyList();
@@ -284,9 +318,9 @@ public class ScanModel {
 	@Override
 	public String toString() {
 		return "ScanModel [filePath=" + filePath + ", positionIterable=" + positionIterable + ", detectors=" + detectors
-				+ ", bean=" + bean + ", scannables=" + scannables + ", monitors=" + monitors + ", scanMetadata="
-				+ scanMetadata + ", annotationParticipants=" + annotationParticipants + ", scanInformation="
-				+ scanInformation + "]";
+				+ ", bean=" + bean + ", scannables=" + scannables + ", monitorsPerPoint=" + monitorsPerPoint
+				+ ", monitorsPerScan=" + monitorsPerScan + ", scanMetadata=" + scanMetadata +
+				", annotationParticipants=" + annotationParticipants + ", scanInformation=" + scanInformation + "]";
 	}
 
 }

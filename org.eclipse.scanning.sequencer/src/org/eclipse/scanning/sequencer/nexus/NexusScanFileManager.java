@@ -234,23 +234,20 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 		return solsticeScanMonitor;
 	}
 
+	@SuppressWarnings("squid:S1452")
 	protected Map<ScanRole, Collection<INexusDevice<?>>> extractNexusDevices(ScanModel model) throws ScanningException {
 
 		Map<ScanRole, Collection<INexusDevice<?>>> nexusDevices = new EnumMap<>(ScanRole.class);
 		nexusDevices.put(ScanRole.DETECTOR,  getNexusDevices(model.getDetectors()));
 		nexusDevices.put(ScanRole.SCANNABLE, getNexusDevices(model.getScannables()));
-
-		if (model.getMonitors()!=null) {
-			Collection<IScannable<?>> perPoint = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT).collect(Collectors.toList());
-			Collection<IScannable<?>> perScan  = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN).collect(Collectors.toList());
-			nexusDevices.put(ScanRole.MONITOR_PER_POINT,   getNexusDevices(perPoint));
-			nexusDevices.put(ScanRole.MONITOR_PER_SCAN,  getNexusDevices(perScan));
-		}
+		nexusDevices.put(ScanRole.MONITOR_PER_POINT, getNexusDevices(model.getMonitorsPerPoint()));
+		nexusDevices.put(ScanRole.MONITOR_PER_SCAN, getNexusDevices(model.getMonitorsPerScan()));
 		nexusDevices.put(ScanRole.NONE, Collections.emptyList());
 
 		return nexusDevices;
 	}
 
+	@SuppressWarnings({"squid:S1452", "squid:S3776"})
 	protected Map<ScanRole, List<NexusObjectProvider<?>>> extractNexusProviders() throws ScanningException {
 		Map<ScanRole, List<NexusObjectProvider<?>>> nexusObjectProviders = new EnumMap<>(ScanRole.class);
 		for (ScanRole deviceType: ScanRole.values()) {
@@ -298,8 +295,7 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 		final Set<String> perScanMonitorNames = new HashSet<>();
 
 		// add the names of the metadata scannables already in the model
-		Set<String> existingPerScanMonitorNames = model.getMonitors().stream()
-				.filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN)
+		Set<String> existingPerScanMonitorNames = model.getMonitorsPerScan().stream()
 				.map(m -> m.getName()).collect(Collectors.toSet());
 		perScanMonitorNames.addAll(existingPerScanMonitorNames);
 
@@ -333,11 +329,11 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 		// if there are any names of scannables to add, get the scannables for them,
 		// setting them to be per scan monitors
 		if (!scannablesToAdd.isEmpty()) {
-			final List<IScannable<?>> monitors = new ArrayList<>(model.getMonitors());
-			monitors.addAll(perScanMonitorNames.stream()
+			final List<IScannable<?>> monitorsPerScan = new ArrayList<>(model.getMonitorsPerScan());
+			monitorsPerScan.addAll(perScanMonitorNames.stream()
 				.map(name -> getPerScanMonitor(name)).collect(Collectors.toList()));
 
-			model.setMonitors(monitors);
+			model.setMonitorsPerScan(monitorsPerScan);
 		}
 	}
 
@@ -383,8 +379,8 @@ public class NexusScanFileManager implements INexusScanFileManager, IPositionLis
 
 		nexusScanInfo.setDetectorNames(getDeviceNames(scanModel.getDetectors()));
 
-		Collection<IScannable<?>> perPoint = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_POINT).collect(Collectors.toList());
-		Collection<IScannable<?>> perScan  = model.getMonitors().stream().filter(scannable -> scannable.getMonitorRole()==MonitorRole.PER_SCAN).collect(Collectors.toList());
+		Collection<IScannable<?>> perPoint = model.getMonitorsPerPoint().stream().collect(Collectors.toList());
+		Collection<IScannable<?>> perScan  = model.getMonitorsPerScan().stream().collect(Collectors.toList());
         nexusScanInfo.setPerPointMonitorNames(getDeviceNames(perPoint));
 		nexusScanInfo.setPerScanMonitorNames(getDeviceNames(perScan));
 

@@ -156,7 +156,7 @@ public class CompositeNexusScannableTest extends NexusTest {
 	@Test
 	public void testNXSlitCompositeNexusScannable() throws Exception {
 		// Arrange
-		CompositeNexusScannable<Object, NXslit> primarySlit = new CompositeNexusScannable<>();
+		CompositeNexusScannable<NXslit> primarySlit = new CompositeNexusScannable<>();
 		primarySlit.setName("primary_slit");
 		primarySlit.setNexusClass(NexusBaseClass.NX_SLIT);
 		primarySlit.setNexusCategory(NexusBaseClass.NX_INSTRUMENT);
@@ -196,7 +196,7 @@ public class CompositeNexusScannableTest extends NexusTest {
 		childNodes.add(beamNode);
 
 		// create the motors composite scannable
-		CompositeNexusScannable<Object, NXcollection> motorsCompositeScannable = new CompositeNexusScannable<>();
+		CompositeNexusScannable<NXcollection> motorsCompositeScannable = new CompositeNexusScannable<>();
 		motorsCompositeScannable.setName("primary_slit_motors");
 		((MockScannableConnector) connector).register(motorsCompositeScannable);
 
@@ -289,7 +289,7 @@ public class CompositeNexusScannableTest extends NexusTest {
 		List<ChildNode> childNodes = IntStream.range(1, numTotalNodes + 1).mapToObj(toNode)
 				.collect(Collectors.toList());
 
-		CompositeNexusScannable<Object, NXobject> composite = new CompositeNexusScannable<>();
+		CompositeNexusScannable<NXobject> composite = new CompositeNexusScannable<>();
 		composite.setName("composite");
 		composite.setNexusClass(NexusBaseClass.NX_COLLECTION);
 		composite.setChildNodes(childNodes);
@@ -324,7 +324,7 @@ public class CompositeNexusScannableTest extends NexusTest {
 		}
 	}
 
-	private NXentry createAndRunScan(CompositeNexusScannable<?, ?> compositeScannable) throws Exception {
+	private NXentry createAndRunScan(CompositeNexusScannable<?> compositeScannable) throws Exception {
 		IRunnableDevice<ScanModel> scanner = createGridScan(compositeScannable);
 		assertScanNotFinished(getNexusRoot(scanner).getEntry());
 		scanner.run(null);
@@ -352,7 +352,7 @@ public class CompositeNexusScannableTest extends NexusTest {
 		}
 		smodel.setDetectors(detector);
 
-		smodel.setMonitors(perScanMonitor);
+		smodel.setMonitorsPerScan(perScanMonitor);
 
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());

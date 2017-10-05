@@ -65,13 +65,13 @@ public class PyExpresserTest {
 
 		ScanRequest<IROI> request = new ScanRequest<>();
 		request.setCompoundModel(new CompoundModel(smodel));
-		request.setMonitorNames(monitors);
+		request.setMonitorNamesPerPoint(monitors);
 
 		assertEquals(  // Concise.
 				"mscan(step('fred', 0.0, 10.0, 1.0), 'someMonitor')",
 				factory.pyExpress(request, false));
 		assertEquals(  // Verbose.
-				"mscan(path=[step(axis='fred', start=0.0, stop=10.0, step=1.0)], mon=['someMonitor'])",
+				"mscan(path=[step(axis='fred', start=0.0, stop=10.0, step=1.0)], monitorsPerPoint=['someMonitor'])",
 				factory.pyExpress(request, true));
 	}
 
@@ -90,13 +90,13 @@ public class PyExpresserTest {
 
 		ScanRequest<IROI> request = new ScanRequest<>();
 		request.setCompoundModel(new CompoundModel(rmodel));
-		request.setMonitorNames(monitors);
+		request.setMonitorNamesPerPoint(monitors);
 
 		assertEquals(  // Concise.
 				"mscan(repeat('fred', 10, 2.2, 25), 'someMonitor')",
 				factory.pyExpress(request, false));
 		assertEquals(  // Verbose.
-				"mscan(path=[repeat(axis='fred', count=10, value=2.2, sleep=25)], mon=['someMonitor'])",
+				"mscan(path=[repeat(axis='fred', count=10, value=2.2, sleep=25)], monitorsPerPoint=['someMonitor'])",
 				factory.pyExpress(request, true));
 	}
 

@@ -212,7 +212,7 @@ public class AnnotationScanTest extends NexusTest {
 
 	@Test
 	public void testInjectedContext() throws Exception {
-		IRunnableDevice<ScanModel> scanner = createGridScan(injectionDetector, injectionMonitor, 2, 2);
+		IRunnableDevice<ScanModel> scanner = createGridScan(injectionDetector, injectionMonitor, null, 2, 2);
 		scanner.run(null);
 
 		// check that each annotated method for each device has been invoked with objects
@@ -258,7 +258,7 @@ public class AnnotationScanTest extends NexusTest {
 	}
 
 	private IRunnableDevice<ScanModel> createGridScan(IRunnableDevice<?> detector,
-			IScannable<?> monitor, int... size) throws Exception {
+			IScannable<?> monitorsPerPoint, IScannable<?> monitorsPerScan, int... size) throws Exception {
 		GridModel gmodel = new GridModel();
 		gmodel.setFastAxisName("xNex");
 		gmodel.setFastAxisPoints(size[size.length-1]);
@@ -292,9 +292,8 @@ public class AnnotationScanTest extends NexusTest {
 		if (detector != null) {
 			smodel.setDetectors(detector);
 		}
-		if (monitor != null) {
-			smodel.setMonitors(monitor);
-		}
+		if (monitorsPerPoint != null) smodel.setMonitorsPerPoint(monitorsPerPoint);
+		if (monitorsPerScan != null) smodel.setMonitorsPerScan(monitorsPerScan);
 
 		// Create a file to scan into.
 		smodel.setFilePath(output.getAbsolutePath());

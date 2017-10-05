@@ -296,7 +296,8 @@ public class ScanAtomAssemblerTest {
 
 		assertEquals("Produced task has wrong paths configured", exemplar.getScanReq().getCompoundModel(), produced.getScanReq().getCompoundModel());
 		assertEquals("Produced task has wrong detectors configured", exemplar.getScanReq().getDetectors(), produced.getScanReq().getDetectors());
-		assertEquals("Produced task has wrong monitors configured", exemplar.getScanReq().getMonitorNames(), produced.getScanReq().getMonitorNames());
+		assertEquals("Produced task has wrong per point monitors configured", exemplar.getScanReq().getMonitorNamesPerPoint(), produced.getScanReq().getMonitorNamesPerPoint());
+		assertEquals("Produced task has wrong per scan monitors configured", exemplar.getScanReq().getMonitorNamesPerScan(), produced.getScanReq().getMonitorNamesPerScan());
 		assertEquals("Produced task is not correctly configured", exemplar, produced);
 	}
 
@@ -311,7 +312,7 @@ public class ScanAtomAssemblerTest {
 		detectors.put("mandelbrotB", ServicesHolder.getRunnableDeviceService().getRunnableDevice("mandelbrotB").getModel());
 		((IDetectorModel)detectors.get("mandelbrotB")).setExposureTime(30);
 		scanReq.setDetectors(detectors);
-		scanReq.setMonitorNames(Arrays.asList("monitor2"));
+		scanReq.setMonitorNamesPerPoint(Arrays.asList("monitor2"));
 		ScanAtom scAt = new ScanAtom("testScan", scanReq);
 		scAt.setName("Scan of 'stage_x' (Step) collecting data with 'mandelbrotB', 'mandelbrotA' detector(s)");
 		return scAt;
