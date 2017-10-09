@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
+Eclipse-RegisterBuddy: uk.ac.diamond.org.springframework
 Bundle-ManifestVersion: 2
 Bundle-Name: Ui
 Bundle-SymbolicName: org.eclipse.scanning.device.ui;singleton:=true
@@ -24,7 +25,8 @@ Import-Package: org.eclipse.e4.ui.di,
  org.eclipse.e4.ui.model.application.ui.menu,
  org.osgi.framework;version="1.8.0",
  org.osgi.service.event;version="1.3.1",
- org.slf4j;version="1.7.2"
+ org.slf4j;version="1.7.2",
+ org.springframework.beans.factory;version="4.0.6.RELEASE"
 Bundle-Activator: org.eclipse.scanning.device.ui.Activator
 Bundle-ActivationPolicy: lazy
 Service-Component: OSGI-INF/*.xml

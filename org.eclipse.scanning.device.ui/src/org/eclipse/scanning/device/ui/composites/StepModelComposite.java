@@ -57,6 +57,7 @@ public class StepModelComposite extends Composite {
 		step.setUnit("eV");
 		step.setMinimum(Integer.getInteger("org.eclipse.scanning.device.ui.composites.stepMin", -10000).doubleValue());
 		step.setMaximum(Integer.getInteger("org.eclipse.scanning.device.ui.composites.stepMax", 10000).doubleValue());
+		step.setDecimalPlaces(4);
 
 		label = new Label(this, SWT.HORIZONTAL|SWT.SEPARATOR);
 		label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));

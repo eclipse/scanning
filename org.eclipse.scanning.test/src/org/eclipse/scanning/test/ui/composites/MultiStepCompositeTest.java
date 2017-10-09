@@ -84,7 +84,7 @@ public class MultiStepCompositeTest extends ShellTest{
 			assertEquals(1, bot.table(0).rowCount());
 			assertEquals("10000.00 eV", bot.styledText(0).getText());
 			assertEquals("20000.00 eV", bot.styledText(1).getText());
-			assertEquals("1000.00 eV",  bot.styledText(2).getText());
+			assertEquals("1000.0000 eV",  bot.styledText(2).getText());
 			assertEquals("0.000 s",  bot.styledText(3).getText());
 		} finally {
 			model.clear();
@@ -100,7 +100,7 @@ public class MultiStepCompositeTest extends ShellTest{
 			assertEquals(1, bot.table(0).rowCount());
 			assertEquals("10.10 eV", bot.styledText(0).getText());
 			assertEquals("20.20 eV", bot.styledText(1).getText());
-			assertEquals("1.40 eV",  bot.styledText(2).getText());
+			assertEquals("1.4000 eV",  bot.styledText(2).getText());
 			assertEquals("1.000 s",  bot.styledText(3).getText());
 		} finally {
 			model.clear();
@@ -120,7 +120,7 @@ public class MultiStepCompositeTest extends ShellTest{
 			assertEquals(1, bot.table(0).rowCount());
 			assertEquals("20.20 eV", bot.styledText(0).getText());
 			assertEquals("10.10 eV", bot.styledText(1).getText());
-			assertEquals("-1.40 eV", bot.styledText(2).getText());
+			assertEquals("-1.4000 eV", bot.styledText(2).getText());
 			assertEquals("1.000 s",  bot.styledText(3).getText());
 
 			Color red = new Color(bot.getDisplay(), 255, 0, 0, 255);
