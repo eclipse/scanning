@@ -235,7 +235,7 @@ class JCompoundGenerator(JavaIteratorWrapper):
     Create a CompoundGenerator and wrap the points into java Point objects
     """
 
-    def __init__(self, iterators, excluders, mutators, duration=-1):
+    def __init__(self, iterators, excluders, mutators, duration=-1, continuous=True):
         super(JCompoundGenerator, self).__init__()
         try:  # If JavaIteratorWrapper
             generators = [g for t in iterators for g in t.generator.generators]
@@ -267,7 +267,7 @@ class JCompoundGenerator(JavaIteratorWrapper):
                 extracted_generators.append(generator)
         generators = extracted_generators
 
-        self.generator = CompoundGenerator(generators, excluders, mutators, duration=duration)
+        self.generator = CompoundGenerator(generators, excluders, mutators, duration=duration, continuous=continuous)
         self.generator.prepare()
 
         self.dimension_names = [reduce(lambda x,y:x+y, (g.axes for g in d.generators))
