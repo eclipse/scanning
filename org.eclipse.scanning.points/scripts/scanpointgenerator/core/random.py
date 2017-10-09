@@ -83,7 +83,7 @@ class Random(object):
         decimal = float(rand[0] + '.' + rand[1:])  # -> 0.0 to 10.0
         decimal %= 2                               # -> 0.0 to 1.0
         decimal -= 1.0                             # -> -1.0 to 1.0
-
+        
         return decimal
 
     @staticmethod
