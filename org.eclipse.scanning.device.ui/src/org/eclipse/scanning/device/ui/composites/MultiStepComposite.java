@@ -13,7 +13,6 @@ package org.eclipse.scanning.device.ui.composites;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -27,6 +26,7 @@ import org.eclipse.scanning.api.filter.IFilterService;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.api.scan.ScanningException;
+import org.eclipse.scanning.device.ui.IMultiStepConfiguratorService;
 import org.eclipse.scanning.device.ui.util.SortNatural;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -61,6 +61,7 @@ public class MultiStepComposite extends Composite {
 			@Override
 			public void valueChangePerformed(ValueEvent e) {
 				updateUnits(e.getValue());
+				steps.setBeanConfigurator(IMultiStepConfiguratorService.DEFAULT.getConfigurator((String) e.getValue()));
 			}
 		});
 
@@ -70,7 +71,8 @@ public class MultiStepComposite extends Composite {
 		steps.setMinItems(0);
 		steps.setMaxItems(10);
 		steps.setEditorClass(StepModel.class); // Must match generic!
-		steps.setBeanConfigurator((bean, previous, context)->contiguous(bean, previous));
+
+		steps.setBeanConfigurator(IMultiStepConfiguratorService.DEFAULT.getConfigurator(""));
 		steps.setListHeight(80);
 		steps.setRequireSelectionPack(false);
 		steps.setTemplateName("Step");
@@ -127,14 +129,6 @@ public class MultiStepComposite extends Composite {
 	private void populateComboBox(List<String> items) {
 		Collections.sort(items, new SortNatural<>(false));
 		name.setItems(items.toArray(new String[items.size()]));
-	}
-
-	private void contiguous(StepModel bean, StepModel previous) {
-
-		bean.setStart(previous!=null?previous.getStop():10);
-		bean.setStop(bean.getStart()+10);
-		bean.setName(Optional.of(getName().getValue()).orElse("").toString());
-		bean.setStep((bean.getStop()-bean.getStart())/10d);
 	}
 
 	public VerticalListEditor<StepModel> getStepModels() {
