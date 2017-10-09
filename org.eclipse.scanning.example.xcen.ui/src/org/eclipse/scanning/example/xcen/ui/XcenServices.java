@@ -11,13 +11,10 @@
  *******************************************************************************/
 package org.eclipse.scanning.example.xcen.ui;
 
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.dawnsci.analysis.api.io.ILoaderService;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.event.ui.Activator;
 import org.eclipse.scanning.event.ui.view.StatusQueueView;
-import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.service.component.ComponentContext;
 
 public class XcenServices {
@@ -47,14 +44,17 @@ public class XcenServices {
 		return current;
 	}
 
+	@Override
 	public int hashCode() {
 		return eventService.hashCode();
 	}
 
+	@Override
 	public boolean equals(Object obj) {
 		return eventService.equals(obj);
 	}
 
+	@Override
 	public String toString() {
 		return eventService.toString();
 	}

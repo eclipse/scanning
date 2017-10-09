@@ -107,6 +107,7 @@ public class XcenView extends ViewPart {
 		Button grid = new Button(container, SWT.PUSH);
 		grid.setImage(XcenActivator.getImageDescriptor("icons/plot-tool-box-grid.png").createImage()); // Small memory leak possible.
 		grid.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				createGrid();
 			}
@@ -125,6 +126,7 @@ public class XcenView extends ViewPart {
 		go.setLayoutData(gd);
 
 		go.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				try {
 					submitCentering(visit.getText(), collection.getText());
@@ -171,6 +173,7 @@ public class XcenView extends ViewPart {
 							final XcenBean bean = evt.getBean();
 							if (bean.getStatus()==org.eclipse.scanning.api.event.status.Status.COMPLETE) {
 								Display.getDefault().syncExec(new Runnable() {
+									@Override
 									public void run() {
 										centeringValue.setText(bean.getName());
 										boxes.get("x").setValue(bean.getX());
@@ -310,6 +313,7 @@ public class XcenView extends ViewPart {
 		// Create the actions
 	}
 
+	@Override
 	public void dispose() {
 		super.dispose();
 		if (topicMonitor!=null) {
