@@ -233,7 +233,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 
 	@Override
 	public boolean setActivated(boolean activated) {
-		logger.info("setActivated({}) was {} ({})", activated, this.activated, this);
+		logger.trace("setActivated({}) was {} ({})", activated, this.activated, this);
 		boolean was = this.activated;
 		this.activated = activated;
 		return was;
@@ -277,7 +277,7 @@ public abstract class AbstractScannable<T> implements IScannable<T>, IScanAttrib
 
 	@Override
 	public MonitorRole setMonitorRole(MonitorRole monitorRole) {
-		logger.info("setMonitorRole({}) was {} ({})", monitorRole, this.monitorRole, this);
+		logger.trace("setMonitorRole({}) was {} ({})", monitorRole, this.monitorRole, this);
 		MonitorRole orig = this.monitorRole;
 		this.monitorRole = monitorRole;
 		return orig;
