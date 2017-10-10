@@ -13,6 +13,7 @@ package org.eclipse.scanning.points;
 
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.ScanPointIterator;
+import org.eclipse.scanning.api.points.models.GridModel;
 import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 
 public class RandomOffsetGridGenerator extends GridGenerator {
@@ -27,8 +28,17 @@ public class RandomOffsetGridGenerator extends GridGenerator {
 	protected void validateModel() {
 		super.validateModel();
 		if (!(model instanceof RandomOffsetGridModel)) {
-			throw new ModelValidationException("The model must be a RandomOffsetGridModel", model, "offset"); // TODO Not really an offset problem.
+			throw new ModelValidationException("The model must be a " + RandomOffsetGridModel.class.getSimpleName(),
+					model, "offset"); // TODO Not really an offset problem.
 		}
+	}
+
+	@Override
+	public void setModel(GridModel model) {
+		if (!(model instanceof RandomOffsetGridModel)) {
+			throw new IllegalArgumentException("The model must be a " + RandomOffsetGridModel.class.getSimpleName());
+		}
+		super.setModel(model);
 	}
 
 	@Override

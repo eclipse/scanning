@@ -33,8 +33,8 @@ public final class MapPosition extends AbstractPosition {
 	private Map<String, Integer> indices;  // Name->Index
 
 	public MapPosition() {
-		values   = new LinkedHashMap<String, Object>(7);
-		indices  = new LinkedHashMap<String, Integer>(7);
+		values   = new LinkedHashMap<>(7);
+		indices  = new LinkedHashMap<>(7);
 	}
 
 	public MapPosition(Map<String, Object> vals) {
@@ -68,8 +68,8 @@ public final class MapPosition extends AbstractPosition {
 	 */
 	public MapPosition(String value) throws NumberFormatException {
 
-		values  = new LinkedHashMap<String, Object>(7);
-		indices = new LinkedHashMap<String, Integer>(7);
+		values  = new LinkedHashMap<>(7);
+		indices = new LinkedHashMap<>(7);
 
 		String[] pairs = value.split(",");
 		for (String pair : pairs) {
@@ -86,7 +86,7 @@ public final class MapPosition extends AbstractPosition {
 
 	@Override
 	public List<String> getNames() {
-		return new ArrayList<String>(values.keySet());
+		return new ArrayList<>(values.keySet());
 	}
 
 	@Override
@@ -120,12 +120,12 @@ public final class MapPosition extends AbstractPosition {
 	}
 
 	public Object putIndex(String key, Integer value) {
-		if (indices==null) indices = new LinkedHashMap<String, Integer>(7);
+		if (indices==null) indices = new LinkedHashMap<>(7);
 		return indices.put(key, value);
 	}
 
 	public void putAllIndices(IPosition pos) {
-		if (indices==null) indices = new LinkedHashMap<String, Integer>(7);
+		if (indices==null) indices = new LinkedHashMap<>(7);
 		final Collection<String> names = pos.getNames();
 		if (names==null) return;
 		for (String name : names) {

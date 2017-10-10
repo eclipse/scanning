@@ -56,7 +56,7 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		final int prime = 31;
 		int result = 1;
 		long temp;
-		final List<String> names = new ArrayList<String>(getNames());
+		final List<String> names = new ArrayList<>(getNames());
 		Collections.sort(names);
 		for (String name : names) {
 			Object val = get(name);
@@ -95,8 +95,8 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 				return false;
 		}
 
-		final List<String> ours = new ArrayList<String>(getNames());
-		final List<String> theirs = new ArrayList<String>(((IPosition)obj).getNames());
+		final List<String> ours = new ArrayList<>(getNames());
+		final List<String> theirs = new ArrayList<>(((IPosition)obj).getNames());
 		Collections.sort(ours);
 		Collections.sort(theirs);
 		if (!equals(ours, theirs)) return false;
@@ -113,13 +113,13 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 		if (!iours.equals(itheirs)) return false;
 
 		List<List<String>> ourDimNames = getDimensionNames().stream()
-				.map(c -> new ArrayList<String>(c))
+				.map(ArrayList::new)
 				.collect(Collectors.toList());
-		ourDimNames.forEach(c -> Collections.sort(c));
+		ourDimNames.forEach(Collections::sort);
 		List<List<String>> theirDimNames = getDimensionNames((IPosition) obj).stream()
-				.map(c -> new ArrayList<String>(c))
+				.map(ArrayList::new)
 				.collect(Collectors.toList());
-		theirDimNames.forEach(c -> Collections.sort(c));
+		theirDimNames.forEach(Collections::sort);
 
 		if (!equals(ourDimNames, theirDimNames)) return false;
 
@@ -128,7 +128,7 @@ public abstract class AbstractPosition implements IPosition, Serializable {
 
 	private Map<String, Integer> getIndices(IPosition pos) {
 		if (pos instanceof AbstractPosition) return ((AbstractPosition)pos).getIndices(); // Might be null
-		Map<String, Integer> ret = new LinkedHashMap<String, Integer>(pos.getNames().size());
+		Map<String, Integer> ret = new LinkedHashMap<>(pos.getNames().size());
 		for (String name : pos.getNames()) ret.put(name,  pos.getIndex(name));
 		return ret;
 	}

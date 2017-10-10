@@ -14,7 +14,6 @@ package org.eclipse.scanning.points;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.eclipse.scanning.api.points.Point;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.jython.JythonObjectFactory;
@@ -30,8 +29,6 @@ class SpiralIterator extends AbstractScanPointIterator {
 	private final double yCentre;
 	private final double maxRadius;
 
-	private Point currentPoint;
-
 	public SpiralIterator(SpiralGenerator gen) {
 
 		SpiralModel model = gen.getModel();
@@ -46,9 +43,9 @@ class SpiralIterator extends AbstractScanPointIterator {
 
         JythonObjectFactory<ScanPointIterator> spiralGeneratorFactory = ScanPointGeneratorFactory.JSpiralGeneratorFactory();
 
-        PyList names =  new PyList(Arrays.asList(new String[] {xName, yName}));
-        PyList units = new PyList(Arrays.asList(new String[] {"mm", "mm"}));
-        PyList centre = new PyList(Arrays.asList(new Double[] {xCentre, yCentre}));
+        PyList names =  new PyList(Arrays.asList(xName, yName));
+        PyList units = new PyList(Arrays.asList("mm", "mm"));
+        PyList centre = new PyList(Arrays.asList(xCentre, yCentre));
         double radius = maxRadius;
         double scale = model.getScale();
         boolean alternate = false;
@@ -57,33 +54,5 @@ class SpiralIterator extends AbstractScanPointIterator {
 				names, units, centre, radius, scale, alternate);
 		pyIterator = createSpgCompoundGenerator(new Iterator<?>[] {spiral}, gen.getRegions().toArray(),
 				new String[] {xName, yName}, new PyObject[] {});
-	}
-
-	@Override
-	public boolean hasNext() {
-		if (pyIterator.hasNext()) {
-			currentPoint = (Point) pyIterator.next();
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public Point next() {
-		// TODO: This will return null if called without calling hasNext() and when the
-		// ROI will exclude all further points. Raise error if called without hasNext()
-		// first, or if point is null?
-		if (currentPoint == null) {
-			hasNext();
-		}
-		Point point = currentPoint;
-		currentPoint = null;
-
-		return point;
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException("remove");
 	}
 }

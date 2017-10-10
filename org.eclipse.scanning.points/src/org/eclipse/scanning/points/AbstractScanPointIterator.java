@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,9 +42,11 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 
 	private static Logger logger = LoggerFactory.getLogger(AbstractScanPointIterator.class);
 
-	private static Map<Class<?>, Function<IROI, PyObject>> roiDispatchMap = new HashMap<Class<?>, Function<IROI, PyObject>>();;
+	private static Map<Class<?>, Function<IROI, PyObject>> roiDispatchMap = new HashMap<>();
 
 	protected ScanPointIterator pyIterator;
+
+	private int index = 0;
 
 	public Iterator<IPosition> getPyIterator() {
 		return pyIterator;
@@ -59,13 +62,12 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 		JythonObjectFactory<ScanPointIterator> cpgFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
 		List<PyObject> pyRegions = Arrays.asList(regions)
 				.stream()
-				.map(r -> makePyRoi(r))
-				.filter(r -> r != null)
+				.map(AbstractScanPointIterator::makePyRoi)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 		PyObject excluder = excluderFactory.createObject(pyRegions.toArray(), new PyList(Arrays.asList(regionAxes)));
-		PyObject[] excluders = pyRegions.size() > 0 ? new PyObject[] {excluder} : new PyObject[] {};
-		ScanPointIterator cpgIterator = cpgFactory.createObject(iterators, excluders, mutators);
-		return cpgIterator;
+		PyObject[] excluders = pyRegions.isEmpty() ? new PyObject[] {} : new PyObject[] { excluder };
+		return cpgFactory.createObject(iterators, excluders, mutators);
 	}
 
 	static {
@@ -119,6 +121,19 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 	}
 
 	@Override
+	public boolean hasNext() {
+		return pyIterator.hasNext();
+	}
+
+	@Override
+	public IPosition next() {
+		final IPosition position = pyIterator.next();
+		position.setStepIndex(index);
+		index++;
+		return position;
+	}
+
+	@Override
 	public int size() {
 		return pyIterator.size();
 	}
@@ -132,7 +147,5 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 	public int getRank() {
 		return pyIterator.getRank();
 	}
-
-
 
 }

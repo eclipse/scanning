@@ -14,7 +14,6 @@ package org.eclipse.scanning.points;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import org.eclipse.scanning.api.points.Point;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.LissajousModel;
 import org.eclipse.scanning.jython.JythonObjectFactory;
@@ -25,8 +24,6 @@ import org.python.core.PyObject;
 class LissajousIterator extends AbstractScanPointIterator {
 
 	private LissajousModel model;
-
-	private Point currentPoint;
 
 	public LissajousIterator(LissajousGenerator gen) {
 		this.model     = gen.getModel();
@@ -44,8 +41,8 @@ class LissajousIterator extends AbstractScanPointIterator {
         box.put("centre", new double[] {model.getBoundingBox().getFastAxisStart() + width / 2,
 									model.getBoundingBox().getSlowAxisStart() + height / 2});
 
-        PyList names =  new PyList(Arrays.asList(new String[] {xName, yName}));
-        PyList units = new PyList(Arrays.asList(new String[] {"mm", "mm"}));
+        PyList names =  new PyList(Arrays.asList(xName, yName));
+        PyList units = new PyList(Arrays.asList("mm", "mm"));
         int numLobes = (int) (model.getA() / model.getB());
         int numPoints = model.getPoints();
 
@@ -53,34 +50,5 @@ class LissajousIterator extends AbstractScanPointIterator {
 				names, units, box, numLobes, numPoints);
 		pyIterator = createSpgCompoundGenerator(new Iterator[] {lissajous}, gen.getRegions().toArray(),
 				new String[] {xName, yName}, new PyObject[] {});
-	}
-
-	@Override
-	public boolean hasNext() {
-		if (pyIterator.hasNext()) {
-			currentPoint = (Point) pyIterator.next();
-			return true;
-		}
-
-		return false;
-	}
-
-	@Override
-	public Point next() {
-		// TODO: This will return null if called without calling hasNext() and when the
-		// ROI will exclude all further points. Raise error if called without hasNext()
-		// first, or if point is null?
-		if (currentPoint == null) {
-			hasNext();
-		}
-		Point point = currentPoint;
-		currentPoint = null;
-
-		return point;
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException("remove");
 	}
 }

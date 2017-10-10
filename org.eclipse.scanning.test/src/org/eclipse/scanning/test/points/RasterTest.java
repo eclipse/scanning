@@ -188,7 +188,7 @@ public class RasterTest {
 		assertEquals("Point list size should be correct", rows * cols, pointList.size());
 
 		// Check some points
-		assertEquals(new Point(0, xStart, 0, yStart), pointList.get(0));
+		assertEquals(new Point(0, xStart, 0, yStart, 0), pointList.get(0));
 		assertEquals(xStart + 3 * xStep, pointList.get(3).getValue("X"), 1e-8);
 		// TODO more
 
@@ -222,11 +222,11 @@ public class RasterTest {
 		assertEquals(expectedSize, pointList.size());
 
 		// Check the points are correct and the order is maintained
-        assertEquals(new Point(0, 0.0, 0, -1.0, false), pointList.get(0));
-        assertEquals(new Point(1, -1.0, 1, 0.0, false), pointList.get(1));
-        assertEquals(new Point(2, 0.0, 2, 0.0, false), pointList.get(2));
-        assertEquals(new Point(3, 1.0, 3, 0.0, false), pointList.get(3));
-        assertEquals(new Point(4, 0.0, 4, 1.0, false), pointList.get(4));
+        assertEquals(new Point(0, 0.0, 0, -1.0, 0, false), pointList.get(0));
+        assertEquals(new Point(1, -1.0, 1, 0.0, 1, false), pointList.get(1));
+        assertEquals(new Point(2, 0.0, 2, 0.0, 2, false), pointList.get(2));
+        assertEquals(new Point(3, 1.0, 3, 0.0, 3, false), pointList.get(3));
+        assertEquals(new Point(4, 0.0, 4, 1.0, 4, false), pointList.get(4));
 
         GeneratorUtil.testGeneratorPoints(gen, 5);
 	}
@@ -286,10 +286,10 @@ public class RasterTest {
 		assertEquals(expectedSize, pointList.size());
 
 		// Check some points
-		assertEquals(new Point(0, -10.0, 0, 5.0), pointList.get(0));
-		assertEquals(new Point(1, -9.0, 0, 5.0), pointList.get(1));
-		assertEquals(new Point(0, -10.0, 1, 6.0), pointList.get(3));
-		assertEquals(new Point(1, -9.0, 2, 7.0), pointList.get(7));
+		assertEquals(new Point(0, -10.0, 0, 5.0, 0), pointList.get(0));
+		assertEquals(new Point(1, -9.0, 0, 5.0, 1), pointList.get(1));
+		assertEquals(new Point(0, -10.0, 1, 6.0, 3), pointList.get(3));
+		assertEquals(new Point(1, -9.0, 2, 7.0, 7), pointList.get(7));
 	}
 
 	@Test
@@ -315,10 +315,10 @@ public class RasterTest {
 		assertEquals(expectedSize, pointList.size());
 
 		// Check some points
-		assertEquals(new Point(0, 1.0, 0, 1.0), pointList.get(0));
-		assertEquals(new Point(1, 2.0, 0, 1.0), pointList.get(1));
-		assertEquals(new Point(2, 3.0, 1, 2.0), pointList.get(3));
-		assertEquals(new Point(1, 2.0, 2, 3.0), pointList.get(7));
+		assertEquals(new Point(0, 1.0, 0, 1.0, 0), pointList.get(0));
+		assertEquals(new Point(1, 2.0, 0, 1.0, 1), pointList.get(1));
+		assertEquals(new Point(2, 3.0, 1, 2.0, 3), pointList.get(3));
+		assertEquals(new Point(1, 2.0, 2, 3.0, 7), pointList.get(7));
 	}
 
 }

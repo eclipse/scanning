@@ -31,7 +31,6 @@ import org.eclipse.scanning.jython.JythonObjectFactory;
 public class MultiStepIterator extends AbstractScanPointIterator {
 
 	private final MultiStepModel model;
-	private int                  index;
 	private double[]             points;
 	private double[]             times;
 
@@ -81,7 +80,6 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 
 		this.points = new double[totalSize];
 		this.times  = new double[totalSize];
-		this.index  = 0;
 
 		int pos        = 0;
 		int sindex     = 0;
@@ -95,16 +93,9 @@ public class MultiStepIterator extends AbstractScanPointIterator {
 	}
 
 	@Override
-	public boolean hasNext() {
-		return pyIterator.hasNext();
-	}
-
-	@Override
 	public IPosition next() {
-		IPosition next = pyIterator.next();
-        next.setExposureTime(times[index]);
-        next.setStepIndex(index);
-        index++;
+		IPosition next = super.next();
+        next.setExposureTime(times[next.getStepIndex()]);
 		return next;
 	}
 

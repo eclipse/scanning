@@ -14,7 +14,6 @@ package org.eclipse.scanning.test.points;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -423,9 +422,10 @@ public class GridTest extends AbstractGeneratorTest {
 				new Point(2000, 0.4125, 2000, 15.375),
 				new Point(3100, 1.1325, 3100, 16.425) };
 		for (Point p : points) {
-			ArrayList<Collection<String>> names = new ArrayList<Collection<String>>();;
+			ArrayList<Collection<String>> names = new ArrayList<Collection<String>>();
 			names.add(Arrays.asList(new String[] {"x", "y"}));
 			p.setDimensionNames(names);
+			p.setStepIndex(p.getIndex(0));
 		}
 		assertEquals(points[0], pointList.get(0));
 		assertEquals(points[1], pointList.get(1));
@@ -512,14 +512,14 @@ public class GridTest extends AbstractGeneratorTest {
 		IPointGenerator<GridModel> gen = service.createGenerator(model, roi);
 		List<IPosition> pointList = gen.createPoints();
 
-		assertTrue(pointList.size()==9);
+		assertEquals(9, pointList.size());
 
 		// Check some points
-		assertTrue(pointList.get(0).equals(new Point(0, -9.5, 0, 5.5)));
-		assertTrue(pointList.get(1).equals(new Point(1, -8.5, 0, 5.5)));
-		assertTrue(pointList.get(3).equals(new Point(0, -9.5, 1, 6.5)));
-		assertTrue(pointList.get(5).equals(new Point(2, -7.5, 1, 6.5)));
-		assertTrue(pointList.get(7).equals(new Point(1, -8.5, 2, 7.5)));
+		assertEquals(new Point(0, -9.5, 0, 5.5, 0), pointList.get(0));
+		assertEquals(new Point(1, -8.5, 0, 5.5, 1), pointList.get(1));
+		assertEquals(new Point(0, -9.5, 1, 6.5, 3), pointList.get(3));
+		assertEquals(new Point(2, -7.5, 1, 6.5, 5), pointList.get(5));
+		assertEquals(new Point(1, -8.5, 2, 7.5, 7), pointList.get(7));
 	}
 
 	@Test
@@ -538,12 +538,12 @@ public class GridTest extends AbstractGeneratorTest {
 		IPointGenerator<GridModel> gen = service.createGenerator(model, roi);
 		List<IPosition> pointList = gen.createPoints();
 
-		assertTrue(pointList.size()==9);
+		assertEquals(9, pointList.size());
 
 		// Check some points
-		assertTrue(pointList.get(0).equals(new Point(0, 0.5, 0, 0.5)));
-		assertTrue(pointList.get(1).equals(new Point(1, 1.5, 0, 0.5)));
-		assertTrue(pointList.get(3).equals(new Point(2, 2.5, 1, 1.5)));
-		assertTrue(pointList.get(7).equals(new Point(1, 1.5, 2, 2.5)));
+		assertEquals(new Point(0, 0.5, 0, 0.5, 0), pointList.get(0));
+		assertEquals(new Point(1, 1.5, 0, 0.5, 1), pointList.get(1));
+		assertEquals(new Point(2, 2.5, 1, 1.5, 3), pointList.get(3));
+		assertEquals(new Point(1, 1.5, 2, 2.5, 7), pointList.get(7));
 	}
 }

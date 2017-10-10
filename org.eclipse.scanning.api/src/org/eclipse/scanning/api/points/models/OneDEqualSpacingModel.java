@@ -34,6 +34,7 @@ public class OneDEqualSpacingModel extends AbstractBoundingLineModel implements 
 		this.points = points;
 		this.pcs.firePropertyChange("points", oldValue, points);
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -41,6 +42,7 @@ public class OneDEqualSpacingModel extends AbstractBoundingLineModel implements 
 		result = prime * result + points;
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

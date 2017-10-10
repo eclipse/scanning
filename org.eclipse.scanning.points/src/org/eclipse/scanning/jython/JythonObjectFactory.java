@@ -43,8 +43,8 @@ public final class JythonObjectFactory<T> {
 		return (T)pyClass.__call__(Py.java2py(arg1), Py.java2py(arg2), Py.java2py(arg3)).__tojava__(javaClass);
 	}
 	@SuppressWarnings("unchecked")
-	public T createObject(Object args[], String keywords[]) {
-		PyObject convertedArgs[] = new PyObject[args.length];
+	public T createObject(Object[] args, String[] keywords) {
+		PyObject[] convertedArgs = new PyObject[args.length];
 		for (int i = 0; i < args.length; i++) {
 			convertedArgs[i] = Py.java2py(args[i]);
 		}

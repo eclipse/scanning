@@ -11,8 +11,12 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Arrays;
+import static java.util.stream.Collectors.toMap;
 
+import java.util.Arrays;
+import java.util.function.Function;
+
+import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
 import org.eclipse.scanning.api.points.Scalar;
@@ -27,13 +31,11 @@ import org.python.core.PyList;
 
 class LineIterator extends AbstractScanPointIterator {
 
-	private StepModel model;
-	private double value;
-	private int index;
+	private final IPointGenerator<?> gen;
 
 	public LineIterator(StepGenerator gen) {
-		this.model = gen.getModel();
-		value = model.getStart() - model.getStep();
+		this.gen = gen;
+		final StepModel model = gen.getModel();
 
         JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
 
@@ -44,10 +46,10 @@ class LineIterator extends AbstractScanPointIterator {
 
 		ScanPointIterator iterator = lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
 		pyIterator = iterator;
-		this.index = 0;
 	}
 
 	public LineIterator(OneDEqualSpacingGenerator gen) {
+		this.gen = gen;
 		OneDEqualSpacingModel model= gen.getModel();
 		BoundingLine line = model.getBoundingLine();
 
@@ -58,18 +60,18 @@ class LineIterator extends AbstractScanPointIterator {
 		double xStep = step * Math.cos(line.getAngle());
 		double yStep = step * Math.sin(line.getAngle());
 
-		PyList names =  new PyList(Arrays.asList(new String[] {model.getFastAxisName(), model.getSlowAxisName()}));
-		PyList units = new PyList(Arrays.asList(new String[] {"mm", "mm"}));
+		PyList names =  new PyList(Arrays.asList(model.getFastAxisName(), model.getSlowAxisName()));
+		PyList units = new PyList(Arrays.asList("mm", "mm"));
 		double[] start = {line.getxStart() + xStep/2, line.getyStart() + yStep/2};
 		double[] stop = {line.getxStart() + xStep * (numPoints - 0.5), line.getyStart() + yStep * (numPoints - 0.5)};
 
 		ScanPointIterator iterator = lineGeneratorFactory.createObject(
 				names, units, start, stop, numPoints);
 		pyIterator = iterator;
-		this.index = 0;
 	}
 
 	public LineIterator(OneDStepGenerator gen) {
+		this.gen = gen;
 		OneDStepModel model= gen.getModel();
 		BoundingLine line = model.getBoundingLine();
 
@@ -79,51 +81,38 @@ class LineIterator extends AbstractScanPointIterator {
         double xStep = model.getStep() * Math.cos(line.getAngle());
         double yStep = model.getStep() * Math.sin(line.getAngle());
 
-		PyList names =  new PyList(Arrays.asList(new String[] {model.getFastAxisName(), model.getSlowAxisName()}));
-		PyList units = new PyList(Arrays.asList(new String[] {"mm", "mm"}));
+		PyList names =  new PyList(Arrays.asList(model.getFastAxisName(), model.getSlowAxisName()));
+		PyList units = new PyList(Arrays.asList("mm", "mm"));
 		double[] start = {line.getxStart(), line.getyStart()};
         double[] stop = {line.getxStart() + xStep * numPoints, line.getyStart() + yStep * numPoints};
 
 		ScanPointIterator iterator = lineGeneratorFactory.createObject(
 				names, units, start, stop, numPoints);
 		pyIterator = iterator;
-		this.index = 0;
-	}
-
-	@Override
-	public boolean hasNext() {
-		return pyIterator.hasNext();
 	}
 
 	@Override
 	public IPosition next() {
-
-		IPosition next = null;
-        if (model instanceof CollatedStepModel) { // For AnnotatedScanTest
+		final IPosition next;
+		if (gen.getModel() instanceof CollatedStepModel) {
+			// special case: create a map from each scannable name to the actual value
 			@SuppressWarnings("unchecked")
-			Scalar<Double> point = (Scalar<Double>) pyIterator.next();
-			value = point.getValue();
-		final MapPosition mp = new MapPosition();
-		for (String name : ((CollatedStepModel)model).getNames()) {
-			mp.put(name, value);
-			mp.putIndex(name, -1);
-			}
-		next = mp;
+			final Scalar<Double> point = (Scalar<Double>) pyIterator.next();
+			double value = point.getValue();
+			next = new MapPosition(((CollatedStepModel) gen.getModel()).getNames().stream().collect(toMap(
+					Function.identity(), name -> value)));
+			next.setStepIndex(point.getStepIndex());
+		} else {
+			// standard case: just use the next value
+			next = pyIterator.next();
+		}
 
-        } else {
-		next = pyIterator.next();
-        }
-        if (next!=null && model!=null) {
-	        next.setExposureTime(model.getExposureTime()); // Usually 0
-	        next.setStepIndex(index);
-        }
-        ++index;
-        return next;
+		// set the exposure time and index
+		if (next != null && gen.getModel() instanceof StepModel) {
+			next.setExposureTime(((StepModel) gen.getModel()).getExposureTime()); // Usually 0
+		}
+
+		return next;
 	}
-
-	@Override
-	public void remove() {
-        throw new UnsupportedOperationException("remove");
-    }
 
 }

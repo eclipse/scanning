@@ -20,7 +20,7 @@ import java.util.Arrays;
  * @author Colin Palmer
  *
  */
-public class ArrayModel extends AbstractPointsModel implements IScanPathModel {
+public class ArrayModel extends AbstractPointsModel {
 
 
 	private double[] positions;

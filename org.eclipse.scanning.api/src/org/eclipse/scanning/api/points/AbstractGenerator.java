@@ -74,7 +74,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	/**
 	 * Creates and returns an iterator for this model. If possible subclasses should aim to
 	 * return an instance of {@link ScanPointIterator}.
-	 * @return
+	 * @return iterator for this model
 	 */
 	protected abstract Iterator<IPosition> iteratorFromValidModel();
 
@@ -88,15 +88,16 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	 * @throw exception if model invalid
 	 */
 	protected void validateModel() throws ValidationException {
-		T model = getModel();
-
 		if (model instanceof IBoundingBoxModel) {
 			IBoundingBoxModel bmodel = (IBoundingBoxModel)model;
 			// As implemented, model width and/or height can be negative,
 			// and this flips the slow and/or fast point order.
-			if (bmodel.getBoundingBox() == null) throw new ModelValidationException("The model must have a Bounding Box!", model, "boundingBox");
-	        if (bmodel.getBoundingBox().getFastAxisLength()==0)  throw new ModelValidationException("The length must not be 0!", bmodel, "boundingBox");
-	        if (bmodel.getBoundingBox().getSlowAxisLength()==0)  throw new ModelValidationException("The length must not be 0!", bmodel, "boundingBox");
+			if (bmodel.getBoundingBox() == null)
+				throw new ModelValidationException("The model must have a Bounding Box!", model, "boundingBox");
+	        if (bmodel.getBoundingBox().getFastAxisLength()==0)
+	        	throw new ModelValidationException("The length must not be 0!", bmodel, "boundingBox");
+	        if (bmodel.getBoundingBox().getSlowAxisLength()==0)
+	        	throw new ModelValidationException("The length must not be 0!", bmodel, "boundingBox");
 		}
 	}
 
@@ -246,8 +247,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 
 	@Override
 	public List<IPointContainer> getContainers() {
-		if (containers!=null) return containers;
-		return null;
+		return containers;
 	}
 
 	@Override
@@ -262,8 +262,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	 * @param y
 	 */
 	public boolean containsPoint(IPosition point) {
-		if (containers==null)    return true;
-		if (containers.size()<1) return true;
+		if (containers==null || containers.isEmpty())    return true;
 		for (IPointContainer container : containers) {
 			if (container.containsPoint(point)) return true;
 		}
@@ -376,7 +375,8 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 		} else if (!description.equals(other.description))
 			return false;
 		if (enabled != other.enabled)
-			return false;
+			return false;if (containers.size()<1) return true;
+
 		if (iconPath == null) {
 			if (other.iconPath != null)
 				return false;

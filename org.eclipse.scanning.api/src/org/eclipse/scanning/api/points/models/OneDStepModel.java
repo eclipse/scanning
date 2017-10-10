@@ -35,6 +35,7 @@ public class OneDStepModel extends AbstractBoundingLineModel implements IBoundin
 		this.step = step;
 		this.pcs.firePropertyChange("step", oldValue, step);
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -44,6 +45,7 @@ public class OneDStepModel extends AbstractBoundingLineModel implements IBoundin
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

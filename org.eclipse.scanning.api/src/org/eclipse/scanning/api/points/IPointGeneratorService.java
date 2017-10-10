@@ -114,7 +114,7 @@ public interface IPointGeneratorService {
 	 *
 	 * @param cmodel
 	 * @param models
-	 * @return
+	 * @return regions, never <code>null</code>
 	 * @throws GeneratorException
 	 */
 	<R> List<R> findRegions(Object model, Collection<ScanRegion<R>> regions) throws GeneratorException;

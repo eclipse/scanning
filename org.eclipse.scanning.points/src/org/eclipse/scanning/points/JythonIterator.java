@@ -17,7 +17,7 @@ class JythonIterator extends AbstractScanPointIterator implements Iterator<IPosi
 
 	private static final Logger logger = LoggerFactory.getLogger(JythonIterator.class);
 
-	private int               index;
+	private int index;
 
 	JythonIterator(JythonGeneratorModel model) {
 
@@ -28,28 +28,22 @@ class JythonIterator extends AbstractScanPointIterator implements Iterator<IPosi
 			logger.error("Unable to add '"+model.getPath()+"' to path");
 		}
 
-		JythonObjectFactory<ScanPointIterator> jythonObject = new JythonObjectFactory<>(ScanPointIterator.class, model.getModuleName(), model.getClassName());
+		final JythonObjectFactory<ScanPointIterator> jythonObject =
+				new JythonObjectFactory<>(ScanPointIterator.class, model.getModuleName(), model.getClassName());
 
-		Object[] args = getArguments(model);
-		String[] kwds = getKeywords(model);
-		if (args==null) {
+		if (model.getArguments() == null || model.getArguments().isEmpty()) {
 			this.pyIterator = jythonObject.createObject();
 		} else {
-			this.pyIterator = jythonObject.createObject(args, kwds);
+			final Object[] args = model.getArguments().stream().map(JythonIterator::getArgument).toArray();
+			final String[] keywords = model.getKeywords() == null ? new String[0] :
+				model.getKeywords().toArray(new String[model.getKeywords().size()]);
+			this.pyIterator = jythonObject.createObject(args, keywords);
 		}
+
 		this.index = 0;
 	}
 
-	private String[] getKeywords(JythonGeneratorModel model) {
-		if (model.getKeywords()==null) return new String[]{};
-		return model.getKeywords().toArray(new String[model.getKeywords().size()]);
-	}
-
-	private Object[] getArguments(JythonGeneratorModel model) {
-		if (model.getArguments()==null) return null;
-		return model.getArguments().stream().map(a->getArgument(a)).toArray();
-	}
-	private Object getArgument(JythonArgument arg) {
+	private static Object getArgument(JythonArgument arg) {
 		if (arg.getType()==JythonArgumentType.INTEGER) {
 			return Integer.parseInt(arg.getValue());
 		} else if (arg.getType()==JythonArgumentType.FLOAT) {
@@ -57,23 +51,5 @@ class JythonIterator extends AbstractScanPointIterator implements Iterator<IPosi
 		}
 		return arg.getValue();
 	}
-
-	@Override
-	public boolean hasNext() {
-		return pyIterator.hasNext();
-	}
-
-	@Override
-	public IPosition next() {
-		IPosition next = pyIterator.next();
-		next.setStepIndex(index);
-		index++;
-		return next;
-	}
-
-	@Override
-	public void remove() {
-        throw new UnsupportedOperationException("remove");
-    }
 
 }

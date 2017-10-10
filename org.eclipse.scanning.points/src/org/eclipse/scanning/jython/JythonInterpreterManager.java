@@ -232,30 +232,31 @@ public class JythonInterpreterManager {
 	}
 
     private static File find(File loc, String name) {
+		if (loc == null)
+			return null;
+		if (!loc.exists())
+			return null;
+		File find = new File(loc, name);
+		if (find.exists())
+			return find;
 
-	if (loc==null) return null;
-	if (!loc.exists()) return null;
-	File find = new File(loc, name);
-        if (find.exists()) return find;
-
-        for (File child : loc.listFiles()) {
-		    if (child.getName().startsWith(name)) {
-			return child;
-		    }
+		for (File child : loc.listFiles()) {
+			if (child.getName().startsWith(name)) {
+				return child;
+			}
 		}
-        return null;
+		return null;
 	}
 
+	private static void addLast(CompositeClassLoader composite, String bundleName) {
+		try {
+			ClassLoader cl = getBundleLoader(bundleName);
+			composite.addLast(cl);
+		} catch (NullPointerException ne) {
+			// Allowed, the bundles do not have to be there we are just trying to be helpful
+			// in loading classes without making hard dependencies on them.
 
-    private static void addLast(CompositeClassLoader composite, String bundleName) {
-	try {
-		ClassLoader cl = getBundleLoader(bundleName);
-		composite.addLast(cl);
-	    } catch (NullPointerException ne) {
-		// Allowed, the bundles do not have to be there we are just trying to be helpful
-		// in loading classes without making hard dependencies on them.
-
-	}
+		}
 	}
 
 }
