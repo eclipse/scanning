@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.jython.JythonObjectFactory;
@@ -19,7 +18,6 @@ import org.eclipse.scanning.jython.JythonObjectFactory;
 class ArrayIterator extends AbstractScanPointIterator {
 
 	private ArrayModel model;
-	int index = 0;
 
 	public ArrayIterator(ArrayGenerator gen) {
 		this.model= gen.getModel();
@@ -33,18 +31,4 @@ class ArrayIterator extends AbstractScanPointIterator {
         pyIterator = iterator;
 	}
 
-	@Override
-	public boolean hasNext() {
-		return pyIterator.hasNext();
-	}
-
-	@Override
-	public IPosition next() {
-		return pyIterator.next();
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException("remove");
-	}
 }

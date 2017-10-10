@@ -33,10 +33,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
  * attempts to remove the inner scans which subscan devices such as Malcolm will take care of
  * from the compound generator and return the outer scans.
  *
- *
- *
  * @author Matthew Gerring
- *
  */
 public class SubscanModerator {
 
@@ -44,6 +41,9 @@ public class SubscanModerator {
 	private Iterable<IPosition>    innerIterable;
 	private IPointGeneratorService gservice;
 	private CompoundModel<?>       compoundModel;
+
+	private List<Object> outer;
+	private List<Object> inner;
 
 	public SubscanModerator(Iterable<IPosition> generator, List<IRunnableDevice<?>> detectors, IPointGeneratorService gservice) throws ScanningException {
 		this(generator, null, detectors, gservice);
@@ -70,9 +70,6 @@ public class SubscanModerator {
 		}
 		return null;
 	}
-
-	private List<Object> outer;
-	private List<Object> inner;
 
 	private void moderate(Iterable<IPosition> generator, List<IRunnableDevice<?>> detectors) throws GeneratorException, ScanningException {
 
@@ -118,7 +115,7 @@ public class SubscanModerator {
 		} else {
 			// otherwise we create a new compound generator with the inner models and the same
 			// mutators, regions, duration, etc. as the overall scan
-			this.innerIterable = gservice.createCompoundGenerator(compoundModel.clone(inner));
+			this.innerIterable = gservice.createCompoundGenerator(CompoundModel.copyAndSetModels(compoundModel, inner));
 		}
 
 		if (outer.isEmpty()) {
@@ -127,7 +124,7 @@ public class SubscanModerator {
 			return;
 		}
 
-		this.outerIterable = gservice.createCompoundGenerator(compoundModel.clone(outer));
+		this.outerIterable = gservice.createCompoundGenerator(CompoundModel.copyAndSetModels(compoundModel, outer));
 	}
 
 	private List<String> getAxes(List<IRunnableDevice<?>> detectors) throws ScanningException {

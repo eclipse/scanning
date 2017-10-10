@@ -31,8 +31,10 @@ public class JythonGenerator extends AbstractGenerator<JythonGeneratorModel> {
 		if (!file.exists()) throw new ModelValidationException("The module directory '"+file+"' does not exist!", model, "path");
 		if (!file.isDirectory()) throw new ModelValidationException("The module directory path '"+file+"' is not a folder!", model, "path");
 
-		if (!Optional.ofNullable(model.getModuleName()).isPresent()) throw new ModelValidationException("The module name must be set!", model, "moduleName");
-		if (!Optional.ofNullable(model.getClassName()).isPresent()) throw new ModelValidationException("The class name must be set!", model, "className");
+		if (!Optional.ofNullable(model.getModuleName()).isPresent())
+			throw new ModelValidationException("The module name must be set!", model, "moduleName");
+		if (!Optional.ofNullable(model.getClassName()).isPresent())
+			throw new ModelValidationException("The class name must be set!", model, "className");
 
         super.validateModel();
 

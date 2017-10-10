@@ -15,9 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.AbstractPosition;
@@ -42,7 +40,6 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 
 	public CompoundGenerator(IPointGenerator<?>[] generators) throws GeneratorException {
 		super(createId(generators));
-        if (generators == null || generators.length<1) throw new GeneratorException("Cannot make a compound generator from a list of less than one generators!");
 
         // We create a model with no regions from the generators.
         this.model = new CompoundModel<>();
@@ -54,12 +51,6 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 		setLabel("Compound");
 		setDescription("Compound generator used when wrapping scans.");
 		setVisible(false);
-	}
-
-	private List<String> getScannableNames(List<Collection<String>> dNames) {
-		Set<String> names = new LinkedHashSet<>();
-		for (Collection<String> collection : dNames) names.addAll(collection);
-		return Arrays.asList(names.toArray(new String[names.size()]));
 	}
 
 	private List<Collection<String>> createDimensionNames(IPointGenerator<?>[] generators) {
@@ -74,7 +65,7 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 	}
 
 	private static String createId(IPointGenerator<?>[] gens) throws GeneratorException {
-        if (gens == null || gens.length<1) throw new GeneratorException("Cannot make a compound generator from a list of less than one generators!");
+        if (gens == null || gens.length == 0) throw new GeneratorException("Cannot make a compound generator from a list of less than one generators!");
 
         final StringBuilder buf = new StringBuilder();
         for (IPointGenerator<?> gen : gens) buf.append("+"+gen);
@@ -91,7 +82,7 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 
 	@Override
 	public int sizeOfValidModel() throws GeneratorException {
-		Iterator<IPosition> it = (Iterator<IPosition>) iteratorFromValidModel();
+		Iterator<IPosition> it = iteratorFromValidModel();
 		int size = 1;
 		if (it instanceof CompoundSpgIterator) {
 			size = ((CompoundSpgIterator)it).size();

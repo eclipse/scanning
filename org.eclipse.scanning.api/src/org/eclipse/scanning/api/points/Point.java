@@ -48,11 +48,15 @@ public final class Point extends AbstractPosition {
 	private final String  yName;
 
 	public Point(int xIndex, double xPosition, int yIndex, double yPosition) {
-		this(xIndex, xPosition, yIndex, yPosition, true);
+		this(xIndex, xPosition, yIndex, yPosition, -1, true);
 	}
 
-	public Point(int xIndex, double xPosition, int yIndex, double yPosition, boolean is2D) {
-		this("x", xIndex, xPosition, "y", yIndex, yPosition, is2D);
+	public Point(int xIndex, double xPosition, int yIndex, double yPosition, int stepIndex) {
+		this(xIndex, xPosition, yIndex, yPosition, stepIndex, true);
+	}
+
+	public Point(int xIndex, double xPosition, int yIndex, double yPosition, int stepIndex, boolean is2D) {
+		this("x", xIndex, xPosition, "y", yIndex, yPosition, stepIndex, is2D);
 	}
 
 	public Point(String xName, int xIndex, double xPosition, String yName, int yIndex, double yPosition) {
@@ -60,12 +64,18 @@ public final class Point extends AbstractPosition {
 	}
 
 	public Point(String xName, int xIndex, double xPosition, String yName, int yIndex, double yPosition, boolean is2D) {
+		this(xName, xIndex, xPosition, yName, yIndex, yPosition, -1, is2D);
+	}
+
+	public Point(String xName, int xIndex, double xPosition, String yName, int yIndex, double yPosition, int stepIndex, boolean is2D) {
 		this.xName  = xName;
 		this.xIndex = xIndex;
 		this.x      = xPosition;
 		this.yName  = yName;
 		this.yIndex = yIndex;
 		this.y      = yPosition;
+
+		setStepIndex(stepIndex);
 
 		this.dimensionNames = is2D
                 ? Arrays.asList(Arrays.asList(yName), Arrays.asList(xName))

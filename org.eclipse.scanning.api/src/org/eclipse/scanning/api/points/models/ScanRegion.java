@@ -65,6 +65,7 @@ public class ScanRegion<T> implements INameable {
 	public void setScannables(List<String> scannables) {
 		this.scannables = scannables;
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -73,6 +74,7 @@ public class ScanRegion<T> implements INameable {
 		result = prime * result + ((scannables == null) ? 0 : scannables.hashCode());
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -81,7 +83,7 @@ public class ScanRegion<T> implements INameable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ScanRegion other = (ScanRegion) obj;
+		ScanRegion<?> other = (ScanRegion<?>) obj;
 		if (roi == null) {
 			if (other.roi != null)
 				return false;
@@ -110,6 +112,7 @@ public class ScanRegion<T> implements INameable {
 	public void setType(Object type) {
 		this.type = type;
 	}
+
 	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder();

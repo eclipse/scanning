@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
+import java.util.NoSuchElementException;
+
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.GeneratorException;
@@ -43,6 +45,10 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 
 		@Override
 		public IPosition next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
+
 			remaining--;
 			return STATIC_POSITION;
 		}
@@ -61,7 +67,8 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 		public int getRank() {
 			return size == 1 ? 0 : 1;
 		}
-	};
+
+	}
 
 	private static final int[] EMPTY_SHAPE = new int[0];
 

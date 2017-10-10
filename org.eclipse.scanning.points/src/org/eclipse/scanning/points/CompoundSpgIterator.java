@@ -17,11 +17,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.eclipse.scanning.api.points.AbstractPosition;
-import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IDeviceDependentIterable;
 import org.eclipse.scanning.api.points.IMutator;
 import org.eclipse.scanning.api.points.IPointGenerator;
@@ -50,10 +49,9 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 	private IPosition             pos;
 	private Iterator<? extends IPosition>[] iterators;
 
-	private IPosition currentPoint;
 	private int index = -1;
 
-	public CompoundSpgIterator(CompoundGenerator gen) throws GeneratorException {
+	public CompoundSpgIterator(CompoundGenerator gen) {
 		this.gen       = gen;
 		this.iterators = initIterators();
 		this.pos       = createFirstPosition();
@@ -78,8 +76,7 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
         pyIterator = iterator;
 	}
 
-	private IPosition createFirstPosition() throws GeneratorException {
-
+	private IPosition createFirstPosition(){
 	    IPosition pos = new MapPosition();
 		for (int i = 0; i < iterators.length-1; i++) {
 			pos = iterators[i].next().compound(pos);
@@ -87,55 +84,10 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 		return pos;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
     public PyDictionary toDict() {
 		return ((PySerializable) pyIterator).toDict();
     }
-
-	@Override
-	public boolean hasNext() {
-		if (pyIterator.hasNext()) {
-			currentPoint = pyIterator.next();
-			index++;
-			currentPoint.setStepIndex(index);
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public IPosition next() {
-		// TODO: This will return null if called without calling hasNext() and when the
-		// ROI will exclude all further points. Raise error if called without hasNext()
-		// first, or if point is null?
-		if (currentPoint == null) {
-			hasNext();
-		}
-		IPosition point = currentPoint;
-		currentPoint = null;
-
-		return point;
-	}
-
-	public IPosition getNext() {
-
-		for (int i = iterators.length-1; i > -1; i--) {
-			if (iterators[i].hasNext()) {
-				IPosition next = iterators[i].next();
-				pos = next.compound(pos);
-				((AbstractPosition)pos).setDimensionNames(gen.getDimensionNames());
-				return pos;
-			} else if (i>0) {
-				iterators[i]    = gen.getGenerators()[i].iterator();
-				IPosition first = iterators[i].next();
-				pos = first.compound(pos);
-				((AbstractPosition)pos).setDimensionNames(gen.getDimensionNames());
-			}
-		}
-		return null;
-	}
-
 
 	private Iterator<? extends IPosition>[] initIterators() {
 		final IPointGenerator<?>[] gs = gen.getGenerators();
@@ -147,18 +99,13 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 		return ret;
 	}
 
-	@Override
-	public void remove() {
-        throw new UnsupportedOperationException("remove");
-    }
-
 	/**
 	 * Creates an array of python objects representing the mutators
 	 * @param mutators
 	 * @return
 	 */
 	private Object[] getMutators(Collection<IMutator> mutators) {
-		LinkedList<Object> pyMutators = new LinkedList<Object>();
+		LinkedList<Object> pyMutators = new LinkedList<>();
 		if (mutators != null) {
 			for (IMutator mutator : mutators) {
 				pyMutators.add(mutator.getMutatorAsJythonObject());
@@ -175,7 +122,7 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 	public static Object[] getExcluders(Collection<?> regions) {
 		// regions are grouped into excluders by scan axes covered
 		// two regions are in the same excluder iff they have the same axes
-		LinkedHashMap<List<String>, List<Object>> excluders = new LinkedHashMap<List<String>, List<Object>>();
+		LinkedHashMap<List<String>, List<Object>> excluders = new LinkedHashMap<>();
 		JythonObjectFactory<?> excluderFactory = ScanPointGeneratorFactory.JExcluderFactory();
 		if (regions != null) {
 			for (Object region : regions) {
@@ -183,9 +130,9 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 					ScanRegion<?> sr = (ScanRegion<?>) region;
 					Optional<List<Object>> excluderOptional = excluders.entrySet().stream()
 							.filter(e -> sr.getScannables().containsAll(e.getKey()))
-							.map(e -> e.getValue())
+							.map(Map.Entry::getValue)
 							.findFirst();
-					List<Object> rois = excluderOptional.orElse(new LinkedList<Object>());
+					List<Object> rois = excluderOptional.orElse(new LinkedList<>());
 					if (!excluderOptional.isPresent()) {
 						excluders.put(sr.getScannables(), rois);
 					}
@@ -201,7 +148,7 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 			}
 		}
 		List<Object> pyExcluders = excluders.entrySet().stream()
-				.filter(e -> e.getValue().size() > 0)
+				.filter(e -> !e.getValue().isEmpty())
 				.map(e -> excluderFactory.createObject(e.getValue().toArray(), e.getKey()))
 				.collect(Collectors.toList());
 		return pyExcluders.toArray();
@@ -210,6 +157,6 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 	@Override
 	public String toString() {
 		return "CompoundSpgIterator [gen=" + gen + ", pos=" + pos + ", iterators=" + Arrays.toString(iterators)
-				+ ", currentPoint=" + currentPoint + ", index=" + index + "]";
+				+ ", index=" + index + "]";
 	}
 }

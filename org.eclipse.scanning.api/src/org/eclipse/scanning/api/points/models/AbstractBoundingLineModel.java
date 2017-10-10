@@ -39,6 +39,7 @@ public class AbstractBoundingLineModel extends AbstractMapModel implements IBoun
 		result = prime * result + ((boundingLine == null) ? 0 : boundingLine.hashCode());
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

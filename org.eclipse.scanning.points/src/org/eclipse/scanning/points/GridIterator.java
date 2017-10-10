@@ -86,14 +86,14 @@ class GridIterator extends AbstractScanPointIterator {
         JythonObjectFactory<PyObject> randomOffsetMutatorFactory = ScanPointGeneratorFactory.JRandomOffsetMutatorFactory();
 
         int seed = model.getSeed();
-        PyList axes = new PyList(Arrays.asList(new String[] {yName, xName}));
+        PyList axes = new PyList(Arrays.asList(yName, xName));
         double offset = xStep * model.getOffset() / 100;
 
         PyDictionary maxOffset = new PyDictionary();
         maxOffset.put(yName, offset);
         maxOffset.put(xName, offset);
 
-		PyObject randomOffset = (PyObject) randomOffsetMutatorFactory.createObject(seed, axes, maxOffset);
+		PyObject randomOffset = randomOffsetMutatorFactory.createObject(seed, axes, maxOffset);
 
         Iterator<?>[] generators = {outerLine, innerLine};
         PyObject[] mutators = {randomOffset};
@@ -124,34 +124,6 @@ class GridIterator extends AbstractScanPointIterator {
 
 		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
 				new String[] {xName, yName}, new PyObject[] {});
-	}
-
-	@Override
-	public boolean hasNext() {
-		if (pyIterator.hasNext()) {
-			currentPoint = (Point) pyIterator.next();
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public Point next() {
-		// TODO: This will return null if called without calling hasNext() and when the
-		// ROI will exclude all further points. Raise error if called without hasNext()
-		// first, or if point is null?
-		if (currentPoint == null) {
-			hasNext();
-		}
-		Point point = currentPoint;
-		currentPoint = null;
-
-		return point;
-	}
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException("remove");
 	}
 
 	@Override
