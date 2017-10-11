@@ -22,10 +22,6 @@ public class XcenPerspective implements IPerspectiveFactory {
 	 */
 	@Override
 	public void createInitialLayout(IPageLayout layout) {
-		String editorArea = layout.getEditorArea();
-		addFastViews(layout);
-		addViewShortcuts(layout);
-		addPerspectiveShortcuts(layout);
 
 		layout.setEditorAreaVisible(false);
 		layout.addView("org.eclipse.scanning.example.xcen.ui.views.XcenDiagram", IPageLayout.LEFT, 0.40f, IPageLayout.ID_EDITOR_AREA);
@@ -43,23 +39,4 @@ public class XcenPerspective implements IPerspectiveFactory {
 		folderLayout.addView("org.eclipse.scanning.event.ui.consumerView");
 
 	}
-
-	/**
-	 * Add fast views to the perspective.
-	 */
-	private void addFastViews(IPageLayout layout) {
-	}
-
-	/**
-	 * Add view shortcuts to the perspective.
-	 */
-	private void addViewShortcuts(IPageLayout layout) {
-	}
-
-	/**
-	 * Add perspective shortcuts to the perspective.
-	 */
-	private void addPerspectiveShortcuts(IPageLayout layout) {
-	}
-
 }
