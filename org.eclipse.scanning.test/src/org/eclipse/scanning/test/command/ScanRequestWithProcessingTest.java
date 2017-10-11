@@ -54,7 +54,7 @@ public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 	@Test
 	public void testGridScanWithProcessing() throws Exception {
 
-		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False), "
+		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False, continuous=False), "
                 + "det=[detector('mandelbrot', 0.1), detector('processing', -1, detectorName='mandelbrot', processingFilePath='/tmp/sum.nxs')],"
                 + "file='"+path+"' )";
 		pi.exec(cmd);
@@ -64,7 +64,7 @@ public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 	@Test
 	public void testGridScanWithProcessing2() throws Exception {
 
-		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False), "
+		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False, continuous=False), "
                 + "det=[detector('m', 0.1), detector('p', -1, detectorName='m', processingFilePath='/tmp/sum.nxs')],"
                 + "file='"+path+"' )";
 		pi.exec(cmd);
@@ -74,7 +74,7 @@ public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 	@Test
 	public void testGridScanWithProcessing3() throws Exception {
 
-		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False), "
+		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False, continuous=False), "
                 + "det=[detector('m', 0.1), detector('processing', -1, detectorName='m', processingFilePath='/tmp/sum.nxs')],"
                 + "file='"+path+"' )";
 		pi.exec(cmd);
@@ -85,7 +85,7 @@ public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 	@Test(expected=Exception.class) // Should give a validation exception.
 	public void testGridScanWithProcessingNoDetectorName() throws Exception {
 
-		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False), "
+		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False, continuous=False), "
                 + "det=[detector('mandelbrot', 0.1), detector('processing', -1, detectorName=None)],"
                 + "file='"+path+"' )";
 		pi.exec(cmd);
@@ -95,7 +95,7 @@ public class ScanRequestWithProcessingTest extends AbstractScanCommandsTest {
 	@Test(expected=Exception.class) // Should give a validation exception.
 	public void testGridScanWithProcessingBadDetectorName() throws Exception {
 
-		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False), "
+		String cmd = "sr = scan_request(grid(axes=('yNex', 'xNex'), start=(0, 0), stop=(3, 3), count=(2, 2), snake=False, continuous=False), "
                 + "det=[detector('mandelbrot', 0.1), detector('processing', -1, detectorName='fred', processingFilePath='/tmp/sum.nxs')],"
                 + "file='"+path+"' )";
 		pi.exec(cmd);

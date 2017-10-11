@@ -40,6 +40,8 @@ import org.slf4j.LoggerFactory;
 
 public abstract class AbstractScanPointIterator implements ScanPointIterator, PySerializable {
 
+	protected static final PyObject[] EMPTY_PY_ARRAY = new PyObject[0];
+
 	private static Logger logger = LoggerFactory.getLogger(AbstractScanPointIterator.class);
 
 	private static Map<Class<?>, Function<IROI, PyObject>> roiDispatchMap = new HashMap<>();
@@ -57,7 +59,7 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 	}
 
 	protected ScanPointIterator createSpgCompoundGenerator(Iterator<?>[] iterators, Object[] regions,
-			String[] regionAxes, PyObject[] mutators) {
+			String[] regionAxes, PyObject[] mutators, int duration, boolean continuous) {
 		JythonObjectFactory<PyObject> excluderFactory = ScanPointGeneratorFactory.JExcluderFactory();
 		JythonObjectFactory<ScanPointIterator> cpgFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
 		List<PyObject> pyRegions = Arrays.asList(regions)
@@ -66,8 +68,8 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 		PyObject excluder = excluderFactory.createObject(pyRegions.toArray(), new PyList(Arrays.asList(regionAxes)));
-		PyObject[] excluders = pyRegions.isEmpty() ? new PyObject[] {} : new PyObject[] { excluder };
-		return cpgFactory.createObject(iterators, excluders, mutators);
+		PyObject[] excluders = pyRegions.isEmpty() ? EMPTY_PY_ARRAY : new PyObject[] { excluder };
+		return cpgFactory.createObject(iterators, excluders, mutators, duration, continuous);
 	}
 
 	static {
@@ -146,6 +148,11 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 	@Override
 	public int getRank() {
 		return pyIterator.getRank();
+	}
+
+	@Override
+	public int getIndex() {
+		return index;
 	}
 
 }

@@ -20,8 +20,8 @@ class StepModelExpresser extends PyModelExpresser<StepModel> {
 
 	@Override
 	public String pyExpress(StepModel model, Collection<IROI> rois, boolean verbose) {
-
-		if (rois != null && rois.size() > 0) throw new IllegalStateException("StepModels cannot be associated with ROIs.");
+		if (rois != null && !rois.isEmpty())
+			throw new IllegalStateException("StepModels cannot be associated with ROIs.");
 
 		return getString(model, verbose);
 	}

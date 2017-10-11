@@ -244,6 +244,7 @@ public class ExampleMalcolmDeviceTest {
 			Structure generatorStructure = FieldFactory.getFieldCreate().createFieldBuilder()
 					.addArray("mutators", union)
 					.add("duration", ScalarType.pvDouble)
+					.add("continuous", ScalarType.pvBoolean)
 					.addArray("generators", union)
 					.addArray("excluders", union)
 					.setId("scanpointgenerator:generator/CompoundGenerator:1.0").createStructure();

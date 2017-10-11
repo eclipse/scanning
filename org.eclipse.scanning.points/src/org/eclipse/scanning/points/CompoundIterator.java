@@ -56,6 +56,10 @@ public class CompoundIterator implements Iterator<IPosition> {
 	private IPosition next;
     private boolean justDidNext = false; // This attempts to deal with the case where someone does .next() without .hasNext();
 
+    // TODO: fix hasNext to only test if there is another element, hasNext should not increment the index
+    // Alternatively we could remove this class and say that all point generation should be done in jython
+    // This would mean having StaticGenerator and RepeatedPointGenerated also implemented in jython
+
 	@Override
 	public boolean hasNext() {
         next = getNext();

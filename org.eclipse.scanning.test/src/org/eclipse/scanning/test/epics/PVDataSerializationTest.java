@@ -105,6 +105,7 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
+				add("continuous", ScalarType.pvBoolean).
 				addArray("generators", union).
 				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
@@ -812,6 +813,7 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
+				add("continuous", ScalarType.pvBoolean).
 				addArray("generators", union).
 				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
@@ -892,6 +894,7 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
+				add("continuous", ScalarType.pvBoolean).
 				addArray("generators", union).
 				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
@@ -962,6 +965,7 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
+				add("continuous", ScalarType.pvBoolean).
 				addArray("generators", union).
 				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
@@ -1033,6 +1037,7 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
+				add("continuous", ScalarType.pvBoolean).
 				addArray("generators", union).
 				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").
@@ -1155,6 +1160,7 @@ public class PVDataSerializationTest {
 		Structure expectedCompGenStructure = fieldCreate.createFieldBuilder().
 				addArray("mutators", union).
 				add("duration", ScalarType.pvDouble).
+				add("continuous", ScalarType.pvBoolean).
 				addArray("generators", union).
 				addArray("excluders", union).
 				setId("scanpointgenerator:generator/CompoundGenerator:1.0").

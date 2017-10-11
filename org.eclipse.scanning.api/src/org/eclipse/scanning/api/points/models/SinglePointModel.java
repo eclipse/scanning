@@ -40,6 +40,11 @@ public class SinglePointModel extends AbstractMapModel {
 	}
 
 	@Override
+	public String toString() {
+		return "SinglePointModel [x=" + x + ", y=" + y + ", " + super.toString() + "]";
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;

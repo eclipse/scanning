@@ -47,7 +47,7 @@ public class PyExpressionFactory {
 
 	private static Map<Class<?>, PyModelExpresser<?>> expressers;
 	static {
-		Map<Class<?>, PyModelExpresser<?>> exp = new LinkedHashMap<Class<?>, PyModelExpresser<?>>(7);
+		Map<Class<?>, PyModelExpresser<?>> exp = new LinkedHashMap<>();
 
 		exp.put(StepModel.class,           new StepModelExpresser());
 		exp.put(MultiStepModel.class,      new MultiStepModelExpresser());
@@ -83,11 +83,11 @@ public class PyExpressionFactory {
 		if (expressers.containsKey(model.getClass())) {
 			expresser = (PyModelExpresser<T>)expressers.get(model.getClass());
 		} else {
-			Class clazz = model.getClass();
+			Class<?> clazz = model.getClass();
 			while(!clazz.equals(Object.class)) {
 				try {
-					Class[] classes = clazz.getInterfaces();
-					for (Class class1 : classes) {
+					Class<?>[] classes = clazz.getInterfaces();
+					for (Class<?> class1 : classes) {
 						if (expressers.containsKey(class1)) {
 							expresser = (PyModelExpresser<T>)expressers.get(class1);
 							break;

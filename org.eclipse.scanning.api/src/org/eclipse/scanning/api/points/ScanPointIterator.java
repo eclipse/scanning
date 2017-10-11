@@ -37,4 +37,10 @@ public interface ScanPointIterator extends Iterator<IPosition> {
 	 */
 	public int getRank();
 
+	/**
+	 * Returns index of the next position to be returned by {@link #next()}
+	 * @return
+	 */
+	public int getIndex();
+
 }

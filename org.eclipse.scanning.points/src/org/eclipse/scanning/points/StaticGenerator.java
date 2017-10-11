@@ -68,6 +68,11 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 			return size == 1 ? 0 : 1;
 		}
 
+		@Override
+		public int getIndex() {
+			return size - remaining;
+		}
+
 	}
 
 	private static final int[] EMPTY_SHAPE = new int[0];
