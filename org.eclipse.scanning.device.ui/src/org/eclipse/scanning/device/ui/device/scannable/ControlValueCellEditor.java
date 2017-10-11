@@ -30,6 +30,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositionListenable;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
 import org.eclipse.scanning.api.scan.ui.ControlNode;
+import org.eclipse.scanning.api.ui.IScannableUIPreferencesService;
 import org.eclipse.scanning.device.ui.Activator;
 import org.eclipse.scanning.device.ui.DevicePreferenceConstants;
 import org.eclipse.swt.SWT;
@@ -285,7 +286,7 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
 			this.decorator.setMaximum(scannable.getMaximum());
 			this.decorator.setMinimum(scannable.getMinimum());
 			this.decorator.setValue(getPosition());
-			this.incDeco.setValue(node.getIncrement());
+			this.incDeco.setValue(IScannableUIPreferencesService.DEFAULT.getPreferences(scannable.getName()).getNudgeValue());
 
 
 		} catch (Exception e) {
