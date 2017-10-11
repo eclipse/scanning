@@ -119,4 +119,15 @@ public class RasterModel extends AbstractBoundingBoxModel {
 			return false;
 		return true;
 	}
+	@Override
+	public String toString() {
+		return "RasterModel [fastAxisStep=" + fastAxisStep + ", slowAxisStep=" + slowAxisStep + ", snake=" + snake
+				+ ", " + super.toString() + "]";
+	}
+
+
+
+
+
+
 }

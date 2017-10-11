@@ -57,4 +57,9 @@ public class AbstractBoundingLineModel extends AbstractMapModel implements IBoun
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "AbstractBoundingLineModel [boundingLine=" + boundingLine + "]";
+	}
+
 }

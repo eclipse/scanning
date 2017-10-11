@@ -126,28 +126,28 @@ public class CompoundTest {
 		final List<IPosition> points = scan.createPoints();
 
 		// 290K
-		assertEquals(new Double(290), (Double)points.get(0).get("Temperature"));
-		assertEquals(new Double(1),   (Double)points.get(0).get("Position"));
-		assertEquals(new Double(290), (Double)points.get(1).get("Temperature"));
-		assertEquals(new Double(1.6), (Double)points.get(1).get("Position"));
-		assertEquals(new Double(290), (Double)points.get(2).get("Temperature"));
-		assertEquals(new Double(2.2), (Double)points.get(2).get("Position"));
+		assertEquals(new Double(290), points.get(0).get("Temperature"));
+		assertEquals(new Double(1),   points.get(0).get("Position"));
+		assertEquals(new Double(290), points.get(1).get("Temperature"));
+		assertEquals(new Double(1.6), points.get(1).get("Position"));
+		assertEquals(new Double(290), points.get(2).get("Temperature"));
+		assertEquals(new Double(2.2), points.get(2).get("Position"));
 
 		// 291K
-		assertEquals(new Double(291), (Double)points.get(6).get("Temperature"));
-		assertEquals(new Double(1),   (Double)points.get(6).get("Position"));
-		assertEquals(new Double(291), (Double)points.get(7).get("Temperature"));
-		assertEquals(new Double(1.6), (Double)points.get(7).get("Position"));
-		assertEquals(new Double(291), (Double)points.get(8).get("Temperature"));
-		assertEquals(new Double(2.2), (Double)points.get(8).get("Position"));
+		assertEquals(new Double(291), points.get(6).get("Temperature"));
+		assertEquals(new Double(1),   points.get(6).get("Position"));
+		assertEquals(new Double(291), points.get(7).get("Temperature"));
+		assertEquals(new Double(1.6), points.get(7).get("Position"));
+		assertEquals(new Double(291), points.get(8).get("Temperature"));
+		assertEquals(new Double(2.2), points.get(8).get("Position"));
 
 		// 295K
-		assertEquals(new Double(295), (Double)points.get(30).get("Temperature"));
-		assertEquals(new Double(1),   (Double)points.get(30).get("Position"));
-		assertEquals(new Double(295), (Double)points.get(31).get("Temperature"));
-		assertEquals(new Double(1.6), (Double)points.get(31).get("Position"));
-		assertEquals(new Double(295), (Double)points.get(32).get("Temperature"));
-		assertEquals(new Double(2.2), (Double)points.get(32).get("Position"));
+		assertEquals(new Double(295), points.get(30).get("Temperature"));
+		assertEquals(new Double(1),   points.get(30).get("Position"));
+		assertEquals(new Double(295), points.get(31).get("Temperature"));
+		assertEquals(new Double(1.6), points.get(31).get("Position"));
+		assertEquals(new Double(295), points.get(32).get("Temperature"));
+		assertEquals(new Double(2.2), points.get(32).get("Position"));
 
         GeneratorUtil.testGeneratorPoints(scan);
 	}
@@ -163,7 +163,7 @@ public class CompoundTest {
 		PyList gens = (PyList) dict.get("generators");
 		PyDictionary line1 = (PyDictionary) gens.get(0);
 
-		assertEquals("Temperature", (String) ((PyList) line1.get("axes")).get(0));
+		assertEquals("Temperature", ((PyList) line1.get("axes")).get(0));
 		assertEquals("mm", ((PyList) line1.get("units")).get(0));
 		assertEquals(290.0, (double) ((PyList) line1.get("start")).get(0), 1E-10);
 		assertEquals(295.0, (double) ((PyList) line1.get("stop")).get(0), 1E-10);
@@ -188,14 +188,14 @@ public class CompoundTest {
 		PyDictionary line1 = (PyDictionary) gens.get(0);
 		PyDictionary line2 = (PyDictionary) gens.get(1);
 
-		assertEquals("Temperature", (String) ((PyList) line1.get("axes")).get(0));
-		assertEquals("mm", (String) ((PyList) line1.get("units")).get(0));
+		assertEquals("Temperature", ((PyList) line1.get("axes")).get(0));
+		assertEquals("mm", ((PyList) line1.get("units")).get(0));
 		assertEquals(290.0, (double) ((PyList) line1.get("start")).get(0), 1E-10);
 		assertEquals(295.0, (double) ((PyList) line1.get("stop")).get(0), 1E-10);
 		assertEquals(6, (int) line1.get("size"));
 
-		assertEquals("Position", (String) ((PyList) line2.get("axes")).get(0));
-		assertEquals("mm", (String) ((PyList) line2.get("units")).get(0));
+		assertEquals("Position", ((PyList) line2.get("axes")).get(0));
+		assertEquals("mm", ((PyList) line2.get("units")).get(0));
 		assertEquals(1.0, (double) ((PyList) line2.get("start")).get(0), 1E-10);
 		assertEquals(4.0, (double) ((PyList) line2.get("stop")).get(0), 1E-10);
 		assertEquals(6, (int) line2.get("size"));
@@ -204,6 +204,41 @@ public class CompoundTest {
 		PyList mutators = (PyList) dict.get("mutators");
 		assertEquals(new PyList(), excluders);
 		assertEquals(new PyList(), mutators);
+	}
+
+	@Test
+	public void testGridContinuousToDict() throws Exception {
+		IPointGenerator<StepModel> temp = service.createGenerator(new StepModel("Temperature", 290,300,1));
+		assertEquals(11, temp.size());
+		assertEquals(1, temp.getRank());
+		assertArrayEquals(new int[] { 11 }, temp.getShape());
+
+		BoundingBox box = new BoundingBox();
+		box.setFastAxisStart(0);
+		box.setSlowAxisStart(0);
+		box.setFastAxisLength(3);
+		box.setSlowAxisLength(3);
+
+		GridModel model = new GridModel("x", "y");
+		model.setSlowAxisPoints(20);
+		model.setFastAxisPoints(20);
+		model.setBoundingBox(box);
+		model.setContinuous(false);
+
+		// Create a compound generator from the grid model and check it has the continous flag set to true
+		IPointGenerator<GridModel> grid = service.createGenerator(model);
+		IPointGenerator<?> scan = service.createCompoundGenerator(grid);
+
+		Map<?,?> dict = ((PySerializable) scan).toDict();
+		assertEquals(false, dict.get("continuous"));
+
+		// set continuous to false and create another compound generator
+		model.setContinuous(true);
+		grid = service.createGenerator(model);
+		scan = service.createCompoundGenerator(grid);
+
+		dict = ((PySerializable) scan).toDict();
+		assertEquals(true, dict.get("continuous"));
 	}
 
 	@Test
@@ -232,37 +267,37 @@ public class CompoundTest {
 		final List<IPosition> points = scan.createPoints();
 
 		// 290K
-		assertEquals(new Double(290), (Double)points.get(0).get("Temperature"));
-		assertEquals(new Double(11),  (Double)points.get(0).get("Y"));
-		assertEquals(new Double(1),   (Double)points.get(0).get("X"));
-		assertEquals(new Double(290), (Double)points.get(1).get("Temperature"));
-		assertEquals(new Double(11),  (Double)points.get(1).get("Y"));
-		assertEquals(new Double(1.6), (Double)points.get(1).get("X"));
-		assertEquals(new Double(290), (Double)points.get(2).get("Temperature"));
-		assertEquals(new Double(11),  (Double)points.get(2).get("Y"));
-		assertEquals(new Double(2.2), (Double)points.get(2).get("X"));
+		assertEquals(new Double(290), points.get(0).get("Temperature"));
+		assertEquals(new Double(11),  points.get(0).get("Y"));
+		assertEquals(new Double(1),   points.get(0).get("X"));
+		assertEquals(new Double(290), points.get(1).get("Temperature"));
+		assertEquals(new Double(11),  points.get(1).get("Y"));
+		assertEquals(new Double(1.6), points.get(1).get("X"));
+		assertEquals(new Double(290), points.get(2).get("Temperature"));
+		assertEquals(new Double(11),  points.get(2).get("Y"));
+		assertEquals(new Double(2.2), points.get(2).get("X"));
 
 		// 291K
-		assertEquals(new Double(291), (Double)points.get(36).get("Temperature"));
-		assertEquals(new Double(11),  (Double)points.get(36).get("Y"));
-		assertEquals(new Double(1),   (Double)points.get(36).get("X"));
-		assertEquals(new Double(291), (Double)points.get(37).get("Temperature"));
-		assertEquals(new Double(11),  (Double)points.get(37).get("Y"));
-		assertEquals(new Double(1.6), (Double)points.get(37).get("X"));
-		assertEquals(new Double(291), (Double)points.get(38).get("Temperature"));
-		assertEquals(new Double(11),  (Double)points.get(38).get("Y"));
-		assertEquals(new Double(2.2), (Double)points.get(38).get("X"));
+		assertEquals(new Double(291), points.get(36).get("Temperature"));
+		assertEquals(new Double(11),  points.get(36).get("Y"));
+		assertEquals(new Double(1),   points.get(36).get("X"));
+		assertEquals(new Double(291), points.get(37).get("Temperature"));
+		assertEquals(new Double(11),  points.get(37).get("Y"));
+		assertEquals(new Double(1.6), points.get(37).get("X"));
+		assertEquals(new Double(291), points.get(38).get("Temperature"));
+		assertEquals(new Double(11),  points.get(38).get("Y"));
+		assertEquals(new Double(2.2), points.get(38).get("X"));
 
 		// 295K
-		assertEquals(new Double(295), (Double)points.get(180).get("Temperature"));
-		assertEquals(new Double(11),  (Double)points.get(180).get("Y"));
-		assertEquals(new Double(1),   (Double)points.get(180).get("X"));
-		assertEquals(new Double(295), (Double)points.get(181).get("Temperature"));
-		assertEquals(new Double(11),  (Double)points.get(181).get("Y"));
-		assertEquals(new Double(1.6), (Double)points.get(181).get("X"));
-		assertEquals(new Double(295), (Double)points.get(182).get("Temperature"));
-		assertEquals(new Double(11),  (Double)points.get(182).get("Y"));
-		assertEquals(new Double(2.2), (Double)points.get(182).get("X"));
+		assertEquals(new Double(295), points.get(180).get("Temperature"));
+		assertEquals(new Double(11),  points.get(180).get("Y"));
+		assertEquals(new Double(1),   points.get(180).get("X"));
+		assertEquals(new Double(295), points.get(181).get("Temperature"));
+		assertEquals(new Double(11),  points.get(181).get("Y"));
+		assertEquals(new Double(1.6), points.get(181).get("X"));
+		assertEquals(new Double(295), points.get(182).get("Temperature"));
+		assertEquals(new Double(11),  points.get(182).get("Y"));
+		assertEquals(new Double(2.2), points.get(182).get("X"));
 
         GeneratorUtil.testGeneratorPoints(scan);
 	}
@@ -469,7 +504,7 @@ public class CompoundTest {
 		GridModel gmodel = new GridModel("stage_x", "stage_y", 5, 5);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
 
-		IPointGenerator<?> scan = service.createCompoundGenerator(new CompoundModel(Arrays.asList(mmodel, gmodel)));
+		IPointGenerator<?> scan = service.createCompoundGenerator(new CompoundModel<>(Arrays.asList(mmodel, gmodel)));
 
 		assertEquals(50, scan.size());
 	}

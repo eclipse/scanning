@@ -33,7 +33,7 @@ import org.python.core.PyDictionary;
  * @author Matthew Gerring
  *
  */
-class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySerializable {
+class CompoundGenerator extends AbstractGenerator<CompoundModel<Object>> implements PySerializable {
 
 	private IPointGenerator<?>[]     generators;
 	private List<Collection<String>> dimensionNames;

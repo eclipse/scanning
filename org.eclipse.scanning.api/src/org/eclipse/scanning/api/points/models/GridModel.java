@@ -126,6 +126,6 @@ public class GridModel extends AbstractBoundingBoxModel {
 	@Override
 	public String toString() {
 		return "GridModel [fastAxisPoints=" + fastAxisPoints + ", slowAxisPoints=" + slowAxisPoints + ", snake=" + snake
-				+ ", AbstractBoundingBoxModel [" + super.toString() + "]";
+				+ ", " + super.toString() + "]";
 	}
 }

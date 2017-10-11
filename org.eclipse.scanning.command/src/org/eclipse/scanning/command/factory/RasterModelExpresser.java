@@ -38,6 +38,9 @@ class RasterModelExpresser extends PyModelExpresser<RasterModel> {
 				+(verbose
 					? (", snake="+(model.isSnake()?"True":"False"))
 					: (model.isSnake()?"":", snake=False"))
+				+(verbose
+					? (", continuous="+(model.isContinuous()?"True":"False"))
+					: (model.isContinuous()?"":", continuous=False"))
 				+((rois == null)
 					? ""
 					: ((rois.size() == 0)

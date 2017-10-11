@@ -27,6 +27,7 @@ import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
 import org.eclipse.scanning.api.points.ScanPointIterator;
+import org.eclipse.scanning.api.points.models.IMapPathModel;
 import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyDictionary;
@@ -49,8 +50,6 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 	private IPosition             pos;
 	private Iterator<? extends IPosition>[] iterators;
 
-	private int index = -1;
-
 	public CompoundSpgIterator(CompoundGenerator gen) {
 		this.gen       = gen;
 		this.iterators = initIterators();
@@ -63,17 +62,30 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 			}
 		}
 
-		JythonObjectFactory<ScanPointIterator> compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
+		final JythonObjectFactory<ScanPointIterator> compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
 
-        Object[] excluders = getExcluders(gen.getModel().getRegions());
-        Object[] mutators = getMutators(gen.getModel().getMutators());
-        double duration = gen.getModel().getDuration();
+        final Object[] excluders = getExcluders(gen.getModel().getRegions());
+        final Object[] mutators = getMutators(gen.getModel().getMutators());
+        final double duration = gen.getModel().getDuration();
+        final boolean continuous = isContinuous();
 
-        ScanPointIterator iterator = compoundGeneratorFactory.createObject(
-				iterators, excluders, mutators, duration);
+        final ScanPointIterator iterator = compoundGeneratorFactory.createObject(
+				iterators, excluders, mutators, duration, continuous);
 
-        index = -1;
         pyIterator = iterator;
+	}
+
+	/**
+	 * A Compound model is continuous if it's inner most model is a map model and that model is continuous.
+	 * @return
+	 */
+	private boolean isContinuous() {
+		List<Object> models = gen.getModel().getModels();
+		if (!models.isEmpty()) {
+			final Object innerModel = models.get(models.size() - 1);
+			return innerModel instanceof IMapPathModel && ((IMapPathModel) innerModel).isContinuous();
+		}
+		return false;
 	}
 
 	private IPosition createFirstPosition(){
@@ -157,6 +169,6 @@ public class CompoundSpgIterator extends AbstractScanPointIterator {
 	@Override
 	public String toString() {
 		return "CompoundSpgIterator [gen=" + gen + ", pos=" + pos + ", iterators=" + Arrays.toString(iterators)
-				+ ", index=" + index + "]";
+				+ ", index=" + getIndex() + "]";
 	}
 }

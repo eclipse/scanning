@@ -60,7 +60,7 @@ class GridIterator extends AbstractScanPointIterator {
         Iterator<?>[] generators = {outerLine, innerLine};
 
 		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
-				new String[] {xName, yName}, new PyObject[] {});
+				new String[] {xName, yName}, EMPTY_PY_ARRAY, -1, model.isContinuous());
 	}
 
 	public GridIterator(RandomOffsetGridGenerator gen) {
@@ -89,17 +89,17 @@ class GridIterator extends AbstractScanPointIterator {
         PyList axes = new PyList(Arrays.asList(yName, xName));
         double offset = xStep * model.getOffset() / 100;
 
-        PyDictionary maxOffset = new PyDictionary();
+        final PyDictionary maxOffset = new PyDictionary();
         maxOffset.put(yName, offset);
         maxOffset.put(xName, offset);
 
-		PyObject randomOffset = randomOffsetMutatorFactory.createObject(seed, axes, maxOffset);
+		final PyObject randomOffset = randomOffsetMutatorFactory.createObject(seed, axes, maxOffset);
 
-        Iterator<?>[] generators = {outerLine, innerLine};
-        PyObject[] mutators = {randomOffset};
+        final Iterator<?>[] generators = { outerLine, innerLine };
+        final PyObject[] mutators = { randomOffset };
 
 		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
-				new String[] {xName, yName}, mutators);
+				new String[] { xName,  yName }, mutators, -1, model.isContinuous());
 	}
 
 	public GridIterator(RasterGenerator gen) {
@@ -123,7 +123,7 @@ class GridIterator extends AbstractScanPointIterator {
         Iterator<?>[] generators = {outerLine, innerLine};
 
 		pyIterator = createSpgCompoundGenerator(generators, gen.getRegions().toArray(),
-				new String[] {xName, yName}, new PyObject[] {});
+				new String[] {xName, yName}, new PyObject[] {}, -1, model.isContinuous());
 	}
 
 	@Override

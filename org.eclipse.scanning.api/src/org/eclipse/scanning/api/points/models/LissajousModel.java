@@ -102,4 +102,12 @@ public class LissajousModel extends AbstractBoundingBoxModel {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "LissajousModel [a=" + a + ", b=" + b + ", delta=" + delta + ", thetaStep=" + thetaStep + ", points="
+				+ points + ", " + super.toString() + "]";
+	}
+
+
 }

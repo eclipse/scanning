@@ -22,4 +22,7 @@ public interface IMapPathModel extends IScanPathModel {
 	public String getSlowAxisName();
 	public void setSlowAxisName(String newValue);
 
+	public boolean isContinuous();
+	public void setContinuous(boolean continuous);
+
 }

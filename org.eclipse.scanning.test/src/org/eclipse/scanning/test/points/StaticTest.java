@@ -42,8 +42,8 @@ public class StaticTest {
 		StaticModel model = new StaticModel();
 		IPointGenerator<StaticModel> gen = service.createGenerator(model);
 		assertEquals(1, gen.size());
-		assertEquals(1, gen.getRank());
-		assertArrayEquals(new int[] { 1 }, gen.getShape());
+		assertEquals(0, gen.getRank());
+		assertArrayEquals(new int[0], gen.getShape());
 
 		List<IPosition> positionList = gen.createPoints();
 		assertEquals(1, positionList.size());

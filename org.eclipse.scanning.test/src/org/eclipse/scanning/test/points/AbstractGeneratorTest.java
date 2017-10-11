@@ -31,10 +31,8 @@ public abstract class AbstractGeneratorTest {
 
 	@Before
 	public void before() throws Exception {
-
 		service = new PointGeneratorService();
 	}
-
 
 	public void checkWrtCompound(Object model, IROI roi, int size) throws Exception {
 
@@ -52,7 +50,6 @@ public abstract class AbstractGeneratorTest {
 	    List<IPosition> cpointList = cgenerator.createPoints();
 		assertEquals(size, cpointList.size());
 		assertEquals(size, cgenerator.size());
-
 	}
 
 }

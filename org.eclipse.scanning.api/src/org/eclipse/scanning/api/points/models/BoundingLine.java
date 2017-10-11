@@ -57,6 +57,12 @@ public class BoundingLine  {
 	public void setLength(double length) {
 		this.length = length;
 	}
+
+	@Override
+	public String toString() {
+		return "BoundingLine [xStart=" + xStart + ", yStart=" + yStart + ", angle=" + angle + ", length=" + length + "]";
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -72,6 +78,7 @@ public class BoundingLine  {
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

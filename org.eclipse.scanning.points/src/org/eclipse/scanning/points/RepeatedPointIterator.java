@@ -67,6 +67,11 @@ public class RepeatedPointIterator implements ScanPointIterator {
 		return 1;
 	}
 
+	@Override
+	public int getIndex() {
+		return count;
+	}
+
 	// TODO: 2017-10-09 Matt D: These two fields and the get and set methods for countSleeps exist
 	// only to test/ the number of times the iterator is iterated over during a scan in ScanProcessTest
 	// We should find another way to do this
