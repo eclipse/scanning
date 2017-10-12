@@ -32,12 +32,16 @@ public class XcenServices {
 
 	private static XcenServices current;
 
-	public void  start(ComponentContext context) {
-		XcenServices.current = this;
+	public void start(ComponentContext context) {
+		setCurrent(this);
 	}
 
 	public void stop() {
-		XcenServices.current = null;
+		setCurrent(null);
+	}
+
+	private static final void setCurrent(XcenServices object) {
+		current = object;
 	}
 
 	public static XcenServices getCurrent() {
