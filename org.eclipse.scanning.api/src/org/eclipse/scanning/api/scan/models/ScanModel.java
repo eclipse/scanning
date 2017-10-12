@@ -236,12 +236,12 @@ public class ScanModel {
 	}
 
 	public void setMonitorsPerPoint(List<IScannable<?>> monitors) {
-		logger.info("setMonitorsPerPoint({}) was {} ({})", monitors, this.monitorsPerPoint, this);
+		logger.trace("setMonitorsPerPoint({}) was {} ({})", monitors, this.monitorsPerPoint, this);
 		this.monitorsPerPoint = monitors;
 	}
 
 	public void setMonitorsPerPoint(IScannable<?>... monitors) {
-		logger.info("setMonitorsPerPoint({}) was {} ({})", this, monitors, this.monitorsPerPoint, this);
+		logger.trace("setMonitorsPerPoint({}) was {} ({})", this, monitors, this.monitorsPerPoint, this);
 		this.monitorsPerPoint = new ArrayList<>(Arrays.asList(monitors));
 		for (Iterator<IScannable<?>> iterator = this.monitorsPerPoint.iterator(); iterator.hasNext();) {
 			if (iterator.next()==null) iterator.remove();
@@ -257,12 +257,12 @@ public class ScanModel {
 	}
 
 	public void setMonitorsPerScan(List<IScannable<?>> monitors) {
-		logger.info("setMonitorsPerScan({}) was {} ({})", monitors, this.monitorsPerScan, this);
+		logger.trace("setMonitorsPerScan({}) was {} ({})", monitors, this.monitorsPerScan, this);
 		this.monitorsPerScan = monitors;
 	}
 
 	public void setMonitorsPerScan(IScannable<?>... monitors) {
-		logger.info("setMonitorsPerScan({}) was {} ({})", monitors, this.monitorsPerScan, this);
+		logger.trace("setMonitorsPerScan({}) was {} ({})", monitors, this.monitorsPerScan, this);
 		this.monitorsPerScan = new ArrayList<>(Arrays.asList(monitors));
 		for (Iterator<IScannable<?>> iterator = this.monitorsPerScan.iterator(); iterator.hasNext();) {
 			if (iterator.next()==null) iterator.remove();

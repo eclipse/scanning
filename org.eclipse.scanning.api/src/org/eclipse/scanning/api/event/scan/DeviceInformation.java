@@ -405,7 +405,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	}
 
 	public boolean setActivated(boolean activated) {
-		logger.info("setActivated({}) was {} ({})", activated, this.activated, this);
+		logger.trace("setActivated({}) was {} ({})", activated, this.activated, this);
 		boolean wasactivated = this.activated;
 		this.activated = activated;
 		return wasactivated;
@@ -440,7 +440,7 @@ public class DeviceInformation<T> implements IModelProvider<T> {
 	}
 
 	public void setMonitorRole(MonitorRole monitorRole) {
-		logger.info("setMonitorRole({}) was {} ({})", monitorRole, this.monitorRole, this);
+		logger.trace("setMonitorRole({}) was {} ({})", monitorRole, this.monitorRole, this);
 		this.monitorRole = monitorRole;
 	}
 

@@ -596,7 +596,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 
 	@Override
 	public boolean setActivated(boolean activated) {
-		logger.info("setActivated({}) was {} ({})", activated, this.activated, this);
+		logger.trace("setActivated({}) was {} ({})", activated, this.activated, this);
 		boolean wasactivated = this.activated;
 		this.activated = activated;
 		return wasactivated;
