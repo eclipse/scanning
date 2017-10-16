@@ -18,6 +18,7 @@ import org.eclipse.dawnsci.analysis.api.persistence.IMarshallerService;
 import org.eclipse.dawnsci.json.MarshallerService;
 import org.eclipse.scanning.api.event.EventConstants;
 import org.eclipse.scanning.api.event.IEventService;
+import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.event.EventServiceImpl;
 import org.eclipse.scanning.example.classregistry.ScanningExampleClassRegistry;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;
@@ -33,11 +34,9 @@ import org.eclipse.scanning.test.ui.composites.MultiStepCompositeTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
 
-import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
-
 @RunWith(org.junit.runners.Suite.class)
 @SuiteClasses({
-
+	ScannableUIPreferencesTest.class,
 	SampleInformationTest.class,
 	AxisConfigurationTest.class,
 	KnownModelsTest.class,
