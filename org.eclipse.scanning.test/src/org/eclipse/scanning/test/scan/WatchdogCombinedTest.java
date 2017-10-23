@@ -178,6 +178,21 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 		}
 	}
 
+	@Test
+	public void startWhilstTopupInProgress() throws Exception {
+		// make edog evaluate to false
+		connector.getScannable("beamcurrent").setPosition(0.5);
+
+		IDeviceController controller = createTestScanner(null);
+		IRunnableEventDevice<?> scanner = (IRunnableEventDevice<?>)controller.getDevice();
+
+		scanner.start(null);
+		scanner.latch(500, TimeUnit.MILLISECONDS);
+
+		// the device should be now be paused
+		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
+	}
+
 
 	@Test
 	public void disabledTopup() throws Exception {
