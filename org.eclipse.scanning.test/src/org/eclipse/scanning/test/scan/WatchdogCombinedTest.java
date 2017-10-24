@@ -179,7 +179,7 @@ public class WatchdogCombinedTest extends AbstractWatchdogTest {
 	}
 
 	@Test
-	public void startWhilstTopupInProgress() throws Exception {
+	public void startWhenExpressionWatchdogEvaluatesFalse() throws Exception {
 		// make edog evaluate to false
 		connector.getScannable("beamcurrent").setPosition(0.5);
 
