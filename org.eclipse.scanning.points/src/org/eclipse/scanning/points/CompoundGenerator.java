@@ -81,7 +81,7 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel<Object>> impleme
 	}
 
 	@Override
-	public int sizeOfValidModel() throws GeneratorException {
+	public int sizeOfValidModel() throws GeneratorException  {
 		Iterator<IPosition> it = iteratorFromValidModel();
 		int size = 1;
 		if (it instanceof CompoundSpgIterator) {
@@ -133,14 +133,10 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel<Object>> impleme
 
 	@Override
 	protected Iterator<IPosition> iteratorFromValidModel() {
-		try {
-			if (isScanPointGeneratorFactory()) {
-				return new CompoundSpgIterator(this);
-			} else {
-				return new CompoundIterator(this);
-			}
-		} catch (GeneratorException e) {
-			throw new IllegalArgumentException(e);
+		if (isScanPointGeneratorFactory()) {
+			return new CompoundSpgIterator(this);
+		} else {
+			return new CompoundIterator(this);
 		}
 	}
 
