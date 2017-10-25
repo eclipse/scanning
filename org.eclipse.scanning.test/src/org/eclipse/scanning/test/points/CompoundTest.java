@@ -126,28 +126,28 @@ public class CompoundTest {
 		final List<IPosition> points = scan.createPoints();
 
 		// 290K
-		assertEquals(new Double(290), points.get(0).get("Temperature"));
-		assertEquals(new Double(1),   points.get(0).get("Position"));
-		assertEquals(new Double(290), points.get(1).get("Temperature"));
-		assertEquals(new Double(1.6), points.get(1).get("Position"));
-		assertEquals(new Double(290), points.get(2).get("Temperature"));
-		assertEquals(new Double(2.2), points.get(2).get("Position"));
+		assertEquals(290.0, points.get(0).get("Temperature"));
+		assertEquals(1.0,   points.get(0).get("Position"));
+		assertEquals(290.0, points.get(1).get("Temperature"));
+		assertEquals(1.6, points.get(1).get("Position"));
+		assertEquals(290.0, points.get(2).get("Temperature"));
+		assertEquals(2.2, points.get(2).get("Position"));
 
 		// 291K
-		assertEquals(new Double(291), points.get(6).get("Temperature"));
-		assertEquals(new Double(1),   points.get(6).get("Position"));
-		assertEquals(new Double(291), points.get(7).get("Temperature"));
-		assertEquals(new Double(1.6), points.get(7).get("Position"));
-		assertEquals(new Double(291), points.get(8).get("Temperature"));
-		assertEquals(new Double(2.2), points.get(8).get("Position"));
+		assertEquals(291.0, points.get(6).get("Temperature"));
+		assertEquals(1.0,   points.get(6).get("Position"));
+		assertEquals(291.0, points.get(7).get("Temperature"));
+		assertEquals(1.6, points.get(7).get("Position"));
+		assertEquals(291.0, points.get(8).get("Temperature"));
+		assertEquals(2.2, points.get(8).get("Position"));
 
 		// 295K
-		assertEquals(new Double(295), points.get(30).get("Temperature"));
-		assertEquals(new Double(1),   points.get(30).get("Position"));
-		assertEquals(new Double(295), points.get(31).get("Temperature"));
-		assertEquals(new Double(1.6), points.get(31).get("Position"));
-		assertEquals(new Double(295), points.get(32).get("Temperature"));
-		assertEquals(new Double(2.2), points.get(32).get("Position"));
+		assertEquals(295.0, points.get(30).get("Temperature"));
+		assertEquals(1.0,   points.get(30).get("Position"));
+		assertEquals(295.0, points.get(31).get("Temperature"));
+		assertEquals(1.6, points.get(31).get("Position"));
+		assertEquals(295.0, points.get(32).get("Temperature"));
+		assertEquals(2.2, points.get(32).get("Position"));
 
         GeneratorUtil.testGeneratorPoints(scan);
 	}
@@ -267,37 +267,37 @@ public class CompoundTest {
 		final List<IPosition> points = scan.createPoints();
 
 		// 290K
-		assertEquals(new Double(290), points.get(0).get("Temperature"));
-		assertEquals(new Double(11),  points.get(0).get("Y"));
-		assertEquals(new Double(1),   points.get(0).get("X"));
-		assertEquals(new Double(290), points.get(1).get("Temperature"));
-		assertEquals(new Double(11),  points.get(1).get("Y"));
-		assertEquals(new Double(1.6), points.get(1).get("X"));
-		assertEquals(new Double(290), points.get(2).get("Temperature"));
-		assertEquals(new Double(11),  points.get(2).get("Y"));
-		assertEquals(new Double(2.2), points.get(2).get("X"));
+		assertEquals(290.0, points.get(0).get("Temperature"));
+		assertEquals(11.0,  points.get(0).get("Y"));
+		assertEquals(1.0,   points.get(0).get("X"));
+		assertEquals(290.0, points.get(1).get("Temperature"));
+		assertEquals(11.0,  points.get(1).get("Y"));
+		assertEquals(1.6, points.get(1).get("X"));
+		assertEquals(290.0, points.get(2).get("Temperature"));
+		assertEquals(11.0,  points.get(2).get("Y"));
+		assertEquals(2.2, points.get(2).get("X"));
 
 		// 291K
-		assertEquals(new Double(291), points.get(36).get("Temperature"));
-		assertEquals(new Double(11),  points.get(36).get("Y"));
-		assertEquals(new Double(1),   points.get(36).get("X"));
-		assertEquals(new Double(291), points.get(37).get("Temperature"));
-		assertEquals(new Double(11),  points.get(37).get("Y"));
-		assertEquals(new Double(1.6), points.get(37).get("X"));
-		assertEquals(new Double(291), points.get(38).get("Temperature"));
-		assertEquals(new Double(11),  points.get(38).get("Y"));
-		assertEquals(new Double(2.2), points.get(38).get("X"));
+		assertEquals(291.0, points.get(36).get("Temperature"));
+		assertEquals(11.0,  points.get(36).get("Y"));
+		assertEquals(1.0,   points.get(36).get("X"));
+		assertEquals(291.0, points.get(37).get("Temperature"));
+		assertEquals(11.0,  points.get(37).get("Y"));
+		assertEquals(1.6, points.get(37).get("X"));
+		assertEquals(291.0, points.get(38).get("Temperature"));
+		assertEquals(11.0,  points.get(38).get("Y"));
+		assertEquals(2.2, points.get(38).get("X"));
 
 		// 295K
-		assertEquals(new Double(295), points.get(180).get("Temperature"));
-		assertEquals(new Double(11),  points.get(180).get("Y"));
-		assertEquals(new Double(1),   points.get(180).get("X"));
-		assertEquals(new Double(295), points.get(181).get("Temperature"));
-		assertEquals(new Double(11),  points.get(181).get("Y"));
-		assertEquals(new Double(1.6), points.get(181).get("X"));
-		assertEquals(new Double(295), points.get(182).get("Temperature"));
-		assertEquals(new Double(11),  points.get(182).get("Y"));
-		assertEquals(new Double(2.2), points.get(182).get("X"));
+		assertEquals(295.0, points.get(180).get("Temperature"));
+		assertEquals(11.0,  points.get(180).get("Y"));
+		assertEquals(1.0,   points.get(180).get("X"));
+		assertEquals(295.0, points.get(181).get("Temperature"));
+		assertEquals(11.0,  points.get(181).get("Y"));
+		assertEquals(1.6, points.get(181).get("X"));
+		assertEquals(295.0, points.get(182).get("Temperature"));
+		assertEquals(11.0,  points.get(182).get("Y"));
+		assertEquals(2.2, points.get(182).get("X"));
 
         GeneratorUtil.testGeneratorPoints(scan);
 	}
@@ -337,16 +337,16 @@ public class CompoundTest {
 
 		// The first 400 should be T=290
 		for (int i = 0; i < 400; i++) {
-			assertEquals(new Double(290.0), points.get(i).get("Temperature"));
+			assertEquals(290.0, points.get(i).get("Temperature"));
 			first400.add(points.get(i));
 		}
 		checkPoints(first400);
 
 		for (int i = 400; i < 800; i++) {
-			assertEquals(new Double(291.0), points.get(i).get("Temperature"));
+			assertEquals(291.0, points.get(i).get("Temperature"));
 		}
 		for (int i = 4399; i >= 4000; i--) {
-			assertEquals(new Double(300.0), points.get(i).get("Temperature"));
+			assertEquals(300.0, points.get(i).get("Temperature"));
 		}
         GeneratorUtil.testGeneratorPoints(scan);
 	}
@@ -388,13 +388,13 @@ public class CompoundTest {
 
 		// The first 400 should be T=290
 		for (int i = 0; i < expectedInnerSize; i++) {
-			assertEquals("i = " + i, new Double(290.0), points.get(i).get("Temperature"));
+			assertEquals("i = " + i, 290.0, points.get(i).get("Temperature"));
 		}
 		for (int i = expectedInnerSize, max = expectedInnerSize * 2; i < max; i++) {
-			assertEquals(new Double(291.0), points.get(i).get("Temperature"));
+			assertEquals(291.0, points.get(i).get("Temperature"));
 		}
 		for (int i = expectedScanSize - 1, min = expectedScanSize - expectedInnerSize; i >= min; i--) {
-			assertEquals(new Double(300.0), points.get(i).get("Temperature"));
+			assertEquals(300.0, points.get(i).get("Temperature"));
 		}
         GeneratorUtil.testGeneratorPoints(scan);
 	}
