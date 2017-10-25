@@ -42,6 +42,7 @@ public interface IPointGenerator<T> extends Iterable<IPosition>, IValidator<T>, 
 	 */
 	@Override
 	T getModel();
+
 	@Override
 	void setModel(T model) throws GeneratorException;
 
@@ -50,6 +51,7 @@ public interface IPointGenerator<T> extends Iterable<IPosition>, IValidator<T>, 
 	 * @return
 	 */
 	List<IPointContainer> getContainers();
+
 	void setContainers(List<IPointContainer> container) throws GeneratorException;
 
 	/**
@@ -57,6 +59,7 @@ public interface IPointGenerator<T> extends Iterable<IPosition>, IValidator<T>, 
 	 * @return
 	 */
 	Collection<Object> getRegions();
+
 	void setRegions(Collection<Object> region) throws GeneratorException;
 
 	/**
@@ -106,6 +109,7 @@ public interface IPointGenerator<T> extends Iterable<IPosition>, IValidator<T>, 
 	 * @return
 	 */
 	public String getId();
+
 	public void setId(String id);
 
 	/**
@@ -113,12 +117,14 @@ public interface IPointGenerator<T> extends Iterable<IPosition>, IValidator<T>, 
 	 * @return
 	 */
 	public String getLabel();
+
 	public void setLabel(String label);
 
 	/**
 	 * The long description shown to the user for this generator.
 	 */
 	public String getDescription();
+
 	public void setDescription(String description);
 
 	/**
@@ -126,6 +132,7 @@ public interface IPointGenerator<T> extends Iterable<IPosition>, IValidator<T>, 
 	 * @return true if the user should be able to use this generator in the user interface.
 	 */
 	public boolean isVisible();
+
 	public void setVisible(boolean vis);
 
 	/**
@@ -133,6 +140,7 @@ public interface IPointGenerator<T> extends Iterable<IPosition>, IValidator<T>, 
 	 * @return false if the user has disabled this generator from the compound scan but does not want to delete it.
 	 */
 	public boolean isEnabled();
+
 	public void setEnabled(boolean enabled);
 
 	/**
@@ -144,6 +152,7 @@ public interface IPointGenerator<T> extends Iterable<IPosition>, IValidator<T>, 
 	 * @return
 	 */
 	public String getIconPath();
+
 	public void setIconPath(String path);
 
 	/**

@@ -11,10 +11,11 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.eclipse.scanning.api.points.AbstractPosition;
-import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.MapPosition;
@@ -30,85 +31,67 @@ import org.eclipse.scanning.api.points.MapPosition;
 public class CompoundIterator implements Iterator<IPosition> {
 
 	private CompoundGenerator     gen;
-	private IPosition             pos;
+	private IPosition             lastPosition;
 	private Iterator<? extends IPosition>[] iterators;
 	private int index;
 
-	public CompoundIterator(CompoundGenerator gen) throws GeneratorException {
-		this.gen       = gen;
+	public CompoundIterator(CompoundGenerator gen) {
+		this.gen = gen;
 		this.iterators = initIterators();
-		this.pos       = createFirstPosition();
-		this.index     = -1;
+		this.lastPosition = createFirstPosition();
+		this.index = 0;
 	}
 
-	private IPosition createFirstPosition() throws GeneratorException {
+	@SuppressWarnings("unchecked")
+	private Iterator<? extends IPosition>[] initIterators() {
+		return Arrays.stream(gen.getGenerators()).map(IPointGenerator::iterator).toArray(Iterator[]::new);
+	}
 
-	    IPosition pos = new MapPosition();
+	private IPosition createFirstPosition() {
+		// Before next() is called for the first time, we need to create a compound position that
+		// includes the positions of all iterators not just the inner most one. At each call to next()
+		// on this iterator this is updated with the new positions of any iterators for which next() are called
+	    IPosition position = new MapPosition();
 		for (int i = 0; i < iterators.length-1; i++) {
-			IPosition with=null;
-			if (gen.getGenerators()[i] instanceof IPointGenerator) with = ((IPointGenerator)gen.getGenerators()[i]).getFirstPoint();
+			IPosition with = gen.getGenerators()[i].getFirstPoint();
 			if (with==null) with = iterators[i].next();
-			pos = with.compound(pos);
+			position = with.compound(position);
 		}
-		return pos;
+		return position;
 	}
-
-	private IPosition next;
-    private boolean justDidNext = false; // This attempts to deal with the case where someone does .next() without .hasNext();
-
-    // TODO: fix hasNext to only test if there is another element, hasNext should not increment the index
-    // Alternatively we could remove this class and say that all point generation should be done in jython
-    // This would mean having StaticGenerator and RepeatedPointGenerated also implemented in jython
 
 	@Override
 	public boolean hasNext() {
-        next = getNext();
-        index++;
-        if (next!=null) next.setStepIndex(index);
-
-        justDidNext = true;
-        return next!=null;
+		return Arrays.stream(iterators).anyMatch(Iterator::hasNext);
 	}
 
 	@Override
 	public IPosition next() {
-		if (!justDidNext) next = getNext();
-		justDidNext = false;
-		return next;
-	}
-
-	public IPosition getNext() {
-
-		for (int i = iterators.length-1; i > -1; i--) {
+		// iterate through iterators starting at the inner most one
+		for (int i = iterators.length - 1; i > -1; i--) {
 			if (iterators[i].hasNext()) {
+				// once we find an iterator for which hasNext() returns true
+				// call next() once, update lastPosition with that position
 				IPosition next = iterators[i].next();
-				pos = next.compound(pos);
-				((AbstractPosition)pos).setDimensionNames(gen.getDimensionNames());
-				return pos;
-			} else if (i>0) {
-				iterators[i]    = gen.getGenerators()[i].iterator();
+				lastPosition = next.compound(lastPosition);
+				((AbstractPosition) lastPosition).setDimensionNames(gen.getDimensionNames());
+
+				// update the step index and return pos
+				lastPosition.setStepIndex(index);
+				index++;
+				return lastPosition;
+			} else if (i > 0) { // for all but the outer most iterator
+				// replace this inner iterator with a fresh one for the next outer iteration
+				iterators[i] = gen.getGenerators()[i].iterator();
+				// call next() once and update lastPosition with the first position of this inner iterator
 				IPosition first = iterators[i].next();
-				pos = first.compound(pos);
-				((AbstractPosition)pos).setDimensionNames(gen.getDimensionNames());
+				lastPosition = first.compound(lastPosition);
+				((AbstractPosition) lastPosition).setDimensionNames(gen.getDimensionNames());
 			}
 		}
-		return null;
+
+		// hasNext() returned false for all iterators, no more points left
+		throw new NoSuchElementException();
 	}
-
-
-	private Iterator<? extends IPosition>[] initIterators() {
-		final IPointGenerator<?>[] gs = gen.getGenerators();
-		@SuppressWarnings("unchecked")
-		Iterator<? extends IPosition>[] ret = new Iterator[gs.length];
-		for (int i = 0; i < gs.length; i++) {
-			ret[i] = gs[i].iterator();
-		}
-		return ret;
-	}
-
-	@Override
-	public void remove() {
-        throw new UnsupportedOperationException("remove");
-    }
 
 }
