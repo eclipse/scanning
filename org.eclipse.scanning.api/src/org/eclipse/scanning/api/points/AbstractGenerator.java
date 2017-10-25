@@ -151,9 +151,8 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	 * scan shape can be provided.
 	 *
 	 * @return scan shape
-	 * @throws GeneratorException
 	 */
-	protected int[] calculateShape() throws GeneratorException {
+	protected int[] calculateShape() {
 		Iterator<IPosition> iterator = iteratorFromValidModel();
 
 		// if the iterator is an ScanPointIterator we can ask it for the shape
@@ -217,6 +216,7 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	/**
 	 * Please override this method, the default creates all points and
 	 * returns their size
+	 * @throws GeneratorException
 	 */
 	protected int sizeOfValidModel() throws GeneratorException {
 		// For those generators which implement an iterator,
@@ -229,19 +229,20 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 		if (it instanceof ScanPointIterator) {
 			return ((ScanPointIterator)it).size();
 		}
-		int index = -1;
-		while(it.hasNext()) {
+		int index = 0;
+		while (it.hasNext()) {
 			it.next();
 			index++;
 		}
-		return index+1;
+		return index;
 	}
 
 	@Override
 	public List<IPosition> createPoints() throws GeneratorException {
 		final List<IPosition> points = new ArrayList<>(89);
 		Iterator<IPosition> it = iterator();
-		while(it.hasNext()) points.add(it.next());
+		while (it.hasNext())
+			points.add(it.next());
 		return points;
 	}
 
@@ -256,17 +257,15 @@ public abstract class AbstractGenerator<T> implements IPointGenerator<T>, Iterab
 	}
 
 	/**
+	 * Returns whether this generator contains the given point.
 	 * If there are no containers, the point is considered contained.
 	 *
-	 * @param x
-	 * @param y
+	 * @param point point
+	 * @return <code>true</code> if this generator contains the given point, <code>false</code> otherwise
 	 */
 	public boolean containsPoint(IPosition point) {
 		if (containers==null || containers.isEmpty())    return true;
-		for (IPointContainer container : containers) {
-			if (container.containsPoint(point)) return true;
-		}
-		return false;
+		return containers.stream().anyMatch(c -> c.containsPoint(point));
 	}
 
 	@Override
