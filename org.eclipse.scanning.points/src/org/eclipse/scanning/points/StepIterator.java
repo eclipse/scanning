@@ -13,32 +13,36 @@ package org.eclipse.scanning.points;
 
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.ScanPointIterator;
+import org.eclipse.scanning.api.points.models.StepModel;
 
 /**
- * An iterator over multiple step ranges. Acts essentially as a sequence of
- * step iterators chained together. In the special case where one step iterator begins
- * with the last value of the previous iterator it is not repeated.
+ * An iterator along points on one axis with a start position, a stop position and an step size.
  *
- * TODO Matt D. 2017-10-26: why do we need to set exposure time? Isn't there some way
- * we can give this to the jython point generator? Adding the exposure time here
- * means this won't work with Malcolm. See JIRA ticket DAQ-888. When this is fixed
- * this class should be removed.
- *
- * @author Matthew Dickie
+ * TODO: DAQ-888 setting the exposure time should be done in the jython level, otherwise
+ * it won't work for malcolm scans.
  */
-public class MultiStepIterator extends SpgIterator {
+class StepIterator extends SpgIterator {
 
-	private final double[] times;
+	private final StepModel model;
 
-	public MultiStepIterator(ScanPointIterator pyIterator, double[] times) {
+	public StepIterator(StepModel model, ScanPointIterator pyIterator) {
 		super(pyIterator);
-		this.times = times;
+		this.model = model;
+	}
+
+	protected StepModel getModel() {
+		return model;
 	}
 
 	@Override
 	public IPosition next() {
-		IPosition next = super.next();
-        next.setExposureTime(times[next.getStepIndex()]);
+		final IPosition next = super.next();
+
+		// set the exposure time and index
+		if (next != null) {
+			next.setExposureTime(model.getExposureTime()); // Usually 0
+		}
+
 		return next;
 	}
 

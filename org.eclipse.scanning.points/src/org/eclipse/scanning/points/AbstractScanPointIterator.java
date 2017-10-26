@@ -11,14 +11,10 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
@@ -31,16 +27,14 @@ import org.eclipse.dawnsci.analysis.dataset.roi.SectorROI;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.ScanRegion;
-import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.python.core.PyDictionary;
-import org.python.core.PyList;
 import org.python.core.PyObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractScanPointIterator implements ScanPointIterator, PySerializable {
 
-	protected static final PyObject[] EMPTY_PY_ARRAY = new PyObject[0];
+	public static final PyObject[] EMPTY_PY_ARRAY = new PyObject[0];
 
 	private static Logger logger = LoggerFactory.getLogger(AbstractScanPointIterator.class);
 
@@ -56,20 +50,6 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 
 	public void setPyIterator(ScanPointIterator pyIterator) {
 		this.pyIterator = pyIterator;
-	}
-
-	protected ScanPointIterator createSpgCompoundGenerator(Iterator<?>[] iterators, Object[] regions,
-			String[] regionAxes, PyObject[] mutators, int duration, boolean continuous) {
-		JythonObjectFactory<PyObject> excluderFactory = ScanPointGeneratorFactory.JExcluderFactory();
-		JythonObjectFactory<ScanPointIterator> cpgFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
-		List<PyObject> pyRegions = Arrays.asList(regions)
-				.stream()
-				.map(AbstractScanPointIterator::makePyRoi)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
-		PyObject excluder = excluderFactory.createObject(pyRegions.toArray(), new PyList(Arrays.asList(regionAxes)));
-		PyObject[] excluders = pyRegions.isEmpty() ? EMPTY_PY_ARRAY : new PyObject[] { excluder };
-		return cpgFactory.createObject(iterators, excluders, mutators, duration, continuous);
 	}
 
 	static {
