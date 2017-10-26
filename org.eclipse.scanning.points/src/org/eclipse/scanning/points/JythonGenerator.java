@@ -1,6 +1,7 @@
 package org.eclipse.scanning.points;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Optional;
 
@@ -8,9 +9,18 @@ import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
+import org.eclipse.scanning.api.points.models.JythonArgument;
+import org.eclipse.scanning.api.points.models.JythonArgument.JythonArgumentType;
 import org.eclipse.scanning.api.points.models.JythonGeneratorModel;
+import org.eclipse.scanning.jython.JythonInterpreterManager;
+import org.eclipse.scanning.jython.JythonObjectFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class JythonGenerator extends AbstractGenerator<JythonGeneratorModel> {
+
+	private static final Logger logger = LoggerFactory.getLogger(JythonGenerator.class);
 
 	JythonGenerator() {
 		setLabel("Function");
@@ -20,7 +30,37 @@ public class JythonGenerator extends AbstractGenerator<JythonGeneratorModel> {
 
 	@Override
 	protected Iterator<IPosition> iteratorFromValidModel() {
-		return new JythonIterator(getModel());
+
+		try {
+			// Ensure that the module path is on the path
+			JythonInterpreterManager.addPath(model.getPath());
+		} catch (IOException e) {
+			logger.error("Unable to add '"+model.getPath()+"' to path");
+		}
+
+		final JythonObjectFactory<ScanPointIterator> jythonObject =
+				new JythonObjectFactory<>(ScanPointIterator.class, model.getModuleName(), model.getClassName());
+
+		final ScanPointIterator pyIterator;
+		if (model.getArguments() == null || model.getArguments().isEmpty()) {
+			pyIterator = jythonObject.createObject();
+		} else {
+			final Object[] args = model.getArguments().stream().map(JythonGenerator::getArgument).toArray();
+			final String[] keywords = model.getKeywords() == null ? new String[0] :
+				model.getKeywords().toArray(new String[model.getKeywords().size()]);
+			pyIterator = jythonObject.createObject(args, keywords);
+		}
+
+		return new SpgIterator(pyIterator);
+	}
+
+	private static Object getArgument(JythonArgument arg) {
+		if (arg.getType()==JythonArgumentType.INTEGER) {
+			return Integer.parseInt(arg.getValue());
+		} else if (arg.getType()==JythonArgumentType.FLOAT) {
+			return Float.parseFloat(arg.getValue());
+		}
+		return arg.getValue();
 	}
 
 	@Override

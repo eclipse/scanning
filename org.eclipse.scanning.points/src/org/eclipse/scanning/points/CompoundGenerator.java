@@ -22,6 +22,7 @@ import org.eclipse.scanning.api.points.AbstractPosition;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPosition;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.python.core.PyDictionary;
 
@@ -84,8 +85,8 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel<Object>> impleme
 	public int sizeOfValidModel() throws GeneratorException  {
 		Iterator<IPosition> it = iteratorFromValidModel();
 		int size = 1;
-		if (it instanceof CompoundSpgIterator) {
-			size = ((CompoundSpgIterator)it).size();
+		if (it instanceof ScanPointIterator) {
+			size = ((ScanPointIterator) it).size();
 		} else {
 			for (int i = 0;i < generators.length; i++) {
 				size *= generators[i].size();
@@ -134,7 +135,7 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel<Object>> impleme
 	@Override
 	protected Iterator<IPosition> iteratorFromValidModel() {
 		if (isScanPointGeneratorFactory()) {
-			return new CompoundSpgIterator(this);
+			return new CompoundSpgIteratorFactory().createCompoundSpgIterator(this);
 		} else {
 			return new CompoundIterator(this);
 		}

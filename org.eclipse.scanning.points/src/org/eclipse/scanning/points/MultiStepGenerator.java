@@ -12,12 +12,16 @@
 package org.eclipse.scanning.points;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.StepModel;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 
 /**
  * Point generator for {@link MultiStepModel}s.
@@ -38,7 +42,56 @@ class MultiStepGenerator extends AbstractGenerator<MultiStepModel> {
 
 	@Override
 	protected ScanPointIterator iteratorFromValidModel() {
-		return new MultiStepIterator(model);
+		this.model = model;
+
+		JythonObjectFactory<ScanPointIterator> arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
+
+		int totalSize = 0;
+		boolean finalPosWasEnd = false;
+		List<double[]> positionArrays = new ArrayList<>(model.getStepModels().size());
+		double previousEnd = 0;
+		for (StepModel stepModel : model.getStepModels()) {
+			int size = stepModel.size();
+			double pos = stepModel.getStart();
+
+			// if the start of this model is the end of the previous one, and the end of the
+			// previous was was its final point, skip the first point
+			if (finalPosWasEnd &&
+					Math.abs(stepModel.getStart() - previousEnd) < Math.abs(stepModel.getStep() / 100)) {
+				pos = pos += stepModel.getStep();
+				size--;
+			}
+			double[] positions = new double[size];
+
+			for (int i = 0; i < size; i++) {
+				positions[i] = pos;
+				pos += stepModel.getStep();
+			}
+			positionArrays.add(positions);
+			totalSize += size;
+
+			// record if the final position of this model is its end position (within a tolerance of step/100)
+			// this is not always the case, e.g. if start=0, stop=10 and step=3
+			double finalPos = positions[positions.length - 1];
+			finalPosWasEnd = Math.abs(stepModel.getStop() - finalPos) < Math.abs(stepModel.getStep() / 100);
+			previousEnd = stepModel.getStop();
+		}
+
+		final double[] points = new double[totalSize];
+		final double[] times = new double[totalSize];
+
+		int pos        = 0;
+		int sindex     = 0;
+		for (double[] positions : positionArrays) {
+			System.arraycopy(positions, 0, points, pos, positions.length);
+			double time = model.getStepModels().get(sindex).getExposureTime();
+			Arrays.fill(times, pos, pos+positions.length, time);
+			pos += positions.length;
+			sindex+=1;
+		}
+
+		final ScanPointIterator pyIterator = arrayGeneratorFactory.createObject(model.getName(), "mm", points);
+		return new MultiStepIterator(pyIterator, times);
 	}
 
 	@Override

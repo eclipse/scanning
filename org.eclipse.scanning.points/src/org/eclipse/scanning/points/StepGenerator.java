@@ -16,6 +16,7 @@ import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.StepModel;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 
 class StepGenerator extends AbstractGenerator<StepModel> {
 
@@ -39,9 +40,23 @@ class StepGenerator extends AbstractGenerator<StepModel> {
 		return getModel().size();
 	}
 
+	protected ScanPointIterator createPyIterator() {
+		final StepModel model = getModel();
+
+        final JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
+
+        final String name   = model.getName();
+        final double start  = model.getStart();
+        final double stop   = model.getStop();
+        final int numPoints = model.size();
+
+		return lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
+	}
+
 	@Override
 	public ScanPointIterator iteratorFromValidModel() {
-		return new LineIterator(this);
+		final ScanPointIterator pyIterator = createPyIterator();
+		return new StepIterator(getModel(), pyIterator);
 	}
 
 	@Override
