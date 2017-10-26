@@ -27,7 +27,7 @@ import org.eclipse.scanning.api.points.Scalar;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.jython.JythonObjectFactory;
-import org.eclipse.scanning.points.CompoundSpgIterator;
+import org.eclipse.scanning.points.CompoundSpgIteratorFactory;
 import org.eclipse.scanning.points.ScanPointGeneratorFactory;
 import org.junit.Test;
 import org.python.core.PyDictionary;
@@ -216,7 +216,7 @@ public class ScanPointGeneratorFactoryTest {
 		JythonObjectFactory<ScanPointIterator> compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
 
         Object[] generators = {outerLine, innerLine};
-        Object[] excluders = CompoundSpgIterator.getExcluders(Arrays.asList(new ScanRegion<>(new RectangularROI(0,0,5,5,0), Arrays.asList("x", "y"))));
+        Object[] excluders = CompoundSpgIteratorFactory.getExcluders(Arrays.asList(new ScanRegion<>(new RectangularROI(0,0,5,5,0), Arrays.asList("x", "y"))));
         Object[] mutators = {};
 
         ScanPointIterator iterator = (ScanPointIterator)  compoundGeneratorFactory.createObject(
@@ -269,7 +269,7 @@ public class ScanPointGeneratorFactoryTest {
         JythonObjectFactory<ScanPointIterator> compoundGeneratorFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
 
         Object[] generators = {line1, line2};
-        Object[] excluders = CompoundSpgIterator.getExcluders(Arrays.asList(
+        Object[] excluders = CompoundSpgIteratorFactory.getExcluders(Arrays.asList(
 			new ScanRegion<>(new RectangularROI(0,0,5,10,0), Arrays.asList("x", "y"))));
         Object[] mutators = {randomOffset};
 

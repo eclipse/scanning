@@ -25,6 +25,9 @@ import org.eclipse.scanning.api.points.MapPosition;
  * compound generators by doing this. Otherwise the createPoints(...)
  * would do.
  *
+ * TODO Matt D. 2017-10-26 should we do all points generation in the jython layer? If so,
+ * we should remove this class.
+ *
  * @author Matthew Gerring
  *
  */

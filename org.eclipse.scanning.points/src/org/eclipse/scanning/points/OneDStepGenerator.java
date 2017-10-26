@@ -11,12 +11,16 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
+import java.util.Arrays;
+
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.BoundingLine;
 import org.eclipse.scanning.api.points.models.OneDStepModel;
+import org.eclipse.scanning.jython.JythonObjectFactory;
+import org.python.core.PyList;
 
 class OneDStepGenerator extends AbstractGenerator<OneDStepModel> {
 
@@ -33,7 +37,23 @@ class OneDStepGenerator extends AbstractGenerator<OneDStepModel> {
 
 	@Override
 	protected ScanPointIterator iteratorFromValidModel() {
-		return new LineIterator(this);
+		final OneDStepModel model= getModel();
+		final BoundingLine line = model.getBoundingLine();
+
+        final JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator2DFactory();
+
+		final int numPoints = (int) Math.floor(line.getLength() / model.getStep()) + 1;
+        final double xStep = model.getStep() * Math.cos(line.getAngle());
+        final double yStep = model.getStep() * Math.sin(line.getAngle());
+
+		final PyList names =  new PyList(Arrays.asList(model.getFastAxisName(), model.getSlowAxisName()));
+		final PyList units = new PyList(Arrays.asList("mm", "mm"));
+		final double[] start = {line.getxStart(), line.getyStart()};
+        final double[] stop = {line.getxStart() + xStep * numPoints, line.getyStart() + yStep * numPoints};
+
+		final ScanPointIterator pyIterator = lineGeneratorFactory.createObject(
+				names, units, start, stop, numPoints);
+		return new SpgIterator(pyIterator);
 	}
 
 	@Override
