@@ -11,15 +11,12 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.NoSuchElementException;
-
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.GeneratorException;
-import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.ScanPointIterator;
-import org.eclipse.scanning.api.points.StaticPosition;
 import org.eclipse.scanning.api.points.models.StaticModel;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 
 /**
  * A software generator that generates a static (i.e. empty) point one or more times.
@@ -28,56 +25,7 @@ import org.eclipse.scanning.api.points.models.StaticModel;
  */
 class StaticGenerator extends AbstractGenerator<StaticModel> {
 
-	private static class StaticPointIterator implements ScanPointIterator {
-
-		private final int size;
-		private int remaining = 0;
-
-		public StaticPointIterator(final int size) {
-			this.size = size;
-			this.remaining = size;
-		}
-
-		@Override
-		public boolean hasNext() {
-			return remaining > 0;
-		}
-
-		@Override
-		public IPosition next() {
-			if (!hasNext()) {
-				throw new NoSuchElementException();
-			}
-
-			remaining--;
-			return STATIC_POSITION;
-		}
-
-		@Override
-		public int size() {
-			return size;
-		}
-
-		@Override
-		public int[] getShape() {
-			return size == 1 ? EMPTY_SHAPE : new int[] { size };
-		}
-
-		@Override
-		public int getRank() {
-			return size == 1 ? 0 : 1;
-		}
-
-		@Override
-		public int getIndex() {
-			return size - remaining;
-		}
-
-	}
-
 	private static final int[] EMPTY_SHAPE = new int[0];
-
-	private static final IPosition STATIC_POSITION = new StaticPosition();
 
 	StaticGenerator() {
 		setLabel("Empty");
@@ -92,7 +40,12 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 
 	@Override
 	protected ScanPointIterator iteratorFromValidModel() {
-		return new StaticPointIterator(model.getSize());
+		final JythonObjectFactory<ScanPointIterator> staticGeneratorFactory = ScanPointGeneratorFactory.JStaticGeneratorFactory();
+
+		final int numPoints = model.getSize();
+
+		final ScanPointIterator pyIterator = staticGeneratorFactory.createObject(numPoints);
+		return new SpgIterator(pyIterator);
 	}
 
 	// Users to not edit the StaticGenerator

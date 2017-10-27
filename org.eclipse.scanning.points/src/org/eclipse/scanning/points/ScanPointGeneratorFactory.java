@@ -65,6 +65,10 @@ public class ScanPointGeneratorFactory {
         return new JythonObjectFactory<>(ScanPointIterator.class, "jython_spg_interface", "JArrayGenerator");
     }
 
+	public static JythonObjectFactory<ScanPointIterator> JStaticGeneratorFactory() {
+		return new JythonObjectFactory<>(ScanPointIterator.class, "jython_spg_interface", "JStaticPointGenerator");
+	}
+
 	public static JythonObjectFactory<ScanPointIterator> JSpiralGeneratorFactory() {
         return new JythonObjectFactory<>(ScanPointIterator.class, "jython_spg_interface", "JSpiralGenerator");
     }
