@@ -162,7 +162,7 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 
 	}
 
-	@Test(expected=ScanningException.class)
+	@Test
 	public void scanDuringShutterClosed() throws Exception {
 
 		// Stop topup, we want to control it programmatically.
@@ -182,7 +182,10 @@ public class WatchdogShutterTest extends AbstractWatchdogTest {
 		});
 
 		scanner.start(null);
-		scanner.latch(250, TimeUnit.MILLISECONDS); // Wait for an exception
+		scanner.latch(250, TimeUnit.MILLISECONDS);
+
+		// By now, queue should be paused.
+		assertEquals(DeviceState.PAUSED, scanner.getDeviceState());
 	}
 
 	@Test

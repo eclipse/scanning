@@ -145,10 +145,7 @@ public class ExpressionWatchdog extends AbstractWatchdog implements IPositionLis
 		    }
 
 		    // Check it
-		    boolean ok = checkExpression(false);
-		    if (!ok) {
-			throw new ScanningException(model.getMessage()+". The expression '"+model.getExpression()+"' is false and a scan may not be run!");
-		    }
+		    checkExpression(true);
 
 		    // Listen to it
 		    for (IScannable<?> scannable : scannables) {
