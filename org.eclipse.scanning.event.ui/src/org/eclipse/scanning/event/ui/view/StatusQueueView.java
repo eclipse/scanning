@@ -8,7 +8,6 @@
  */
 package org.eclipse.scanning.event.ui.view;
 
-import java.io.File;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.text.DateFormat;
@@ -24,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -42,10 +39,8 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -54,7 +49,6 @@ import org.eclipse.scanning.api.event.EventConstants;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.alive.PauseBean;
-import org.eclipse.scanning.api.event.bean.BeanEvent;
 import org.eclipse.scanning.api.event.bean.IBeanListener;
 import org.eclipse.scanning.api.event.core.ConsumerConfiguration;
 import org.eclipse.scanning.api.event.core.IPublisher;
@@ -84,13 +78,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.ui.IEditorDescriptor;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,6 +104,7 @@ import org.slf4j.LoggerFactory;
  * @author Matthew Gerring
  *
  */
+@SuppressWarnings({"squid:S1192", "squid:S1659"})
 public class StatusQueueView extends EventConnectionView {
 
 	private static final String RERUN_HANDLER_EXTENSION_POINT_ID = "org.eclipse.scanning.api.rerunHandler";
@@ -135,14 +123,13 @@ public class StatusQueueView extends EventConnectionView {
 
 	// Data
 	private Map<String, StatusBean>           queue;
-	private boolean                           showEntireQueue = false;
+	private boolean                           hideOtherUsersResults = false;
 
 	private ISubscriber<IBeanListener<StatusBean>>           topicMonitor;
-	private ISubscriber<IBeanListener<PauseBean>>            pauseMonitor;
 	private ISubscriber<IBeanListener<AdministratorMessage>> adminMonitor;
 	private ISubmitter<StatusBean>                           queueConnection;
 
-	private Action rerun, edit, remove, up, down, pause, pauseConsumer;
+	private Action rerun, edit, remove, up, down, pause;
 	private IEventService service;
 
 	private ISubscriber<EventListener> pauseSubscriber;
@@ -164,35 +151,29 @@ public class StatusQueueView extends EventConnectionView {
 		viewer.getTable().setHeaderVisible(true);
 		viewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-
 		createColumns();
 		viewer.setContentProvider(createContentProvider());
 
-        try {
-		queueConnection = service.createSubmitter(getUri(), getSubmissionQueueName());
-		queueConnection.setStatusTopicName(getTopicName());
-		updateQueue(getUri());
+		try {
+			queueConnection = service.createSubmitter(getUri(), getSubmissionQueueName());
+			queueConnection.setStatusTopicName(getTopicName());
+			updateQueue();
 
-		String name = getSecondaryIdAttribute("partName");
-            if (name!=null) setPartName(name);
+			String name = getSecondaryIdAttribute("partName");
+			if (name!=null) setPartName(name);
 
-            createActions();
+			createActions();
 
-		// We just use this submitter to read the queue
-            createTopicListener(getUri());
+			// We just use this submitter to read the queue
+			createTopicListener(getUri());
 
 		} catch (Exception e) {
 			logger.error("Cannot listen to topic of command server!", e);
 		}
 
-        selectionProvider = new DelegatingSelectionProvider(viewer);
+		selectionProvider = new DelegatingSelectionProvider(viewer);
 		getViewSite().setSelectionProvider(selectionProvider);
-		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				updateSelected();
-			}
-		});
+		viewer.addSelectionChangedListener(event -> updateSelected() );
 	}
 
 	protected void updateSelected() {
@@ -214,54 +195,40 @@ public class StatusQueueView extends EventConnectionView {
 	/**
 	 * Listens to a topic
 	 */
-	private void createTopicListener(final URI uri) throws Exception {
+	private void createTopicListener(final URI uri) {
 
 		// Use job because connection might timeout.
 		final Job topicJob = new Job("Create topic listener") {
-
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
 					topicMonitor = service.createSubscriber(uri, getTopicName());
-					topicMonitor.addListener(new IBeanListener<StatusBean>() {
-						@Override
-						public void beanChangePerformed(BeanEvent<StatusBean> evt) {
+					topicMonitor.addListener(evt -> {
 							final StatusBean bean = evt.getBean();
-	                        try {
+							try {
 								mergeBean(bean);
 							} catch (Exception e) {
-								logger.error("Cannot merge changed bean!");
-							}
-						}
-					});
-
-					adminMonitor = service.createSubscriber(uri, IEventService.ADMIN_MESSAGE_TOPIC);
-					adminMonitor.addListener(new IBeanListener<AdministratorMessage>() {
-						@Override
-						public void beanChangePerformed(BeanEvent<AdministratorMessage> evt) {
-							final AdministratorMessage bean = evt.getBean();
-						getSite().getShell().getDisplay().syncExec(new Runnable() {
-							@Override
-								public void run() {
-	                                   MessageDialog.openError(getViewSite().getShell(),
-							                   bean.getTitle(),
-							                   bean.getMessage());
-
-	                                   viewer.refresh();
+								logger.error("Cannot merge changed bean!", e);
 							}
 						});
-						}
-					});
 
-			        return Status.OK_STATUS;
+					adminMonitor = service.createSubscriber(uri, IEventService.ADMIN_MESSAGE_TOPIC);
+					adminMonitor.addListener(evt -> {
+							final AdministratorMessage bean = evt.getBean();
+							getSite().getShell().getDisplay().syncExec(() -> {
+								MessageDialog.openError(getViewSite().getShell(),
+									bean.getTitle(),
+									bean.getMessage());
+								viewer.refresh();
+							});
+						});
+					return Status.OK_STATUS;
 
 				} catch (Exception ne) {
 					logger.error("Cannot listen to topic changes because command server is not there", ne);
-			        return Status.CANCEL_STATUS;
+					return Status.CANCEL_STATUS;
 				}
 			}
-
-
 		};
 
 		topicJob.setPriority(Job.INTERACTIVE);
@@ -289,11 +256,9 @@ public class StatusQueueView extends EventConnectionView {
 	 *
 	 * @param bean
 	 */
-	protected void mergeBean(final StatusBean bean) throws Exception {
+	protected void mergeBean(final StatusBean bean) {
 
-		getSite().getShell().getDisplay().asyncExec(new Runnable() {
-			@Override
-			public void run(){
+		getSite().getShell().getDisplay().asyncExec(() -> {
 				if (queue.containsKey(bean.getUniqueId())) {
 					queue.get(bean.getUniqueId()).merge(bean);
 					viewer.refresh();
@@ -301,10 +266,10 @@ public class StatusQueueView extends EventConnectionView {
 				} else {
 					reconnect();
 				}
-			}
-		});
+			});
 	}
 
+	@SuppressWarnings("squid:S3776")
 	private void createActions() throws Exception {
 
 		final IContributionManager toolMan  = getViewSite().getActionBars().getToolBarManager();
@@ -335,7 +300,7 @@ public class StatusQueueView extends EventConnectionView {
 						queueConnection.reorder(bean, -1);
 					} catch (EventException e) {
 						ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName(), "'"+bean.getName()+"' cannot be moved in the submission queue.",
-								new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+								new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 					}
 				}
 				refresh();
@@ -354,7 +319,7 @@ public class StatusQueueView extends EventConnectionView {
 						queueConnection.reorder(bean, +1);
 					} catch (EventException e) {
 						ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName(), e.getMessage(),
-								new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+								new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 					}
 				}
 				refresh();
@@ -378,7 +343,7 @@ public class StatusQueueView extends EventConnectionView {
 		menuMan.add(pause);
 		dropDown.add(pause);
 
-		this.pauseConsumer = new Action("Pause "+getPartName()+" Queue. Does not pause running job.", IAction.AS_CHECK_BOX) {
+		final Action pauseConsumer = new Action("Pause "+getPartName()+" Queue. Does not pause running job.", IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
 				togglePausedConsumer(this);
@@ -390,13 +355,8 @@ public class StatusQueueView extends EventConnectionView {
 		menuMan.add(pauseConsumer);
 		dropDown.add(pauseConsumer);
 
-		this.pauseMonitor = service.createSubscriber(getUri(), EventConstants.CMD_TOPIC);
-		pauseMonitor.addListener(new IBeanListener<PauseBean>() {
-			@Override
-			public void beanChangePerformed(BeanEvent<PauseBean> evt) {
-				pauseConsumer.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName()));
-			}
-		});
+		ISubscriber<IBeanListener<PauseBean>> pauseMonitor = service.createSubscriber(getUri(), EventConstants.CMD_TOPIC);
+		pauseMonitor.addListener(evt -> pauseConsumer.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName())));
 
 		this.remove = new Action("Stop job or remove if finished", Activator.getImageDescriptor("icons/control-stop-square.png")) {
 			@Override
@@ -441,27 +401,25 @@ public class StatusQueueView extends EventConnectionView {
 		menuMan.add(edit);
 		dropDown.add(edit);
 
-
 		toolMan.add(new Separator());
 		menuMan.add(new Separator());
 
-		final Action showAll = new Action("Show other users results", IAction.AS_CHECK_BOX) {
+		final Action hideOtherUsersResultsAction = new Action("Hide other users results", IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
-				showEntireQueue = isChecked();
+				hideOtherUsersResults = isChecked();
 				viewer.refresh();
 			}
 		};
-		showAll.setImageDescriptor(Activator.getImageDescriptor("icons/spectacle-lorgnette.png"));
+		hideOtherUsersResultsAction.setImageDescriptor(Activator.getImageDescriptor("icons/spectacle-lorgnette.png"));
 
-		toolMan.add(showAll);
-		menuMan.add(showAll);
-		dropDown.add(showAll);
+		toolMan.add(hideOtherUsersResultsAction);
+		menuMan.add(hideOtherUsersResultsAction);
+		dropDown.add(hideOtherUsersResultsAction);
 
 		toolMan.add(new Separator());
 		menuMan.add(new Separator());
 		dropDown.add(new Separator());
-
 
 		final Action refresh = new Action("Refresh", Activator.getImageDescriptor("icons/arrow-circle-double-135.png")) {
 			@Override
@@ -498,7 +456,6 @@ public class StatusQueueView extends EventConnectionView {
 				try {
 					purgeQueues();
 				} catch (EventException e) {
-					e.printStackTrace();
 					logger.error("Canot purge queues", e);
 				}
 			}
@@ -510,7 +467,6 @@ public class StatusQueueView extends EventConnectionView {
 
 		viewer.getControl().setMenu(menuMan.createContextMenu(viewer.getControl()));
 	}
-
 
 	protected void togglePausedConsumer(IAction pauseConsumer) {
 
@@ -530,7 +486,7 @@ public class StatusQueueView extends EventConnectionView {
 
 		} catch (Exception e) {
 			ErrorDialog.openError(getViewSite().getShell(), "Cannot pause queue "+getSubmissionQueueName(), "Cannot pause queue "+getSubmissionQueueName()+"\n\nPlease contact your support representative.",
-					new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+					new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 		}
 		pauseConsumer.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName()));
 	}
@@ -558,11 +514,12 @@ public class StatusQueueView extends EventConnectionView {
 
 			} catch (Exception e) {
 				ErrorDialog.openError(getViewSite().getShell(), "Cannot pause "+bean.getName(), "Cannot pause "+bean.getName()+"\n\nPlease contact your support representative.",
-						new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+						new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 			}
 		}
 	}
 
+	@SuppressWarnings({"squid:S3776", "squid:S135"})
 	protected void stopJob() {
 
 		for(StatusBean bean : getSelection()) {
@@ -580,19 +537,18 @@ public class StatusQueueView extends EventConnectionView {
 					queueName = getSubmissionQueueName();
 				}
 
-			    // It is submitted and not running. We can probably delete it.
+				// It is submitted and not running. We can probably delete it.
 				try {
 					queueConnection.remove(bean, queueName);
 					refresh();
 				} catch (EventException e) {
 					ErrorDialog.openError(getViewSite().getShell(), "Cannot delete "+bean.getName(), "Cannot delete "+bean.getName()+"\n\nIt might have changed state at the same time and being remoted.",
-							new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+							new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 				}
 				continue;
 			}
 
 			try {
-
 				final DateFormat format = DateFormat.getDateTimeInstance();
 				boolean ok = MessageDialog.openQuestion(getViewSite().getShell(), "Confirm terminate "+bean.getName(),
 						  "Are you sure you want to terminate "+bean.getName()+" submitted on "+format.format(new Date(bean.getSubmissionTime()))+"?");
@@ -607,7 +563,7 @@ public class StatusQueueView extends EventConnectionView {
 
 			} catch (Exception e) {
 				ErrorDialog.openError(getViewSite().getShell(), "Cannot terminate "+bean.getName(), "Cannot terminate "+bean.getName()+"\n\nPlease contact your support representative.",
-						new Status(IStatus.ERROR, "org.eclipse.scanning.event.ui", e.getMessage()));
+						new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 			}
 		}
 	}
@@ -617,11 +573,9 @@ public class StatusQueueView extends EventConnectionView {
 		boolean ok = MessageDialog.openQuestion(getSite().getShell(), "Confirm Clear Queues", "Are you sure you would like to remove all items from the queue "+getQueueName()+" and "+getSubmissionQueueName()+"?\n\nThis could abort or disconnect runs of other users.");
 		if (!ok) return;
 
-        queueConnection.clearQueue(getQueueName());
-        queueConnection.clearQueue(getSubmissionQueueName());
-
+		queueConnection.clearQueue(getQueueName());
+		queueConnection.clearQueue(getSubmissionQueueName());
 		reconnect();
-
 	}
 
 	private List<IResultHandler> getResultsHandlers() {
@@ -641,11 +595,9 @@ public class StatusQueueView extends EventConnectionView {
 							new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 				}
 			}
-
 			handlers.add(new DefaultResultsHandler());
 			resultsHandlers = handlers;
 		}
-
 		return resultsHandlers;
 	}
 
@@ -680,7 +632,7 @@ public class StatusQueueView extends EventConnectionView {
 		final StatusBean [] beans = getSelection();
 		if (beans.length == 0) {
 			MessageDialog.openInformation(getViewSite().getShell(), "Please select a run", "Please select a run to open.");
-            return;
+			return;
 		}
 
 		// TODO FIXME Change to IScanBuilderService not selections so that it works with e4.
@@ -695,12 +647,13 @@ public class StatusQueueView extends EventConnectionView {
 	/**
 	 * Edits a not run yet selection
 	 */
+	@SuppressWarnings({"squid:S3776", "squid:S135"})
 	protected void editSelection() {
 
 		for (StatusBean bean : getSelection()) {
 			if (bean.getStatus()!=org.eclipse.scanning.api.event.status.Status.SUBMITTED) {
 				MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'", "The run '"+bean.getName()+"' cannot be edited because it is not waiting to run.");
-			    continue;
+				continue;
 			}
 
 			try {
@@ -716,17 +669,16 @@ public class StatusQueueView extends EventConnectionView {
 					}
 				}
 			} catch (Exception ne) {
-				ne.printStackTrace();
-				ErrorDialog.openError(getSite().getShell(), "Internal Error", "Cannot modify "+bean.getRunDirectory()+" normally.\n\nPlease contact your support representative.",
-						new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage()));
+				final String err = "Cannot modify "+bean.getRunDirectory()+" normally.\n\nPlease contact your support representative.";
+				logger.error(err, ne);
+				ErrorDialog.openError(getSite().getShell(), "Internal Error", err, new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage()));
 				continue;
 			}
-
 			MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'", "There are no editers registered for '"+bean.getName()+"'\n\nPlease contact your support representative.");
-
 		}
 	}
 
+	@SuppressWarnings("squid:S3776")
 	protected void rerunSelection() {
 
 		for (StatusBean bean : getSelection()) {
@@ -748,12 +700,11 @@ public class StatusQueueView extends EventConnectionView {
 					}
 				}
 			} catch (Exception ne) {
-				ne.printStackTrace();
-				ErrorDialog.openError(getSite().getShell(), "Internal Error", "Cannot rerun "+bean.getRunDirectory()+" normally.\n\nPlease contact your support representative.",
-						new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage()));
+				final String err = "Cannot rerun "+bean.getRunDirectory()+" normally.\n\nPlease contact your support representative.";
+				logger.error(err, ne);
+				ErrorDialog.openError(getSite().getShell(), "Internal Error", err, new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage()));
 				continue;
 			}
-
 			// If we have not already handled this rerun, it is possible to call a generic one.
 			rerun(bean);
 		}
@@ -766,7 +717,6 @@ public class StatusQueueView extends EventConnectionView {
 	private void rerun(StatusBean bean) {
 
 		try {
-
 			final DateFormat format = DateFormat.getDateTimeInstance();
 			boolean ok = MessageDialog.openQuestion(getViewSite().getShell(), "Confirm resubmission "+bean.getName(),
 					  "Are you sure you want to rerun "+bean.getName()+" submitted on "+format.format(new Date(bean.getSubmissionTime()))+"?");
@@ -789,7 +739,6 @@ public class StatusQueueView extends EventConnectionView {
 			ErrorDialog.openError(getViewSite().getShell(), "Cannot rerun "+bean.getName(), "Cannot rerun "+bean.getName()+"\n\nPlease contact your support representative.",
 					new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 		}
-
 	}
 
 	public void refresh() {
@@ -799,15 +748,15 @@ public class StatusQueueView extends EventConnectionView {
 
 	protected void reconnect() {
 		try {
-			updateQueue(getUri());
+			updateQueue();
 		} catch (Exception e) {
 			logger.error("Cannot resolve uri for activemq server of "+getSecondaryIdAttribute("uri"));
 		}
 	}
 
+	@SuppressWarnings("squid:S3776")
 	private IContentProvider createContentProvider() {
 		return new IStructuredContentProvider() {
-
 			@Override
 			public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 				queue = (Map<String, StatusBean>)newInput;
@@ -821,7 +770,7 @@ public class StatusQueueView extends EventConnectionView {
 			@Override
 			public Object[] getElements(Object inputElement) {
 				if (queue==null) return new StatusBean[]{StatusBean.EMPTY};
-				final List<StatusBean> retained = new ArrayList<StatusBean>(queue.values());
+				final List<StatusBean> retained = new ArrayList<>(queue.values());
 
 				// This preference is not secure people could hack DAWN to do this.
 				if (!Boolean.getBoolean("org.dawnsci.commandserver.ui.view.showWholeQueue")) {
@@ -830,9 +779,7 @@ public class StatusQueueView extends EventConnectionView {
 					for (Iterator it = retained.iterator(); it.hasNext();) {
 						StatusBean statusBean = (StatusBean) it.next();
 						if (statusBean.getUserName()==null) continue;
-						if (!showEntireQueue) {
-							if (!userName.equals(statusBean.getUserName())) it.remove();
-						}
+						if (hideOtherUsersResults && !userName.equals(statusBean.getUserName())) it.remove();
 					}
 					// This form of filtering is not at all secure because we
 					// give the full list of the queue to the clients.
@@ -854,11 +801,9 @@ public class StatusQueueView extends EventConnectionView {
 	 * @return
 	 * @throws Exception
 	 */
-	protected synchronized void updateQueue(final URI uri) {
-
+	protected synchronized void updateQueue() {
 
 		final Job queueJob = new Job("Connect and read queue") {
-
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
@@ -874,61 +819,47 @@ public class StatusQueueView extends EventConnectionView {
 					Collections.reverse(submittedList); // The list comes out with the head @ 0 but we have the last submitted at 0 in our table.
 					monitor.worked(1);
 
-					// We reverse the queue because it comes out date ascending and we
-			        // want newest submissions first.
-					final Map<String,StatusBean> ret = new LinkedHashMap<String,StatusBean>();
+					// We reverse the queue because it comes out date ascending and we want newest submissions first.
+					final Map<String,StatusBean> ret = new LinkedHashMap<>();
 					for (StatusBean bean : submittedList) {
-					ret.put(bean.getUniqueId(), bean);
+						ret.put(bean.getUniqueId(), bean);
 					}
 					monitor.worked(1);
-			        for (StatusBean bean : runningList) {
-					ret.put(bean.getUniqueId(), bean);
+					for (StatusBean bean : runningList) {
+						ret.put(bean.getUniqueId(), bean);
 					}
 					monitor.worked(1);
 
-			        getSite().getShell().getDisplay().syncExec(new Runnable() {
-					@Override
-						public void run() {
-						viewer.setInput(ret);
-						viewer.refresh();
-					}
-			        });
-			        monitor.done();
+					getSite().getShell().getDisplay().syncExec(() -> {
+							viewer.setInput(ret);
+							viewer.refresh();
+						});
+					monitor.done();
 
-			        return Status.OK_STATUS;
+					return Status.OK_STATUS;
 
 				} catch (final Exception e) {
-
-					e.printStackTrace();
-			        monitor.done();
-			        logger.error("Updating changed bean from topic", e);
-			        getSite().getShell().getDisplay().syncExec(new Runnable() {
-					@Override
-						public void run() {
+					monitor.done();
+					logger.error("Updating changed bean from topic", e);
+					getSite().getShell().getDisplay().syncExec(() ->
 							ErrorDialog.openError(getViewSite().getShell(), "Cannot connect to queue", "The server is unavailable at "+getUriString()+".\n\nPlease contact your support representative.",
-						              new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
-					}
-			        });
-			        return Status.CANCEL_STATUS;
-
+									new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()))
+						);
+					return Status.CANCEL_STATUS;
 				}
 			}
-
 		};
 		queueJob.setPriority(Job.INTERACTIVE);
 		queueJob.setUser(true);
 		queueJob.schedule();
-
-
 	}
 
-
 	private Class<StatusBean> getBeanClass() {
-	    String beanBundleName = getSecondaryIdAttribute("beanBundleName");
-	    String beanClassName  = getSecondaryIdAttribute("beanClassName");
+		String beanBundleName = getSecondaryIdAttribute("beanBundleName");
+		String beanClassName  = getSecondaryIdAttribute("beanClassName");
 		try {
 
-		    Bundle bundle = Platform.getBundle(beanBundleName);
+			Bundle bundle = Platform.getBundle(beanBundleName);
 			return (Class<StatusBean>)bundle.loadClass(beanClassName);
 		} catch (Exception ne) {
 			logger.error("Cannot get class "+beanClassName+". Defaulting to StatusBean. This will probably not work though.", ne);
@@ -936,6 +867,7 @@ public class StatusQueueView extends EventConnectionView {
 		}
 	}
 
+	@SuppressWarnings("squid:S3776")
 	protected void createColumns() {
 
 		final TableViewerColumn name = new TableViewerColumn(viewer, SWT.LEFT);
@@ -967,8 +899,7 @@ public class StatusQueueView extends EventConnectionView {
 			@Override
 			public String getText(Object element) {
 				try {
-				    String text = percentFormat.format(((StatusBean)element).getPercentComplete()/100d);
-				    return text;
+					return percentFormat.format(((StatusBean)element).getPercentComplete()/100d);
 				} catch (Exception ne) {
 					return "-";
 				}
@@ -1016,6 +947,7 @@ public class StatusQueueView extends EventConnectionView {
 					return e.getMessage();
 				}
 			}
+
 			@Override
 			public Color getForeground(Object element) {
 				boolean isFinal = ((StatusBean) element).getStatus().isFinal();
@@ -1083,9 +1015,7 @@ public class StatusQueueView extends EventConnectionView {
 			}
 		});
 
-		MouseMoveListener cursorListener = new MouseMoveListener() {
-			@Override
-			public void mouseMove(MouseEvent e) {
+		MouseMoveListener cursorListener = e -> {
 				Point pt = new Point(e.x, e.y);
 				TableItem item = viewer.getTable().getItem(pt);
 
@@ -1096,10 +1026,9 @@ public class StatusQueueView extends EventConnectionView {
 						cursor = Display.getDefault().getSystemCursor(SWT.CURSOR_HAND);
 					}
 				}
-
 				viewer.getTable().setCursor(cursor);
-			}
-		};
+			};
+
 		viewer.getTable().addMouseMoveListener(cursorListener);
 
 		MouseAdapter mouseClick = new MouseAdapter() {
@@ -1116,7 +1045,6 @@ public class StatusQueueView extends EventConnectionView {
 				}
 			}
 		};
-
 		viewer.getTable().addMouseListener(mouseClick);
 	}
 
@@ -1127,7 +1055,6 @@ public class StatusQueueView extends EventConnectionView {
 		}
 	}
 
-
 	public static String createId(final String beanBundleName, final String beanClassName, final String queueName, final String topicName, final String submissionQueueName) {
 
 		final StringBuilder buf = new StringBuilder();
@@ -1136,6 +1063,7 @@ public class StatusQueueView extends EventConnectionView {
 		buf.append(QueueViews.createSecondaryId(beanBundleName, beanClassName, queueName, topicName, submissionQueueName));
 		return buf.toString();
 	}
+
 	public static String createId(final String uri, final String beanBundleName, final String beanClassName, final String queueName, final String topicName, final String submissionQueueName) {
 
 		final StringBuilder buf = new StringBuilder();
@@ -1145,38 +1073,8 @@ public class StatusQueueView extends EventConnectionView {
 		return buf.toString();
 	}
 
-	/**
-	 * Opens an external editor on an IEditorInput containing the file having filePath
-	 * @param editorInput
-	 * @param filePath
-	 * @throws PartInitException
-	 */
-	private IEditorPart openExternalEditor(String filename) throws PartInitException {
-		return openExternalEditor(getExternalFileStoreEditorInput(filename), filename);
-	}
-
-	/**
-	 * Opens an external editor on an IEditorInput containing the file having filePath
-	 * @param editorInput
-	 * @param filePath
-	 * @throws PartInitException
-	 */
-	private IEditorPart openExternalEditor(IEditorInput editorInput, String filePath) throws PartInitException {
-		//TODO Maybe this method could be improved by omitting filepath which comes from editorInput, but "how?" should be defined here
-		final IWorkbenchPage page = getViewSite().getPage();
-		IEditorDescriptor desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(filePath);
-		if (desc == null) desc = PlatformUI.getWorkbench().getEditorRegistry().getDefaultEditor(filePath+".txt");
-		return page.openEditor(editorInput, desc.getId());
-	}
 	private String getLocation(final StatusBean statusBean) {
 		if (statusBean instanceof ScanBean) return ((ScanBean)statusBean).getFilePath();
 		return statusBean.getRunDirectory();
 	}
-
-	private static IEditorInput getExternalFileStoreEditorInput(String filename) {
-		final IFileStore externalFile = EFS.getLocalFileSystem().fromLocalFile(new File(filename));
-		return new FileStoreEditorInput(externalFile);
-	}
-
-
 }
