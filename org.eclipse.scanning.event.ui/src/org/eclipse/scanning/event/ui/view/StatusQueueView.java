@@ -135,7 +135,7 @@ public class StatusQueueView extends EventConnectionView {
 
 	// Data
 	private Map<String, StatusBean>           queue;
-	private boolean                           showEntireQueue = false;
+	private boolean                           hideOtherUsersResults = false;
 
 	private ISubscriber<IBeanListener<StatusBean>>           topicMonitor;
 	private ISubscriber<IBeanListener<PauseBean>>            pauseMonitor;
@@ -445,18 +445,18 @@ public class StatusQueueView extends EventConnectionView {
 		toolMan.add(new Separator());
 		menuMan.add(new Separator());
 
-		final Action showAll = new Action("Show other users results", IAction.AS_CHECK_BOX) {
+		final Action hideOtherUsersResultsAction = new Action("Hide other users results", IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
-				showEntireQueue = isChecked();
+				hideOtherUsersResults = isChecked();
 				viewer.refresh();
 			}
 		};
-		showAll.setImageDescriptor(Activator.getImageDescriptor("icons/spectacle-lorgnette.png"));
+		hideOtherUsersResultsAction.setImageDescriptor(Activator.getImageDescriptor("icons/spectacle-lorgnette.png"));
 
-		toolMan.add(showAll);
-		menuMan.add(showAll);
-		dropDown.add(showAll);
+		toolMan.add(hideOtherUsersResultsAction);
+		menuMan.add(hideOtherUsersResultsAction);
+		dropDown.add(hideOtherUsersResultsAction);
 
 		toolMan.add(new Separator());
 		menuMan.add(new Separator());
@@ -830,7 +830,7 @@ public class StatusQueueView extends EventConnectionView {
 					for (Iterator it = retained.iterator(); it.hasNext();) {
 						StatusBean statusBean = (StatusBean) it.next();
 						if (statusBean.getUserName()==null) continue;
-						if (!showEntireQueue) {
+						if (hideOtherUsersResults) {
 							if (!userName.equals(statusBean.getUserName())) it.remove();
 						}
 					}
