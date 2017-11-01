@@ -74,7 +74,7 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 		super(runnableDeviceService);
 		this.connector = connector;
 		this.connectionDelegate = connector.createDeviceConnection(this);
-		this.eventDelegate = new MalcolmEventDelegate(getName(), connector);
+		this.eventDelegate = new MalcolmEventDelegate();
 		setRole(DeviceRole.MALCOLM);
 		setSupportedScanMode(ScanMode.HARDWARE);
 	}
