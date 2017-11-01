@@ -18,6 +18,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 
+/**
+ * TODO DAQ-1004 see comment in superclass
+ */
 @Ignore("TODO Get this running but needs more work.")
 public class MockAbortingMalcolmTest extends AbstractAbortingMalcolmTest {
 

@@ -30,9 +30,20 @@ import org.eclipse.scanning.api.malcolm.event.MalcolmEvent;
 import org.eclipse.scanning.api.malcolm.event.MalcolmEventBean;
 import org.eclipse.scanning.api.malcolm.message.MalcolmMessage;
 import org.eclipse.scanning.api.malcolm.models.MapMalcolmModel;
+import org.eclipse.scanning.malcolm.core.MalcolmDevice;
+import org.eclipse.scanning.test.malcolm.device.MockedMalcolmService;
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * TODO: JIRA ticket DAQ-1004: all the concrete tests subclasses of this class have been marked
+ * with the {@link Ignore} annotation for some time and are not currently run. These tests are
+ * the only tests that make use of {@link MockedMalcolmService} and MockedMalcolmDevice.
+ * Do these tests do anything useful or are they just testing that mocked class which is not
+ * used in the real system? Perhaps they could be made to work with the real {@link MalcolmDevice}
+ * instead, where the mock object is at the other end of the connection.
+ */
 public abstract class AbstractMalcolmTest {
 
 	// In Mock mode, these come from Java
