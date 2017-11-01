@@ -174,7 +174,7 @@ public class EpicsV4ConnectorTest {
 
 		} catch (Exception ex) {
 			assertEquals(MalcolmDeviceException.class, ex.getClass());
-			assertTrue(ex.getMessage().contains("Cannot connect to device 'INVALID_DEVICE'"));
+			assertTrue(ex.getMessage().contains("Failed to connect to device 'INVALID_DEVICE'"));
 		} finally {
 			System.setProperty("org.eclipse.scanning.malcolm.core.timeout", String.valueOf(5000));
 		}
