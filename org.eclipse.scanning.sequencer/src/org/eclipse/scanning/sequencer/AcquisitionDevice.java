@@ -275,12 +275,14 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	@Override
 	public void start(IPosition parent) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
+		logger.debug("start() called with position: {}", parent);
 		createScanLatch();
         super.start(parent);
 	}
 
 	@Override
 	public void run(IPosition parent) throws ScanningException, InterruptedException {
+		logger.debug("run() called with position: {}", parent);
 
 		if (getDeviceState()!=DeviceState.ARMED) throw new ScanningException("The device '"+getName()+"' is not armed. It is in state "+getDeviceState());
 		createScanLatch();
@@ -343,8 +345,8 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 			annotationManager.invoke(PointEnd.class, pos);
 			positionComplete(pos);
 
-			logger.info("Scanning completed step "+location.getStepNumber()+". Position was "+pos);
-	        }
+			logger.info("Scanning completed step {} . Position was {}", location.getStepNumber(), pos);
+			}
 
 	        // On the last iteration we must wait for the final readout.
 		IPosition written = writers.await();          // Wait for the previous write out to return, if any
@@ -463,6 +465,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	@Override
 	public void latch() throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
 		if (latch==null) return;
+		logger.debug("latch() called");
 		latch.await();
 		createException(runExceptions);
 	}
@@ -470,6 +473,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	@Override
 	public boolean latch(long time, TimeUnit unit) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
 		if (latch==null) return true;
+		logger.debug("latch() called with timeout {} {}", time, unit);
 		boolean ok = latch.await(time, unit);
 		createException(runExceptions);
 		return ok;
@@ -520,7 +524,8 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		return scanInfo;
 	}
 
-	private void fireStart(int size) throws Exception {
+	private void fireStart(int size) throws ScanningException {
+		logger.debug("publishing scan bean for scan start");
 		// Setup the bean to sent
 		getBean().setSize(size);
 		ScanInformation scanInfo = getModel().getScanInformation();
@@ -537,6 +542,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	}
 
 	private void fireEnd(IPosition lastPosition) throws ScanningException {
+		logger.debug("updating and publishing scan bean for scan end");
 
 		// Setup the bean to sent
 		getBean().setPreviousStatus(getBean().getStatus());
@@ -556,7 +562,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	@Override
 	public void reset() throws ScanningException {
-
+		logger.debug("reset() called");
 		if (positioner instanceof LevelRunner) {
 			((LevelRunner<?>)positioner).reset();
 		}
@@ -603,6 +609,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	@Override
 	public void abort() throws ScanningException, InterruptedException {
+		logger.debug("abort() called");
 		work(()-> abortInternal(), null, "abort", true, false);
 	}
 	private void abortInternal()  throws ScanningException, InterruptedException{
@@ -629,7 +636,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	@Override
 	public void pause() throws ScanningException, InterruptedException {
-
+		logger.debug("pause() called");
 		work(()-> pauseInternal(), DeviceState.RUNNING, "pause", true, false);
 	}
 	private void pauseInternal() throws ScanningException, InterruptedException {
@@ -644,7 +651,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 					((IPausableDevice<?>)device).pause();
 				}
 			} else {
-				logger.info("Device " + device.getName() + " wasn't running to pause. Was + " + currentState);
+				logger.info("Device {} wasn't running to pause. Was ", device.getName(), currentState);
 			}
 		}
 		setDeviceState(DeviceState.PAUSED);
@@ -652,6 +659,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	@Override
 	public void seek(final int stepNumber) throws ScanningException, InterruptedException {
+		logger.debug("seek() called to step number {}", stepNumber);
 		// This is the values of all motors at this global (including malcolm) scan
 		// position. Therefore we do not need a subscan moderator but can run the iterator
 		// to the point
@@ -671,7 +679,8 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	@Override
 	public void resume() throws ScanningException, InterruptedException {
-		work(()-> resumeInternal(), DeviceState.PAUSED, "resume", false, true);
+		logger.debug("resume() called");
+		work(this::resumeInternal, DeviceState.PAUSED, "resume", false, true);
 	}
 	private void resumeInternal() throws ScanningException, InterruptedException {
 
@@ -682,7 +691,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 					((IPausableDevice<?>)device).resume();
 				}
 			} else {
-				logger.info("Device " + device.getName() + " wasn't paused to resume. Was + " + currentState);
+				logger.info("Device {} wasn't paused to resume. Was {}", device.getName(), currentState);
 			}
 		}
 		if (location.isInnerScan()) {

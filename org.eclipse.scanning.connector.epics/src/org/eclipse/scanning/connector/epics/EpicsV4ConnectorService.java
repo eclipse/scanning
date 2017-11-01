@@ -230,24 +230,26 @@ public class EpicsV4ConnectorService implements IMalcolmConnectorService<Malcolm
 		PvaClientChannel pvaChannel = null;
 		try {
 			PVStructure pvResult = null;
-			pvaChannel = pvaClient.createChannel(device.getName(),"pva");
-	        pvaChannel.issueConnect();
-	        Status status = pvaChannel.waitConnect(REQUEST_TIMEOUT);
-	        if(!status.isOK()) {
-			String errMEssage = "Failed to connect to device '" + device.getName() + "' (" + status.getType() + ": " + status.getMessage() + ")";
-			throw new Exception(errMEssage);
-	        }
+			pvaChannel = pvaClient.createChannel(device.getName(), "pva");
+			pvaChannel.issueConnect();
+			Status status = pvaChannel.waitConnect(REQUEST_TIMEOUT);
+			if (!status.isOK()) {
+				String errMEssage = "Failed to connect to device '" + device.getName() + "' (" + status.getType() + ": "
+						+ status.getMessage() + ")";
+				throw new Exception(errMEssage);
+			}
 
 			String requestString = message.getEndpoint();
-			logger.debug("Get '" + requestString + "'");
-	        PvaClientGet pvaGet = pvaChannel.createGet(requestString);
-	        pvaGet.issueConnect();
-	        status = pvaGet.waitConnect();
-	        if(!status.isOK()) {
-			String errMEssage = "CreateGet failed for '" + requestString + "' (" + status.getType() + ": " + status.getMessage() + ")";
-			throw new Exception(errMEssage);
-		}
-	        PvaClientGetData pvaData = pvaGet.getData();
+			logger.debug("Get '{}'", requestString);
+			PvaClientGet pvaGet = pvaChannel.createGet(requestString);
+			pvaGet.issueConnect();
+			status = pvaGet.waitConnect();
+			if (!status.isOK()) {
+				String errMEssage = "CreateGet failed for '" + requestString + "' (" + status.getType() + ": "
+						+ status.getMessage() + ")";
+				throw new Exception(errMEssage);
+			}
+			PvaClientGetData pvaData = pvaGet.getData();
 			pvResult = pvaData.getPVStructure();
 			logger.debug("Get response = \n" + pvResult + "\nEND");
 	        returnMessage = mapper.convertGetPVStructureToMalcolmMessage(pvResult, message);
@@ -336,7 +338,7 @@ public class EpicsV4ConnectorService implements IMalcolmConnectorService<Malcolm
 			throw new Exception(errMEssage);
 	        }
 
-			logger.debug("Call method = \n" + methodStructure + "\nEND");
+			logger.debug("Call method = \n{}\nEND", methodStructure);
 	        PvaClientRPC rpc = pvaChannel.createRPC(methodStructure);
 	        rpc.issueConnect();
 	        status = rpc.waitConnect();
@@ -344,9 +346,9 @@ public class EpicsV4ConnectorService implements IMalcolmConnectorService<Malcolm
 			String errMEssage = "CreateRPC failed for '" + message.getMethod() + "' (" + status.getType() + ": " + status.getMessage() + ")";
 			throw new Exception(errMEssage);
 		}
-			logger.debug("Call param = \n" + parametersStructure + "\nEND");
+			logger.debug("Call param = \n{}\nEND", parametersStructure);
 	        pvResult = rpc.request(parametersStructure);
-			logger.debug("Call response = \n" + pvResult + "\nEND");
+			logger.debug("Call response = \n{}\nEND", pvResult);
 			returnMessage = mapper.convertCallPVStructureToMalcolmMessage(pvResult, message);
 		} catch (Exception ex) {
 			logger.error(ex.getMessage());
@@ -405,8 +407,7 @@ public class EpicsV4ConnectorService implements IMalcolmConnectorService<Malcolm
 		}
 	}
 
-	class StateChangeRequester implements PvaClientChannelStateChangeRequester
-    {
+	class StateChangeRequester implements PvaClientChannelStateChangeRequester {
 		private IMalcolmListener<Boolean> listener;
 
 		public StateChangeRequester(IMalcolmListener<Boolean> listener) {

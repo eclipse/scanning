@@ -215,10 +215,12 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	 * @throws InterruptedException
 	 */
 	protected MalcolmMessage send(MalcolmMessage message, long timeout) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
+		logger.debug("Sending message to malcolm device: {}", message);
 	    return asynch(()->connector.send(this, message), timeout);
 	}
 
 	protected MalcolmMessage call(MalcolmMethod method, long timeout, DeviceState... states) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
+		logger.debug("Calling method on malcolm device: {}", method);
 	    return asynch(()->connectionDelegate.call(method, states), timeout);
 	}
 
