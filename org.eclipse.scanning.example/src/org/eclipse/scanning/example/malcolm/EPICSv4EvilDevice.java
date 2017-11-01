@@ -17,30 +17,29 @@ import org.epics.pvdatabase.PVDatabase;
 import org.epics.pvdatabase.PVDatabaseFactory;
 
 /**
- * This class creates an Epics V4 service, that listens for connections and handles RPC, GET, PUT etc.
- * The modelled device is meant to represent a typical Malcolm Device, and has attributes and methods
- * set up accordingly. Any RPC call made to the device just pause for 2 seconds and then return an empty Map
+ * This class creates an Epics V4 service, that listens for connections and handles RPC, GET, PUT etc. The modelled
+ * device is meant to represent a typical Malcolm Device, and has attributes and methods set up accordingly. Any RPC
+ * call made to the device just pause for 2 seconds and then return an empty Map
  *
  * @author Matt Taylor
  *
  */
 public class EPICSv4EvilDevice extends AbstractEPICSv4Device {
 
+	public EPICSv4EvilDevice(String deviceName) {
+		super(deviceName);
+	}
 
-    public EPICSv4EvilDevice(String deviceName) {
-	super(deviceName);
-    }
-
-    @Override
+	@Override
 	public void start() throws InterruptedException, PVAException {
-	PVDatabase master = PVDatabaseFactory.getMaster();
+		PVDatabase master = PVDatabaseFactory.getMaster();
 
-	pvRecord = DummyMalcolmRecord.create(recordName);
-	pvRecord.setTraceLevel(traceLevel);
-	master.addRecord(pvRecord);
-	ServerContextImpl context = ServerContextImpl.startPVAServer("evil",0,true,System.out);
-	latch.await();
-	master.removeRecord(pvRecord);
-	context.destroy();
-    }
- }
+		pvRecord = DummyMalcolmRecord.create(recordName);
+		pvRecord.setTraceLevel(traceLevel);
+		master.addRecord(pvRecord);
+		ServerContextImpl context = ServerContextImpl.startPVAServer("evil", 0, true, System.out);
+		latch.await();
+		master.removeRecord(pvRecord);
+		context.destroy();
+	}
+}
