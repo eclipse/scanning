@@ -18,29 +18,30 @@ import org.epics.pvdatabase.PVDatabaseFactory;
 import org.epics.pvdatabase.pva.ChannelProviderLocalFactory;
 
 /**
- * This class creates an Epics V4 service, that listens for connections and handles RPC, GET, PUT etc.
- * The modelled device is meant to represent a typical Malcolm Device, and has attributes and methods
- * set up accordingly. Any RPC call made to the device just pause for 2 seconds and then return an empty Map
+ * This class creates an Epics V4 service, that listens for connections and handles RPC, GET, PUT etc. The modelled
+ * device is meant to represent a typical Malcolm Device, and has attributes and methods set up accordingly. Any RPC
+ * call made to the device just pause for 2 seconds and then return an empty Map
  *
  * @author Matt Taylor
  *
  */
-public class EPICSv4ExampleDevice extends AbstractEPICSv4Device{
+public class EPICSv4ExampleDevice extends AbstractEPICSv4Device {
 
-    public EPICSv4ExampleDevice(String deviceName) {
-	super(deviceName);
-    }
+	public EPICSv4ExampleDevice(String deviceName) {
+		super(deviceName);
+	}
 
-    @Override
+	@Override
 	public void start() throws Exception {
-	PVDatabase master = PVDatabaseFactory.getMaster();
-	ChannelProvider channelProvider = ChannelProviderLocalFactory.getChannelProviderLocal();
-	pvRecord = DummyMalcolmRecord.create(recordName);
-	pvRecord.setTraceLevel(traceLevel);
-	master.addRecord(pvRecord);
-	ServerContextImpl context = ServerContextImpl.startPVAServer(channelProvider.getProviderName(),0,true,System.out);
-	latch.await();
-	master.removeRecord(pvRecord);
-	context.destroy();
-    }
+		PVDatabase master = PVDatabaseFactory.getMaster();
+		ChannelProvider channelProvider = ChannelProviderLocalFactory.getChannelProviderLocal();
+		pvRecord = DummyMalcolmRecord.create(recordName);
+		pvRecord.setTraceLevel(traceLevel);
+		master.addRecord(pvRecord);
+		ServerContextImpl context = ServerContextImpl.startPVAServer(channelProvider.getProviderName(), 0, true,
+				System.out);
+		latch.await();
+		master.removeRecord(pvRecord);
+		context.destroy();
+	}
 }
