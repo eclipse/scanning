@@ -335,7 +335,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 
 		final PositionEvent evt = new PositionEvent(position, this);
 
-		// Make array, avoid multi-threadign issues
+		// Make array, avoid multi-threading issues
 		final IPositionListener[] la = posListeners.toArray(new IPositionListener[posListeners.size()]);
 		for (IPositionListener l : la) l.positionMovePerformed(evt);
 	}

@@ -47,6 +47,7 @@ import org.eclipse.scanning.api.points.IMutator;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.models.CompoundModel;
+import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.sequencer.SubscanModerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +75,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	// Frequencies and Timeouts
 	// broadcast every 250 milliseconds
-	private final static long POSITION_COMPLETE_FREQ = Long.getLong("org.eclipse.scanning.malcolm.core.positionCompleteFrequency", 250);
+	private static final long POSITION_COMPLETE_FREQ = Long.getLong("org.eclipse.scanning.malcolm.core.positionCompleteFrequency", 250);
 
 	// Standard timeout for Malcolm Calls
 	private final long getTimeout() {
@@ -137,30 +138,11 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 			logger.debug("Connecting to ''{}''. Current state: {}", getName(), currentState);
 
 			stateSubscriber = createSubscribeMessage(STATE_ENDPOINT);
-			subscribe(stateSubscriber, new IMalcolmListener<MalcolmMessage>() {
-
-				@Override
-				public void eventPerformed(MalcolmEvent<MalcolmMessage> e) {
-					try {
-						sendScanStateChange(e);
-					} catch (Exception ne) {
-						logger.error("Problem dispatching message!", ne);
-					}
-				}
-			});
+			subscribe(stateSubscriber, this::sendScanStateChange);
 
 			scanSubscriber  = createSubscribeMessage(CURRENT_STEP_ENDPOINT);
-			subscribe(scanSubscriber, new IMalcolmListener<MalcolmMessage>() {
+			subscribe(scanSubscriber, this::sendScanEvent);
 
-				@Override
-				public void eventPerformed(MalcolmEvent<MalcolmMessage> e) {
-					try {
-						sendScanEvent(e);
-					} catch (Exception ne) {
-						logger.error("Problem dispatching message!", ne);
-					}
-				}
-			});
 			succesfullyInitialised = true;
 			setAlive(true);
 
@@ -171,12 +153,8 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 					@Override
 					public void run() {
 						try {
-							subscribeToConnectionStateChange(new IMalcolmListener<Boolean>() {
-								@Override
-								public void eventPerformed(MalcolmEvent<Boolean> e) {
-									handleConnectionStateChange(e.getBean());
-								}
-							});
+							subscribeToConnectionStateChange(
+									e -> handleConnectionStateChange(e.getBean()));
 							handleConnectionStateChange(true);
 							setAlive(true);
 						} catch (MalcolmDeviceException ex) {
@@ -197,14 +175,19 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	 */
     @PointStart
     public void scanPoint(SubscanModerator moderator) {
-	Iterable<IPosition> scanPositions = moderator.getInnerIterable();
+    	Iterable<IPosition> scanPositions = moderator.getInnerIterable();
         scanPositionIterator = scanPositions.iterator();
     }
 
-	protected void sendScanEvent(MalcolmEvent<MalcolmMessage> e) throws Exception {
-
-		MalcolmMessage msg      = e.getBean();
-		DeviceState newState = MalcolmUtil.getState(msg, false);
+	protected void sendScanEvent(MalcolmEvent<MalcolmMessage> event) {
+		MalcolmMessage msg      = event.getBean();
+		DeviceState newState;
+		try {
+			newState = MalcolmUtil.getState(msg, false);
+		} catch (Exception e1) {
+			logger.error("Could not get state", e1);
+			return;
+		}
 
 		ScanBean bean = getBean();
 		bean.setDeviceName(getName());
@@ -241,44 +224,59 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 			lastUpdateCount = point;
 
+			// fire position complete event to listeners
 			if (scanPosition != null && currentTime - lastBroadcastTime >= POSITION_COMPLETE_FREQ) {
 				scanPosition.setStepIndex(point);
-		firePositionComplete(scanPosition);
+				try {
+					firePositionComplete(scanPosition);
+				} catch (ScanningException e) {
+					logger.error("Exception firing position complete", e);
+				}
 
 	            lastBroadcastTime = System.currentTimeMillis();
 			}
 		}
 
-		if (publisher!=null) publisher.broadcast(bean);
+		// publish the scan bean
+		if (publisher != null) {
+			try {
+				publisher.broadcast(bean);
+			} catch (Exception e) {
+				logger.error("Could not publish bean");
+			}
+		}
 	}
 
-	protected void sendScanStateChange(MalcolmEvent<MalcolmMessage> e) throws Exception {
+	protected void sendScanStateChange(MalcolmEvent<MalcolmMessage> event) {
 
-		MalcolmMessage msg = e.getBean();
+		try {
+			MalcolmMessage msg = event.getBean();
+			DeviceState newState = MalcolmUtil.getState(msg, false);
 
-		DeviceState newState = MalcolmUtil.getState(msg, false);
+			// Send scan state changed
+			ScanBean bean = getBean();
+			bean.setDeviceName(getName());
+			bean.setPreviousDeviceState(bean.getDeviceState());
+			bean.setDeviceState(newState);
+			if (publisher!=null) publisher.broadcast(bean);
 
-		// Send scan state changed
-		ScanBean bean = getBean();
-		bean.setDeviceName(getName());
-		bean.setPreviousDeviceState(bean.getDeviceState());
-		bean.setDeviceState(newState);
-		if (publisher!=null) publisher.broadcast(bean);
+			// We also send a malcolm event
+			if (meb==null) meb = new MalcolmEventBean();
+			meb.setDeviceName(getName());
+			meb.setMessage(msg.getMessage());
 
-		// We also send a malcolm event
-		if (meb==null) meb = new MalcolmEventBean();
-		meb.setDeviceName(getName());
-		meb.setMessage(msg.getMessage());
+			meb.setPreviousState(meb.getDeviceState());
+			meb.setDeviceState(newState);
 
-		meb.setPreviousState(meb.getDeviceState());
-		meb.setDeviceState(newState);
+			if (msg.getType().isError()) { // Currently used for debugging the device.
+				logger.error("Error message encountered: {}", msg);
+				Thread.dumpStack();
+			}
 
-		if (msg.getType().isError()) { // Currently used for debugging the device.
-			logger.error("Error message encountered: {} ", msg);
-			Thread.dumpStack();
+			eventDelegate.sendEvent(meb);
+		} catch (Exception e) {
+			logger.error("Could not send scan state change message");
 		}
-
-		eventDelegate.sendEvent(meb);
 	}
 
 	/**
@@ -291,19 +289,16 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 			setAlive(connected);
 			if (connected) {
 				logger.info("Malcolm Device '" + getName() + "' connection state changed to connected");
-			    java.awt.EventQueue.invokeLater(new Runnable() {
-			        @Override
-					public void run() {
-						try {
-							if (!succesfullyInitialised) {
-								initialize();
-							} else {
-								getDeviceState();
-							}
-						} catch (MalcolmDeviceException ex) {
-							logger.warn("Unable to initialise/getDeviceState for device '{}' on reconnection", getName(), ex);
+			    java.awt.EventQueue.invokeLater(() -> {
+					try {
+						if (!succesfullyInitialised) {
+							initialize();
+						} else {
+							getDeviceState();
 						}
-			}
+					} catch (MalcolmDeviceException ex) {
+						logger.warn("Unable to initialise/getDeviceState for device '" + getName() + "' on reconnection", ex);
+					}
 			    });
 			} else {
 				logger.warn("Malcolm Device '{}' connection state changed to not connected", getName());
@@ -352,7 +347,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public boolean isDeviceBusy() throws MalcolmDeviceException {
-		return getDeviceState().isRestState() == false;
+		return !getDeviceState().isRestState();
 	}
 
 	@Override
@@ -523,9 +518,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public DeviceState latch(long time, TimeUnit unit, final DeviceState... ignoredStates) throws MalcolmDeviceException {
-
 		try {
-
 			final CountDownLatch latch = new CountDownLatch(1);
 			final List<DeviceState>     stateContainer     = new ArrayList<>(1);
 			final List<Exception> exceptionContainer = new ArrayList<>(1);
@@ -537,10 +530,9 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 					MalcolmMessage msg = e.getBean();
 					try {
 						DeviceState state = MalcolmUtil.getState(msg);
-						if (state != null) {
-							if (ignoredStates!=null && Arrays.asList(ignoredStates).contains(state)) {
-								return; // Found state that we don't want!
-							}
+						if (state != null && ignoredStates != null &&
+								Arrays.asList(ignoredStates).contains(state)) {
+							return; // Found state that we don't want!
 						}
 						stateContainer.add(state);
 						latch.countDown();
@@ -563,14 +555,14 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 			unsubscribe(stateSubscriber, stateChanger);
 
-			if (exceptionContainer.size()>0) throw exceptionContainer.get(0);
+			if (!exceptionContainer.isEmpty()) throw exceptionContainer.get(0);
 
-			if (stateContainer.size() > 0) return stateContainer.get(0);
+			if (!stateContainer.isEmpty()) return stateContainer.get(0);
 
 			if (countedDown) {
-			    throw new Exception("The countdown of "+time+" "+unit+" timed out waiting for state change for device "+getName());
+			    throw new MalcolmDeviceException("The countdown of "+time+" "+unit+" timed out waiting for state change for device "+getName());
 			} else {
-				throw new Exception("A problem occured trying to latch state change for device "+getName());
+				throw new MalcolmDeviceException("A problem occured trying to latch state change for device "+getName());
 			}
 
 		} catch (MalcolmDeviceException ne) {
@@ -617,6 +609,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 				filter(MalcolmAttribute.class::isInstance).map(IDeviceAttribute.class::cast).
 				collect(Collectors.toList());
 	}
+
 
 	/**
 	 * Gets the value of an attribute on the device
