@@ -27,6 +27,9 @@ import org.eclipse.scanning.api.malcolm.event.MalcolmEvent;
 import org.eclipse.scanning.api.malcolm.event.MalcolmEventBean;
 import org.junit.Test;
 
+/**
+ * TODO DAQ-1004 see comment in superclass
+ */
 public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmTest {
 
 	@Test

@@ -37,7 +37,17 @@ import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.connector.epics.EpicsV4ConnectorService;
 import org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice;
+import org.eclipse.scanning.malcolm.core.MalcolmDevice;
+import org.junit.Ignore;
 
+/**
+ * TODO: This class and its subclasses are only used in tests that are currently
+ * marked with the {@link Ignore} annotation. It appears to immitate a malcolm device.
+ * Is this a useful thing to test, or are we only testing this class that we've only
+ * written for tests in the first place. Can these tests be made to work? Perhaps
+ * they could be made to work using a real {@link MalcolmDevice} instead, where
+ * the mock is at the other end of the communication channel. See JIRA ticket DAQ-1004
+ */
 class MockedMalcolmDevice extends AbstractMalcolmDevice<MapMalcolmModel> {
 
 	private INexusFileFactory   factory;

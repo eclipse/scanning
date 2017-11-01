@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 
 
 /**
+ * TODO DAQ-1004, see comment in {@link MockedMalcolmDevice}
+ *
  * Base class for devices with Pause/Resume capability.
  * The {@link #taskPauseLock} blocks entry into {@link AbstractMalcolmDevice#callableTask} when paused until {@link #resume()} is called.
  * The {@link #runningStateChangeLock} guards the acquisition/release of {@link #taskPauseLock} during transition from RUNNING to PAUSED and vice versa.

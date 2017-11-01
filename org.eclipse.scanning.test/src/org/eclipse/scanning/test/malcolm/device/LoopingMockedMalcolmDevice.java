@@ -20,6 +20,9 @@ import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
+ *
+ * TODO DAQ-1004, see comment in {@link MockedMalcolmDevice}
+ *
  * Example Device that executes a callable task a number of times as defined by the params
  * @author fri44821
  *

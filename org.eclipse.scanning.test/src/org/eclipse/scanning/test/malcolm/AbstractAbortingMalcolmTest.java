@@ -22,6 +22,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+/**
+ * TODO DAQ-1004 see comment in {@link AbstractMalcolmTest}
+ */
 @RunWith(Parameterized.class)
 public abstract class AbstractAbortingMalcolmTest extends AbstractMalcolmTest {
 

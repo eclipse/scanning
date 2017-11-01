@@ -25,6 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+/**
+ * TODO DAQ-1004 see comment in superclass
+ */
 @RunWith(Parameterized.class)
 public abstract class AbstractPausingMalcolmTest extends AbstractMalcolmTest {
 

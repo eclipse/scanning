@@ -34,6 +34,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
 
 
 /**
+ * TODO DAQ-1004, see comment in {@link MockedMalcolmDevice}
  * Device which pretends to write a 64x64 file a number of times
  * @author fri44821
  *
