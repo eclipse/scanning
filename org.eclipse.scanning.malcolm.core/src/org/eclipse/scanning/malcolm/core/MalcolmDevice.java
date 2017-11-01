@@ -12,6 +12,7 @@
 package org.eclipse.scanning.malcolm.core;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -55,53 +56,56 @@ import org.slf4j.LoggerFactory;
 /**
  * Object that make the connection to the device and monitors its status.
  *
- * Important things to do:
- * 1. The locking in AbstractMalcolmDevice should in theory not be needed, we will push this all into the connection.
- * 2. The Serializer to JSON, 'ObjectMapper mapper' must be abstacted out because real connection can be JSON or EPICSV4
- * 3. The Socket to ZeroMQ must be abstracted out because the real socket can be ZeroMQ or EPICSV4
- *
  * @author Matthew Gerring
- *
  */
 public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice<M> {
 
-    // Static data
-	private static Logger logger = LoggerFactory.getLogger(MalcolmDevice.class);
-	private static String STATE_ENDPOINT = "state";
-	private static String HEALTH_ENDPOINT = "health";
-	private static String BUSY_ENDPOINT = "busy";
-	private static String CURRENT_STEP_ENDPOINT = "completedSteps";
-	private static String FILE_EXTENSION_H5 = "h5";
+	private static final Logger logger = LoggerFactory.getLogger(MalcolmDevice.class);
+
+	// Constants
+	private static final String STATE_ENDPOINT = "state";
+	private static final String HEALTH_ENDPOINT = "health";
+	private static final String CURRENT_STEP_ENDPOINT = "completedSteps";
+	private static final String FILE_EXTENSION_H5 = "h5";
+	private static final String STANDARD_MALCOLM_ERROR_STR = "Error from Malcolm Device Connection: ";
 
 	// Frequencies and Timeouts
 	// broadcast every 250 milliseconds
 	private static final long POSITION_COMPLETE_FREQ = Long.getLong("org.eclipse.scanning.malcolm.core.positionCompleteFrequency", 250);
 
+	private static enum Timeout {
+		STANDARD("org.eclipse.scanning.malcolm.core.timeout", Duration.ofSeconds(5)),
+		CONFIG("org.eclipse.scanning.malcolm.core.configureTimeout", Duration.ofMinutes(10)),
+		RUN("org.eclipse.scanning.malcolm.core.runTimeout", Duration.ofDays(2));
+
+		private final long timeoutMillis;
+
+		Timeout(String propertyName, Duration defaultTimeout) {
+			timeoutMillis = Long.getLong(propertyName, defaultTimeout.toMillis());
+		}
+
+		public long toMillis() {
+			return timeoutMillis;
+		}
+	}
+
+
 	// Standard timeout for Malcolm Calls
-	private final long getTimeout() {
-		return Long.getLong("org.eclipse.scanning.malcolm.core.timeout",          5*1000);        // 5s
-	}
-	private final long getConfigTimeout() {
-		return Long.getLong("org.eclipse.scanning.malcolm.core.configureTimeout", 10*60*1000);    // 10 min
-	}
-	private final long getRunTimeout() {
-		return Long.getLong("org.eclipse.scanning.malcolm.core.runTimeout",       48*60*60*1000); // 2d
-	}
 
 	// Subscriber messages
-    private MalcolmMessage                      stateSubscriber;
-    private MalcolmMessage                      scanSubscriber;
+    private MalcolmMessage stateSubscriber;
+    private MalcolmMessage scanSubscriber;
 
     // Our connection to the outside.
-	private IPublisher<ScanBean>             publisher;
+	private IPublisher<ScanBean> publisher;
 
 	// Data should be in model?
-	private MalcolmEventBean    meb;
+	private MalcolmEventBean meb;
 	private Iterator<IPosition> scanPositionIterator;
 
 	// Local data.
-	private long    lastBroadcastTime = System.currentTimeMillis();
-	private int     lastUpdateCount = 0;
+	private long lastBroadcastTime = System.currentTimeMillis();
+	private int lastUpdateCount = 0;
 	private boolean succesfullyInitialised = false;
 	private boolean subscribedToStateChange = false;
 
@@ -115,9 +119,9 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 			IRunnableDeviceService runnableDeviceService,
 			IPublisher<ScanBean> publisher) throws MalcolmDeviceException {
 		super(service, runnableDeviceService);
-	setName(name);
-	this.publisher = publisher;
-	setAlive(false);
+		setName(name);
+		this.publisher = publisher;
+		setAlive(false);
 	}
 
 	@Override
@@ -149,19 +153,19 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 		} finally {
 			if (!subscribedToStateChange) {
 				subscribedToStateChange = true;
-				Thread subscriberThread = new Thread() {
-					@Override
-					public void run() {
-						try {
-							subscribeToConnectionStateChange(
-									e -> handleConnectionStateChange(e.getBean()));
-							handleConnectionStateChange(true);
-							setAlive(true);
-						} catch (MalcolmDeviceException ex) {
-							logger.error("Unable to subsribe to state change on '" + getName() + "'", ex);
-						}
+
+				final Runnable subscribeTask = () -> {
+					try {
+						subscribeToConnectionStateChange(
+								e -> handleConnectionStateChange(e.getBean()));
+						handleConnectionStateChange(true);
+						setAlive(true);
+					} catch (MalcolmDeviceException ex) {
+						logger.error("Unable to subsribe to state change on '" + getName() + "'", ex);
 					}
 				};
+
+				final Thread subscriberThread = new Thread(subscribeTask);
 				subscriberThread.setDaemon(true);
 				subscriberThread.start();
 			}
@@ -170,17 +174,18 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	}
 
 	/**
-	 * Actions to take when the PointStart attribute is used
+	 * Called at the start of each point of the outer scan due to the {@link PointStart} attribute.
+	 * Gets the iterator of the points of the inner scan from the {@link SubscanModerator}.
 	 * @param moderator the SubscanModerator
 	 */
     @PointStart
     public void scanPoint(SubscanModerator moderator) {
-    	Iterable<IPosition> scanPositions = moderator.getInnerIterable();
+    	final Iterable<IPosition> scanPositions = moderator.getInnerIterable();
         scanPositionIterator = scanPositions.iterator();
     }
 
 	protected void sendScanEvent(MalcolmEvent<MalcolmMessage> event) {
-		MalcolmMessage msg      = event.getBean();
+		final MalcolmMessage msg = event.getBean();
 		DeviceState newState;
 		try {
 			newState = MalcolmUtil.getState(msg, false);
@@ -196,17 +201,17 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 			bean.setDeviceState(newState);
 		}
 
-        Integer point = bean.getPoint();
-        boolean newPoint = false;
+		Integer point = bean.getPoint();
+		boolean newPoint = false;
 		Object value = msg.getValue();
 		if (value instanceof Map) {
 			point = (Integer)((Map<?,?>)value).get("value");
 			bean.setPoint(point);
-            newPoint = true;
+			newPoint = true;
 		} else if (value instanceof NumberAttribute) {
 			point = (Integer)((NumberAttribute)value).getValue();
 			bean.setPoint(point);
-            newPoint = true;
+			newPoint = true;
 		}
 
 		// Fire a position complete only if it's past the timeout value
@@ -233,7 +238,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 					logger.error("Exception firing position complete", e);
 				}
 
-	            lastBroadcastTime = System.currentTimeMillis();
+				lastBroadcastTime = System.currentTimeMillis();
 			}
 		}
 
@@ -289,7 +294,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 			setAlive(connected);
 			if (connected) {
 				logger.info("Malcolm Device '" + getName() + "' connection state changed to connected");
-			    java.awt.EventQueue.invokeLater(() -> {
+				java.awt.EventQueue.invokeLater(() -> {
 					try {
 						if (!succesfullyInitialised) {
 							initialize();
@@ -312,9 +317,9 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	public DeviceState getDeviceState() throws MalcolmDeviceException {
 		try {
 			final MalcolmMessage message = createGetMessage(STATE_ENDPOINT);
-			final MalcolmMessage reply   = send(message, getTimeout());
+			final MalcolmMessage reply   = send(message, Timeout.STANDARD.toMillis());
 			if (reply.getType()==Type.ERROR) {
-				throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+				throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 			}
 			return MalcolmUtil.getState(reply);
 
@@ -330,9 +335,9 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	public String getDeviceHealth() throws MalcolmDeviceException {
 		try {
 			final MalcolmMessage message = createGetMessage(HEALTH_ENDPOINT);
-			final MalcolmMessage reply   = send(message, getTimeout());
+			final MalcolmMessage reply   = send(message, Timeout.STANDARD.toMillis());
 			if (reply.getType()==Type.ERROR) {
-				throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+				throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 			}
 
 			return MalcolmUtil.getHealth(reply);
@@ -367,9 +372,9 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 		MalcolmMessage reply = null;
 		try {
 			final MalcolmMessage msg   = createCallMessage(MalcolmMethod.VALIDATE, epicsModel);
-			reply = send(msg, getTimeout());
+			reply = send(msg, Timeout.STANDARD.toMillis());
 			if (reply.getType()==Type.ERROR) {
-				throw new ValidationException("Error from Malcolm Device Connection: " + reply.getMessage());
+				throw new ValidationException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 			}
 
 		} catch (Exception mde) {
@@ -392,9 +397,9 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 		final EpicsMalcolmModel epicsModel = createEpicsMalcolmModel(model);
 		final MalcolmMessage msg   = createCallMessage(MalcolmMethod.CONFIGURE, epicsModel);
-		MalcolmMessage reply = wrap(()->send(msg, getConfigTimeout()));
+		MalcolmMessage reply = wrap(()->send(msg, Timeout.CONFIG.toMillis()));
 		if (reply.getType() == Type.ERROR) {
-			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+			throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 		}
 		setModel(model);
 		resetProgressCounting();
@@ -429,9 +434,9 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	@Override
 	public void run(IPosition pos) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
 		logger.debug("run() called with position {}", pos);
-		MalcolmMessage reply = call(MalcolmMethod.RUN, getRunTimeout(), DeviceState.RUNNING);
+		MalcolmMessage reply = call(MalcolmMethod.RUN, Timeout.RUN.toMillis(), DeviceState.RUNNING);
 		if (reply.getType()==Type.ERROR) {
-			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+			throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 		}
 	}
 
@@ -441,54 +446,54 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 		LinkedHashMap<String, Integer> seekParameters = new LinkedHashMap<>();
 		seekParameters.put(CURRENT_STEP_ENDPOINT, stepNumber);
 		final MalcolmMessage msg   = createCallMessage(MalcolmMethod.PAUSE, seekParameters);
-		final MalcolmMessage reply = wrap(()->send(msg, getConfigTimeout()));
+		final MalcolmMessage reply = wrap(()->send(msg, Timeout.CONFIG.toMillis()));
 		if (reply.getType()==Type.ERROR) {
-			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+			throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 		}
 	}
 
 	@Override
 	public void abort() throws MalcolmDeviceException {
 		logger.debug("abort() called");
-		MalcolmMessage reply = wrap(()->call(MalcolmMethod.ABORT, getTimeout()));
+		MalcolmMessage reply = wrap(()->call(MalcolmMethod.ABORT, Timeout.STANDARD.toMillis()));
 		if (reply.getType()==Type.ERROR) {
-			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+			throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 		}
 	}
 
 	@Override
 	public void disable() throws MalcolmDeviceException {
 		logger.debug("disable() called");
-		MalcolmMessage reply = wrap(()->call(MalcolmMethod.DISABLE, getTimeout()));
+		MalcolmMessage reply = wrap(()->call(MalcolmMethod.DISABLE, Timeout.STANDARD.toMillis()));
 		if (reply.getType()==Type.ERROR) {
-			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+			throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 		}
 	}
 
 	@Override
 	public void reset() throws MalcolmDeviceException {
 		logger.debug("reset() called");
-		MalcolmMessage reply = wrap(()->call(MalcolmMethod.RESET, getTimeout()));
+		MalcolmMessage reply = wrap(()->call(MalcolmMethod.RESET, Timeout.STANDARD.toMillis()));
 		if (reply.getType()==Type.ERROR) {
-			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+			throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 		}
 	}
 
 	@Override
 	public void pause() throws MalcolmDeviceException {
 		logger.debug("pause() called");
-		MalcolmMessage reply = wrap(()->call(MalcolmMethod.PAUSE, getConfigTimeout()));
+		MalcolmMessage reply = wrap(()->call(MalcolmMethod.PAUSE, Timeout.CONFIG.toMillis()));
 		if (reply.getType()==Type.ERROR) {
-			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+			throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 		}
 	}
 
 	@Override
 	public void resume() throws MalcolmDeviceException {
 		logger.debug("resume() called");
-		MalcolmMessage reply = wrap(()->call(MalcolmMethod.RESUME, getTimeout()));
+		MalcolmMessage reply = wrap(()->call(MalcolmMethod.RESUME, Timeout.STANDARD.toMillis()));
 		if (reply.getType()==Type.ERROR) {
-			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+			throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 		}
 	}
 
@@ -524,23 +529,19 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 			final List<Exception> exceptionContainer = new ArrayList<>(1);
 
 			// Make a listener to check for state and then add it and latch
-			IMalcolmListener<MalcolmMessage> stateChanger = new IMalcolmListener<MalcolmMessage>() {
-				@Override
-				public void eventPerformed(MalcolmEvent<MalcolmMessage> e) {
-					MalcolmMessage msg = e.getBean();
-					try {
-						DeviceState state = MalcolmUtil.getState(msg);
-						if (state != null && ignoredStates != null &&
-								Arrays.asList(ignoredStates).contains(state)) {
-							return; // Found state that we don't want!
-						}
-						stateContainer.add(state);
-						latch.countDown();
-
-					} catch (Exception ne) {
-						exceptionContainer.add(ne);
-						latch.countDown();
+			IMalcolmListener<MalcolmMessage> stateChanger = e -> {
+				MalcolmMessage msg = e.getBean();
+				try {
+					DeviceState state = MalcolmUtil.getState(msg);
+					if (state != null && ignoredStates != null && Arrays.asList(ignoredStates).contains(state)) {
+						return; // Found state that we don't want!
 					}
+					stateContainer.add(state);
+					latch.countDown();
+
+				} catch (Exception ne) {
+					exceptionContainer.add(ne);
+					latch.countDown();
 				}
 			};
 
@@ -578,9 +579,9 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	public <T> IDeviceAttribute<T> getAttribute(String attributeName) throws MalcolmDeviceException {
 		logger.debug("getAttribute() called with attribute name {}", attributeName);
 		final MalcolmMessage message = createGetMessage(attributeName);
-		final MalcolmMessage reply   = wrap(()->send(message, getTimeout()));
+		final MalcolmMessage reply   = wrap(()->send(message, Timeout.STANDARD.toMillis()));
 		if (reply.getType()==Type.ERROR) {
-			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+			throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 		}
 
 		Object result = reply.getValue();
@@ -597,9 +598,9 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	public List<IDeviceAttribute<?>> getAllAttributes() throws MalcolmDeviceException {
 		logger.debug("getAllAttributes() called");
 		final MalcolmMessage message = createGetMessage("");
-		final MalcolmMessage reply   = wrap(()->send(message, getTimeout()));
+		final MalcolmMessage reply   = wrap(()->send(message, Timeout.STANDARD.toMillis()));
 		if (reply.getType()==Type.ERROR) {
-			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
+			throw new MalcolmDeviceException(STANDARD_MALCOLM_ERROR_STR + reply.getMessage());
 		}
 
 

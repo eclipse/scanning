@@ -64,13 +64,13 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	protected MalcolmEventDelegate eventDelegate;
 
 	// Connection to serialization to talk to the remote object
-	private MessageGenerator<MalcolmMessage>         connectionDelegate;
+	private MessageGenerator<MalcolmMessage> connectionDelegate;
 	private IMalcolmConnectorService<MalcolmMessage> connector;
 
 	protected IPointGenerator<?> pointGenerator;
 
 	public AbstractMalcolmDevice(IMalcolmConnectorService<MalcolmMessage> connector,
-			                     IRunnableDeviceService runnableDeviceService) throws MalcolmDeviceException {
+			IRunnableDeviceService runnableDeviceService) throws MalcolmDeviceException {
 		super(runnableDeviceService);
 		this.connector = connector;
 		this.connectionDelegate = connector.createDeviceConnection(this);
@@ -84,6 +84,7 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	public void setPointGenerator(IPointGenerator<?> pointGenerator) {
 		this.pointGenerator = pointGenerator;
 	}
+
 	public IPointGenerator<?> getPointGenerator() {
 		return pointGenerator;
 	}
@@ -94,7 +95,7 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	 * @throws Exception
 	 */
 	protected void beforeExecute() throws Exception {
-        logger.debug("Entering beforeExecute, state is " + getDeviceState());
+		logger.debug("Entering beforeExecute, state is " + getDeviceState());
 	}
 
 	/**
@@ -103,7 +104,7 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	 * @throws Exception
 	 */
 	protected void afterExecute() throws Exception {
-        logger.debug("Entering afterExecute, state is " + getDeviceState());
+		logger.debug("Entering afterExecute, state is " + getDeviceState());
 	}
 
 	protected void setTemplateBean(MalcolmEventBean bean) {
@@ -114,17 +115,17 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	public void start(final IPosition pos) throws ScanningException, InterruptedException {
 
 		final List<Throwable> exceptions = new ArrayList<>(1);
-		final Thread thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					AbstractMalcolmDevice.this.run(pos);
-				} catch (Exception e) {
-					e.printStackTrace();
-					exceptions.add(e);
-				}
+
+		final Runnable runPosition = () -> {
+			try {
+				AbstractMalcolmDevice.this.run(pos);
+			} catch (Exception e) {
+				e.printStackTrace();
+				exceptions.add(e);
 			}
-		}, "Device Runner Thread "+getName());
+		};
+
+		final Thread thread = new Thread(runPosition, "Device Runner Thread "+getName());
 		thread.start();
 
 		// We delay by 500ms just so that we can
@@ -142,9 +143,9 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	public void dispose() throws MalcolmDeviceException {
 		try {
 			try {
-			    if (getDeviceState().isRunning()) abort();
+				if (getDeviceState().isRunning()) abort();
 			} finally {
-			   close();
+				close();
 			}
 		} catch (Exception e) {
 			throw new MalcolmDeviceException(this, "Cannot dispose of '"+getName()+"'!", e);
@@ -191,45 +192,35 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 		return connectionDelegate.createCallMessage(method, params);
 	}
 
-	protected MalcolmMessage createSubscribeMessage(String endpoint) throws MalcolmDeviceException {
+	protected MalcolmMessage createSubscribeMessage(String endpoint) {
 		return connectionDelegate.createSubscribeMessage(endpoint);
 	}
 
-	protected MalcolmMessage createUnsubscribeMessage() throws MalcolmDeviceException {
+	protected MalcolmMessage createUnsubscribeMessage() {
 		return connectionDelegate.createUnsubscribeMessage();
 	}
 
-    protected void subscribe(MalcolmMessage message, IMalcolmListener<MalcolmMessage> listener) throws MalcolmDeviceException {
-    	connector.subscribe(this, message, listener);
-    }
-
-    @SuppressWarnings("unchecked")
-	protected MalcolmMessage unsubscribe(MalcolmMessage message, IMalcolmListener<MalcolmMessage> listener) throws MalcolmDeviceException {
-    	return connector.unsubscribe(this, message, listener);
-    }
-
-    protected void subscribeToConnectionStateChange(IMalcolmListener<Boolean> listener) throws MalcolmDeviceException {
-    	connector.subscribeToConnectionStateChange(this, listener);
-    }
-
-	/**
-	 * TODO: move these methods to {@link MalcolmDevice}. Should move connector and connectionDelegate too
-	 * @param message
-	 * @param timeout in ms
-	 * @return
-	 * @throws MalcolmDeviceException
-	 * @throws TimeoutException
-	 * @throws ExecutionException
-	 * @throws InterruptedException
-	 */
-	protected MalcolmMessage send(MalcolmMessage message, long timeout) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
-		logger.debug("Sending message to malcolm device: {}", message);
-	    return asynch(()->connector.send(this, message), timeout);
+	protected void subscribe(MalcolmMessage message, IMalcolmListener<MalcolmMessage> listener) throws MalcolmDeviceException {
+		connector.subscribe(this, message, listener);
 	}
 
-	protected MalcolmMessage call(MalcolmMethod method, long timeout, DeviceState... states) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
+	@SuppressWarnings("unchecked")
+	protected MalcolmMessage unsubscribe(MalcolmMessage message, IMalcolmListener<MalcolmMessage> listener) throws MalcolmDeviceException {
+		return connector.unsubscribe(this, message, listener);
+	}
+
+	protected void subscribeToConnectionStateChange(IMalcolmListener<Boolean> listener) throws MalcolmDeviceException {
+		connector.subscribeToConnectionStateChange(this, listener);
+	}
+
+	protected MalcolmMessage send(MalcolmMessage message, long timeout) throws InterruptedException, ExecutionException, TimeoutException {
+		logger.debug("Sending message to malcolm device: {}", message);
+		return asynch(()->connector.send(this, message), timeout);
+	}
+
+	protected MalcolmMessage call(MalcolmMethod method, long timeout, DeviceState... states) throws InterruptedException, ExecutionException, TimeoutException {
 		logger.debug("Calling method on malcolm device: {}", method);
-	    return asynch(()->connectionDelegate.call(method, states), timeout);
+		return asynch(()->connectionDelegate.call(method, states), timeout);
 	}
 
 	/**
@@ -249,12 +240,7 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 	}
 
 	private MalcolmMessage asynch(final Callable<MalcolmMessage> callable, long timeout) throws InterruptedException, ExecutionException, TimeoutException {
-		ExecutorService service = Executors.newSingleThreadExecutor();
-		// TODO: this uses a new executor each time? Maybe it should reuse the same one
-
-		// TODO: What's the point of doing this asynchronously if we wait?
-		// (is it just because of the timeout?)
-
+		final ExecutorService service = Executors.newSingleThreadExecutor();
 		try {
 			return service.submit(callable).get(timeout, TimeUnit.MILLISECONDS);
 		} finally {
