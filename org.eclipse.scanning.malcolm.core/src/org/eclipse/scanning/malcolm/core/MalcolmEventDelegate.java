@@ -16,34 +16,18 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 
 import org.eclipse.scanning.api.event.scan.DeviceState;
-import org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService;
 import org.eclipse.scanning.api.malcolm.event.IMalcolmListener;
 import org.eclipse.scanning.api.malcolm.event.MalcolmEvent;
 import org.eclipse.scanning.api.malcolm.event.MalcolmEventBean;
-import org.eclipse.scanning.api.malcolm.message.MalcolmMessage;
 
 public class MalcolmEventDelegate {
 
-	private String          topicName;
-
 	// listeners
-	private Collection<IMalcolmListener<MalcolmEventBean>> mlisteners;
+	private Collection<IMalcolmListener<MalcolmEventBean>> listeners;
 
 	// Bean to contain all the settings for a given
 	// scan and to hold data for scan events
 	private MalcolmEventBean templateBean;
-
-	private IMalcolmConnectorService<MalcolmMessage> service;
-
-	public MalcolmEventDelegate(String deviceName, IMalcolmConnectorService<MalcolmMessage> service) {
-
-		this.service = service;
-
-		String beamline = System.getenv("BEAMLINE");
-		if (beamline == null) beamline = "test";
-
-		topicName = "malcolm.topic."+beamline+"."+deviceName;
-	}
 
     /**
      * Call to publish an event. If the topic is not opened, this
@@ -61,22 +45,22 @@ public class MalcolmEventDelegate {
 
 
 	public void addMalcolmListener(IMalcolmListener<MalcolmEventBean> l) {
-		if (mlisteners==null) mlisteners = Collections.synchronizedCollection(new LinkedHashSet<IMalcolmListener<MalcolmEventBean>>());
-		mlisteners.add(l);
+		if (listeners==null) listeners = Collections.synchronizedCollection(new LinkedHashSet<IMalcolmListener<MalcolmEventBean>>());
+		listeners.add(l);
 	}
 
 	public void removeMalcolmListener(IMalcolmListener<MalcolmEventBean> l) {
-		if (mlisteners==null) return;
-		mlisteners.remove(l);
+		if (listeners==null) return;
+		listeners.remove(l);
 	}
 
 	private void fireMalcolmListeners(MalcolmEventBean message) {
 
-		if (mlisteners==null) return;
+		if (listeners==null) return;
 
 		// Make array, avoid multi-threading issues.
 		@SuppressWarnings("unchecked")
-		final IMalcolmListener<MalcolmEventBean>[] la = mlisteners.toArray(new IMalcolmListener[mlisteners.size()]);
+		final IMalcolmListener<MalcolmEventBean>[] la = listeners.toArray(new IMalcolmListener[listeners.size()]);
 		final MalcolmEvent<MalcolmEventBean> evt = new MalcolmEvent<MalcolmEventBean>(message);
 		for (IMalcolmListener<MalcolmEventBean> l : la) l.eventPerformed(evt);
 	}
@@ -94,7 +78,7 @@ public class MalcolmEventDelegate {
 	}
 
 	public void close() {
-		if (mlisteners!=null) mlisteners.clear();
+		if (listeners!=null) listeners.clear();
 	}
 
 }
