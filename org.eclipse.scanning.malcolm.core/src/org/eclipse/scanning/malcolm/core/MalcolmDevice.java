@@ -130,10 +130,11 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	}
 
 	public void initialize() throws MalcolmDeviceException {
+		logger.debug("initialize() called");
 		try {
 			setAlive(false);
 		final DeviceState currentState = getDeviceState();
-			logger.debug("Connecting to '"+getName()+"'. Current state: "+currentState);
+			logger.debug("Connecting to ''{}''. Current state: {}", getName(), currentState);
 
 			stateSubscriber = createSubscribeMessage(STATE_ENDPOINT);
 			subscribe(stateSubscriber, new IMalcolmListener<MalcolmMessage>() {
@@ -273,7 +274,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 		meb.setDeviceState(newState);
 
 		if (msg.getType().isError()) { // Currently used for debugging the device.
-			logger.error("Error message encountered: "+msg);
+			logger.error("Error message encountered: {} ", msg);
 			Thread.dumpStack();
 		}
 
@@ -300,12 +301,12 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 								getDeviceState();
 							}
 						} catch (MalcolmDeviceException ex) {
-							logger.warn("Unable to initialise/getDeviceState for device '" + getName() + "' on reconnection", ex);
+							logger.warn("Unable to initialise/getDeviceState for device '{}' on reconnection", getName(), ex);
 						}
-			        }
+			}
 			    });
 			} else {
-				logger.warn("Malcolm Device '" + getName() + "' connection state changed to not connected");
+				logger.warn("Malcolm Device '{}' connection state changed to not connected", getName());
 			}
 		} catch (Exception ne) {
 			logger.error("Problem dispatching message!", ne);
@@ -356,6 +357,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public void validate(M params) throws ValidationException {
+		logger.debug("validate() called");
 		validateWithReturn(params);
 	}
 
@@ -384,6 +386,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public void configure(M model) throws MalcolmDeviceException {
+		logger.debug("configure() called");
 
 		// Reset the device before configure in case it's in a fault state
 		try {
@@ -430,6 +433,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public void run(IPosition pos) throws MalcolmDeviceException, InterruptedException, ExecutionException, TimeoutException {
+		logger.debug("run() called with position {}", pos);
 		MalcolmMessage reply = call(MalcolmMethod.RUN, getRunTimeout(), DeviceState.RUNNING);
 		if (reply.getType()==Type.ERROR) {
 			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
@@ -438,6 +442,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public void seek(int stepNumber) throws MalcolmDeviceException {
+		logger.debug("seek() called with step number {}", stepNumber);
 		LinkedHashMap<String, Integer> seekParameters = new LinkedHashMap<>();
 		seekParameters.put(CURRENT_STEP_ENDPOINT, stepNumber);
 		final MalcolmMessage msg   = createCallMessage(MalcolmMethod.PAUSE, seekParameters);
@@ -449,6 +454,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public void abort() throws MalcolmDeviceException {
+		logger.debug("abort() called");
 		MalcolmMessage reply = wrap(()->call(MalcolmMethod.ABORT, getTimeout()));
 		if (reply.getType()==Type.ERROR) {
 			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
@@ -457,6 +463,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public void disable() throws MalcolmDeviceException {
+		logger.debug("disable() called");
 		MalcolmMessage reply = wrap(()->call(MalcolmMethod.DISABLE, getTimeout()));
 		if (reply.getType()==Type.ERROR) {
 			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
@@ -465,6 +472,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public void reset() throws MalcolmDeviceException {
+		logger.debug("reset() called");
 		MalcolmMessage reply = wrap(()->call(MalcolmMethod.RESET, getTimeout()));
 		if (reply.getType()==Type.ERROR) {
 			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
@@ -473,6 +481,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public void pause() throws MalcolmDeviceException {
+		logger.debug("pause() called");
 		MalcolmMessage reply = wrap(()->call(MalcolmMethod.PAUSE, getConfigTimeout()));
 		if (reply.getType()==Type.ERROR) {
 			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
@@ -481,6 +490,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public void resume() throws MalcolmDeviceException {
+		logger.debug("resume() called");
 		MalcolmMessage reply = wrap(()->call(MalcolmMethod.RESUME, getTimeout()));
 		if (reply.getType()==Type.ERROR) {
 			throw new MalcolmDeviceException("Error from Malcolm Device Connection: " + reply.getMessage());
@@ -489,6 +499,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public void dispose() throws MalcolmDeviceException {
+		logger.debug("dispose() called");
 		unsubscribe(stateSubscriber);
 		unsubscribe(scanSubscriber);
 
@@ -500,7 +511,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 			final MalcolmMessage unsubscribeStatus = createUnsubscribeMessage();
 			unsubscribeStatus.setId(subscriber.getId());
 			unsubscribe(subscriber);
-			logger.debug("Unsubscription "+getName()+" made "+unsubscribeStatus);
+			logger.debug("Unsubscription {} made {}", getName(), unsubscribeStatus);
 		}
 	}
 
@@ -573,6 +584,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public <T> IDeviceAttribute<T> getAttribute(String attributeName) throws MalcolmDeviceException {
+		logger.debug("getAttribute() called with attribute name {}", attributeName);
 		final MalcolmMessage message = createGetMessage(attributeName);
 		final MalcolmMessage reply   = wrap(()->send(message, getTimeout()));
 		if (reply.getType()==Type.ERROR) {
@@ -591,6 +603,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 
 	@Override
 	public List<IDeviceAttribute<?>> getAllAttributes() throws MalcolmDeviceException {
+		logger.debug("getAllAttributes() called");
 		final MalcolmMessage message = createGetMessage("");
 		final MalcolmMessage reply   = wrap(()->send(message, getTimeout()));
 		if (reply.getType()==Type.ERROR) {
@@ -610,6 +623,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 	 */
 	@Override
 	public <T> T getAttributeValue(String attributeName) throws MalcolmDeviceException {
+		logger.debug("getAttributeValue() called with attribute name {}", attributeName);
 		IDeviceAttribute<T> attribute = getAttribute(attributeName);
 		return attribute.getValue();
 	}
