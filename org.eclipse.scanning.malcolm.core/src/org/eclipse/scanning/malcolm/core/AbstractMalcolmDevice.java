@@ -161,14 +161,16 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void addMalcolmListener(IMalcolmListener l) {
-		eventDelegate.addMalcolmListener(l);
+	public void addMalcolmListener(IMalcolmListener<?> l) {
+		eventDelegate.addMalcolmListener((IMalcolmListener<MalcolmEventBean>) l);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public void removeMalcolmListener(IMalcolmListener l) {
-		eventDelegate.removeMalcolmListener(l);
+	public void removeMalcolmListener(IMalcolmListener<?> l) {
+		eventDelegate.removeMalcolmListener((IMalcolmListener<MalcolmEventBean>) l);
 	}
 
 	protected void sendEvent(MalcolmEventBean event) throws Exception {
@@ -177,35 +179,41 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 
 	@Override
 	public Set<String> getAxesToMove() throws ScanningException {
-		String[] axesToMove = (String[]) getAttributeValue(MalcolmConstants.ATTRIBUTE_NAME_AXES_TO_MOVE);
+		String[] axesToMove = getAttributeValue(MalcolmConstants.ATTRIBUTE_NAME_AXES_TO_MOVE);
 		return new HashSet<>(Arrays.asList(axesToMove));
 	}
 
 	protected MalcolmMessage createGetMessage(String endpoint) throws MalcolmDeviceException {
 		return connectionDelegate.createGetMessage(endpoint);
 	}
+
 	protected MalcolmMessage createCallMessage(MalcolmMethod method, Object params) throws MalcolmDeviceException {
 		return connectionDelegate.createCallMessage(method, params);
 	}
+
 	protected MalcolmMessage createSubscribeMessage(String endpoint) throws MalcolmDeviceException {
 		return connectionDelegate.createSubscribeMessage(endpoint);
 	}
+
 	protected MalcolmMessage createUnsubscribeMessage() throws MalcolmDeviceException {
 		return connectionDelegate.createUnsubscribeMessage();
 	}
+
     protected void subscribe(MalcolmMessage message, IMalcolmListener<MalcolmMessage> listener) throws MalcolmDeviceException {
-	connector.subscribe(this, message, listener);
+    	connector.subscribe(this, message, listener);
     }
+
     @SuppressWarnings("unchecked")
 	protected MalcolmMessage unsubscribe(MalcolmMessage message, IMalcolmListener<MalcolmMessage> listener) throws MalcolmDeviceException {
-	return connector.unsubscribe(this, message, listener);
+    	return connector.unsubscribe(this, message, listener);
     }
+
     protected void subscribeToConnectionStateChange(IMalcolmListener<Boolean> listener) throws MalcolmDeviceException {
-	connector.subscribeToConnectionStateChange(this, listener);
+    	connector.subscribeToConnectionStateChange(this, listener);
     }
 
 	/**
-	 *
+	 * TODO: move these methods to {@link MalcolmDevice}. Should move connector and connectionDelegate too
 	 * @param message
 	 * @param timeout in ms
 	 * @return
@@ -242,8 +250,13 @@ public abstract class AbstractMalcolmDevice<M extends IMalcolmModel> extends Abs
 
 	private MalcolmMessage asynch(final Callable<MalcolmMessage> callable, long timeout) throws InterruptedException, ExecutionException, TimeoutException {
 		ExecutorService service = Executors.newSingleThreadExecutor();
+		// TODO: this uses a new executor each time? Maybe it should reuse the same one
+
+		// TODO: What's the point of doing this asynchronously if we wait?
+		// (is it just because of the timeout?)
+
 		try {
-		    return service.submit(callable).get(timeout, TimeUnit.MILLISECONDS);
+			return service.submit(callable).get(timeout, TimeUnit.MILLISECONDS);
 		} finally {
 			service.shutdownNow();
 		}

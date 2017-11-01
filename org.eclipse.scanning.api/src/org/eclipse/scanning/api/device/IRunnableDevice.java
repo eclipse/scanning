@@ -119,19 +119,15 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 	 * @throws InterruptedException
 	 */
 	default void start(final IPosition pos) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
-
 		final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>(1));
-		final Thread thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					IRunnableDevice.this.run(pos);
-				} catch (ScanningException | InterruptedException | TimeoutException | ExecutionException e) {
-					// If you add an exception type to this catch clause,
-					// you must also add an "else if" clause for it inside
-					// the "if (!exceptions.isEmpty())" conditional below.
-					exceptions.add(e);
-				}
+		final Thread thread = new Thread(() -> {
+			try {
+				IRunnableDevice.this.run(pos);
+			} catch (ScanningException | InterruptedException | TimeoutException | ExecutionException e) {
+				// If you add an exception type to this catch clause,
+				// you must also add an "else if" clause for it inside
+				// the "if (!exceptions.isEmpty())" conditional below.
+				exceptions.add(e);
 			}
 		}, getName()+" execution thread");
 		thread.start();

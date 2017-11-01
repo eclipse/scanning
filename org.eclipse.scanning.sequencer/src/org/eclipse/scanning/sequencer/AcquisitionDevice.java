@@ -226,7 +226,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	private Set<String> getAxesToMove(IMalcolmDevice<?> malcolmDevice) {
 		try {
-			return ((IMalcolmDevice<?>) malcolmDevice).getAxesToMove();
+			return malcolmDevice.getAxesToMove();
 		} catch (ScanningException e) {
 			throw new RuntimeException(e);
 		}
@@ -277,11 +277,12 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	public void start(IPosition parent) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
 		logger.debug("start() called with position: {}", parent);
 		createScanLatch();
-        super.start(parent);
+		super.start(parent);
 	}
 
 	@Override
 	public void run(IPosition parent) throws ScanningException, InterruptedException {
+		// parent is usually null for and is not used in this class
 		logger.debug("run() called with position: {}", parent);
 
 		if (getDeviceState()!=DeviceState.ARMED) throw new ScanningException("The device '"+getName()+"' is not armed. It is in state "+getDeviceState());
@@ -300,66 +301,66 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 			RunnableDeviceServiceImpl.setCurrentScanningDevice(this); // Alows Jython to get and pause/seek.
 
-	        // TODO Should we validate the position iterator that all
-	        // the positions are valid before running the scan?
-	        // It was called limit checking in GDA.
-	        // Sometimes logic is needed to implement collision avoidance
+			// TODO Should we validate the position iterator that all
+			// the positions are valid before running the scan?
+			// It was called limit checking in GDA.
+			// Sometimes logic is needed to implement collision avoidance
 
-		// Set the size and declare a count
-		fireStart(location.getTotalSize());
+			// Set the size and declare a count
+			fireStart(location.getTotalSize());
 
-		// Add the malcolm listners so that progress on inner malcolm scans can be reported
-		addMalcolmListeners();
+			// Add the malcolm listners so that progress on inner malcolm scans can be reported
+			addMalcolmListeners();
 
-		// The scan loop
-		pos = null; // We want the last point when we are done so don't use foreach
-		boolean firedFirst = false;
-	        while (positionIterator.hasNext()) {
+			// The scan loop
+			boolean firedFirst = false;
+			while (positionIterator.hasNext()) {
 
-			pos = positionIterator.next();
-			pos.setStepIndex(location.getStepNumber());
+				pos = positionIterator.next();
+				pos.setStepIndex(location.getStepNumber());
 
-			if (!firedFirst) {
-				fireFirst(pos);
-			firedFirst = true;
+				if (!firedFirst) {
+					fireFirst(pos);
+					firedFirst = true;
+				}
+
+				// Check if we are paused, blocks until we are not
+				boolean continueRunning = checkPaused();
+				if (!continueRunning)
+					return; // finally block performed
+
+				// Run to the position
+				annotationManager.invoke(PointStart.class, pos);
+				positioner.setPosition(pos); // moveTo in GDA8
+				firePositionMoveComplete(pos); // notify listers that the move is complete
+
+				exposureManager.setExposureTime(pos); // most of the time this does nothing.
+
+				IPosition written = writers.await(); // Wait for the previous write out to return, if any
+				if (written != null)
+					annotationManager.invoke(WriteComplete.class, written);
+
+				runners.run(pos); // GDA8: collectData() / GDA9: run() for Malcolm
+				writers.run(pos, false); // Do not block on the readout, move to the next position immediately.
+
+				// Send an event about where we are in the scan
+				annotationManager.invoke(PointEnd.class, pos);
+				positionComplete(pos);
+
+				logger.info("Scanning completed step {} . Position was {}", location.getStepNumber(), pos);
 			}
 
-			// Check if we are paused, blocks until we are not
-			boolean continueRunning = checkPaused();
-			if (!continueRunning) return;  // finally block performed
-
-			// Run to the position
-			annotationManager.invoke(PointStart.class, pos);
-			positioner.setPosition(pos);          // moveTo in GDA8
-			firePositionMoveComplete(pos);        // notify listers that the move is complete
-
-			exposureManager.setExposureTime(pos); // most of the time this does nothing.
-
-			IPosition written = writers.await();  // Wait for the previous write out to return, if any
-			if (written!=null) annotationManager.invoke(WriteComplete.class, written);
-
-			runners.run(pos);                     // GDA8: collectData() / GDA9: run() for Malcolm
-			writers.run(pos, false);              // Do not block on the readout, move to the next position immediately.
-
-			// Send an event about where we are in the scan
-			annotationManager.invoke(PointEnd.class, pos);
-			positionComplete(pos);
-
-			logger.info("Scanning completed step {} . Position was {}", location.getStepNumber(), pos);
-			}
-
-	        // On the last iteration we must wait for the final readout.
-		IPosition written = writers.await();          // Wait for the previous write out to return, if any
-		annotationManager.invoke(WriteComplete.class, written);
-
+			// On the last iteration we must wait for the final readout.
+			IPosition written = writers.await(); // Wait for the previous write out to return, if any
+			annotationManager.invoke(WriteComplete.class, written);
 
 		} catch (ScanningException | InterruptedException i) {
-			errorFound=true;
+			errorFound = true;
 			processException(i);
 			throw i;
 
 		} catch (Exception ne) {
-			errorFound=true;
+			errorFound = true;
 			processException(ne);
 			throw new ScanningException(ne);
 
@@ -380,44 +381,38 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		if (model.getFilePath()!=null) annotationManager.invoke(FileDeclared.class, model.getFilePath(), firstPosition);
 
 		final Set<String> otherFiles = nexusScanFileManager.getExternalFilePaths();
-		if (otherFiles!=null && otherFiles.size()>0) {
-			for (String path : otherFiles) if (path!=null) annotationManager.invoke(FileDeclared.class, path, firstPosition);
+		if (otherFiles != null && !otherFiles.isEmpty()) {
+			for (String path : otherFiles) { // can't use java 8 stream with lambdas due to checked exceptions
+				if (path!=null) {
+					annotationManager.invoke(FileDeclared.class, path, firstPosition);
+				}
+			}
 		}
 
-	fireRunWillPerform(firstPosition);
+		fireRunWillPerform(firstPosition);
 	}
 
 	/**
 	 * Remove this from the list of position listeners for any Malcolm Device
 	 */
 	private void removeMalcolmListeners() {
-		try {
-			if (model.getDetectors() != null) {
-				// Make sure all devices report the same scan id
-				for (IRunnableDevice<?> device : model.getDetectors()) {
-					if (device.getRole() == DeviceRole.MALCOLM) {
-						AbstractRunnableDevice<?> ard = (AbstractRunnableDevice<?>) device;
-						ard.removePositionListener(this);
-					}
-				}
-			}
-		} catch (Exception ex) {
-			logger.error("Error removing listener", ex);
+		if (model.getDetectors() != null) {
+			model.getDetectors().stream().
+				filter(device -> device.getRole() == DeviceRole.MALCOLM).
+				map(AbstractRunnableDevice.class::cast).
+				forEach(dev -> dev.removePositionListener(this));
 		}
 	}
 
 	/**
 	 * Add this to the list of position listeners for any Malcolm Device
-	 *
 	 */
 	private void addMalcolmListeners() {
 		if (model.getDetectors() != null) {
-			for (IRunnableDevice<?> device : model.getDetectors()) {
-				if (device.getRole() == DeviceRole.MALCOLM) {
-					AbstractRunnableDevice<?> ard = (AbstractRunnableDevice<?>) device;
-					ard.addPositionListener(this);
-				}
-			}
+			model.getDetectors().stream().
+				filter(device -> device.getRole() == DeviceRole.MALCOLM).
+				map(AbstractRunnableDevice.class::cast).
+				forEach(dev -> dev.addPositionListener(this));
 		}
 	}
 
@@ -437,21 +432,22 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 				nexusScanFileManager.scanFinished(); // writes scanFinished and closes nexus file
 
 				// We should not fire the run performed until the nexus file is closed.
-			// Tests wait for this step and reread the file.
-		    fireRunPerformed(last);              // Say that we did the overall run using the position we stopped at.
-
+				// Tests wait for this step and reread the file.
+				fireRunPerformed(last); // Say that we did the overall run using the position we stopped at.
 			} finally {
-			// only fire end if finished normally
-			if (!errorFound) fireEnd(last);
+				// only fire end if finished normally
+				if (!errorFound)
+					fireEnd(last);
 			}
-
 		} finally {
-	    try {
+			try {
 				annotationManager.invoke(ScanFinally.class, last);
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | InstantiationException | EventException e) {
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException
+					| InstantiationException | EventException e) {
 				throw new ScanningException(e);
 			}
-			if (latch!=null) latch.countDown();
+			if (latch != null)
+				latch.countDown();
 		}
 	}
 
@@ -574,44 +570,48 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 
 	/**
 	 * Blocks until not paused
+	 *
 	 * @return true if state has not been set to a rest one, i.e. we are still scanning.
 	 * @throws Exception
 	 */
 	@SuppressWarnings("squid:S2274")
 	private boolean checkPaused() throws Exception {
 
-		if (!getDeviceState().isRunning() && getDeviceState()!=DeviceState.ARMED) {
-			if (getDeviceState().isRestState()) return false;
-			throw new Exception("The scan state is "+getDeviceState());
+		if (!getDeviceState().isRunning() && getDeviceState() != DeviceState.ARMED) {
+			if (getDeviceState().isRestState())
+				return false;
+			throw new ScanningException("The scan state is " + getDeviceState());
 		}
 
 		// Check the locking using a condition
-	if(!lock.tryLock(1, TimeUnit.SECONDS)) {
-		throw new ScanningException(this, "Internal Error - Could not obtain lock to run device!");
-	}
-	try {
-		if (!getDeviceState().isRunning() && getDeviceState()!=DeviceState.ARMED) {
-			throw new Exception("The scan state is "+getDeviceState());
+		if (!lock.tryLock(1, TimeUnit.SECONDS)) {
+			throw new ScanningException(this, "Internal Error - Could not obtain lock to run device!");
 		}
-	    if (awaitPaused) {
-			if (getDeviceState() != DeviceState.PAUSED) setDeviceState(DeviceState.PAUSED);
-			annotationManager.invoke(ScanPause.class);
-			paused.await();
-			getBean().setStatus(Status.RESUMED);
-			setDeviceState(DeviceState.RUNNING);
-			annotationManager.invoke(ScanResume.class);
+		try {
+			if (!getDeviceState().isRunning() && getDeviceState() != DeviceState.ARMED) {
+				throw new ScanningException("The scan state is " + getDeviceState());
+			}
+			if (awaitPaused) {
+				if (getDeviceState() != DeviceState.PAUSED)
+					setDeviceState(DeviceState.PAUSED);
+				annotationManager.invoke(ScanPause.class);
+				paused.await();
+				getBean().setStatus(Status.RESUMED);
+				setDeviceState(DeviceState.RUNNING);
+				annotationManager.invoke(ScanResume.class);
+			}
+		} finally {
+			lock.unlock();
 		}
-	} finally {
-		lock.unlock();
-	}
-	return true;
+		return true;
 	}
 
 	@Override
 	public void abort() throws ScanningException, InterruptedException {
 		logger.debug("abort() called");
-		work(()-> abortInternal(), null, "abort", true, false);
+		work(this::abortInternal, null, "abort", true, false);
 	}
+
 	private void abortInternal()  throws ScanningException, InterruptedException{
 
 		setDeviceState(DeviceState.ABORTING);
@@ -637,10 +637,10 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 	@Override
 	public void pause() throws ScanningException, InterruptedException {
 		logger.debug("pause() called");
-		work(()-> pauseInternal(), DeviceState.RUNNING, "pause", true, false);
+		work(this::pauseInternal, DeviceState.RUNNING, "pause", true, false);
 	}
-	private void pauseInternal() throws ScanningException, InterruptedException {
 
+	private void pauseInternal() throws ScanningException, InterruptedException {
 		getBean().setPreviousStatus(getBean().getStatus());
 		getBean().setStatus(Status.PAUSED);
 		setDeviceState(DeviceState.SEEKING);
@@ -665,6 +665,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		// to the point
 		work(()-> seekInternal(stepNumber), DeviceState.PAUSED, "seek", true, false);
 	}
+
 	private void seekInternal(int stepNumber) throws ScanningException, InterruptedException {
 
 		if (stepNumber<0) throw new ScanningException("Seek position is invalid "+stepNumber);
@@ -682,6 +683,7 @@ final class AcquisitionDevice extends AbstractRunnableDevice<ScanModel> implemen
 		logger.debug("resume() called");
 		work(this::resumeInternal, DeviceState.PAUSED, "resume", false, true);
 	}
+
 	private void resumeInternal() throws ScanningException, InterruptedException {
 
 		if (getModel().getDetectors()!=null) for (IRunnableDevice<?> device : getModel().getDetectors()) {
