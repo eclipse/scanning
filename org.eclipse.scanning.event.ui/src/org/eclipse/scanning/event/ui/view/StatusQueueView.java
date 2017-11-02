@@ -216,9 +216,7 @@ public class StatusQueueView extends EventConnectionView {
 					adminMonitor.addListener(evt -> {
 							final AdministratorMessage bean = evt.getBean();
 							getSite().getShell().getDisplay().syncExec(() -> {
-								MessageDialog.openError(getViewSite().getShell(),
-									bean.getTitle(),
-									bean.getMessage());
+								MessageDialog.openError(getViewSite().getShell(), bean.getTitle(), bean.getMessage());
 								viewer.refresh();
 							});
 						});
@@ -298,8 +296,9 @@ public class StatusQueueView extends EventConnectionView {
 					try {
 						queueConnection.reorder(bean, -1);
 					} catch (EventException e) {
-						ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName(), "'"+bean.getName()+"' cannot be moved in the submission queue.",
-								new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
+						ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName(),
+							"'"+bean.getName()+"' cannot be moved in the submission queue.",
+							new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 					}
 				}
 				refresh();
@@ -496,8 +495,9 @@ public class StatusQueueView extends EventConnectionView {
 			pauser.broadcast(pbean);
 
 		} catch (Exception e) {
-			ErrorDialog.openError(getViewSite().getShell(), "Cannot pause queue "+getSubmissionQueueName(), "Cannot pause queue "+getSubmissionQueueName()+"\n\nPlease contact your support representative.",
-					new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
+			ErrorDialog.openError(getViewSite().getShell(), "Cannot pause queue "+getSubmissionQueueName(),
+				"Cannot pause queue "+getSubmissionQueueName()+"\n\nPlease contact your support representative.",
+				new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 		}
 		pauseConsumer.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName()));
 	}
@@ -507,7 +507,8 @@ public class StatusQueueView extends EventConnectionView {
 		for(StatusBean bean : getSelection()) {
 
 			if (bean.getStatus().isFinal()) {
-				MessageDialog.openInformation(getViewSite().getShell(), "Run '"+bean.getName()+"' inactive", "Run '"+bean.getName()+"' is inactive and cannot be paused.");
+				MessageDialog.openInformation(getViewSite().getShell(), "Run '"+bean.getName()+"' inactive",
+					"Run '"+bean.getName()+"' is inactive and cannot be paused.");
 				continue;
 			}
 
@@ -524,8 +525,9 @@ public class StatusQueueView extends EventConnectionView {
 				terminate.broadcast(bean);
 
 			} catch (Exception e) {
-				ErrorDialog.openError(getViewSite().getShell(), "Cannot pause "+bean.getName(), "Cannot pause "+bean.getName()+"\n\nPlease contact your support representative.",
-						new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
+				ErrorDialog.openError(getViewSite().getShell(), "Cannot pause "+bean.getName(),
+					"Cannot pause "+bean.getName()+"\n\nPlease contact your support representative.",
+					new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 			}
 		}
 	}
@@ -540,7 +542,8 @@ public class StatusQueueView extends EventConnectionView {
 
 				if (bean.getStatus()!=org.eclipse.scanning.api.event.status.Status.SUBMITTED) {
 					queueName = getQueueName();
-					boolean ok = MessageDialog.openQuestion(getSite().getShell(), "Confirm Remove '"+bean.getName()+"'", "Are you sure you would like to remove '"+bean.getName()+"'?");
+					boolean ok = MessageDialog.openQuestion(getSite().getShell(), "Confirm Remove '"+bean.getName()+"'",
+						"Are you sure you would like to remove '"+bean.getName()+"'?");
 					if (!ok) continue;
 				} else {
 					// Submitted delete it right away without asking or the consumer will run it!
@@ -552,8 +555,9 @@ public class StatusQueueView extends EventConnectionView {
 					queueConnection.remove(bean, queueName);
 					refresh();
 				} catch (EventException e) {
-					ErrorDialog.openError(getViewSite().getShell(), "Cannot delete "+bean.getName(), "Cannot delete "+bean.getName()+"\n\nIt might have changed state at the same time and being remoted.",
-							new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
+					ErrorDialog.openError(getViewSite().getShell(), "Cannot delete "+bean.getName(),
+						"Cannot delete "+bean.getName()+"\n\nIt might have changed state at the same time and being remoted.",
+						new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 				}
 			} else {
 				MessageDialog.openWarning(getViewSite().getShell(), "Cannot remove running job",
@@ -591,7 +595,9 @@ public class StatusQueueView extends EventConnectionView {
 
 	protected void purgeQueues() throws EventException {
 
-		boolean ok = MessageDialog.openQuestion(getSite().getShell(), "Confirm Clear Queues", "Are you sure you would like to remove all items from the queue "+getQueueName()+" and "+getSubmissionQueueName()+"?\n\nThis could abort or disconnect runs of other users.");
+		boolean ok = MessageDialog.openQuestion(getSite().getShell(), "Confirm Clear Queues",
+			"Are you sure you would like to remove all items from the queue "+getQueueName()+" and "+
+			getSubmissionQueueName()+"?\n\nThis could abort or disconnect runs of other users.");
 		if (!ok) return;
 
 		queueConnection.clearQueue(getQueueName());
@@ -673,7 +679,8 @@ public class StatusQueueView extends EventConnectionView {
 
 		for (StatusBean bean : getSelection()) {
 			if (bean.getStatus()!=org.eclipse.scanning.api.event.status.Status.SUBMITTED) {
-				MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'", "The run '"+bean.getName()+"' cannot be edited because it is not waiting to run.");
+				MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'",
+					"The run '"+bean.getName()+"' cannot be edited because it is not waiting to run.");
 				continue;
 			}
 
@@ -695,7 +702,8 @@ public class StatusQueueView extends EventConnectionView {
 				ErrorDialog.openError(getSite().getShell(), "Internal Error", err, new Status(IStatus.ERROR, Activator.PLUGIN_ID, ne.getMessage()));
 				continue;
 			}
-			MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'", "There are no editers registered for '"+bean.getName()+"'\n\nPlease contact your support representative.");
+			MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'",
+				"There are no editers registered for '"+bean.getName()+"'\n\nPlease contact your support representative.");
 		}
 	}
 
