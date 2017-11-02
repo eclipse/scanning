@@ -78,6 +78,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.Bundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,7 +131,7 @@ public class StatusQueueView extends EventConnectionView {
 	private ISubscriber<IBeanListener<AdministratorMessage>> adminMonitor;
 	private ISubmitter<StatusBean>                           queueConnection;
 
-	private Action rerun, edit, remove, up, down, pause;
+	private Action rerun, edit, remove, up, down, pause, stop;
 	private IEventService service;
 
 	private ISubscriber<EventListener> pauseSubscriber;
@@ -186,6 +188,7 @@ public class StatusQueueView extends EventConnectionView {
 			up.setEnabled(isSubmitted);
 			edit.setEnabled(isSubmitted);
 			down.setEnabled(isSubmitted);
+			stop.setEnabled( bean.getStatus().isRunning());
 			pause.setEnabled(bean.getStatus().isRunning()||bean.getStatus().isPaused());
 			pause.setChecked(bean.getStatus().isPaused());
 			pause.setText(bean.getStatus().isPaused()?"Resume job":"Pause job");
@@ -343,6 +346,17 @@ public class StatusQueueView extends EventConnectionView {
 		menuMan.add(pause);
 		dropDown.add(pause);
 
+		stop = new Action("Stop job", Activator.getImageDescriptor("icons/control-stop-square.png")) {
+			@Override
+			public void run() {
+				stopJob();
+			}
+		};
+		stop.setEnabled(false);
+		toolMan.add(stop);
+		menuMan.add(stop);
+		dropDown.add(stop);
+
 		final Action pauseConsumer = new Action("Pause "+getPartName()+" Queue. Does not pause running job.", IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
@@ -358,10 +372,11 @@ public class StatusQueueView extends EventConnectionView {
 		ISubscriber<IBeanListener<PauseBean>> pauseMonitor = service.createSubscriber(getUri(), EventConstants.CMD_TOPIC);
 		pauseMonitor.addListener(evt -> pauseConsumer.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName())));
 
-		this.remove = new Action("Stop job or remove if finished", Activator.getImageDescriptor("icons/control-stop-square.png")) {
+		remove = new Action("Remove job", PlatformUI.getWorkbench().getSharedImages()
+				.getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
 			@Override
 			public void run() {
-				stopJob();
+				removeJob();
 			}
 		};
 		remove.setEnabled(false);
@@ -519,8 +534,7 @@ public class StatusQueueView extends EventConnectionView {
 		}
 	}
 
-	@SuppressWarnings({"squid:S3776", "squid:S135"})
-	protected void stopJob() {
+	protected void removeJob() {
 
 		for(StatusBean bean : getSelection()) {
 
@@ -545,9 +559,16 @@ public class StatusQueueView extends EventConnectionView {
 					ErrorDialog.openError(getViewSite().getShell(), "Cannot delete "+bean.getName(), "Cannot delete "+bean.getName()+"\n\nIt might have changed state at the same time and being remoted.",
 							new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 				}
-				continue;
+			} else {
+				MessageDialog.openWarning(getViewSite().getShell(), "Cannot remove running job",
+						"Cannot delete "+bean.getName()+" as it is currently active.");
 			}
+		}
+	}
 
+	protected void stopJob() {
+		for(StatusBean bean : getSelection()) {
+			if (bean.getStatus().isActive()) {
 			try {
 				final DateFormat format = DateFormat.getDateTimeInstance();
 				boolean ok = MessageDialog.openQuestion(getViewSite().getShell(), "Confirm terminate "+bean.getName(),
@@ -564,6 +585,10 @@ public class StatusQueueView extends EventConnectionView {
 			} catch (Exception e) {
 				ErrorDialog.openError(getViewSite().getShell(), "Cannot terminate "+bean.getName(), "Cannot terminate "+bean.getName()+"\n\nPlease contact your support representative.",
 						new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
+			}
+			} else {
+				MessageDialog.openWarning(getViewSite().getShell(), "Cannot stop inactive job",
+						"Cannot stop "+bean.getName()+" as it is not currently active.");
 			}
 		}
 	}
