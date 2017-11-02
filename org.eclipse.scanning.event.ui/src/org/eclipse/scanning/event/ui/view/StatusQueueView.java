@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.EventListener;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -134,8 +133,6 @@ public class StatusQueueView extends EventConnectionView {
 	private Action rerun, edit, remove, up, down, pause, stop;
 	private IEventService service;
 
-	private ISubscriber<EventListener> pauseSubscriber;
-
 	private List<IResultHandler> resultsHandlers = null;
 
 	public StatusQueueView() {
@@ -246,7 +243,6 @@ public class StatusQueueView extends EventConnectionView {
 		try {
 			if (topicMonitor!=null) topicMonitor.disconnect();
 			if (adminMonitor!=null) adminMonitor.disconnect();
-			if (pauseSubscriber!=null) pauseSubscriber.disconnect();
 		} catch (Exception ne) {
 			logger.warn("Problem stopping topic listening for "+getTopicName(), ne);
 		}
@@ -822,9 +818,6 @@ public class StatusQueueView extends EventConnectionView {
 
 	/**
 	 * Read Queue and return in submission order.
-	 * @param uri
-	 * @return
-	 * @throws Exception
 	 */
 	protected synchronized void updateQueue() {
 
