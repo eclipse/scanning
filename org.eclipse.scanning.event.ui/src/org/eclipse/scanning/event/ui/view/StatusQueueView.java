@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -37,7 +38,6 @@ import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -172,24 +172,27 @@ public class StatusQueueView extends EventConnectionView {
 
 		selectionProvider = new DelegatingSelectionProvider(viewer);
 		getViewSite().setSelectionProvider(selectionProvider);
-		viewer.addSelectionChangedListener(event -> updateSelected() );
+		viewer.addSelectionChangedListener(event -> updateActions() );
 	}
 
-	protected void updateSelected() {
+	protected void updateActions() {
+		List<StatusBean> selection = getSelection();
+		boolean anySelectedSubmitted = selection.stream().anyMatch(x -> x.getStatus()==org.eclipse.scanning.api.event.status.Status.SUBMITTED);
+		boolean anySelectedNonNull = selection.stream().anyMatch(x -> x.getStatus()!=null);
 
-		for(StatusBean bean : getSelection()) {
-			remove.setEnabled(bean.getStatus()!=null);
-			rerun.setEnabled(true);
+		remove.setEnabled(anySelectedNonNull);
+		rerun.setEnabled(!selection.isEmpty());
+		up.setEnabled(anySelectedSubmitted);
+		edit.setEnabled(anySelectedSubmitted);
+		down.setEnabled(anySelectedSubmitted);
 
-			boolean isSubmitted = bean.getStatus()==org.eclipse.scanning.api.event.status.Status.SUBMITTED;
-			up.setEnabled(isSubmitted);
-			edit.setEnabled(isSubmitted);
-			down.setEnabled(isSubmitted);
-			stop.setEnabled( bean.getStatus().isRunning());
-			pause.setEnabled(bean.getStatus().isRunning()||bean.getStatus().isPaused());
-			pause.setChecked(bean.getStatus().isPaused());
-			pause.setText(bean.getStatus().isPaused()?"Resume job":"Pause job");
-		}
+		boolean anyRunning = queue.values().stream().anyMatch(x -> x.getStatus().isRunning());
+		boolean anyPaused = queue.values().stream().anyMatch(x -> x.getStatus().isPaused() );
+
+		stop.setEnabled(anyRunning);
+		pause.setEnabled(anyRunning || anyPaused || anySelectedSubmitted);
+		pause.setChecked(anyPaused);
+		pause.setText(anyPaused?"Resume job":"Pause job");
 	}
 
 	/**
@@ -259,7 +262,7 @@ public class StatusQueueView extends EventConnectionView {
 				if (queue.containsKey(bean.getUniqueId())) {
 					queue.get(bean.getUniqueId()).merge(bean);
 					viewer.refresh();
-					updateSelected();
+					updateActions();
 				} else {
 					reconnect();
 				}
@@ -656,8 +659,8 @@ public class StatusQueueView extends EventConnectionView {
 	 */
 	protected void openSelection() {
 
-		final StatusBean [] beans = getSelection();
-		if (beans.length == 0) {
+		final List<StatusBean> beans = getSelection();
+		if (beans.isEmpty()) {
 			MessageDialog.openInformation(getViewSite().getShell(), "Please select a run", "Please select a run to open.");
 			return;
 		}
@@ -772,7 +775,7 @@ public class StatusQueueView extends EventConnectionView {
 
 	public void refresh() {
 		reconnect();
-		updateSelected();
+		updateActions();
 	}
 
 	protected void reconnect() {
@@ -818,10 +821,10 @@ public class StatusQueueView extends EventConnectionView {
 		};
 	}
 
-	protected StatusBean [] getSelection() {
-		final ISelection sel = viewer.getSelection();
-		IStructuredSelection ss = (IStructuredSelection)sel;
-		return Arrays.stream(ss.toArray()).toArray(StatusBean[]::new);
+	protected List<StatusBean> getSelection() {
+		return Arrays.stream(((IStructuredSelection)viewer.getSelection()).toArray())
+			.map(sb -> (StatusBean)sb)
+			.collect(Collectors.toList());
 	}
 
 	/**
@@ -859,6 +862,7 @@ public class StatusQueueView extends EventConnectionView {
 					getSite().getShell().getDisplay().syncExec(() -> {
 							viewer.setInput(ret);
 							viewer.refresh();
+							updateActions();
 						});
 					monitor.done();
 
