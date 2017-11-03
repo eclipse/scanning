@@ -70,8 +70,10 @@ public class AbstractMapModel extends AbstractPointsModel implements IMapPathMod
 	}
 
 	@Override
-	public void setContinuous(boolean continuous) {
-		this.continuous = continuous;
+	public void setContinuous(boolean newValue) {
+		boolean oldValue = this.continuous;
+		this.continuous = newValue;
+		this.pcs.firePropertyChange("continuous", oldValue, newValue);
 	}
 
 	@UiHidden
