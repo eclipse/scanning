@@ -297,9 +297,13 @@ public class StatusQueueView extends EventConnectionView {
 			public void run() {
 				for(StatusBean bean : getSelection()) {
 					try {
-						queueConnection.reorder(bean, -1);
+						if (bean.getStatus() == org.eclipse.scanning.api.event.status.Status.SUBMITTED) {
+							queueConnection.reorder(bean, -1);
+						} else {
+							logger.info("Cannot move {} up as it's status ({}) is not SUBMITTED", bean.getName(), bean.getStatus());
+						}
 					} catch (EventException e) {
-						ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName(),
+						ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName()+" up",
 							"'"+bean.getName()+"' cannot be moved in the submission queue.",
 							new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 					}
@@ -315,11 +319,20 @@ public class StatusQueueView extends EventConnectionView {
 		this.down = new Action("More urgent (+1)", Activator.getImageDescriptor("icons/arrow-270.png")) {
 			@Override
 			public void run() {
-				for (StatusBean bean : getSelection()) {
+				// When moving items down, if we move an item down before moving down an adjacent item below it, we end
+				// up with both items in the same position. To avoid this, we iterate the selection list in reverse.
+				List<StatusBean> selection = getSelection();
+				Collections.reverse(selection);
+				for (StatusBean bean : selection) {
 					try {
-						queueConnection.reorder(bean, +1);
+						if (bean.getStatus() == org.eclipse.scanning.api.event.status.Status.SUBMITTED) {
+							queueConnection.reorder(bean, +1);
+						} else {
+							logger.info("Cannot move {} down as it's status ({}) is not SUBMITTED", bean.getName(), bean.getStatus());
+						}
 					} catch (EventException e) {
-						ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName(), e.getMessage(),
+						ErrorDialog.openError(getViewSite().getShell(), "Cannot move "+bean.getName()+" down",
+								"'"+bean.getName()+"' cannot be moved in the submission queue.",
 								new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 					}
 				}
