@@ -128,7 +128,7 @@ public abstract class AbstractControl implements INamedNode {
 	}
 
 	public void removeChild(INamedNode node) {
-		List<INamedNode> nodes = new ArrayList<INamedNode>(Arrays.asList(getChildren()));
+		List<INamedNode> nodes = new ArrayList<>(Arrays.asList(getChildren()));
 		nodes.remove(node);
 		setChildren(nodes.toArray(new INamedNode[nodes.size()]));
 	}
@@ -176,21 +176,22 @@ public abstract class AbstractControl implements INamedNode {
 			}
 			if (value!=null) toFill.put(cnode.getScannableName(), value);
 		} else {
-			if (children!=null) for (INamedNode child : children) {
-				if (child instanceof AbstractControl) ((AbstractControl)child).toPosition(cservice, toFill);
-			}
+			if (children!=null)
+				Arrays.asList(children).stream()
+					.filter(AbstractControl.class::isInstance)
+					.forEach(child -> ((AbstractControl) child).toPosition(cservice, toFill));
 		}
 		return toFill;
 	}
 
 
 	public boolean contains(String name) {
-		if (getName().equals(name)) return true;
+		if (name.equals(getName())) return true;
 		if (children!=null) for (INamedNode child : children) {
 			if (child instanceof AbstractControl) {
-				if (((AbstractControl)child).contains(name)) return true;
+				return (((AbstractControl)child).contains(name));
 			} else {
-			    if (child.getName().equals(name)) return true;
+			    return (child.getName().equals(name));
 			}
 		}
 		return false;
