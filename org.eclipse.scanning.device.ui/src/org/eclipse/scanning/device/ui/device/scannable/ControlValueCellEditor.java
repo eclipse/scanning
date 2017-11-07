@@ -18,8 +18,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.richbeans.widgets.decorator.BoundsDecorator;
 import org.eclipse.richbeans.widgets.decorator.FloatDecorator;
-import org.eclipse.richbeans.widgets.decorator.IValueChangeListener;
-import org.eclipse.richbeans.widgets.decorator.ValueChangeEvent;
 import org.eclipse.richbeans.widgets.internal.GridUtils;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.ITerminatable;
@@ -43,8 +41,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolTip;
 import org.slf4j.Logger;
@@ -92,12 +88,9 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
         this.decorator = new FloatDecorator(text, Activator.getStore().getString(DevicePreferenceConstants.NUMBER_FORMAT));
         this.tip = new ToolTip(text.getShell(), SWT.BALLOON);
         tip.setMessage("Press enter to set the node or use the up and down arrows.");
-        text.addListener(SWT.Traverse, new Listener() {
-            @Override
-            public void handleEvent(Event event) {
-                if (event.detail == SWT.TRAVERSE_RETURN) {
-                    setPosition(decorator.getValue());
-                }
+        text.addListener(SWT.Traverse, event -> {
+            if (event.detail == SWT.TRAVERSE_RETURN) {
+                setPosition(decorator.getValue());
             }
         });
         if (!cmode.isDirectlyConnected()) text.addFocusListener(new FocusAdapter() {
@@ -149,12 +142,7 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
         this.incDeco = new FloatDecorator(increment);
         incDeco.setMaximum(100);
         incDeco.setMinimum(0);
-        incDeco.addValueChangeListener(new IValueChangeListener() {
-			@Override
-			public void valueValidating(ValueChangeEvent evt) {
-				node.setIncrement(evt.getValue().doubleValue());
-			}
-		});
+        incDeco.addValueChangeListener(evt -> node.setIncrement(evt.getValue().doubleValue()));
 
         if (cmode.isDirectlyConnected()) {
 	        this.stop = new Button(content, SWT.DOWN);
@@ -180,7 +168,9 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
 	        });
         }
 
-        if (cmode.isDirectlyConnected())	job = new ControlValueJob<>(this);
+        if (cmode.isDirectlyConnected()) {
+        	job = new ControlValueJob<>(this);
+        }
 
 		return content;
 	}
@@ -253,11 +243,6 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
 	}
 
 	@Override
-	protected void focusLost() {
-		super.focusLost();
-	}
-
-	@Override
 	protected Object doGetValue() {
 		if (tip!=null) tip.setVisible(false);
 		if (scannable!=null && scannable instanceof IPositionListenable  && cmode.isDirectlyConnected()) {
@@ -302,12 +287,7 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
 	 * @param message
 	 */
 	protected void setSafeValue(double intermediatePos) {
-		asynch(new Runnable() {
-			@Override
-			public void run() {
-				decorator.setValue(intermediatePos); // This call renders the text and bounds correctly.
-			}
-		});
+		asynch(() -> decorator.setValue(intermediatePos)); // This call renders the text and bounds correctly.
 	}
 
 	/**
@@ -315,12 +295,7 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
 	 * @param message
 	 */
 	protected void setSafeText(final String message) {
-		asynch(new Runnable() {
-			@Override
-			public void run() {
-				text.setText(message);
-			}
-		});
+		asynch(() ->text.setText(message));
 	}
 
 	@Override
@@ -334,18 +309,15 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
 	 * @param b
 	 */
 	protected void setSafeEnabled(final boolean b) {
-		asynch(new Runnable() {
-			@Override
-			public void run() {
-				text.setEditable(b);
-				up.setEnabled(b);
-				down.setEnabled(b);
-			    text.setBackground(text.getDisplay().getSystemColor(SWT.COLOR_WHITE));
-				if (b) {
-				    text.setForeground(text.getDisplay().getSystemColor(SWT.COLOR_BLACK));
-				} else {
-				    text.setForeground(text.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
-				}
+		asynch(() -> {
+			text.setEditable(b);
+			up.setEnabled(b);
+			down.setEnabled(b);
+		    text.setBackground(text.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+			if (b) {
+			    text.setForeground(text.getDisplay().getSystemColor(SWT.COLOR_BLACK));
+			} else {
+			    text.setForeground(text.getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
 			}
 		});
 	}
