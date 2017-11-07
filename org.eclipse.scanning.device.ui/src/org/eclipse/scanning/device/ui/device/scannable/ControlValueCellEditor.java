@@ -211,7 +211,7 @@ class ControlValueCellEditor extends CellEditor implements IPositionListener {
 	}
 
 	protected void setPosition(Number value) {
-		if (tip!=null) tip.setVisible(false);
+		if (tip!=null && !tip.isDisposed()) tip.setVisible(false);
 		if (cmode.isDirectlyConnected()) {
 		    job.setPosition(scannable, value);
 		} else {
