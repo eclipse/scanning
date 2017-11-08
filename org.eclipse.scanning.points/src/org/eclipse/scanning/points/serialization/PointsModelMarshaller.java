@@ -15,7 +15,6 @@ import org.eclipse.dawnsci.analysis.api.persistence.IMarshaller;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.IPosition;
 
-@SuppressWarnings("unchecked")
 public class PointsModelMarshaller implements IMarshaller {
 
 	@Override
