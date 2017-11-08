@@ -130,7 +130,17 @@ public class StatusQueueView extends EventConnectionView {
 	private ISubscriber<IBeanListener<AdministratorMessage>> adminMonitor;
 	private ISubmitter<StatusBean>                           queueConnection;
 
-	private Action rerun, edit, remove, up, down, pause, stop;
+	private Action openResultsAction;
+	private Action rerunAction;
+	private Action editAction;
+	private Action removeAction;
+	private Action upAction;
+	private Action downAction;
+	private Action pauseAction;
+	private Action stopAction;
+	private Action openAction;
+	private Action clearQueueAction;
+
 	private IEventService service;
 
 	private List<IResultHandler> resultsHandlers = null;
@@ -180,19 +190,21 @@ public class StatusQueueView extends EventConnectionView {
 		boolean anySelectedSubmitted = selection.stream().anyMatch(x -> x.getStatus()==org.eclipse.scanning.api.event.status.Status.SUBMITTED);
 		boolean anySelectedNonNull = selection.stream().anyMatch(x -> x.getStatus()!=null);
 
-		remove.setEnabled(anySelectedNonNull);
-		rerun.setEnabled(!selection.isEmpty());
-		up.setEnabled(anySelectedSubmitted);
-		edit.setEnabled(anySelectedSubmitted);
-		down.setEnabled(anySelectedSubmitted);
+		removeActionUpdate(anySelectedNonNull);
+		rerunActionUpdate(!selection.isEmpty());
+		upActionUpdate(anySelectedSubmitted);
+		editActionUpdate(anySelectedSubmitted);
+		downActionUpdate(anySelectedSubmitted);
 
 		boolean anyRunning = queue.values().stream().anyMatch(x -> x.getStatus().isRunning());
 		boolean anyPaused = queue.values().stream().anyMatch(x -> x.getStatus().isPaused() );
 
-		stop.setEnabled(anyRunning);
-		pause.setEnabled(anyRunning || anyPaused || anySelectedSubmitted);
-		pause.setChecked(anyPaused);
-		pause.setText(anyPaused?"Resume job":"Pause job");
+		stopActionUpdate(anyRunning);
+		pauseActionUpdate(anyRunning, anyPaused, anySelectedSubmitted);
+
+		openResultsActionUpdate(true);
+		openActionUpdate(true);
+		clearQueueActionUpdate(true);
 	}
 
 	/**
@@ -269,30 +281,86 @@ public class StatusQueueView extends EventConnectionView {
 			});
 	}
 
-	@SuppressWarnings("squid:S3776")
 	private void createActions() throws Exception {
 
 		final IContributionManager toolMan  = getViewSite().getActionBars().getToolBarManager();
 		final IContributionManager dropDown = getViewSite().getActionBars().getMenuManager();
 		final MenuManager          menuMan = new MenuManager();
 
-		final Action openResults = new Action("Open results for selected run", Activator.getImageDescriptor("icons/results.png")) {
-			@Override
-			public void run() {
-				for (StatusBean bean : getSelection()) {
-					openResults(bean);
-				}
-			}
-		};
+		openResultsAction = openResultsActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, openResultsAction);
 
-		toolMan.add(openResults);
-		toolMan.add(new Separator());
-		menuMan.add(openResults);
-		menuMan.add(new Separator());
-		dropDown.add(openResults);
-		dropDown.add(new Separator());
+		addSeparators(toolMan, menuMan, dropDown);
 
-		this.up = new Action("Less urgent (-1)", Activator.getImageDescriptor("icons/arrow-090.png")) {
+		upAction = upActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, upAction);
+
+		downAction = downActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, downAction);
+
+		pauseAction = pauseActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, pauseAction);
+
+		stopAction = stopActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, stopAction);
+
+		final Action pauseConsumerAction = pauseConsumerActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, pauseConsumerAction);
+
+		ISubscriber<IBeanListener<PauseBean>> pauseMonitor = service.createSubscriber(getUri(), EventConstants.CMD_TOPIC);
+		pauseMonitor.addListener(evt -> pauseConsumerAction.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName())));
+
+		removeAction = removeActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, removeAction);
+
+		rerunAction = rerunActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, rerunAction);
+
+		openAction = openActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, openAction);
+
+		editAction = editActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, editAction);
+
+		addSeparators(toolMan, menuMan, null);
+
+		final Action hideOtherUsersResultsAction = hideOtherUsersResultsActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, hideOtherUsersResultsAction);
+
+		addSeparators(toolMan, menuMan, dropDown);
+
+		final Action refreshAction = refreshActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, refreshAction);
+
+		final Action configureAction = configureActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, configureAction);
+
+		addSeparators(null, menuMan, dropDown);
+
+		clearQueueAction = clearQueueActionCreate();
+		addActionTo(null, menuMan, dropDown, clearQueueAction);
+
+		viewer.getControl().setMenu(menuMan.createContextMenu(viewer.getControl()));
+	}
+
+	private void addActionTo(IContributionManager toolMan, MenuManager menuMan, IContributionManager dropDown, Action action) {
+		if (toolMan != null)  toolMan.add(action);
+		if (menuMan != null)  menuMan.add(action);
+		if (dropDown != null) dropDown.add(action);
+	}
+
+	private void addSeparators(IContributionManager toolMan, MenuManager menuMan, IContributionManager dropDown) {
+		if (toolMan != null)  toolMan.add(new Separator());
+		if (menuMan != null)  menuMan.add(new Separator());
+		if (dropDown != null) dropDown.add(new Separator());
+	}
+
+	private void upActionUpdate(boolean anySelectedSubmitted) {
+		upAction.setEnabled(anySelectedSubmitted);
+	}
+
+	private Action upActionCreate() {
+		Action action = new Action("Less urgent (-1)", Activator.getImageDescriptor("icons/arrow-090.png")) {
 			@Override
 			public void run() {
 				for(StatusBean bean : getSelection()) {
@@ -311,12 +379,16 @@ public class StatusQueueView extends EventConnectionView {
 				refresh();
 			}
 		};
-		up.setEnabled(false);
-		toolMan.add(up);
-		menuMan.add(up);
-		dropDown.add(up);
+		action.setEnabled(false);
+		return action;
+	}
 
-		this.down = new Action("More urgent (+1)", Activator.getImageDescriptor("icons/arrow-270.png")) {
+	private void downActionUpdate(boolean anySelectedSubmitted) {
+		downAction.setEnabled(anySelectedSubmitted);
+	}
+
+	private Action downActionCreate() {
+		Action action = new Action("More urgent (+1)", Activator.getImageDescriptor("icons/arrow-270.png")) {
 			@Override
 			public void run() {
 				// When moving items down, if we move an item down before moving down an adjacent item below it, we end
@@ -339,159 +411,20 @@ public class StatusQueueView extends EventConnectionView {
 				refresh();
 			}
 		};
-		down.setEnabled(false);
-		toolMan.add(down);
-		menuMan.add(down);
-		dropDown.add(down);
+		action.setEnabled(false);
+		return action;
+	}
 
-		this.pause = new Action("Pause job.\nPauses a running job.", IAction.AS_CHECK_BOX) {
-			@Override
-			public void run() {
-				pauseJob();
-			}
-		};
-		pause.setImageDescriptor(Activator.getImageDescriptor("icons/control-pause.png"));
-		pause.setEnabled(false);
-		pause.setChecked(false);
-		toolMan.add(pause);
-		menuMan.add(pause);
-		dropDown.add(pause);
-
-		stop = new Action("Stop job", Activator.getImageDescriptor("icons/control-stop-square.png")) {
-			@Override
-			public void run() {
-				stopJob();
-			}
-		};
-		stop.setEnabled(false);
-		toolMan.add(stop);
-		menuMan.add(stop);
-		dropDown.add(stop);
-
-		final Action pauseConsumer = new Action("Pause "+getPartName()+" Queue. Does not pause running job.", IAction.AS_CHECK_BOX) {
+	private Action pauseConsumerActionCreate() {
+		Action action = new Action("Pause "+getPartName()+" Queue. Does not pause running job.", IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
 				togglePausedConsumer(this);
 			}
 		};
-		pauseConsumer.setImageDescriptor(Activator.getImageDescriptor("icons/control-pause-red.png"));
-		pauseConsumer.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName()));
-		toolMan.add(pauseConsumer);
-		menuMan.add(pauseConsumer);
-		dropDown.add(pauseConsumer);
-
-		ISubscriber<IBeanListener<PauseBean>> pauseMonitor = service.createSubscriber(getUri(), EventConstants.CMD_TOPIC);
-		pauseMonitor.addListener(evt -> pauseConsumer.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName())));
-
-		remove = new Action("Remove job", PlatformUI.getWorkbench().getSharedImages()
-				.getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
-			@Override
-			public void run() {
-				removeJob();
-			}
-		};
-		remove.setEnabled(false);
-		toolMan.add(remove);
-		menuMan.add(remove);
-		dropDown.add(remove);
-
-		this.rerun = new Action("Rerun...", Activator.getImageDescriptor("icons/rerun.png")) {
-			@Override
-			public void run() {
-				rerunSelection();
-			}
-		};
-		rerun.setEnabled(false);
-		toolMan.add(rerun);
-		menuMan.add(rerun);
-		dropDown.add(rerun);
-
-		IAction open = new Action("Open...", Activator.getImageDescriptor("icons/application-dock-090.png")) {
-			@Override
-			public void run() {
-				openSelection();
-			}
-		};
-		toolMan.add(open);
-		menuMan.add(open);
-		dropDown.add(open);
-
-		this.edit = new Action("Edit...", Activator.getImageDescriptor("icons/modify.png")) {
-			@Override
-			public void run() {
-				editSelection();
-			}
-		};
-		edit.setEnabled(false);
-		toolMan.add(edit);
-		menuMan.add(edit);
-		dropDown.add(edit);
-
-		toolMan.add(new Separator());
-		menuMan.add(new Separator());
-
-		final Action hideOtherUsersResultsAction = new Action("Hide other users results", IAction.AS_CHECK_BOX) {
-			@Override
-			public void run() {
-				hideOtherUsersResults = isChecked();
-				viewer.refresh();
-			}
-		};
-		hideOtherUsersResultsAction.setImageDescriptor(Activator.getImageDescriptor("icons/spectacle-lorgnette.png"));
-
-		toolMan.add(hideOtherUsersResultsAction);
-		menuMan.add(hideOtherUsersResultsAction);
-		dropDown.add(hideOtherUsersResultsAction);
-
-		toolMan.add(new Separator());
-		menuMan.add(new Separator());
-		dropDown.add(new Separator());
-
-		final Action refresh = new Action("Refresh", Activator.getImageDescriptor("icons/arrow-circle-double-135.png")) {
-			@Override
-			public void run() {
-				reconnect();
-			}
-		};
-
-		toolMan.add(refresh);
-		menuMan.add(refresh);
-		dropDown.add(refresh);
-
-		final Action configure = new Action("Configure...", Activator.getImageDescriptor("icons/document--pencil.png")) {
-			@Override
-			public void run() {
-				PropertiesDialog dialog = new PropertiesDialog(getSite().getShell(), idProperties);
-
-				int ok = dialog.open();
-				if (ok == PropertiesDialog.OK) {
-					idProperties.clear();
-					idProperties.putAll(dialog.getProps());
-					reconnect();
-				}
-			}
-		};
-
-		toolMan.add(configure);
-		menuMan.add(configure);
-		dropDown.add(configure);
-
-		final Action clearQueue = new Action("Clear Queue") {
-			@Override
-			public void run() {
-				try {
-					purgeQueues();
-				} catch (EventException e) {
-					logger.error("Canot purge queues", e);
-				}
-			}
-		};
-		menuMan.add(new Separator());
-		dropDown.add(new Separator());
-		menuMan.add(clearQueue);
-		dropDown.add(clearQueue);
-
-		viewer.getControl().setMenu(menuMan.createContextMenu(viewer.getControl()));
+		action.setImageDescriptor(Activator.getImageDescriptor("icons/control-pause-red.png"));
+		action.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName()));
+		return action;
 	}
 
 	protected void togglePausedConsumer(IAction pauseConsumer) {
@@ -516,6 +449,25 @@ public class StatusQueueView extends EventConnectionView {
 				new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 		}
 		pauseConsumer.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName()));
+	}
+
+	private void pauseActionUpdate(boolean anyRunning, boolean anyPaused, boolean anySelectedSubmitted) {
+		pauseAction.setEnabled(anyRunning || anyPaused || anySelectedSubmitted);
+		pauseAction.setChecked(anyPaused);
+		pauseAction.setText(anyPaused?"Resume job":"Pause job");
+	}
+
+	private Action pauseActionCreate() {
+		Action action = new Action("Pause job.\nPauses a running job.", IAction.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				pauseJob();
+			}
+		};
+		action.setImageDescriptor(Activator.getImageDescriptor("icons/control-pause.png"));
+		action.setEnabled(false);
+		action.setChecked(false);
+		return action;
 	}
 
 	protected void pauseJob() {
@@ -546,6 +498,22 @@ public class StatusQueueView extends EventConnectionView {
 					new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
 			}
 		}
+	}
+
+	private void removeActionUpdate(boolean anySelectedNonNull) {
+		removeAction.setEnabled(anySelectedNonNull);
+	}
+
+	private Action removeActionCreate() {
+		Action action = new Action("Remove job", PlatformUI.getWorkbench().getSharedImages()
+				.getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
+			@Override
+			public void run() {
+				removeJob();
+			}
+		};
+		action.setEnabled(false);
+		return action;
 	}
 
 	protected void removeJob() {
@@ -582,6 +550,21 @@ public class StatusQueueView extends EventConnectionView {
 		}
 	}
 
+	private void stopActionUpdate(boolean anyRunning) {
+		stopAction.setEnabled(anyRunning);
+	}
+
+	private Action stopActionCreate() {
+		Action action = new Action("Stop job", Activator.getImageDescriptor("icons/control-stop-square.png")) {
+			@Override
+			public void run() {
+				stopJob();
+			}
+		};
+		action.setEnabled(false);
+		return action;
+	}
+
 	protected void stopJob() {
 		for(StatusBean bean : getSelection()) {
 			if (bean.getStatus().isActive()) {
@@ -607,6 +590,23 @@ public class StatusQueueView extends EventConnectionView {
 						"Cannot stop "+bean.getName()+" as it is not currently active.");
 			}
 		}
+	}
+
+	private void clearQueueActionUpdate(boolean enabled) {
+		clearQueueAction.setEnabled(enabled);
+	}
+
+	private Action clearQueueActionCreate() {
+		return new Action("Clear Queue") {
+			@Override
+			public void run() {
+				try {
+					purgeQueues();
+				} catch (EventException e) {
+					logger.error("Canot purge queues", e);
+				}
+			}
+		};
 	}
 
 	protected void purgeQueues() throws EventException {
@@ -644,6 +644,21 @@ public class StatusQueueView extends EventConnectionView {
 		return resultsHandlers;
 	}
 
+	private void openResultsActionUpdate(boolean enabled) {
+		openResultsAction.setEnabled(enabled);
+	}
+
+	private Action openResultsActionCreate() {
+		return new Action("Open results for selected run", Activator.getImageDescriptor("icons/results.png")) {
+			@Override
+			public void run() {
+				for (StatusBean bean : getSelection()) {
+					openResults(bean);
+				}
+			}
+		};
+	}
+
 	/**
 	 * You can override this method to provide custom opening of
 	 * results if required.
@@ -667,6 +682,19 @@ public class StatusQueueView extends EventConnectionView {
 		}
 	}
 
+	private void openActionUpdate(boolean enabled) {
+		openAction.setEnabled(enabled);
+	}
+
+	private Action openActionCreate() {
+		return new Action("Open...", Activator.getImageDescriptor("icons/application-dock-090.png")) {
+			@Override
+			public void run() {
+				openSelection();
+			}
+		};
+	}
+
 	/**
 	 * Pushes any previous run back into the UI
 	 */
@@ -685,6 +713,21 @@ public class StatusQueueView extends EventConnectionView {
 		for (StatusBean bean : beans) {
 			selectionProvider.fireSelection(new StructuredSelection(new OpenRequest(bean)));
 		}
+	}
+
+	private void editActionUpdate(boolean anySelectedSubmitted) {
+		editAction.setEnabled(anySelectedSubmitted);
+	}
+
+	private Action editActionCreate() {
+		Action action = new Action("Edit...", Activator.getImageDescriptor("icons/modify.png")) {
+			@Override
+			public void run() {
+				editSelection();
+			}
+		};
+		action.setEnabled(false);
+		return action;
 	}
 
 	/**
@@ -721,6 +764,21 @@ public class StatusQueueView extends EventConnectionView {
 			MessageDialog.openConfirm(getSite().getShell(), "Cannot Edit '"+bean.getName()+"'",
 				"There are no editers registered for '"+bean.getName()+"'\n\nPlease contact your support representative.");
 		}
+	}
+
+	private void rerunActionUpdate(boolean enable) {
+		rerunAction.setEnabled(enable);
+	}
+
+	private Action rerunActionCreate() {
+		Action action = new Action("Rerun...", Activator.getImageDescriptor("icons/rerun.png")) {
+			@Override
+			public void run() {
+				rerunSelection();
+			}
+		};
+		action.setEnabled(false);
+		return action;
 	}
 
 	@SuppressWarnings("squid:S3776")
@@ -786,9 +844,46 @@ public class StatusQueueView extends EventConnectionView {
 		}
 	}
 
+	private Action hideOtherUsersResultsActionCreate() {
+		Action action = new Action("Hide other users results", IAction.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				hideOtherUsersResults = isChecked();
+				viewer.refresh();
+			}
+		};
+		action.setImageDescriptor(Activator.getImageDescriptor("icons/spectacle-lorgnette.png"));
+		return action;
+	}
+
+	private Action refreshActionCreate() {
+		return new Action("Refresh", Activator.getImageDescriptor("icons/arrow-circle-double-135.png")) {
+			@Override
+			public void run() {
+				reconnect();
+			}
+		};
+	}
+
 	public void refresh() {
 		reconnect();
 		updateActions();
+	}
+
+	private Action configureActionCreate() {
+		return new Action("Configure...", Activator.getImageDescriptor("icons/document--pencil.png")) {
+			@Override
+			public void run() {
+				PropertiesDialog dialog = new PropertiesDialog(getSite().getShell(), idProperties);
+
+				int ok = dialog.open();
+				if (ok == PropertiesDialog.OK) {
+					idProperties.clear();
+					idProperties.putAll(dialog.getProps());
+					reconnect();
+				}
+			}
+		};
 	}
 
 	protected void reconnect() {
