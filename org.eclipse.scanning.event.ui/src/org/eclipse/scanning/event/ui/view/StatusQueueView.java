@@ -124,6 +124,8 @@ public class StatusQueueView extends EventConnectionView {
 
 	// Data
 	private Map<String, StatusBean>           queue;
+	private List<StatusBean>                  runList = new ArrayList<>();
+	private List<StatusBean>                  submittedList =  new ArrayList<>();
 	private boolean                           hideOtherUsersResults = false;
 
 	private ISubscriber<IBeanListener<StatusBean>>           topicMonitor;
@@ -136,7 +138,8 @@ public class StatusQueueView extends EventConnectionView {
 	private Action removeAction;
 	private Action upAction;
 	private Action downAction;
-	private Action pauseAction;
+	private Action pauseSelectedAction;
+	private Action pauseRunningAction;
 	private Action stopAction;
 	private Action openAction;
 	private Action clearQueueAction;
@@ -187,23 +190,47 @@ public class StatusQueueView extends EventConnectionView {
 
 	protected void updateActions() {
 		List<StatusBean> selection = getSelection();
-		boolean anySelectedSubmitted = selection.stream().anyMatch(x -> x.getStatus()==org.eclipse.scanning.api.event.status.Status.SUBMITTED);
-		boolean anySelectedNonNull = selection.stream().anyMatch(x -> x.getStatus()!=null);
 
-		removeActionUpdate(anySelectedNonNull);
-		rerunActionUpdate(!selection.isEmpty());
-		upActionUpdate(anySelectedSubmitted);
-		editActionUpdate(anySelectedSubmitted);
-		downActionUpdate(anySelectedSubmitted);
+boolean anySelectedNull = selection.stream().anyMatch(x -> x.getStatus()==null);
+if (anySelectedNull) logger.warn("null status found in {}", selection);
 
-		boolean anyRunning = queue.values().stream().anyMatch(x -> x.getStatus().isRunning());
-		boolean anyPaused = queue.values().stream().anyMatch(x -> x.getStatus().isPaused() );
+List<StatusBean> queuedOnSubmittedList = submittedList.stream()
+	.filter(x -> x.getStatus()==org.eclipse.scanning.api.event.status.Status.QUEUED).collect(Collectors.toList());
+if (!queuedOnSubmittedList.isEmpty()) logger.warn("queued status found in runList: {}", queuedOnSubmittedList);
 
-		stopActionUpdate(anyRunning);
-		pauseActionUpdate(anyRunning, anyPaused, anySelectedSubmitted);
+List<StatusBean> queuedOnRunList = runList.stream()
+	.filter(x -> x.getStatus()==org.eclipse.scanning.api.event.status.Status.QUEUED).collect(Collectors.toList());
+if (!queuedOnRunList.isEmpty()) { logger.warn("queued status found in runList: {}", queuedOnRunList); }
 
-		openResultsActionUpdate(true);
-		openActionUpdate(true);
+		List<String> selectedUniqueIds= selection.stream().map(sb -> sb.getUniqueId()).collect(Collectors.toList());
+
+		List<StatusBean> selectedInSubmittedList = submittedList.stream()
+				.filter(sb -> selectedUniqueIds.contains(sb.getUniqueId()))
+				.collect(Collectors.toList());
+
+		List<StatusBean> selectedInRunList = runList.stream()
+				.filter(sb -> selectedUniqueIds.contains(sb.getUniqueId()))
+				.collect(Collectors.toList());
+
+		List<StatusBean> activeInRunList = runList.stream()
+				.filter(sb -> sb.getStatus().isActive())
+				.collect(Collectors.toList());
+
+		boolean anyFinalSelectedInRunList = selectedInRunList.stream().anyMatch(sb -> sb.getStatus().isFinal());
+		boolean anySelectedInSubmittedList = !selectedInSubmittedList.isEmpty();
+
+		removeActionUpdate(selectedInSubmittedList, selectedInRunList);
+		rerunActionUpdate(selection);
+		upActionUpdate(anySelectedInSubmittedList);
+		editActionUpdate(anySelectedInSubmittedList);
+		downActionUpdate(anySelectedInSubmittedList);
+
+		stopActionUpdate(activeInRunList);
+		pauseSelectedActionUpdate(selectedInSubmittedList);
+		pauseRunningActionUpdate(activeInRunList);
+
+		openResultsActionUpdate(anyFinalSelectedInRunList);
+		openActionUpdate(anySelectedInSubmittedList);
 		clearQueueActionUpdate(true);
 	}
 
@@ -298,11 +325,18 @@ public class StatusQueueView extends EventConnectionView {
 		downAction = downActionCreate();
 		addActionTo(toolMan, menuMan, dropDown, downAction);
 
-		pauseAction = pauseActionCreate();
-		addActionTo(toolMan, menuMan, dropDown, pauseAction);
+		pauseSelectedAction = pauseSelectedActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, pauseSelectedAction);
+
+		addSeparators(toolMan, menuMan, dropDown);
+
+		pauseRunningAction = pauseRunningActionCreate();
+		addActionTo(toolMan, menuMan, dropDown, pauseRunningAction);
 
 		stopAction = stopActionCreate();
 		addActionTo(toolMan, menuMan, dropDown, stopAction);
+
+		addSeparators(toolMan, menuMan, dropDown);
 
 		final Action pauseConsumerAction = pauseConsumerActionCreate();
 		addActionTo(toolMan, menuMan, dropDown, pauseConsumerAction);
@@ -355,8 +389,8 @@ public class StatusQueueView extends EventConnectionView {
 		if (dropDown != null) dropDown.add(new Separator());
 	}
 
-	private void upActionUpdate(boolean anySelectedSubmitted) {
-		upAction.setEnabled(anySelectedSubmitted);
+	private void upActionUpdate(boolean anySelectedInSubmittedList) {
+		upAction.setEnabled(anySelectedInSubmittedList);
 	}
 
 	private Action upActionCreate() {
@@ -383,8 +417,8 @@ public class StatusQueueView extends EventConnectionView {
 		return action;
 	}
 
-	private void downActionUpdate(boolean anySelectedSubmitted) {
-		downAction.setEnabled(anySelectedSubmitted);
+	private void downActionUpdate(boolean anySelectedInSubmittedList) {
+		downAction.setEnabled(anySelectedInSubmittedList);
 	}
 
 	private Action downActionCreate() {
@@ -419,7 +453,7 @@ public class StatusQueueView extends EventConnectionView {
 		Action action = new Action("Pause "+getPartName()+" Queue. Does not pause running job.", IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
-				togglePausedConsumer(this);
+				pauseConsumerActionRun(this);
 			}
 		};
 		action.setImageDescriptor(Activator.getImageDescriptor("icons/control-pause-red.png"));
@@ -427,7 +461,7 @@ public class StatusQueueView extends EventConnectionView {
 		return action;
 	}
 
-	protected void togglePausedConsumer(IAction pauseConsumer) {
+	private void pauseConsumerActionRun(IAction pauseConsumer) {
 
 		// The button can get out of sync if two clients are used.
 		final boolean currentState = queueConnection.isQueuePaused(getSubmissionQueueName());
@@ -451,17 +485,29 @@ public class StatusQueueView extends EventConnectionView {
 		pauseConsumer.setChecked(queueConnection.isQueuePaused(getSubmissionQueueName()));
 	}
 
-	private void pauseActionUpdate(boolean anyRunning, boolean anyPaused, boolean anySelectedSubmitted) {
-		pauseAction.setEnabled(anyRunning || anyPaused || anySelectedSubmitted);
-		pauseAction.setChecked(anyPaused);
-		pauseAction.setText(anyPaused?"Resume job":"Pause job");
+	private void pauseActionUpdate(Action pause, List<StatusBean> statusBeans, String description) {
+		boolean allStatusBeansArePaused = statusBeans.stream().allMatch(sb -> sb.getStatus().isPaused());
+		boolean noStatusBeansArePaused = statusBeans.stream().noneMatch(sb -> sb.getStatus().isPaused());
+
+		// Only enable the pause button if jobs are active and they are all in the same state
+		pause.setEnabled(allStatusBeansArePaused ^ noStatusBeansArePaused); // XOR
+		pause.setChecked(allStatusBeansArePaused);
+		pause.setText((allStatusBeansArePaused ? "Resume" : (
+				noStatusBeansArePaused ? "Pause" : "Mixed paused and unpaused" ))
+			+ description + (statusBeans.size() == 1 ? "job" : "jobs"));
 	}
 
-	private Action pauseActionCreate() {
-		Action action = new Action("Pause job.\nPauses a running job.", IAction.AS_CHECK_BOX) {
+	private void pauseRunningActionUpdate(List<StatusBean> activeInRunList) {
+		pauseActionUpdate(pauseRunningAction, activeInRunList, " running ");
+		// While only one scanning job can be active at once, this view can be used to visualise
+		// any queue which pass back a StatusBean and multiple processing jobs may be active at once.
+	}
+
+	private Action pauseRunningActionCreate() {
+		Action action = new Action("Toggle pause status of running job.", IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
-				pauseJob();
+				pauseRunningActionRun();
 			}
 		};
 		action.setImageDescriptor(Activator.getImageDescriptor("icons/control-pause.png"));
@@ -470,7 +516,30 @@ public class StatusQueueView extends EventConnectionView {
 		return action;
 	}
 
-	protected void pauseJob() {
+	private void pauseRunningActionRun() {
+		for(StatusBean bean : runList.stream().filter(x -> x.getStatus().isActive()).collect(Collectors.toList())) {
+			togglePause(bean);
+		}
+	}
+
+	private void pauseSelectedActionUpdate(List<StatusBean> selectedInSubmittedList) {
+		pauseActionUpdate(pauseSelectedAction, selectedInSubmittedList, " submitted ");
+	}
+
+	private Action pauseSelectedActionCreate() {
+		Action action = new Action("Toggle pause status of selected jobs.", IAction.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				pauseSelectedActionRun();
+			}
+		};
+		action.setImageDescriptor(Activator.getImageDescriptor("icons/control-pause.png"));
+		action.setEnabled(false);
+		action.setChecked(false);
+		return action;
+	}
+
+	private void pauseSelectedActionRun() {
 
 		for(StatusBean bean : getSelection()) {
 
@@ -479,29 +548,35 @@ public class StatusQueueView extends EventConnectionView {
 					"Run '"+bean.getName()+"' is inactive and cannot be paused.");
 				continue;
 			}
-
-			try {
-				if (bean.getStatus().isPaused()) {
-					bean.setStatus(org.eclipse.scanning.api.event.status.Status.REQUEST_RESUME);
-					bean.setMessage("Resume of "+bean.getName());
-				} else {
-					bean.setStatus(org.eclipse.scanning.api.event.status.Status.REQUEST_PAUSE);
-					bean.setMessage("Pause of "+bean.getName());
-				}
-
-				IPublisher<StatusBean> terminate = service.createPublisher(getUri(), getTopicName());
-				terminate.broadcast(bean);
-
-			} catch (Exception e) {
-				ErrorDialog.openError(getViewSite().getShell(), "Cannot pause "+bean.getName(),
-					"Cannot pause "+bean.getName()+"\n\nPlease contact your support representative.",
-					new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
-			}
+			togglePause(bean);
 		}
 	}
 
-	private void removeActionUpdate(boolean anySelectedNonNull) {
-		removeAction.setEnabled(anySelectedNonNull);
+	private void togglePause(StatusBean bean) {
+		try {
+			if (bean.getStatus().isPaused()) {
+				bean.setStatus(org.eclipse.scanning.api.event.status.Status.REQUEST_RESUME);
+				bean.setMessage("Resume of "+bean.getName());
+			} else {
+				bean.setStatus(org.eclipse.scanning.api.event.status.Status.REQUEST_PAUSE);
+				bean.setMessage("Pause of "+bean.getName());
+			}
+
+			IPublisher<StatusBean> terminate = service.createPublisher(getUri(), getTopicName());
+			terminate.broadcast(bean);
+
+		} catch (Exception e) {
+			ErrorDialog.openError(getViewSite().getShell(), "Cannot pause "+bean.getName(),
+				"Cannot pause "+bean.getName()+"\n\nPlease contact your support representative.",
+				new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage()));
+		}
+	}
+
+	private void removeActionUpdate(List<StatusBean> selectedInSubmittedList, List<StatusBean> selectedInRunList) {
+		boolean anySelectedInSubmittedList = !selectedInSubmittedList.isEmpty();
+		boolean anySelectedInRunListAreFinal = selectedInRunList.stream().anyMatch(sb -> sb.getStatus().isFinal());
+
+		removeAction.setEnabled(anySelectedInSubmittedList || anySelectedInRunListAreFinal);
 	}
 
 	private Action removeActionCreate() {
@@ -509,14 +584,14 @@ public class StatusQueueView extends EventConnectionView {
 				.getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
 			@Override
 			public void run() {
-				removeJob();
+				removeActionRun();
 			}
 		};
 		action.setEnabled(false);
 		return action;
 	}
 
-	protected void removeJob() {
+	private void removeActionRun() {
 
 		for(StatusBean bean : getSelection()) {
 
@@ -550,22 +625,22 @@ public class StatusQueueView extends EventConnectionView {
 		}
 	}
 
-	private void stopActionUpdate(boolean anyRunning) {
-		stopAction.setEnabled(anyRunning);
+	private void stopActionUpdate(List<StatusBean> activeInRunList) {
+		stopAction.setEnabled(!activeInRunList.isEmpty());
 	}
 
 	private Action stopActionCreate() {
 		Action action = new Action("Stop job", Activator.getImageDescriptor("icons/control-stop-square.png")) {
 			@Override
 			public void run() {
-				stopJob();
+				stopActionRun();
 			}
 		};
 		action.setEnabled(false);
 		return action;
 	}
 
-	protected void stopJob() {
+	private void stopActionRun() {
 		for(StatusBean bean : getSelection()) {
 			if (bean.getStatus().isActive()) {
 			try {
@@ -597,11 +672,12 @@ public class StatusQueueView extends EventConnectionView {
 	}
 
 	private Action clearQueueActionCreate() {
-		return new Action("Clear Queue") {
+		return new Action("Clear Queue", PlatformUI.getWorkbench().getSharedImages()
+				.getImageDescriptor(ISharedImages.IMG_ELCL_REMOVEALL)) {
 			@Override
 			public void run() {
 				try {
-					purgeQueues();
+					clearQueueActionRun();
 				} catch (EventException e) {
 					logger.error("Canot purge queues", e);
 				}
@@ -609,7 +685,7 @@ public class StatusQueueView extends EventConnectionView {
 		};
 	}
 
-	protected void purgeQueues() throws EventException {
+	private void clearQueueActionRun() throws EventException {
 
 		boolean ok = MessageDialog.openQuestion(getSite().getShell(), "Confirm Clear Queues",
 			"Are you sure you would like to remove all items from the queue "+getQueueName()+" and "+
@@ -644,8 +720,8 @@ public class StatusQueueView extends EventConnectionView {
 		return resultsHandlers;
 	}
 
-	private void openResultsActionUpdate(boolean enabled) {
-		openResultsAction.setEnabled(enabled);
+	private void openResultsActionUpdate(boolean anyFinalSelectedInRunList) {
+		openResultsAction.setEnabled(anyFinalSelectedInRunList);
 	}
 
 	private Action openResultsActionCreate() {
@@ -682,15 +758,15 @@ public class StatusQueueView extends EventConnectionView {
 		}
 	}
 
-	private void openActionUpdate(boolean enabled) {
-		openAction.setEnabled(enabled);
+	private void openActionUpdate(boolean anySelectedInSubmittedList) {
+		openAction.setEnabled(anySelectedInSubmittedList);
 	}
 
 	private Action openActionCreate() {
 		return new Action("Open...", Activator.getImageDescriptor("icons/application-dock-090.png")) {
 			@Override
 			public void run() {
-				openSelection();
+				openActionRun();
 			}
 		};
 	}
@@ -698,7 +774,7 @@ public class StatusQueueView extends EventConnectionView {
 	/**
 	 * Pushes any previous run back into the UI
 	 */
-	protected void openSelection() {
+	private void openActionRun() {
 
 		final List<StatusBean> beans = getSelection();
 		if (beans.isEmpty()) {
@@ -715,15 +791,15 @@ public class StatusQueueView extends EventConnectionView {
 		}
 	}
 
-	private void editActionUpdate(boolean anySelectedSubmitted) {
-		editAction.setEnabled(anySelectedSubmitted);
+	private void editActionUpdate(boolean anySelectedInSubmittedList) {
+		editAction.setEnabled(anySelectedInSubmittedList);
 	}
 
 	private Action editActionCreate() {
 		Action action = new Action("Edit...", Activator.getImageDescriptor("icons/modify.png")) {
 			@Override
 			public void run() {
-				editSelection();
+				editActionRun();
 			}
 		};
 		action.setEnabled(false);
@@ -734,7 +810,7 @@ public class StatusQueueView extends EventConnectionView {
 	 * Edits a not run yet selection
 	 */
 	@SuppressWarnings({"squid:S3776", "squid:S135"})
-	protected void editSelection() {
+	private void editActionRun() {
 
 		for (StatusBean bean : getSelection()) {
 			if (bean.getStatus()!=org.eclipse.scanning.api.event.status.Status.SUBMITTED) {
@@ -766,15 +842,15 @@ public class StatusQueueView extends EventConnectionView {
 		}
 	}
 
-	private void rerunActionUpdate(boolean enable) {
-		rerunAction.setEnabled(enable);
+	private void rerunActionUpdate(List<StatusBean> selection) {
+		rerunAction.setEnabled(!selection.isEmpty());
 	}
 
 	private Action rerunActionCreate() {
 		Action action = new Action("Rerun...", Activator.getImageDescriptor("icons/rerun.png")) {
 			@Override
 			public void run() {
-				rerunSelection();
+				rerunActionRun();
 			}
 		};
 		action.setEnabled(false);
@@ -782,7 +858,7 @@ public class StatusQueueView extends EventConnectionView {
 	}
 
 	@SuppressWarnings("squid:S3776")
-	protected void rerunSelection() {
+	private void rerunActionRun() {
 
 		for (StatusBean bean : getSelection()) {
 			try {
@@ -948,11 +1024,11 @@ public class StatusQueueView extends EventConnectionView {
 					monitor.worked(1);
 
 					queueConnection.setBeanClass(getBeanClass());
-					List<StatusBean> runningList = queueConnection.getQueue(getQueueName(), null);
-					Collections.reverse(runningList); // The list comes out with the head @ 0 but we have the last submitted at 0 in our table.
+					runList = queueConnection.getQueue(getQueueName(), null);
+					Collections.reverse(runList); // The list comes out with the head @ 0 but we have the last submitted at 0 in our table.
 					monitor.worked(1);
 
-					List<StatusBean> submittedList = queueConnection.getQueue(getSubmissionQueueName(), null);
+					submittedList = queueConnection.getQueue(getSubmissionQueueName(), null);
 					Collections.reverse(submittedList); // The list comes out with the head @ 0 but we have the last submitted at 0 in our table.
 					monitor.worked(1);
 
@@ -962,7 +1038,7 @@ public class StatusQueueView extends EventConnectionView {
 						ret.put(bean.getUniqueId(), bean);
 					}
 					monitor.worked(1);
-					for (StatusBean bean : runningList) {
+					for (StatusBean bean : runList) {
 						ret.put(bean.getUniqueId(), bean);
 					}
 					monitor.worked(1);
@@ -972,6 +1048,13 @@ public class StatusQueueView extends EventConnectionView {
 							viewer.refresh();
 							updateActions();
 						});
+
+					/* Why do these loggers not log?
+					 */
+					logger.info("updateQueue Job run() completed");
+					logger.info("runningList={}", runList.stream().collect(Collectors.groupingBy(StatusBean::getStatus)));
+					logger.info("submittedList={}", submittedList.stream().collect(Collectors.groupingBy(StatusBean::getStatus)));
+
 					monitor.done();
 
 					return Status.OK_STATUS;
