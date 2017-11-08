@@ -46,6 +46,7 @@ public class StaticPosition extends AbstractPosition {
 		return 0;
 	}
 
+	@SuppressWarnings("sync-override")
 	@Override
 	public List<Collection<String>> getDimensionNames() {
 		return Collections.emptyList();

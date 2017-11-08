@@ -27,7 +27,7 @@ public class PositionSerializer extends JsonSerializer<IPosition> {
 	public void serialize(IPosition pos, JsonGenerator gen, SerializerProvider prov) throws IOException, JsonProcessingException {
 
 		try {
-			final PositionBean bean = new PositionBean(pos);
+			final PositionBean<?> bean = new PositionBean<>(pos);
 			gen.writeObject(bean);
 		} catch (Throwable ne) {
 			ne.printStackTrace();
