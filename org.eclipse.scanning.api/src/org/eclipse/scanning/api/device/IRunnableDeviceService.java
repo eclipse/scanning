@@ -17,7 +17,6 @@ import org.eclipse.scanning.api.device.models.DeviceRole;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.event.scan.ScanBean;
-import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositionerService;
 
@@ -61,7 +60,6 @@ import org.eclipse.scanning.api.scan.event.IPositionerService;
  *
  * @author Matthew Gerring
  *
- * @see {@link IMalcolmService}, {@link IMalcolmConnection}
  */
 public interface IRunnableDeviceService extends IPositionerService {
 

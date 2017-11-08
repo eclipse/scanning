@@ -15,13 +15,12 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.IValidatorService;
 import org.eclipse.scanning.api.device.IDeviceWatchdogService;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
+import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.IMessagingService;
-import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.scan.IFilePathService;
 import org.eclipse.scanning.api.scan.process.IPreprocessor;
@@ -42,7 +41,6 @@ public class Services {
 	private static IPointGeneratorService  generatorService;
 	private static IRunnableDeviceService  runnableDeviceService;
 	private static IScannableDeviceService connector;
-	private static IMalcolmService         malcService;
 	private static IFilePathService        filePathService;
 	private static IScriptService          scriptService;
 	private static IMessagingService       messagingService;
@@ -89,14 +87,6 @@ public class Services {
 
 	public static void setConnector(IScannableDeviceService connector) {
 		Services.connector = connector;
-	}
-
-	public static IMalcolmService getMalcService() {
-		return malcService;
-	}
-
-	public static void setMalcService(IMalcolmService malcService) {
-		Services.malcService = malcService;
 	}
 
 	public static IScriptService getScriptService() {

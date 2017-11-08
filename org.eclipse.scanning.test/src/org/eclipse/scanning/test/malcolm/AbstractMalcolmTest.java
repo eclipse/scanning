@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
-import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 import org.eclipse.scanning.api.malcolm.MalcolmDeviceOperationCancelledException;
 import org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService;
@@ -30,8 +29,8 @@ import org.eclipse.scanning.api.malcolm.event.MalcolmEvent;
 import org.eclipse.scanning.api.malcolm.event.MalcolmEventBean;
 import org.eclipse.scanning.api.malcolm.message.MalcolmMessage;
 import org.eclipse.scanning.api.malcolm.models.MapMalcolmModel;
+import org.eclipse.scanning.api.scan.IScanService;
 import org.eclipse.scanning.malcolm.core.MalcolmDevice;
-import org.eclipse.scanning.test.malcolm.device.MockedMalcolmService;
 import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,7 @@ public abstract class AbstractMalcolmTest {
 
 	// In Mock mode, these come from Java
 	// In Real mode they come from the connection to the python server.
-	protected IMalcolmService    service;
+	protected IScanService service;
 	protected IMalcolmDevice     device;
 	protected IMalcolmConnectorService<MalcolmMessage> connectorService;
 
@@ -100,6 +99,12 @@ public abstract class AbstractMalcolmTest {
 		double csleep = configureSleep/1000d;
 		if (configureSleep>0) config.put("configureSleep", csleep); // Sleeps during configure
 
+	}
+
+	protected IMalcolmDevice createMalcolmDevice(String name) throws MalcolmDeviceException {
+		IMalcolmDevice<?> device = new MalcolmDevice(name, connectorService, service, null); // Might throw exception
+		service.register(device);
+		return device;
 	}
 
 	protected IMalcolmDevice configure(final IMalcolmDevice device, final int imageCount) throws Exception {
@@ -277,6 +282,7 @@ public abstract class AbstractMalcolmTest {
 	    return device;
 	}
 
+	@SuppressWarnings("squid:S2925")
 	protected synchronized void checkPauseResume(IMalcolmDevice device, long pauseTime, boolean ignoreReady) throws Exception {
 
 

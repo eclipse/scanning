@@ -128,7 +128,7 @@ public abstract class AbstractCommunicationMalcolmTest extends AbstractMalcolmTe
 	public void testAbortIdleRunnableDevice() throws Throwable {
 
 		try {
-			final IMalcolmDevice     zebra =  service.getDevice("zebra");
+			final IMalcolmDevice     zebra = (IMalcolmDevice) service.getRunnableDevice("zebra");
 			zebra.abort();
 		} catch (Exception expected) {
 			return;
@@ -140,7 +140,7 @@ public abstract class AbstractCommunicationMalcolmTest extends AbstractMalcolmTe
 	public void testAbortIdlePausableDevice() throws Throwable {
 
 		try {
-			final IMalcolmDevice     zebra =  service.getDevice("zebra");
+			final IMalcolmDevice     zebra = (IMalcolmDevice) service.getRunnableDevice("zebra");
 			zebra.abort();
 		} catch (Exception expected) {
 			return;

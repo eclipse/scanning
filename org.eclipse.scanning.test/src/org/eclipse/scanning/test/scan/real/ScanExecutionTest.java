@@ -17,17 +17,16 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.device.IRunnableDevice;
 import org.eclipse.scanning.api.device.IRunnableDeviceService;
 import org.eclipse.scanning.api.device.IRunnableEventDevice;
+import org.eclipse.scanning.api.device.IScannableDeviceService;
 import org.eclipse.scanning.api.device.IWritableDetector;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.bean.BeanEvent;
 import org.eclipse.scanning.api.event.bean.IBeanListener;
 import org.eclipse.scanning.api.event.core.ISubscriber;
-import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
@@ -45,7 +44,7 @@ import org.junit.Test;
 /**
  * This class is an object which can be started by sprig on the GDA server.
  *
- * I receives commands and runs a simple test scan.
+ * It receives commands and runs a simple test scan.
  *
  * @author fri44821
  *
@@ -56,7 +55,6 @@ public class ScanExecutionTest extends BrokerTest {
 	private static IPointGeneratorService generatorService;
 	private static IRunnableDeviceService  runnableDeviceService;
 	private static IScannableDeviceService connector;
-	private static IMalcolmService   malcService;
 
 
 	public static IScannableDeviceService getConnector() {
@@ -192,14 +190,6 @@ public class ScanExecutionTest extends BrokerTest {
 		ScanExecutionTest.runnableDeviceService = scanService;
 	}
 
-	public static IMalcolmService getMalcService() {
-		return malcService;
-	}
-
-	public static void setMalcService(IMalcolmService malcService) {
-		ScanExecutionTest.malcService = malcService;
-	}
-
 	/**
 	 * This class is designed to be run as a spring object.
 	 * It can also be run as a junit plugin test to check OSGi services are injected.
@@ -210,6 +200,5 @@ public class ScanExecutionTest extends BrokerTest {
 		assertNotNull(generatorService);
 		assertNotNull(runnableDeviceService);
 		assertNotNull(connector);
-		assertNotNull(malcService);
 	}
 }
