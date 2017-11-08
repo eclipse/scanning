@@ -6,7 +6,6 @@
    <reference bind="setGeneratorService" cardinality="0..1" interface="org.eclipse.scanning.api.points.IPointGeneratorService" name="IPointGeneratorService" policy="dynamic"/>
    <reference bind="setScriptService" cardinality="0..1" interface="org.eclipse.scanning.api.script.IScriptService" name="IScriptService" policy="dynamic"/>
    <reference bind="setConnector" cardinality="0..1" interface="org.eclipse.scanning.api.device.IScannableDeviceService" name="IDeviceConnectorService" policy="dynamic"/>
-   <reference bind="setMalcService" cardinality="0..1" interface="org.eclipse.scanning.api.malcolm.IMalcolmService" name="IMalcolmService" policy="dynamic"/>
    <reference bind="setFilePathService" cardinality="0..1" interface="org.eclipse.scanning.api.scan.IFilePathService" name="IFilePathService" policy="dynamic"/>
    <reference bind="addPreprocessor" cardinality="0..n" interface="org.eclipse.scanning.api.scan.process.IPreprocessor" name="IPreprocessor" policy="dynamic" unbind="removePreprocessor"/>
    <reference bind="setMessagingService" cardinality="0..1" interface="org.eclipse.scanning.api.event.IMessagingService" name="IMessagingService" policy="dynamic"/>

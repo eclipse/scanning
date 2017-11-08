@@ -21,7 +21,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
 
 
 /**
- * This service talks to the middleware layer state machine for controlling
+ * This device talks to the middleware layer state machine for controlling
  * the scan. If working inside Diamond there is a wiki here:
  * http://confluence.diamond.ac.uk/display/MAP/WP4+Middlelayer+Design+Specification
  *
@@ -38,10 +38,10 @@ import org.eclipse.scanning.api.scan.ScanningException;
  * Usage:
  * <code>
  <p>
-        IMalcolmService service = ... // OSGi service<br>
+        IRunnableDeviceService service = ... // OSGi service<br>
         IMalcolmConnection        connection = service.createConnection("tcp://127.0.0.1:7800");<br>
 <br>
-		IMalcolmDevice zebra =  connection.getDevice("zebra");<br>
+		IMalcolmDevice zebra =  service.getRunnableDevice("zebra");<br>
 	    Map<String, Object> config = new HashMap<String,Object>(2);<br>
 		config.put("PC_BIT_CAP", 1);<br>
 		config.put("PC_TSPRE", "ms");<br>

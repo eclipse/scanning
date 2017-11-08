@@ -20,21 +20,22 @@ import java.util.List;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
+import org.eclipse.scanning.api.device.models.MalcolmModel;
 import org.eclipse.scanning.api.event.scan.DeviceState;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
-import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.SpiralModel;
+import org.eclipse.scanning.api.scan.IScanService;
 import org.eclipse.scanning.connector.epics.EpicsV4ConnectorService;
 import org.eclipse.scanning.example.malcolm.EPICSv4EvilDevice;
-import org.eclipse.scanning.example.malcolm.EPICSv4ExampleModel;
 import org.eclipse.scanning.example.malcolm.IEPICSv4Device;
 import org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice;
-import org.eclipse.scanning.malcolm.core.MalcolmService;
+import org.eclipse.scanning.malcolm.core.MalcolmDevice;
 import org.eclipse.scanning.points.PointGeneratorService;
+import org.eclipse.scanning.sequencer.RunnableDeviceServiceImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,27 +47,33 @@ import org.junit.Test;
  */
 public class EpicsV4ConnectorTest {
 
-	private IMalcolmService      service;
+	private IScanService service;
 	private IEPICSv4Device epicsv4Device;
+	private EpicsV4ConnectorService connectorService;
 
 	@Before
 	public void before() throws Exception {
 		// The real service, get it from OSGi outside this test!
 		// Not required in OSGi mode (do not add this to your real code GET THE SERVICE FROM OSGi!)
-		this.service = new MalcolmService(new EpicsV4ConnectorService(), null);
+		this.connectorService = new EpicsV4ConnectorService();
+		this.service = new RunnableDeviceServiceImpl();
 	}
 
 	@After
 	public void after() throws Exception {
 		// Stop the device
 		if (epicsv4Device!=null) epicsv4Device.stop();
-		service.dispose();
+		connectorService.disconnect();
+	}
+
+	private IMalcolmDevice<MalcolmModel> createMalcolmDevice(String name) throws MalcolmDeviceException {
+		return new MalcolmDevice<>(name, connectorService, service, null);
 	}
 
 	@Test(expected=MalcolmDeviceException.class)
-	public void connectToNonExistentService() throws Exception {
+	public void connectToNonExistentDevice() throws Exception {
 
-		IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice("fred");
+		IMalcolmDevice<?> modelledDevice = createMalcolmDevice("fred");
 
 		// Get the device state.
 		modelledDevice.getDeviceState();
@@ -85,10 +92,10 @@ public class EpicsV4ConnectorTest {
 		epicsv4Device = runner.start();
 
 		// Get the device
-		IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice(epicsv4Device.getRecordName());
+		IMalcolmDevice<?> malcolmDevice = createMalcolmDevice(epicsv4Device.getRecordName());
 
 		// Get the device state.
-		DeviceState deviceState = modelledDevice.getDeviceState();
+		DeviceState deviceState = malcolmDevice.getDeviceState();
 
 		assertEquals(DeviceState.READY, deviceState);
 
@@ -102,10 +109,10 @@ public class EpicsV4ConnectorTest {
 		epicsv4Device = runner.start();
 
 		// Get the device
-		IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice(epicsv4Device.getRecordName());
+		IMalcolmDevice<?> malcolmDevice = createMalcolmDevice(epicsv4Device.getRecordName());
 
 		// Get the device state.
-		DeviceState deviceState = modelledDevice.getDeviceState();
+		DeviceState deviceState = malcolmDevice.getDeviceState();
 
 		assertEquals(DeviceState.READY, deviceState);
 
@@ -122,14 +129,16 @@ public class EpicsV4ConnectorTest {
 		DeviceRunner runner = new DeviceRunner(EPICSv4EvilDevice.class);
 		epicsv4Device = runner.start();
 
-		try (MalcolmService hanger = new MalcolmService(new HangingGetConnectorService(), null)) {
-	        System.setProperty("org.eclipse.scanning.malcolm.core.timeout", String.valueOf(100));
+		try {
+			System.setProperty("org.eclipse.scanning.malcolm.core.timeout", String.valueOf(100));
 
-			// Get the device
-			IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = hanger.getDevice(epicsv4Device.getRecordName());
+			EpicsV4ConnectorService hangingConnectorService = new HangingGetConnectorService();
+			// Create the device
+			IMalcolmDevice<?> malcolmDevice = new MalcolmDevice<>(epicsv4Device.getRecordName(), hangingConnectorService,
+					service, null);
 
 			// Get the device state.
-			modelledDevice.getDeviceState(); // Hangs unless timeout is working
+			malcolmDevice.getDeviceState(); // Hangs unless timeout is working
 		} finally {
 			System.setProperty("org.eclipse.scanning.malcolm.core.timeout", String.valueOf(5000));
 		}
@@ -145,10 +154,10 @@ public class EpicsV4ConnectorTest {
 
 		try {
 			// Get the device
-			IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice("INVALID_DEVICE");
+			IMalcolmDevice<?> invalidDevice = createMalcolmDevice("INVALID_DEVICE");
 
 			// Get the device state. This should fail as the device does not exist
-			modelledDevice.getDeviceState();
+			invalidDevice.getDeviceState();
 
 			fail("No exception thrown but one was expected");
 
@@ -163,9 +172,9 @@ public class EpicsV4ConnectorTest {
 	public void connectToInvalidDeviceTimeout() throws Exception {
 
 		try {
-	        System.setProperty("org.eclipse.scanning.malcolm.core.timeout", String.valueOf(50));
+			System.setProperty("org.eclipse.scanning.malcolm.core.timeout", String.valueOf(50));
 			// Get the device
-			IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice("INVALID_DEVICE");
+			IMalcolmDevice<?> modelledDevice = createMalcolmDevice("INVALID_DEVICE");
 
 			// Get the device state. This should fail as the device does not exist
 			modelledDevice.getDeviceState();
@@ -194,10 +203,10 @@ public class EpicsV4ConnectorTest {
 			epicsv4Device = runner.start();
 
 			// Get the device
-			IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice(epicsv4Device.getRecordName());
+			IMalcolmDevice<?> malcolmDevice = createMalcolmDevice(epicsv4Device.getRecordName());
 
 			// Get the device state. This should fail as the device does no exist
-			modelledDevice.getAttribute("NON_EXISTANT");
+			malcolmDevice.getAttribute("NON_EXISTANT");
 
 			fail("No exception thrown but one was expected");
 
@@ -222,10 +231,10 @@ public class EpicsV4ConnectorTest {
 			epicsv4Device = runner.start();
 
 			// Get the device
-			IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice(epicsv4Device.getRecordName());
+			IMalcolmDevice<MalcolmModel> malcolmDevice = createMalcolmDevice(epicsv4Device.getRecordName());
 
 			// Get the device state.
-			DeviceState deviceState = modelledDevice.getDeviceState();
+			DeviceState deviceState = malcolmDevice.getDeviceState();
 
 			assertEquals(DeviceState.READY, deviceState);
 
@@ -237,19 +246,19 @@ public class EpicsV4ConnectorTest {
 					new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
 			IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
 
-			EPICSv4ExampleModel pmac1 = new EPICSv4ExampleModel();
+			MalcolmModel pmac1 = new MalcolmModel();
 			pmac1.setExposureTime(23.1);
 			pmac1.setFileDir("/TestFile/Dir");
 
 			// Set the generator on the device
 			// Cannot set the generator from @PreConfigure in this unit test.
-			((AbstractMalcolmDevice<?>) modelledDevice).setPointGenerator(scan);
+			((AbstractMalcolmDevice<?>) malcolmDevice).setPointGenerator(scan);
 
 			epicsv4Device.stop();
 
 			try {
 				// Call configure
-				modelledDevice.configure(pmac1);
+				malcolmDevice.configure(pmac1);
 				fail("No exception thrown but one was expected");
 
 			} catch (Exception ex) {
@@ -277,7 +286,7 @@ public class EpicsV4ConnectorTest {
 			epicsv4Device = runner.start();
 
 			// Get the device
-			IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice(epicsv4Device.getRecordName());
+			IMalcolmDevice<MalcolmModel> modelledDevice = createMalcolmDevice(epicsv4Device.getRecordName());
 
 			// Get the device state.
 			DeviceState deviceState = modelledDevice.getDeviceState();
@@ -292,7 +301,7 @@ public class EpicsV4ConnectorTest {
 					.createGenerator(new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
 			IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
 
-			EPICSv4ExampleModel pmac1 = new EPICSv4ExampleModel();
+			MalcolmModel pmac1 = new MalcolmModel();
 			pmac1.setExposureTime(23.1);
 			pmac1.setFileDir("/TestFile/Dir");
 

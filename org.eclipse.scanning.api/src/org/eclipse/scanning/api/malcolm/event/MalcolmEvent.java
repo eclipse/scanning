@@ -15,7 +15,7 @@ import java.util.EventObject;
 
 /**
  * Event object used notify of Malcolm events inside
- * same VM as IMalcolmService. A workaround for connecting to
+ * same VM as the malcolm device. A workaround for connecting to
  * JMS and getting the topic if one does not want to deal with
  * JMS.
  *

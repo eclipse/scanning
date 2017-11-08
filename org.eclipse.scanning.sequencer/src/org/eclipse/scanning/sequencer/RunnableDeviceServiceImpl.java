@@ -39,7 +39,6 @@ import org.eclipse.scanning.api.device.models.DeviceRole;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.scan.DeviceInformation;
 import org.eclipse.scanning.api.event.scan.ScanBean;
-import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.scan.IScanService;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositioner;
@@ -65,11 +64,6 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 	 * but mock the test laster.
 	 */
 	private static IScannableDeviceService deviceConnectorService;
-
-	/**
-	 * This service must be present.
-	 */
-	private static IMalcolmService         malcolmService;
 
 	/**
 	 * Map of device model class to device class.
@@ -319,22 +313,6 @@ public final class RunnableDeviceServiceImpl implements IRunnableDeviceService, 
 	private IScannableDeviceService getDeviceConnector() throws ScanningException {
 		ServiceReference<IScannableDeviceService> ref = context.getServiceReference(IScannableDeviceService.class);
 		return context.getService(ref);
-	}
-
-	public static IMalcolmService getMalcolmService() {
-		return malcolmService;
-	}
-
-	public static void setMalcolmService(IMalcolmService malcolmService) {
-		RunnableDeviceServiceImpl.malcolmService = malcolmService;
-	}
-
-	public static String getDefaultMalcolmHostname() {
-		return defaultMalcolmHostname;
-	}
-
-	public static void setDefaultMalcolmHostname(String defaultMalcolmHostname) {
-		RunnableDeviceServiceImpl.defaultMalcolmHostname = defaultMalcolmHostname;
 	}
 
 	/**

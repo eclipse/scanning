@@ -21,8 +21,8 @@ import java.util.Map;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
+import org.eclipse.scanning.api.device.models.MalcolmModel;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
-import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.malcolm.MalcolmTable;
 import org.eclipse.scanning.api.malcolm.attributes.HealthAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
@@ -31,12 +31,13 @@ import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.SpiralModel;
+import org.eclipse.scanning.api.scan.IScanService;
 import org.eclipse.scanning.connector.epics.EpicsV4ConnectorService;
-import org.eclipse.scanning.example.malcolm.EPICSv4ExampleModel;
 import org.eclipse.scanning.example.malcolm.IEPICSv4Device;
 import org.eclipse.scanning.malcolm.core.AbstractMalcolmDevice;
-import org.eclipse.scanning.malcolm.core.MalcolmService;
+import org.eclipse.scanning.malcolm.core.MalcolmDevice;
 import org.eclipse.scanning.points.PointGeneratorService;
+import org.eclipse.scanning.sequencer.RunnableDeviceServiceImpl;
 import org.eclipse.scanning.test.epics.DeviceRunner;
 import org.epics.pvdata.factory.FieldFactory;
 import org.epics.pvdata.factory.PVDataFactory;
@@ -54,8 +55,9 @@ import org.junit.Test;
 
 public class ExampleMalcolmDeviceTest {
 
-	private IMalcolmService      service;
+	private IScanService service;
 	private IEPICSv4Device epicsv4Device;
+	private EpicsV4ConnectorService connectorService;
 
 	/**
 	 * Starts an instance of the ExampleMalcolmDevice and then probes it with the configure() and call() methods
@@ -69,14 +71,16 @@ public class ExampleMalcolmDeviceTest {
 
 			// The real service, get it from OSGi outside this test!
 			// Not required in OSGi mode (do not add this to your real code GET THE SERVICE FROM OSGi!)
-			this.service = new MalcolmService(new EpicsV4ConnectorService(), null);
+			this.service = new RunnableDeviceServiceImpl();
+			this.connectorService = new EpicsV4ConnectorService();
 
 			// Start the dummy test device
 			DeviceRunner runner = new DeviceRunner();
 			epicsv4Device = runner.start();
 
-			// Get the device
-			IMalcolmDevice<EPICSv4ExampleModel> modelledDevice = service.getDevice(epicsv4Device.getRecordName());
+			// Create the device
+			IMalcolmDevice<MalcolmModel> malcolmDevice = (IMalcolmDevice<MalcolmModel>)
+					new MalcolmDevice(epicsv4Device.getRecordName(), connectorService, service, null);
 
 			// Setup the model and other configuration items
 			List<IROI> regions = new LinkedList<>();
@@ -88,22 +92,22 @@ public class ExampleMalcolmDeviceTest {
 					new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
 			IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
 
-			EPICSv4ExampleModel pmac1 = new EPICSv4ExampleModel();
+			MalcolmModel pmac1 = new MalcolmModel();
 			pmac1.setExposureTime(23.1);
 			pmac1.setFileDir("/path/to/ixx-1234");
 
 			// Set the generator on the device
 			// Cannot set the generator from @PreConfigure in this unit test.
-			((AbstractMalcolmDevice<?>)modelledDevice).setPointGenerator(scan);
+			((AbstractMalcolmDevice<?>)malcolmDevice).setPointGenerator(scan);
 
 			// Call configure
-			modelledDevice.configure(pmac1);
+			malcolmDevice.configure(pmac1);
 
 			// Call run
-			modelledDevice.run(null);
+			malcolmDevice.run(null);
 
 			// Get a list of all attributes on the device
-			List<IDeviceAttribute<?>> attribs = modelledDevice.getAllAttributes();
+			List<IDeviceAttribute<?>> attribs = malcolmDevice.getAllAttributes();
 			assertEquals(11, attribs.size());
 
 			boolean stateFound = false;
@@ -163,7 +167,7 @@ public class ExampleMalcolmDeviceTest {
 			assertTrue(layoutFound);
 
 			// Get a specific choice (string) attribute
-			Object stateValue = modelledDevice.getAttributeValue("state");
+			Object stateValue = malcolmDevice.getAttributeValue("state");
 			if (stateValue instanceof String) {
 				String stateValueStr = (String) stateValue;
 				assertEquals("ARMED", stateValueStr);
@@ -172,7 +176,7 @@ public class ExampleMalcolmDeviceTest {
 			}
 
 			// Get a specific string attribute
-			Object healthValue = modelledDevice.getAttributeValue("health");
+			Object healthValue = malcolmDevice.getAttributeValue("health");
 			if (healthValue instanceof String) {
 				String healthValueStr = (String) healthValue;
 				assertEquals("Test Health", healthValueStr);
@@ -181,7 +185,7 @@ public class ExampleMalcolmDeviceTest {
 			}
 
 			// Get a specific boolean attribute
-			Object busyValue = modelledDevice.getAttributeValue("busy");
+			Object busyValue = malcolmDevice.getAttributeValue("busy");
 			if (busyValue instanceof Boolean) {
 				Boolean busyValueBool = (Boolean) busyValue;
 				assertTrue(busyValueBool.equals(false));
@@ -190,7 +194,7 @@ public class ExampleMalcolmDeviceTest {
 			}
 
 			// Get a specific number attribute
-			Object totalStepsValue = modelledDevice.getAttributeValue("totalSteps");
+			Object totalStepsValue = malcolmDevice.getAttributeValue("totalSteps");
 			if (totalStepsValue instanceof Integer) {
 				Integer totalStepsValueInt = (Integer) totalStepsValue;
 				assertEquals((Integer)123, totalStepsValueInt);
@@ -199,7 +203,7 @@ public class ExampleMalcolmDeviceTest {
 			}
 
 			// Get a specific string attribute (full attribute)
-			Object healthAttributeValue = modelledDevice.getAttribute("health");
+			Object healthAttributeValue = malcolmDevice.getAttribute("health");
 			if (healthAttributeValue instanceof HealthAttribute) {
 				HealthAttribute healthAttributeValueStr = (HealthAttribute) healthAttributeValue;
 				assertEquals("health", healthAttributeValueStr.getName());
@@ -209,7 +213,7 @@ public class ExampleMalcolmDeviceTest {
 			}
 
 			// Get a specific table attribute (full attribute)
-			Object datasetsAttributeValue = modelledDevice.getAttribute("datasets");
+			Object datasetsAttributeValue = malcolmDevice.getAttribute("datasets");
 			if (datasetsAttributeValue instanceof TableAttribute) {
 				TableAttribute datasetAttributeValueTable = (TableAttribute) datasetsAttributeValue;
 				assertEquals("datasets", datasetAttributeValueTable.getName());
@@ -229,7 +233,7 @@ public class ExampleMalcolmDeviceTest {
 			}
 
 			// Check seek method works
-			modelledDevice.seek(4);
+			malcolmDevice.seek(4);
 
 			// Check the RPC calls were received correctly by the device
 			Map<String, PVStructure> rpcCalls = epicsv4Device.getReceivedRPCCalls();
@@ -358,7 +362,7 @@ public class ExampleMalcolmDeviceTest {
 			assertEquals(seekStructure, seekCall.getStructure());
 			assertEquals(seekPVStructure, seekCall);
 
-			modelledDevice.dispose();
+			malcolmDevice.dispose();
 
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -366,7 +370,7 @@ public class ExampleMalcolmDeviceTest {
 		} finally {
 			// Stop the device
 			epicsv4Device.stop();
-			service.dispose();
+			connectorService.disconnect();
 		}
 	}
 

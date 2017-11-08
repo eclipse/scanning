@@ -46,7 +46,7 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 		// device connections (although MockService will not do this)
 		final Collection<DeviceState> states = new HashSet<DeviceState>();
 		try {
-			IMalcolmDevice zebra = service.getDevice("zebra");
+			IMalcolmDevice zebra = (IMalcolmDevice) service.getRunnableDevice("zebra");
 			zebra.addMalcolmListener(new IMalcolmListener<MalcolmEventBean>() {
 				@Override
 				public void eventPerformed(MalcolmEvent<MalcolmEventBean> e) {
@@ -94,7 +94,7 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 				public void run() {
 
 					try {
-						IMalcolmDevice zebra = service.getDevice("zebra");
+						IMalcolmDevice zebra = (IMalcolmDevice) service.getRunnableDevice("zebra");
 						zebra.addMalcolmListener(new IMalcolmListener<MalcolmEventBean>() {
 							@Override
 							public void eventPerformed(MalcolmEvent<MalcolmEventBean> e) {
@@ -138,7 +138,7 @@ public abstract class AbstractMultipleClientMalcolmTest extends AbstractMalcolmT
 		final Collection<DeviceState> states = new HashSet<DeviceState>();
 		try {
 			// Add listener
-			IMalcolmDevice zebra = service.getDevice("zebra");
+			IMalcolmDevice zebra = (IMalcolmDevice) service.getRunnableDevice("zebra");
 			zebra.addMalcolmListener(new IMalcolmListener<MalcolmEventBean>() {
 				@Override
 				public void eventPerformed(MalcolmEvent<MalcolmEventBean> e) {
