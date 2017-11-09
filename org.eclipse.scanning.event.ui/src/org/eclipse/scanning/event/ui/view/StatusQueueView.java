@@ -188,7 +188,7 @@ public class StatusQueueView extends EventConnectionView {
 		viewer.addSelectionChangedListener(event -> updateActions() );
 	}
 
-	protected void updateActions() {
+	private void updateActions() {
 		List<StatusBean> selection = getSelection();
 
 boolean anySelectedNull = selection.stream().anyMatch(x -> x.getStatus()==null);
@@ -295,7 +295,7 @@ if (!queuedOnRunList.isEmpty()) { logger.warn("queued status found in runList: {
 	 *
 	 * @param bean
 	 */
-	protected void mergeBean(final StatusBean bean) {
+	private void mergeBean(final StatusBean bean) {
 
 		getSite().getShell().getDisplay().asyncExec(() -> {
 				if (queue.containsKey(bean.getUniqueId())) {
@@ -741,7 +741,7 @@ if (!queuedOnRunList.isEmpty()) { logger.warn("queued status found in runList: {
 	 *
 	 * @param bean
 	 */
-	protected void openResults(StatusBean bean) {
+	private void openResults(StatusBean bean) {
 
 		if (bean == null) return;
 
@@ -962,7 +962,7 @@ if (!queuedOnRunList.isEmpty()) { logger.warn("queued status found in runList: {
 		};
 	}
 
-	protected void reconnect() {
+	private void reconnect() {
 		try {
 			updateQueue();
 		} catch (Exception e) {
@@ -1005,7 +1005,7 @@ if (!queuedOnRunList.isEmpty()) { logger.warn("queued status found in runList: {
 		};
 	}
 
-	protected List<StatusBean> getSelection() {
+	private List<StatusBean> getSelection() {
 		return Arrays.stream(((IStructuredSelection)viewer.getSelection()).toArray())
 			.map(sb -> (StatusBean)sb)
 			.collect(Collectors.toList());
@@ -1014,7 +1014,7 @@ if (!queuedOnRunList.isEmpty()) { logger.warn("queued status found in runList: {
 	/**
 	 * Read Queue and return in submission order.
 	 */
-	protected synchronized void updateQueue() {
+	private synchronized void updateQueue() {
 
 		final Job queueJob = new Job("Connect and read queue") {
 			@Override
@@ -1089,7 +1089,7 @@ if (!queuedOnRunList.isEmpty()) { logger.warn("queued status found in runList: {
 	}
 
 	@SuppressWarnings("squid:S3776")
-	protected void createColumns() {
+	private void createColumns() {
 
 		final TableViewerColumn name = new TableViewerColumn(viewer, SWT.LEFT);
 		name.getColumn().setText("Name");
