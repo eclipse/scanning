@@ -103,7 +103,6 @@ public class MonitorAtomProcessTest {
 	 * - IPositioner should have received an abort command
 	 *
 	 */
-//	@Ignore("Intermittent failures on Travis.") //TODO 05.07.2017 Stability improved on local machine
 	@Test
 	public void testTermination() throws Exception {
 		MonitorAtom monAt = new MonitorAtom("getTC1", "thermocouple1");
@@ -115,7 +114,7 @@ public class MonitorAtomProcessTest {
 		pti.waitForBeanFinalStatus(5000l);
 		pti.checkLastBroadcastBeanStatuses(Status.TERMINATED, false);
 
-		Thread.sleep(100);
+		Thread.sleep(1000);
 //		TODO This is probably not a good way to test this as we can't guarantee what stage the terminate happens at
 //		assertEquals("Incorrect message after terminate", "Get value of 'thermocouple1' aborted (requested)", pti.getLastBroadcastBean().getMessage());
 		//Get the filepath set for the monitor output and check it does not exist
