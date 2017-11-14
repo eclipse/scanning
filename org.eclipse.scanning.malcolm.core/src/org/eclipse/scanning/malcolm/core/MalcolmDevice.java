@@ -423,6 +423,7 @@ public class MalcolmDevice<M extends MalcolmModel> extends AbstractMalcolmDevice
 		}
 
 		final String fileDir = model.getFileDir();
+
 		String fileTemplate = null;
 		if (fileDir != null) {
 			fileTemplate = new File(fileDir).getName() + "-%s." + FILE_EXTENSION_H5;
