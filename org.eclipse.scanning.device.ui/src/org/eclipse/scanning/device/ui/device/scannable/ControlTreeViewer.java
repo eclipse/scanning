@@ -14,6 +14,7 @@ package org.eclipse.scanning.device.ui.device.scannable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -289,6 +290,24 @@ public class ControlTreeViewer {
 
 		ViewUtil.addGroups("add", mans, addGroup, addNode, removeNode);
 
+		// Action to move selected scannable up
+		final IAction moveNodeUp = new Action("Move scannable up", Activator.getImageDescriptor("icons/arrow-090-medium.png")) {
+			@Override
+			public void run() {
+				reorder(Direction.UP);
+			}
+		};
+		moveNodeUp.setId("move_up");
+
+		// Action to move selected scannable down
+		final IAction moveNodeDown = new Action("Move scannable down", Activator.getImageDescriptor("icons/arrow-270-medium.png")) {
+			@Override
+			public void run() {
+				reorder(Direction.DOWN);
+			}
+		};
+		moveNodeDown.setId("move_down");
+
 		// Action to fully expand the control tree
 		IAction expandAll = new Action("Expand All", Activator.getImageDescriptor("icons/expand_all.png")) {
 			@Override
@@ -322,7 +341,7 @@ public class ControlTreeViewer {
 			}
 		};
 
-		ViewUtil.addGroups("refresh", mans, expandAll, showSearch, edit);
+		ViewUtil.addGroups("refresh", mans, moveNodeUp, moveNodeDown, expandAll, showSearch, edit);
 
 		IAction setToCurrentValue;
 		IAction setAllToCurrentValue;
@@ -390,6 +409,35 @@ public class ControlTreeViewer {
 		this.editActions = Arrays.asList(addGroup, removeNode, addNode, edit, resetAll);
 		setNodeActionsEnabled(tree.isTreeEditable());
 		viewer.getControl().setMenu(rightClick.createContextMenu(viewer.getControl()));
+	}
+
+	private enum Direction {
+		UP(-1), DOWN(1);
+		private int increment;
+		private Direction(int increment) {
+			this.increment = increment;
+		}
+
+		public int moveIndex(int originalIndex) {
+			return originalIndex + increment;
+		}
+	}
+
+	private void reorder(Direction direction) {
+		INamedNode selection = getSelection();
+		if (Objects.isNull(selection)) return; // nothing to reorder
+		final List<INamedNode> allScannables = new ArrayList<>(Arrays.asList((getControlTree().getNode(defaultGroupName)).getChildren()));
+		final int originalSelectionIndex = allScannables.indexOf(selection);
+		allScannables.remove(selection);
+		final int newIndex = direction.moveIndex(originalSelectionIndex);
+		if (newIndex < 0 || newIndex > allScannables.size()) return;
+		allScannables.add(newIndex, selection);
+		ControlTree reorderedControlGroup = new ControlTree();
+		ControlGroup group = new ControlGroup();
+		group.setName(defaultGroupName);
+		reorderedControlGroup.add(group);
+		allScannables.forEach(reorderedControlGroup::add);
+		setControlTree(reorderedControlGroup);
 	}
 
 	private void setNodeActionsEnabled(boolean treeEditable) {
