@@ -29,7 +29,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -142,6 +141,8 @@ public class ControlTreeViewer {
 	private ControlTree       defaultTree;
 	private String            defaultGroupName = null;
 	private final ControlViewerMode controlViewerMode;
+
+	private ISelectionChangedListener selectionChangedListener;
 
 
 	/**
@@ -288,8 +289,6 @@ public class ControlTreeViewer {
 		removeNode.setEnabled(false);
 		removeNode.setId(ACTION_ID_REMOVE_ELEMENT);
 
-		ViewUtil.addGroups("add", mans, addGroup, addNode, removeNode);
-
 		// Action to move selected scannable up
 		final IAction moveNodeUp = new Action("Move scannable up", Activator.getImageDescriptor("icons/arrow-090-medium.png")) {
 			@Override
@@ -307,6 +306,10 @@ public class ControlTreeViewer {
 			}
 		};
 		moveNodeDown.setId("move_down");
+
+		ViewUtil.addGroups("add", mans, addGroup, addNode, removeNode, moveNodeUp, moveNodeDown);
+
+
 
 		// Action to fully expand the control tree
 		IAction expandAll = new Action("Expand All", Activator.getImageDescriptor("icons/expand_all.png")) {
@@ -341,7 +344,7 @@ public class ControlTreeViewer {
 			}
 		};
 
-		ViewUtil.addGroups("refresh", mans, moveNodeUp, moveNodeDown, expandAll, showSearch, edit);
+		ViewUtil.addGroups("refresh", mans, expandAll, showSearch, edit);
 
 		IAction setToCurrentValue;
 		IAction setAllToCurrentValue;
@@ -393,22 +396,29 @@ public class ControlTreeViewer {
 		setShowTip.setImageDescriptor(Activator.getImageDescriptor("icons/balloon.png"));
 		ViewUtil.addGroups("tip", mans, setShowTip);
 
-		tviewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				INamedNode selectedNode = getSelection();
-				ControlTree tree = (ControlTree)viewer.getInput(); // They might have called setControlTree()!
-				removeNode.setEnabled(tree.isTreeEditable() && selectedNode != null); // can only remove node if one is selected
-				addNode.setEnabled(tree.isTreeEditable() && selectedNode != null || defaultGroupName != null); // can only add a node if one is selected (can still add a group)
-				if (setToCurrentValue != null) {
-					setToCurrentValue.setEnabled(selectedNode instanceof ControlNode);
-				}
-			}
-		});
+		selectionChangedListener = event -> {
+			INamedNode selectedNode = getSelection();
+			ControlTree controlTree = (ControlTree)viewer.getInput(); // They might have called setControlTree()!
+			removeNode.setEnabled(controlTree.isTreeEditable() && selectedNode != null); // can only remove node if one is selected
+			addNode.setEnabled(controlTree.isTreeEditable() && selectedNode != null || defaultGroupName != null); // can only add a node if one is selected (can still add a group)
+			if (setToCurrentValue != null) setToCurrentValue.setEnabled(selectedNode instanceof ControlNode);
+			moveNodeUp.setEnabled(validMove(selectedNode, Direction.UP));
+			moveNodeDown.setEnabled(validMove(selectedNode, Direction.DOWN));
+		};
+
+		tviewer.addSelectionChangedListener(selectionChangedListener);
 
 		this.editActions = Arrays.asList(addGroup, removeNode, addNode, edit, resetAll);
 		setNodeActionsEnabled(tree.isTreeEditable());
 		viewer.getControl().setMenu(rightClick.createContextMenu(viewer.getControl()));
+	}
+
+	private boolean validMove(INamedNode selection, Direction direction) {
+		if (Objects.isNull(selection)) return false;
+		List<INamedNode> allNodes = new ArrayList<>(Arrays.asList((getControlTree().getNode(defaultGroupName)).getChildren()));
+		final int selectionIndex = allNodes.indexOf(selection);
+		if (direction.equals(Direction.UP)) return selectionIndex > 0;
+		return selectionIndex < allNodes.size()-1 && selectionIndex >= 0;
 	}
 
 	private enum Direction {
@@ -425,12 +435,10 @@ public class ControlTreeViewer {
 
 	private void reorder(Direction direction) {
 		INamedNode selection = getSelection();
-		if (Objects.isNull(selection)) return; // nothing to reorder
 		final List<INamedNode> allScannables = new ArrayList<>(Arrays.asList((getControlTree().getNode(defaultGroupName)).getChildren()));
 		final int originalSelectionIndex = allScannables.indexOf(selection);
 		allScannables.remove(selection);
 		final int newIndex = direction.moveIndex(originalSelectionIndex);
-		if (newIndex < 0 || newIndex > allScannables.size()) return;
 		allScannables.add(newIndex, selection);
 		ControlTree reorderedControlGroup = new ControlTree();
 		ControlGroup group = new ControlGroup();
@@ -620,7 +628,7 @@ public class ControlTreeViewer {
 	}
 
 	public void dispose() {
-
+		removeSelectionChangedListener(selectionChangedListener);
 	}
 
 }
