@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.scanning.device.ui.device.scannable;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +36,6 @@ import org.eclipse.richbeans.widgets.internal.GridUtils;
 import org.eclipse.scanning.api.INamedNode;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
-import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.scan.ui.ControlGroup;
 import org.eclipse.scanning.api.scan.ui.ControlNode;
 import org.eclipse.scanning.api.scan.ui.ControlTree;
@@ -185,8 +183,12 @@ public class ControlTreeViewer {
 		if (defaultTree==null && tree==null) throw new IllegalArgumentException("No control tree has been defined!");
 
 		// Clone this tree so that they can reset it!
-		if (defaultTree==null) defaultTree = ControlTreeUtils.clone(tree);
-        if (tree == null)      tree        = ControlTreeUtils.clone(defaultTree);
+		if (defaultTree==null) {
+			defaultTree = ControlTreeUtils.clone(tree);
+		}
+        if (tree == null) {
+        	tree = ControlTreeUtils.clone(defaultTree);
+        }
 
        if (setUseFilteredTree) {
 		FilteredTree ftree = new FilteredTree(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE, new NamedNodeFilter(), true);
@@ -214,12 +216,6 @@ public class ControlTreeViewer {
 
 		createActions(viewer, tree, managers);
 		setSearchVisible(false);
-
-		try {
-		    registerAll();
-		} catch (Exception ne) {
-			logger.error("Cannot listen to motor values changing...");
-		}
 
 		return content;
 	}
@@ -297,11 +293,6 @@ public class ControlTreeViewer {
 		IAction expandAll = new Action("Expand All", Activator.getImageDescriptor("icons/expand_all.png")) {
 			@Override
 			public void run() {
-				try {
-					registerAll();
-				} catch (Exception e) {
-					logger.error("Unable to reconnect all listeners!", e);
-				}
 				refresh();
 			}
 		};
@@ -337,7 +328,6 @@ public class ControlTreeViewer {
 		IAction setAllToCurrentValue;
 		if (controlViewerMode.isDirectlyConnected()) {
 			setToCurrentValue = null;
-			setAllToCurrentValue = null;
 		} else {
 			// Action to set the selected control node to the current value of the underlying scannable
 			setToCurrentValue = new Action("Set to current value", Activator.getImageDescriptor("icons/reset-value.png")) {
@@ -480,23 +470,6 @@ public class ControlTreeViewer {
 		this.defaultGroupName = defaultGroupName;
 	}
 
-	public void dispose() {
-
-	}
-
-
-	/**
-	 * Clears all the current listeners and registers all the new ones.
-	 *
-	 * @throws EventException
-	 * @throws URISyntaxException
-	 */
-	private void registerAll() throws EventException, URISyntaxException {
-
-		if (!controlViewerMode.isDirectlyConnected()) return; // Nothing to monitor.
-
-	}
-
 	/**
 	 * Call to programmatically add a node. The user will be shown a combo of available scannable names.
 	 */
@@ -596,6 +569,10 @@ public class ControlTreeViewer {
 				// Sometimes happens in unit tests.
 			}
 		});
+	}
+
+	public void dispose() {
+
 	}
 
 }
