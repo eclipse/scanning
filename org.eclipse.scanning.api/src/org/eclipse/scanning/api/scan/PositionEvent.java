@@ -19,35 +19,35 @@ import org.eclipse.scanning.api.INameable;
 import org.eclipse.scanning.api.points.IPosition;
 
 /**
- * 
- * 
+ *
+ *
  * @author Matthew Gerring
  *
  */
 public class PositionEvent extends EventObject {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 6101070929612847926L;
-	
+
 	private int          level;
 	private List<? extends ILevel> levelObjects;
 
 	private INameable device;
-	
+
 	public PositionEvent(IPosition position, INameable device) {
 		super(position);
 		this.device = device;
 	}
-	
+
 	/**
 	 * The current position during a move or the final
 	 * position at the end of a move.
-	 * 
+	 *
 	 * If during a move the position will be read from the
 	 * levelObjects.
-	 * 
+	 *
 	 * @return
 	 */
 	public IPosition getPosition() {

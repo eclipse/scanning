@@ -34,15 +34,15 @@ import org.eclipse.scanning.api.scan.rank.IScanRankService;
 import org.eclipse.scanning.api.scan.rank.IScanSlice;
 
 /**
- * 
+ *
  * A class to wrap any IScannable as a positioner and then write to a nexus file
  * as the positions are set during the scan.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class MockNeXusScannable extends MockScannable implements INexusDevice<NXpositioner> {
-	
+
 	public boolean isWritingOn() {
 		return writingOn;
 	}
@@ -52,29 +52,30 @@ public class MockNeXusScannable extends MockScannable implements INexusDevice<NX
 	}
 
 	public static final String FIELD_NAME_SET_VALUE = NXpositioner.NX_VALUE + "_set";
-	
+
 	private ILazyWriteableDataset lzSet;
 	private ILazyWriteableDataset lzValue;
-	
+
 	private boolean writingOn = true;
 
 	public MockNeXusScannable() {
 		super();
 	}
-	
+
 	public MockNeXusScannable(String name, double d, int level) {
 		super(name, d, level);
 	}
 	public MockNeXusScannable(String name, double d, int level, String unit) {
 		super(name, d, level, unit);
 	}
-	
+
 	@ScanFinally
 	public void nullify() {
 		lzSet   = null;
 		lzValue = null;
 	}
 
+	@Override
 	public NexusObjectProvider<NXpositioner> getNexusProvider(NexusScanInfo info) throws NexusException {
 		final NXpositioner positioner = NexusNodeFactory.createNXpositioner();
 		positioner.setNameScalar(getName());
@@ -85,12 +86,12 @@ public class MockNeXusScannable extends MockScannable implements INexusDevice<NX
 		} else { // NexusRole.PER_POINT
 			String floatFill = System.getProperty("GDA/gda.nexus.floatfillvalue", "nan");
 			double fill = floatFill.equalsIgnoreCase("nan") ? Double.NaN : Double.parseDouble(floatFill);
-			
+
 			this.lzSet = positioner.initializeLazyDataset(FIELD_NAME_SET_VALUE, 1, Double.class);
 			lzSet.setFillValue(fill);
 			lzSet.setChunking(new int[]{8}); // Faster than looking at the shape of the scan for this dimension because slow to iterate.
 			lzSet.setWritingAsync(true);
-			
+
 			this.lzValue  = positioner.initializeLazyDataset(NXpositioner.NX_VALUE, info.getRank(), Double.class);
 			lzValue.setFillValue(fill);
 			lzValue.setChunking(info.createChunk(false, 8)); // TODO Might be slow, need to check this
@@ -98,15 +99,16 @@ public class MockNeXusScannable extends MockScannable implements INexusDevice<NX
 		}
 
 		registerAttributes(positioner, this);
-		
+
 		NexusObjectWrapper<NXpositioner> nexusDelegate = new NexusObjectWrapper<>(
 				getName(), positioner, NXpositioner.NX_VALUE);
 		nexusDelegate.setDefaultAxisDataFieldName(FIELD_NAME_SET_VALUE);
 		return nexusDelegate;
-	}	
+	}
 
+	@Override
 	public Number setPosition(Number value, IPosition position) throws Exception {
-		
+
 		if (value!=null) {
 			int index = position!=null ? position.getIndex(getName()) : -1;
 			if (isRealisticMove()) {
@@ -123,7 +125,7 @@ public class MockNeXusScannable extends MockScannable implements INexusDevice<NX
 	}
 
 	private Number write(Number demand, Number actual, IPosition loc) throws Exception {
-		
+
 		if (lzValue==null) return actual;
 		if (actual!=null) {
 			// write actual position
@@ -148,12 +150,12 @@ public class MockNeXusScannable extends MockScannable implements INexusDevice<NX
 		}
 		return actual;
 	}
-	
+
 	/**
 	 * Add the attributes for the given attribute container into the given nexus object.
 	 * @param positioner
 	 * @param container
-	 * @throws NexusException if the attributes could not be added for any reason 
+	 * @throws NexusException if the attributes could not be added for any reason
 	 */
 	private static void registerAttributes(NXobject nexusObject, IScanAttributeContainer container) throws NexusException {
 		// We create the attributes, if any

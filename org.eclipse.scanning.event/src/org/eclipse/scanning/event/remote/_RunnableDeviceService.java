@@ -38,21 +38,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class _RunnableDeviceService extends AbstractRemoteService implements IRunnableDeviceService {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(_RunnableDeviceService.class);
 
 	private IRequester<DeviceRequest> requester;
 	private IScannableDeviceService   cservice;
 	private Map<String, IRunnableDevice<?>> runnables;
-	
+
+	@Override
 	public void init() throws EventException {
 		requester = eservice.createRequestor(uri, IEventService.DEVICE_REQUEST_TOPIC, IEventService.DEVICE_RESPONSE_TOPIC);
-		long timeout = Long.getLong("org.eclipse.scanning.event.remote.runnableDeviceServiceTimeout", 500); 
+		long timeout = Long.getLong("org.eclipse.scanning.event.remote.runnableDeviceServiceTimeout", 500);
 	    logger.debug("Setting timeout {} {}" , timeout , " ms");
 		requester.setResponseConfiguration(new ResponseConfiguration(ResponseType.ONE, timeout, TimeUnit.MILLISECONDS));
 		runnables = new HashMap<>();
 	}
-	
+
 	@Override
 	public void disconnect() throws EventException {
 		requester.disconnect(); // Requester can still be used again after a disconnect
@@ -91,7 +92,7 @@ public class _RunnableDeviceService extends AbstractRemoteService implements IRu
 	public <T> IRunnableDevice<T> createRunnableDevice(T model, IPublisher<ScanBean> publisher) throws ScanningException {
 		throw new ScanningException("Not possible to set custom publishers on "+getClass().getSimpleName()+" because it is remote!");
 	}
-	
+
 	@Override
 	public <T> IRunnableDevice<T> createRunnableDevice(T model, IPublisher<ScanBean> publisher, boolean configure) throws ScanningException {
 		throw new ScanningException("Not possible to set custom publishers on "+getClass().getSimpleName()+" because it is remote!");

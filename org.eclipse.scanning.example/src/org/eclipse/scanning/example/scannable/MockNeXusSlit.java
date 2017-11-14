@@ -37,7 +37,7 @@ import org.eclipse.scanning.api.scan.rank.IScanSlice;
 /**
  * A class to generate take a set of scannables which represent simple slits then write to a NeXus file
  * as the positions are set during the scan.
- * 
+ *
  * @see {@link MockScannableConfiguration}
  */
 public class MockNeXusSlit extends MockScannable implements INexusDevice<NXslit> {
@@ -46,13 +46,13 @@ public class MockNeXusSlit extends MockScannable implements INexusDevice<NXslit>
 	private ILazyWriteableDataset yLzSet;
 	private ILazyWriteableDataset xLzValue;
 	private ILazyWriteableDataset yLzValue;
-	
+
 	private boolean writingOn = true;
-	
+
 	public MockNeXusSlit() {
 		super();
 	}
-	
+
 	public MockNeXusSlit(String name, double d, int level) {
 		super(name, d, level);
 	}
@@ -60,7 +60,7 @@ public class MockNeXusSlit extends MockScannable implements INexusDevice<NXslit>
 	public MockNeXusSlit(String name, double d, int level, String unit) {
 		super(name, d, level, unit);
 	}
-	
+
 	public boolean isWritingOn() {
 		return writingOn;
 	}
@@ -77,6 +77,7 @@ public class MockNeXusSlit extends MockScannable implements INexusDevice<NXslit>
 		yLzValue = null;
 	}
 
+	@Override
 	public NexusObjectProvider<NXslit> getNexusProvider(NexusScanInfo info) throws NexusException {
 		final NXslit positioner = NexusNodeFactory.createNXslit();
 
@@ -115,6 +116,7 @@ public class MockNeXusSlit extends MockScannable implements INexusDevice<NXslit>
 		return nexusDelegate;
 	}
 
+	@Override
 	public Number setPosition(Number initialValue, IPosition position) throws Exception {
 		Number value = initialValue;
 
@@ -174,7 +176,7 @@ public class MockNeXusSlit extends MockScannable implements INexusDevice<NXslit>
 	 * Add the attributes for the given attribute container into the given nexus object.
 	 * @param positioner
 	 * @param container
-	 * @throws NexusException if the attributes could not be added for any reason 
+	 * @throws NexusException if the attributes could not be added for any reason
 	 */
 	private static void registerAttributes(NXobject nexusObject, IScanAttributeContainer container) throws NexusException {
 		// We create the attributes, if any

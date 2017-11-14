@@ -19,10 +19,9 @@ package org.eclipse.scanning.api.points.models;
  *
  */
 public class OneDStepModel extends AbstractBoundingLineModel implements IBoundingLineModel {
-    
 
 	private double step = 1;
-	
+
 	public OneDStepModel() {
 		setName("Step");
 	}
@@ -35,6 +34,12 @@ public class OneDStepModel extends AbstractBoundingLineModel implements IBoundin
 		this.step = step;
 		this.pcs.firePropertyChange("step", oldValue, step);
 	}
+
+	@Override
+	public String toString() {
+		return "OneDStepModel [step=" + step + ", " + super.toString() + "]";
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -44,6 +49,7 @@ public class OneDStepModel extends AbstractBoundingLineModel implements IBoundin
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

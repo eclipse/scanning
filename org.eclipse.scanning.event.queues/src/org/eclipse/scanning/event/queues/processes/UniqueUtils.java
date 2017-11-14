@@ -17,29 +17,29 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * 
+ *
  * File contains some methods copied from org.dawb.common.util.io.FileUtils
  * because do not want to make a dependency on that!
- * 
+ *
  * Original version EPL licensed and at:
  * https://github.com/DawnScience/dawn-common/blob/master/org.dawb.common.util/src/org/dawb/common/util/io/FileUtils.java
- * 
+ *
  * @author Matthew Gerring
  *
  */
 class UniqueUtils {
 
 	/**
-	 * 
+	 *
 	 * @param n
 	 * @return
 	 */
 	public static String getSafeName(String n) {
-		
+
 		if (n==null) return null;
-		
+
 		if (n.matches("[a-zA-Z0-9_]+")) return n;
-		
+
 		final StringBuilder buf = new StringBuilder();
 		for (char c : n.toCharArray()) {
 			if (String.valueOf(c).matches("[a-zA-Z0-9_]")) {
@@ -49,19 +49,19 @@ class UniqueUtils {
 				buf.append("_");
 			}
 		}
-		
+
 		if (buf.length()<1) {
 			buf.append("Invalid_name");
 		} else if (buf.substring(0, 1).matches("[0-9]")) {
 			buf.append("var", 0, 3);
 		}
-		
+
 		return buf.toString();
 	}
 
 	/**
 	 * Generates a unique file of the name template or template+an integer
-	 * 
+	 *
 	 * @param dir
 	 * @param template
 	 * @param ext
@@ -95,9 +95,9 @@ class UniqueUtils {
 
 		return getUnique(dir, template, ext, ++i);
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param dir
 	 * @param template
 	 * @param ext

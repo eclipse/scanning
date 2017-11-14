@@ -14,7 +14,8 @@ Require-Bundle: org.eclipse.scanning.api;bundle-version="1.0.0",
  org.eclipse.scanning.malcolm.core,
  org.eclipse.dawnsci.analysis.tree,
  org.eclipse.dawnsci.hdf5,
- org.eclipse.scanning.sequencer
+ org.eclipse.scanning.sequencer,
+ org.apache.commons.beanutils;bundle-version="1.8.0"
 Export-Package: org.eclipse.scanning.example,
  org.eclipse.scanning.example.classregistry,
  org.eclipse.scanning.example.detector,

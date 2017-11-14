@@ -25,16 +25,14 @@ public class PositionDeserializer extends JsonDeserializer<IPosition> {
 
 	@Override
 	public IPosition deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
-
-		//TypeReference<LinkedHashMap<String, Object>> linkedHashMap = new TypeReference<LinkedHashMap<String, Object>>() {};
-		PositionBean bean = parser.readValueAs(PositionBean.class);
+		PositionBean<?> bean = parser.readValueAs(PositionBean.class);
 		return bean.toPosition();
 	}
 
 	@Override
 	public Object deserializeWithType(JsonParser parser, DeserializationContext context, TypeDeserializer typeDeserializer)
 			throws IOException, JsonProcessingException {
-		
+
 		return deserialize(parser, context);
 	}
 }

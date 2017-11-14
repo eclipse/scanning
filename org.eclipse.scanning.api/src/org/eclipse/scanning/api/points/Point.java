@@ -20,13 +20,13 @@ import java.util.Map;
 import org.eclipse.scanning.api.annotation.UiHidden;
 
 /**
- * 
+ *
  * This class represents an x,y position for a mapping scan.
- * 
+ *
  * By default Points are 2D values used in things like GridScans. If used in a
  * LineScan or a Spiral scan where one dimension has two motors, the
  * constructor with is2D=false should be used.
- * 
+ *
  * The Point location is immutable: you may not change the values of x and y after it
  * is created.
  *
@@ -35,43 +35,53 @@ import org.eclipse.scanning.api.annotation.UiHidden;
 public final class Point extends AbstractPosition {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2946649777289185552L;
-	
-	
+
+
 	private final Double  x;
 	private final Double  y;
 	private final Integer xIndex;
 	private final Integer yIndex;
 	private final String  xName;
 	private final String  yName;
-	
+
 	public Point(int xIndex, double xPosition, int yIndex, double yPosition) {
-		this(xIndex, xPosition, yIndex, yPosition, true);
+		this(xIndex, xPosition, yIndex, yPosition, -1, true);
 	}
-	
-	public Point(int xIndex, double xPosition, int yIndex, double yPosition, boolean is2D) {
-		this("x", xIndex, xPosition, "y", yIndex, yPosition, is2D);
+
+	public Point(int xIndex, double xPosition, int yIndex, double yPosition, int stepIndex) {
+		this(xIndex, xPosition, yIndex, yPosition, stepIndex, true);
+	}
+
+	public Point(int xIndex, double xPosition, int yIndex, double yPosition, int stepIndex, boolean is2D) {
+		this("x", xIndex, xPosition, "y", yIndex, yPosition, stepIndex, is2D);
 	}
 
 	public Point(String xName, int xIndex, double xPosition, String yName, int yIndex, double yPosition) {
 		this(xName, xIndex, xPosition, yName, yIndex, yPosition, true);
 	}
-	
+
 	public Point(String xName, int xIndex, double xPosition, String yName, int yIndex, double yPosition, boolean is2D) {
+		this(xName, xIndex, xPosition, yName, yIndex, yPosition, -1, is2D);
+	}
+
+	public Point(String xName, int xIndex, double xPosition, String yName, int yIndex, double yPosition, int stepIndex, boolean is2D) {
 		this.xName  = xName;
 		this.xIndex = xIndex;
 		this.x      = xPosition;
 		this.yName  = yName;
 		this.yIndex = yIndex;
 		this.y      = yPosition;
-		
+
+		setStepIndex(stepIndex);
+
 		this.dimensionNames = is2D
                 ? Arrays.asList(Arrays.asList(yName), Arrays.asList(xName))
                 : Arrays.asList(Arrays.asList(yName, xName));
 	}
-	
+
 	public double getX() {
 		return x;
 	}
@@ -99,14 +109,14 @@ public final class Point extends AbstractPosition {
 		if (yName.equalsIgnoreCase(name)) return getY();
 		return null;
 	}
-	
+
 	@Override
 	public int getIndex(String name) {
 		if (xName.equalsIgnoreCase(name)) return xIndex;
 		if (yName.equalsIgnoreCase(name)) return yIndex;
 		return -1;
 	}
-	
+
 	private Map<String, Object>  values;
 
 	@UiHidden
@@ -120,7 +130,7 @@ public final class Point extends AbstractPosition {
 		return values;
 	}
 
-	
+
 	private Map<String, Integer>  indices;
 
 	@UiHidden

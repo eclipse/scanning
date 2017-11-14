@@ -26,44 +26,48 @@ import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.eclipse.scanning.api.scan.models.ScanMetadata;
 import org.eclipse.scanning.api.script.ScriptRequest;
 import org.eclipse.scanning.api.script.ScriptResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A class to encapsulate minimal information required to run a scan.
- * 
+ *
  * For instance the JSON string of this class could be used on B23
- * 
+ *
  * The class automatically assigns a unique id for the run.
- * 
+ *
  * @author Matthew Gerring
  * @param <T> must be type of region that the regions correspond to. For instance IROI for any region type or IRectangularROI is all known to be rectangular.
  *
  */
 public class ScanRequest<T> implements Serializable {
+	private static Logger logger = LoggerFactory.getLogger(ScanRequest.class);
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 456095444930240261L;
 
 	/**
-	 * The models for generating the points for a scan 
+	 * The models for generating the points for a scan
 	 * The models must be in the same nested order that the
 	 * compound scan will be generated as.
-	 * 
+	 *
 	 * e.g. a StepModel
 	 */
 	private CompoundModel<T> compoundModel;
 
-	/** 
+	/**
 	 * The names of the detectors to use in the scan, may be null.
 	 */
 	private Map<String, Object> detectors;
-	
+
 	/**
 	 * The names of monitors in the scan, may be null.
 	 */
-	private Collection<String> monitorNames;
-	
+	private Collection<String> monitorNamesPerPoint;
+	private Collection<String> monitorNamesPerScan;
+
 	/**
 	 * The sample data which the user entered (if any) which determines
 	 */
@@ -74,17 +78,17 @@ public class ScanRequest<T> implements Serializable {
 	 * scan command, chemical formula etc., grouped by type.
 	 */
 	private List<ScanMetadata> scanMetadata; // TODO use EnumMap instead of list?
-	
+
 	/**
 	 * Part or all of the file path to be used for this scan.
 	 */
 	private String filePath;
-	
+
 	/**
 	 * The start position or null if there is no start position to move to.
 	 */
 	private IPosition start;
-	
+
 	/**
 	 * The script run before the data collection but after the start position has been set.
 	 */
@@ -95,8 +99,8 @@ public class ScanRequest<T> implements Serializable {
 	 * The end position or null if there is no start position to move to.
 	 */
 	private IPosition end;
-	
-	
+
+
 	/**
 	 * The script run after the data collection but before the end position has been set.
 	 */
@@ -104,28 +108,29 @@ public class ScanRequest<T> implements Serializable {
 	private ScriptResponse<?> afterResponse;
 
 	/**
-	 * Set to ignore processing of this request if the request has been 
+	 * Set to ignore processing of this request if the request has been
 	 * prepared for a specific server. For instance in the case where the client
 	 * has build a legal scan request for a given beamline, it will not want this
 	 * request preprocessed.
-	 * 
+	 *
 	 * Default is false.
 	 */
 	private boolean ignorePreprocess;
-	
+
 	public ScanRequest() {
 
 	}
-	
-	public ScanRequest(IScanPathModel m, String filePath, String... monitorNames) {
+
+	public ScanRequest(IScanPathModel m, String filePath, List<String> monitorNamesPerPoint, List<String> monitorNamesPerScan) {
 		super();
 		this.compoundModel = new CompoundModel<T>(m);
-		this.monitorNames = Arrays.asList(monitorNames);
+		this.monitorNamesPerPoint = monitorNamesPerPoint;
+		this.monitorNamesPerScan = monitorNamesPerScan;
 		this.filePath = filePath;
 	}
-	
-	public ScanRequest(IScanPathModel m, T region, String filePath, String... monitorNames) {
-		this(m, filePath, monitorNames);
+
+	public ScanRequest(IScanPathModel m, T region, String filePath, List<String> monitorNamesPerPoint, List<String> monitorNamesPerScan) {
+		this(m, filePath, monitorNamesPerPoint, monitorNamesPerScan);
 		compoundModel.setRegions(Arrays.asList(new ScanRegion<T>(region, m.getScannableNames())));
 	}
 
@@ -137,14 +142,24 @@ public class ScanRequest<T> implements Serializable {
 		this.sampleData = sampleData;
 	}
 
-	public Collection<String> getMonitorNames() {
-		return monitorNames;
+	public Collection<String> getMonitorNamesPerPoint() {
+		return monitorNamesPerPoint;
 	}
 
-	public void setMonitorNames(Collection<String> monitorNames) {
-		this.monitorNames = monitorNames;
+	public void setMonitorNamesPerPoint(Collection<String> monitorNames) {
+		logger.trace("setMonitorNamesPerPoint({}) was {} ({})", monitorNames, this.monitorNamesPerPoint, this);
+		this.monitorNamesPerPoint = monitorNames;
 	}
-	
+
+	public Collection<String> getMonitorNamesPerScan() {
+		return monitorNamesPerScan;
+	}
+
+	public void setMonitorNamesPerScan(Collection<String> monitorNames) {
+		logger.trace("setMonitorNamesPerScan({}) was {} ({})", monitorNames, this.monitorNamesPerScan, this);
+		this.monitorNamesPerScan = monitorNames;
+	}
+
 	public String getFilePath() {
 		return filePath;
 	}
@@ -153,6 +168,7 @@ public class ScanRequest<T> implements Serializable {
 		this.filePath = filePath;
 	}
 
+	@SuppressWarnings("squid:S00115")
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -165,13 +181,14 @@ public class ScanRequest<T> implements Serializable {
 		result = prime * result + ((end == null) ? 0 : end.hashCode());
 		result = prime * result + ((filePath == null) ? 0 : filePath.hashCode());
 		result = prime * result + (ignorePreprocess ? 1231 : 1237);
-		result = prime * result + ((compoundModel == null) ? 0 : compoundModel.hashCode());
-		result = prime * result + ((monitorNames == null) ? 0 : monitorNames.hashCode());
+		result = prime * result + ((monitorNamesPerPoint == null) ? 0 : monitorNamesPerPoint.hashCode());
+		result = prime * result + ((monitorNamesPerScan == null) ? 0 : monitorNamesPerScan.hashCode());
 		result = prime * result + ((scanMetadata == null) ? 0 : scanMetadata.hashCode());
 		result = prime * result + ((start == null) ? 0 : start.hashCode());
 		return result;
 	}
 
+	@SuppressWarnings("squid:S3776")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -218,15 +235,15 @@ public class ScanRequest<T> implements Serializable {
 			return false;
 		if (ignorePreprocess != other.ignorePreprocess)
 			return false;
-		if (compoundModel == null) {
-			if (other.compoundModel != null)
+		if (monitorNamesPerPoint == null) {
+			if (other.monitorNamesPerPoint != null)
 				return false;
-		} else if (!compoundModel.equals(other.compoundModel))
+		} else if (!monitorNamesPerPoint.equals(other.monitorNamesPerPoint))
 			return false;
-		if (monitorNames == null) {
-			if (other.monitorNames != null)
+		if (monitorNamesPerScan == null) {
+			if (other.monitorNamesPerScan != null)
 				return false;
-		} else if (!monitorNames.equals(other.monitorNames))
+		} else if (!monitorNamesPerScan.equals(other.monitorNamesPerScan))
 			return false;
 		if (scanMetadata == null) {
 			if (other.scanMetadata != null)
@@ -244,7 +261,8 @@ public class ScanRequest<T> implements Serializable {
 	@Override
 	public String toString() {
 		return "ScanRequest [model=" + compoundModel + ", detectors=" + detectors +
-				", monitorNames=" + monitorNames +
+				", monitorNamesPerPoint=" + monitorNamesPerPoint +
+				", monitorNamesPerScan=" + monitorNamesPerScan +
 				", filePath=" + filePath + ", start=" + start + ", end=" + end + "]";
 	}
 
@@ -301,6 +319,7 @@ public class ScanRequest<T> implements Serializable {
 		this.after = after;
 	}
 
+	@SuppressWarnings("squid:S1452")
 	public ScriptResponse<?> getBeforeResponse() {
 		return beforeResponse;
 	}
@@ -309,6 +328,7 @@ public class ScanRequest<T> implements Serializable {
 		this.beforeResponse = beforeResponse;
 	}
 
+	@SuppressWarnings("squid:S1452")
 	public ScriptResponse<?> getAfterResponse() {
 		return afterResponse;
 	}
@@ -316,15 +336,15 @@ public class ScanRequest<T> implements Serializable {
 	public void setAfterResponse(ScriptResponse<?> afterResponse) {
 		this.afterResponse = afterResponse;
 	}
-	
+
 	public List<ScanMetadata> getScanMetadata() {
 		return scanMetadata;
 	}
-	
+
 	public void setScanMetadata(List<ScanMetadata> scanMetadata) {
 		this.scanMetadata = scanMetadata;
 	}
-	
+
 	public void addScanMetadata(ScanMetadata scanMetadata) {
 		if (this.scanMetadata == null) {
 			this.scanMetadata = new ArrayList<>();

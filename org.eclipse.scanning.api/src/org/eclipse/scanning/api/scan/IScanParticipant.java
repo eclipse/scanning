@@ -12,7 +12,7 @@
 package org.eclipse.scanning.api.scan;
 
 /**
- * 
+ *
  * Any class wishing to have annotated methods called during
  * a scan may implement this interface and then either:
  *  <p>
@@ -31,7 +31,7 @@ package org.eclipse.scanning.api.scan;
  * scan @ScanEnd is called, finally @ScanFinally is called to close any resources
  * or reset the file list because there is no more a scan!
  * <p>
- * 
+ *
  * An example of the IScanParticipant is the FileRegistrar for archiving in GDA
  * This has a register method which gets the IScanService and adds the FileRegistrar
  * as an IScanParticipant. The annotations in FileRegistrar are then parsed and it

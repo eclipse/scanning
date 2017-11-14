@@ -14,11 +14,11 @@ package org.eclipse.scanning.sequencer.nexus;
 public final class SolsticeConstants {
 
 	public static final String SCANNABLE_NAME_SOLSTICE_SCAN_MONITOR = "solsticeScanMonitor";
-	public static final String GROUP_NAME_SOLSTICE_SCAN = "solstice_scan";	
-	public static final String GROUP_NAME_KEYS          = "keys";	
+	public static final String GROUP_NAME_SOLSTICE_SCAN = "solstice_scan";
+	public static final String GROUP_NAME_KEYS          = "keys";
 	public static final String FIELD_NAME_UNIQUE_KEYS   = "uniqueKeys";
-	public static final String FIELD_NAME_SCAN_RANK     = "scanRank";	
-	public static final String FIELD_NAME_SCAN_FINISHED = "scan_finished";	
+	public static final String FIELD_NAME_SCAN_RANK     = "scanRank";
+	public static final String FIELD_NAME_SCAN_FINISHED = "scan_finished";
 	public static final String FIELD_NAME_SCAN_CMD      = "scan_cmd";
 	public static final String FIELD_NAME_SCAN_MODELS   = "scan_models";
 	public static final String FIELD_NAME_SCAN_DURATION = "scan_duration";
@@ -26,12 +26,12 @@ public final class SolsticeConstants {
 	public static final String FIELD_NAME_SCAN_DEAD_TIME = "scan_dead_time";
 	public static final String FIELD_NAME_SCAN_DEAD_TIME_PERCENT = "scan_dead_time_percent";
 	public static final String FIELD_NAME_SCAN_SHAPE    = "scan_shape";
-	
+
 	/**
-	 * Property name for the path within an external (linked) nexus file to the unique keys dataset. 
+	 * Property name for the path within an external (linked) nexus file to the unique keys dataset.
 	 */
 	public static final String PROPERTY_NAME_UNIQUE_KEYS_PATH = "uniqueKeys";
-	
+
 	private SolsticeConstants() {
 		// private constructor to prevent instantiation
 	}

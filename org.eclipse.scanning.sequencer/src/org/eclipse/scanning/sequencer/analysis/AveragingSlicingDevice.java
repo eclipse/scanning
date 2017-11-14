@@ -22,29 +22,29 @@ import org.eclipse.scanning.api.scan.rank.IScanSlice;
  * average to a dataset. The average dataset is currently scanrank+1. Whatever
  * the data rank, each slice is averaged and written into the dataset
  * called "{@literal average_$detectorName$}"
- * 
+ *
  * NOTE This device assumes that each dataset written during the scan will be
  * available for processing. If the NeXus HDF-SWMR API does not flush data
  * during the scan, it cannot work because it reads back the data written
  * by a previous detector and averages it.
- * 
+ *
  * </pre>
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class AveragingSlicingDevice extends SlicingRunnableDevice<SlicingModel> implements INexusDevice<NXdetector> {
 
 	public static final String AVERAGE_QUALIFIER = "_average";
-	
+
 	private ILazyWriteableDataset averaged;
 	private NexusScanInfo         info;
 
 	@Override
 	public boolean process(SliceDeviceContext context) throws ScanningException {
-		
+
 		averaged.setChunking(info.createChunk(getDataShape(context.getData())));
-		 		
+
 		double mean = (Double)context.getSlice().squeeze().mean();
 
 		IScanSlice sslice  = IScanRankService.getScanRankService().createScanSlice(context.getLocation());
@@ -54,25 +54,25 @@ public class AveragingSlicingDevice extends SlicingRunnableDevice<SlicingModel> 
 		} catch (DatasetException e) {
 			throw new ScanningException(e);
 		}
-	
+
 		return true;
 	}
-	
+
 	@Override
 	public NexusObjectProvider<NXdetector> getNexusProvider(NexusScanInfo info) throws NexusException {
-		
+
 		final NXdetector detector = NexusNodeFactory.createNXdetector();
-		
+
 		this.averaged = detector.initializeLazyDataset(NXdetector.NX_DATA, info.getRank(), Double.class);
-		this.info     = info;		
-		
+		this.info     = info;
+
 		Attributes.registerAttributes(detector, this);
 
 		NexusObjectWrapper<NXdetector> nexusProvider = new NexusObjectWrapper<NXdetector>(getModel().getDetectorName()+AVERAGE_QUALIFIER, detector);
 
 		// Add all fields for any NXdata groups that this device creates
 		nexusProvider.setAxisDataFieldNames(NXdetector.NX_DATA);
-		
+
 		// "data" is the name of the primary data field (i.e. the 'signal' field of the default NXdata)
 		nexusProvider.setPrimaryDataFieldName(NXdetector.NX_DATA);
 

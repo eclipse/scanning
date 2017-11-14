@@ -16,7 +16,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
 public class MalcolmDeviceException extends ScanningException {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2394321108005036591L;
 
@@ -42,6 +42,7 @@ public class MalcolmDeviceException extends ScanningException {
 	}
 
 
+	@Override
 	public IMalcolmDevice<?> getDevice() {
 		return device;
 	}

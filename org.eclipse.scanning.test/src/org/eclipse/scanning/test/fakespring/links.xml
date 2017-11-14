@@ -13,7 +13,7 @@
 	<import resource="control_tree.xml"/>
 	<import resource="detector_beans.xml"/>
 	<import resource="nothing.xml"/>
-	
+
 	<!-- Uses ref created in detector_beans.xml -->
 	<bean id="mandelbrotDetector" class="org.eclipse.scanning.example.detector.MandelbrotDetector">
 		<property name="name"              value="mandelbrot"/>

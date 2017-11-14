@@ -24,8 +24,8 @@ import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
 import org.eclipse.scanning.api.malcolm.IMalcolmDevice;
 import org.eclipse.scanning.api.malcolm.IMalcolmService;
 import org.eclipse.scanning.api.malcolm.MalcolmTable;
+import org.eclipse.scanning.api.malcolm.attributes.HealthAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
-import org.eclipse.scanning.api.malcolm.attributes.StringAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.TableAttribute;
 import org.eclipse.scanning.api.points.IPointGenerator;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
@@ -66,7 +66,7 @@ public class ExampleMalcolmDeviceTest {
 	public void configureAndRunDummyMalcolm() throws Exception {
 
 		try {
-	
+
 			// The real service, get it from OSGi outside this test!
 			// Not required in OSGi mode (do not add this to your real code GET THE SERVICE FROM OSGi!)
 			this.service = new MalcolmService(new EpicsV4ConnectorService(), null);
@@ -82,12 +82,12 @@ public class ExampleMalcolmDeviceTest {
 			List<IROI> regions = new LinkedList<>();
 			regions.add(new CircularROI(2, 0, 0));
 			regions.add(new CircularROI(4, -1, -2));
-			
+
 			IPointGeneratorService pgService = new PointGeneratorService();
 			IPointGenerator<SpiralModel> temp = pgService.createGenerator(
 					new SpiralModel("stage_x", "stage_y", 1, new BoundingBox(0, -5, 8, 3)), regions);
 			IPointGenerator<?> scan = pgService.createCompoundGenerator(temp);
-			
+
 			EPICSv4ExampleModel pmac1 = new EPICSv4ExampleModel();
 			pmac1.setExposureTime(23.1);
 			pmac1.setFileDir("/path/to/ixx-1234");
@@ -95,7 +95,7 @@ public class ExampleMalcolmDeviceTest {
 			// Set the generator on the device
 			// Cannot set the generator from @PreConfigure in this unit test.
 			((AbstractMalcolmDevice<?>)modelledDevice).setPointGenerator(scan);
-			
+
 			// Call configure
 			modelledDevice.configure(pmac1);
 
@@ -107,7 +107,7 @@ public class ExampleMalcolmDeviceTest {
 			assertEquals(11, attribs.size());
 
 			boolean stateFound = false;
-			boolean statusFound = false;
+			boolean healthFound = false;
 			boolean busyFound = false;
 			boolean totalStepsFound = false;
 			boolean aFound = false;
@@ -123,8 +123,8 @@ public class ExampleMalcolmDeviceTest {
 			for (IDeviceAttribute<?> ma : attribs) {
 				if (ma.getName().equals("state")) {
 					stateFound = true;
-				} else if (ma.getName().equals("status")) {
-					statusFound = true;
+				} else if (ma.getName().equals("health")) {
+					healthFound = true;
 				} else if (ma.getName().equals("busy")) {
 					busyFound = true;
 				} else if (ma.getName().equals("totalSteps")) {
@@ -145,11 +145,11 @@ public class ExampleMalcolmDeviceTest {
 					completedStepsFound = true;
 				} else if (ma.getName().equals("layout")) {
 					layoutFound = true;
-				} 
+				}
 			}
 
 			assertTrue(stateFound);
-			assertTrue(statusFound);
+			assertTrue(healthFound);
 			assertTrue(busyFound);
 			assertTrue(totalStepsFound);
 			assertTrue(aFound);
@@ -166,18 +166,18 @@ public class ExampleMalcolmDeviceTest {
 			Object stateValue = modelledDevice.getAttributeValue("state");
 			if (stateValue instanceof String) {
 				String stateValueStr = (String) stateValue;
-				assertEquals("READY", stateValueStr);
+				assertEquals("ARMED", stateValueStr);
 			} else {
 				fail("state value was expected to be a string but wasn't");
 			}
 
 			// Get a specific string attribute
-			Object statusValue = modelledDevice.getAttributeValue("status");
-			if (statusValue instanceof String) {
-				String statusValueStr = (String) statusValue;
-				assertEquals("Test Status", statusValueStr);
+			Object healthValue = modelledDevice.getAttributeValue("health");
+			if (healthValue instanceof String) {
+				String healthValueStr = (String) healthValue;
+				assertEquals("Test Health", healthValueStr);
 			} else {
-				fail("status value was expected to be a string but wasn't");
+				fail("health value was expected to be a string but wasn't");
 			}
 
 			// Get a specific boolean attribute
@@ -199,22 +199,22 @@ public class ExampleMalcolmDeviceTest {
 			}
 
 			// Get a specific string attribute (full attribute)
-			Object statusAttributeValue = modelledDevice.getAttribute("status");
-			if (statusAttributeValue instanceof StringAttribute) {
-				StringAttribute statusAttributeValueStr = (StringAttribute) statusAttributeValue;
-				assertEquals("status", statusAttributeValueStr.getName());
-				assertEquals("Test Status", statusAttributeValueStr.getValue());
+			Object healthAttributeValue = modelledDevice.getAttribute("health");
+			if (healthAttributeValue instanceof HealthAttribute) {
+				HealthAttribute healthAttributeValueStr = (HealthAttribute) healthAttributeValue;
+				assertEquals("health", healthAttributeValueStr.getName());
+				assertEquals("Test Health", healthAttributeValueStr.getValue());
 			} else {
-				fail("status value was expected to be a StringAttribute but wasn't");
+				fail("health value was expected to be a HealthAttribute but wasn't");
 			}
-			
+
 			// Get a specific table attribute (full attribute)
 			Object datasetsAttributeValue = modelledDevice.getAttribute("datasets");
 			if (datasetsAttributeValue instanceof TableAttribute) {
 				TableAttribute datasetAttributeValueTable = (TableAttribute) datasetsAttributeValue;
 				assertEquals("datasets", datasetAttributeValueTable.getName());
 				MalcolmTable malcolmTable = datasetAttributeValueTable.getValue();
-				
+
 				assertEquals(4, malcolmTable.getHeadings().size());
 				assertEquals("detector", malcolmTable.getHeadings().get(0));
 				assertEquals("filename", malcolmTable.getHeadings().get(1));
@@ -227,7 +227,7 @@ public class ExampleMalcolmDeviceTest {
 			} else {
 				fail("datasets value was expected to be a TableAttribute but wasn't");
 			}
-			
+
 			// Check seek method works
 			modelledDevice.seek(4);
 
@@ -244,6 +244,7 @@ public class ExampleMalcolmDeviceTest {
 			Structure generatorStructure = FieldFactory.getFieldCreate().createFieldBuilder()
 					.addArray("mutators", union)
 					.add("duration", ScalarType.pvDouble)
+					.add("continuous", ScalarType.pvBoolean)
 					.addArray("generators", union)
 					.addArray("excluders", union)
 					.setId("scanpointgenerator:generator/CompoundGenerator:1.0").createStructure();
@@ -260,9 +261,9 @@ public class ExampleMalcolmDeviceTest {
 			Structure circularRoiStructure = FieldFactory.getFieldCreate().createFieldBuilder().
 					addArray("centre", ScalarType.pvDouble).
 					add("radius", ScalarType.pvDouble).
-					setId("scanpointgenerator:roi/CircularROI:1.0").					
+					setId("scanpointgenerator:roi/CircularROI:1.0").
 					createStructure();
-			
+
 			Structure excluderStructure = FieldFactory.getFieldCreate().createFieldBuilder().
 					addArray("axes", ScalarType.pvString).
 					addArray("rois", union).
@@ -287,7 +288,7 @@ public class ExampleMalcolmDeviceTest {
 			spiralGeneratorPVStructure.getBooleanField("alternate").put(false);
 			spiralGeneratorPVStructure.getDoubleField("radius").put(7.632168761236874);
 
-			
+
 			PVStructure configurePVStructure = PVDataFactory.getPVDataCreate().createPVStructure(configureStructure);
 			PVUnion pvu1 = PVDataFactory.getPVDataCreate().createPVVariantUnion();
 			pvu1.set(spiralGeneratorPVStructure);
@@ -295,49 +296,36 @@ public class ExampleMalcolmDeviceTest {
 			unionArray[0] = pvu1;
 			configurePVStructure.getUnionArrayField("generator.generators").put(0, unionArray.length, unionArray, 0);
 
-			PVStructure expectedExcluder1PVStructure = PVDataFactory.getPVDataCreate().createPVStructure(excluderStructure);
-			PVStringArray scannables1Val = expectedExcluder1PVStructure.getSubField(PVStringArray.class, "axes");
-			String[] scannables1 = new String[] {"stage_x", "stage_y"};
-			scannables1Val.put(0, scannables1.length, scannables1, 0);
-			
-			PVStructure expectedROIPVStructure1 = PVDataFactory.getPVDataCreate().createPVStructure(circularRoiStructure);
-			PVUnionArray rois1 = expectedExcluder1PVStructure.getSubField(PVUnionArray.class, "rois");
+			PVStructure expectedExcluderPVStructure = PVDataFactory.getPVDataCreate().createPVStructure(excluderStructure);
+			PVStringArray scannablesVal = expectedExcluderPVStructure.getSubField(PVStringArray.class, "axes");
+			String[] scannables = new String[] {"stage_x", "stage_y"};
+			scannablesVal.put(0, scannables.length, scannables, 0);
+			PVUnionArray rois = expectedExcluderPVStructure.getSubField(PVUnionArray.class, "rois");
 
+			PVStructure expectedROIPVStructure1 = PVDataFactory.getPVDataCreate().createPVStructure(circularRoiStructure);
 			PVDoubleArray cr1CentreVal = expectedROIPVStructure1.getSubField(PVDoubleArray.class, "centre");
 			double[] cr1Centre = new double[] {0, 0};
 			cr1CentreVal.put(0, cr1Centre.length, cr1Centre, 0);
 			PVDouble radius1Val = expectedROIPVStructure1.getSubField(PVDouble.class, "radius");
 			radius1Val.put(2);
 
-			PVUnion[] roiArray1 = new PVUnion[1];
-			roiArray1[0] = PVDataFactory.getPVDataCreate().createPVUnion(union);
-			roiArray1[0].set(expectedROIPVStructure1);
-			rois1.put(0, roiArray1.length, roiArray1, 0);
-
-			PVStructure expectedExcluder2PVStructure = PVDataFactory.getPVDataCreate().createPVStructure(excluderStructure);
-			PVStringArray scannables2Val = expectedExcluder2PVStructure.getSubField(PVStringArray.class, "axes");
-			String[] scannables2 = new String[] {"stage_x", "stage_y"};
-			scannables2Val.put(0, scannables2.length, scannables2, 0);
-			
 			PVStructure expectedROIPVStructure2 = PVDataFactory.getPVDataCreate().createPVStructure(circularRoiStructure);
-			PVUnionArray rois2 = expectedExcluder2PVStructure.getSubField(PVUnionArray.class, "rois");
-
 			PVDoubleArray cr2CentreVal = expectedROIPVStructure2.getSubField(PVDoubleArray.class, "centre");
 			double[] cr2Centre = new double[] {-1, -2};
 			cr2CentreVal.put(0, cr2Centre.length, cr2Centre, 0);
 			PVDouble radius2Val = expectedROIPVStructure2.getSubField(PVDouble.class, "radius");
 			radius2Val.put(4);
 
-			PVUnion[] roiArray2 = new PVUnion[1];
-			roiArray2[0] = PVDataFactory.getPVDataCreate().createPVUnion(union);
-			roiArray2[0].set(expectedROIPVStructure2);
-			rois2.put(0, roiArray2.length, roiArray2, 0);
+			PVUnion[] roiArray = new PVUnion[2];
+			roiArray[0] = PVDataFactory.getPVDataCreate().createPVUnion(union);
+			roiArray[0].set(expectedROIPVStructure1);
+			roiArray[1] = PVDataFactory.getPVDataCreate().createPVUnion(union);
+			roiArray[1].set(expectedROIPVStructure2);
+			rois.put(0, roiArray.length, roiArray, 0);
 
-			PVUnion[] crUnionArray = new PVUnion[2];
+			PVUnion[] crUnionArray = new PVUnion[1];
 			crUnionArray[0] = PVDataFactory.getPVDataCreate().createPVUnion(union);
-			crUnionArray[0].set(expectedExcluder1PVStructure);
-			crUnionArray[1] = PVDataFactory.getPVDataCreate().createPVUnion(union);
-			crUnionArray[1].set(expectedExcluder2PVStructure);
+			crUnionArray[0].set(expectedExcluderPVStructure);
 
 			configurePVStructure.getUnionArrayField("generator.excluders").put(0, crUnionArray.length, crUnionArray, 0);
 
@@ -359,7 +347,7 @@ public class ExampleMalcolmDeviceTest {
 
 			assertEquals(runStructure, runCall.getStructure());
 			assertEquals(runPVStructure, runCall);
-			
+
 			// seek
 			PVStructure seekCall = rpcCalls.get("pause");
 

@@ -1,13 +1,12 @@
 package org.eclipse.scanning.api.event.queues.models;
 
 /**
- * Exception thrown during evaluation of the model arguments or during 
- * construction of beans from a model.
- * 
+ * Exception thrown during construction of models or beans from a model.
+ *
  * @author Michael Wharmby
  *
  */
-public class QueueModelException extends RuntimeException {
+public class QueueModelException extends Exception {
 
 	private static final long serialVersionUID = -9079623888539642342L;
 
@@ -30,7 +29,5 @@ public class QueueModelException extends RuntimeException {
 	public QueueModelException(Throwable throwable) {
 		super(throwable);
 	}
-	
-	
 
 }

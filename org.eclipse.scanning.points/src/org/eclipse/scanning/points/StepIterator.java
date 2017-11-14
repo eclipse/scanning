@@ -11,63 +11,39 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Iterator;
-
 import org.eclipse.scanning.api.points.IPosition;
-import org.eclipse.scanning.api.points.MapPosition;
-import org.eclipse.scanning.api.points.Scalar;
-import org.eclipse.scanning.api.points.models.CollatedStepModel;
+import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.StepModel;
 
-class StepIterator implements Iterator<IPosition> {
+/**
+ * An iterator along points on one axis with a start position, a stop position and an step size.
+ *
+ * TODO: DAQ-888 setting the exposure time should be done in the jython level, otherwise
+ * it won't work for malcolm scans.
+ */
+class StepIterator extends SpgIterator {
 
-	private StepModel     model;
-	private double        value;
-	
-	public StepIterator(StepGenerator gen) {
-		this(gen.getModel());
-	}
-	
-	public StepIterator(StepModel model) {
+	private final StepModel model;
+
+	public StepIterator(StepModel model, ScanPointIterator pyIterator) {
+		super(pyIterator);
 		this.model = model;
-		value = model.getStart()-model.getStep();
 	}
 
-	@Override
-	public boolean hasNext() {
-		double next = increment();
-		double dir = Math.signum(model.getStop() - next);
-		return dir == 0 || dir == Math.signum(model.getStop() - model.getStart()); 
+	protected StepModel getModel() {
+		return model;
 	}
 
-	private double increment() {
-		return value+model.getStep();
-	}
-
-	int index = -1;
 	@Override
 	public IPosition next() {
-		value = increment();
-        ++index;
-        if (model instanceof CollatedStepModel) {
-        	final MapPosition mp = new MapPosition();
-        	CollatedStepModel cmodel = (CollatedStepModel)model;
-        	if (cmodel.getNames()!=null) {
-	        	for (String name : cmodel.getNames()) {
-	           		mp.put(name, value);
-	           		mp.putIndex(name, index);
-				}
-	        	return mp;
-        	} else {
-    		    return new Scalar<>(model.getName(), index, value);
-        	}
-        } else {
-		    return new Scalar<>(model.getName(), index, value);
-        }
-	}
+		final IPosition next = super.next();
 
-	public void remove() {
-        throw new UnsupportedOperationException("remove");
-    }
+		// set the exposure time and index
+		if (next != null) {
+			next.setExposureTime(model.getExposureTime()); // Usually 0
+		}
+
+		return next;
+	}
 
 }

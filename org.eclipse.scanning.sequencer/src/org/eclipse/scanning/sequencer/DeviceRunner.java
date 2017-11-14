@@ -24,12 +24,12 @@ import org.eclipse.scanning.api.scan.LevelRole;
 import org.eclipse.scanning.api.scan.ScanningException;
 
 /**
- * 
+ *
  * Runs detectors in a task.
- * 
+ *
  * This is the equivalent to the GDA8 collectData() called on multiple
  * detectors with multiple threads and waiting for isBusy to be unset.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -37,9 +37,9 @@ class DeviceRunner extends LevelRunner<IRunnableDevice<?>> {
 
 	private Collection<IRunnableDevice<?>>  devices;
 
-	DeviceRunner(Collection<IRunnableDevice<?>> devices) {	
+	DeviceRunner(Collection<IRunnableDevice<?>> devices) {
 		this.devices = devices;
-		
+
 		long timeout = calculateTimeout(devices);
 		setTimeout(timeout);
 	}
@@ -56,7 +56,7 @@ class DeviceRunner extends LevelRunner<IRunnableDevice<?>> {
 	 *   </li>
 	 *   <li>If the value calculated is less than or equal to 0, default to a timeout of 10 seconds.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param devices
 	 * @return
 	 */
@@ -70,18 +70,15 @@ class DeviceRunner extends LevelRunner<IRunnableDevice<?>> {
 	}
 
 	private long getTimeout(IRunnableDevice<?> device) {
-		
+
 		Object model = device.getModel();
 		long timeout = -1;
 		if (model instanceof ITimeoutable) {
 			timeout = ((ITimeoutable)model).getTimeout();
 			if (timeout <= 0 && model instanceof IDetectorModel) {
 				IDetectorModel dmodel = (IDetectorModel)model;
-				timeout = Math.round(dmodel.getExposureTime() + 1);
+				timeout = (long) Math.ceil(dmodel.getExposureTime() + 1);
 			}
-		} else if (model instanceof IDetectorModel) {
-			IDetectorModel dmodel = (IDetectorModel)model;
-			timeout = (long)Math.ceil(dmodel.getExposureTime());
 		}
 		return timeout;
 	}
@@ -90,7 +87,7 @@ class DeviceRunner extends LevelRunner<IRunnableDevice<?>> {
 	protected Callable<IPosition> create(IRunnableDevice<?> detector, IPosition position) throws ScanningException {
 		return new RunTask(detector, position);
 	}
-	
+
 	@Override
 	protected Collection<IRunnableDevice<?>> getDevices() {
 		return devices;

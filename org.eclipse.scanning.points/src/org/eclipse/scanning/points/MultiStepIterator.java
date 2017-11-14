@@ -11,95 +11,35 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.ScanPointIterator;
-import org.eclipse.scanning.api.points.models.MultiStepModel;
-import org.eclipse.scanning.api.points.models.StepModel;
-import org.eclipse.scanning.jython.JythonObjectFactory;
 
 /**
  * An iterator over multiple step ranges. Acts essentially as a sequence of
  * step iterators chained together. In the special case where one step iterator begins
  * with the last value of the previous iterator it is not repeated.
- * 
+ *
+ * TODO Matt D. 2017-10-26: why do we need to set exposure time? Isn't there some way
+ * we can give this to the jython point generator? Adding the exposure time here
+ * means this won't work with Malcolm. See JIRA ticket DAQ-888. When this is fixed
+ * this class should be removed.
+ *
  * @author Matthew Dickie
  */
-public class MultiStepIterator extends AbstractScanPointIterator {
-	
-	private final MultiStepModel model;
-	
-	public MultiStepIterator(MultiStepModel model) {
-		this.model = model;
-		
-		JythonObjectFactory<ScanPointIterator> arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
+public class MultiStepIterator extends SpgIterator {
 
-		double[] points = createPositions();
+	private final double[] times;
 
-		ScanPointIterator iterator = arrayGeneratorFactory.createObject(
-				model.getName(), "mm", points);
-		pyIterator = iterator;
-	}
-	
-	private double[] createPositions() {
-		int totalSize = 0;
-		boolean finalPosWasEnd = false;
-		List<double[]> positionArrays = new ArrayList<>(model.getStepModels().size());
-		double previousEnd = 0;
-		for (StepModel stepModel : model.getStepModels()) {
-			int size = getSize(stepModel);
-			double pos = stepModel.getStart();
-
-			// if the start of this model is the end of the previous one, and the end of the
-			// previous was was its final point, skip the first point
-			if (finalPosWasEnd && 
-					Math.abs(stepModel.getStart() - previousEnd) < Math.abs(stepModel.getStep() / 100)) {
-				pos = pos += stepModel.getStep();
-				size--;
-			}
-			double[] positions = new double[size];
-			
-			for (int i = 0; i < size; i++) {
-				positions[i] = pos;
-				pos += stepModel.getStep();
-			}
-			positionArrays.add(positions);
-			totalSize += size;
-			
-			// record if the final position of this model is its end position (within a tolerance of step/100)
-			// this is not always the case, e.g. if start=0, stop=10 and step=3
-			double finalPos = positions[positions.length - 1];
-			finalPosWasEnd = Math.abs(stepModel.getStop() - finalPos) < Math.abs(stepModel.getStep() / 100);
-			previousEnd = stepModel.getStop();
-		}
-		
-		double[] allPositions = new double[totalSize];
-		int pos = 0;
-		for (double[] positions : positionArrays) {
-			System.arraycopy(positions, 0, allPositions, pos, positions.length);
-			pos += positions.length;
-		}
-		
-		return allPositions;
-	}
-	
-	private static int getSize(StepModel stepModel) {
-		// copied from StepGenerator.sizeOfValidModel
-		double div = ((stepModel.getStop()-stepModel.getStart())/stepModel.getStep());
-		div += (Math.abs(stepModel.getStep()) / 100); // add tolerance of 1% of step value
-		return (int)Math.floor(div+1);
-	}
-	
-	@Override
-	public boolean hasNext() {
-		return pyIterator.hasNext();
+	public MultiStepIterator(ScanPointIterator pyIterator, double[] times) {
+		super(pyIterator);
+		this.times = times;
 	}
 
 	@Override
 	public IPosition next() {
-		return pyIterator.next();
+		IPosition next = super.next();
+        next.setExposureTime(times[next.getStepIndex()]);
+		return next;
 	}
 
 }

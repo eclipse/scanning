@@ -34,10 +34,10 @@ import org.eclipse.scanning.api.scan.ScanInformation;
  *
  * Yes should use Mockito but that has the issues with
  * hamcrest which are hard to resolve in the build.
- * 
+ *
  * This class is a handy way to do multiple inheritance in Java by defaulting
  * methods, filthy I know.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -47,7 +47,7 @@ public interface AnnotationRecorder {
 	default void configure(ScanInformation info) {
 		record(PreConfigure.class);
 	}
-	
+
 	@PostConfigure
 	default void configured(ScanInformation info) {
 		record(PostConfigure.class);
@@ -57,7 +57,7 @@ public interface AnnotationRecorder {
 	default void scanStart() {
 		record(ScanStart.class);
 	}
-	
+
 	@FileDeclared
 	default void fileDeclared() {
 		record(FileDeclared.class);
@@ -72,12 +72,12 @@ public interface AnnotationRecorder {
 	default void pointStart() {
 		record(PointStart.class);
 	}
-	
+
 	@PointEnd
 	default void pointEnd() {
 		record(PointEnd.class);
 	}
-	
+
 	@WriteComplete
 	default void writeComplete() {
 		record(WriteComplete.class);
@@ -87,7 +87,7 @@ public interface AnnotationRecorder {
 	default void levelStart() {
 		record(LevelStart.class);
 	}
-	
+
 	@LevelEnd
 	default void levelEnd() {
 		record(LevelEnd.class);
@@ -97,7 +97,7 @@ public interface AnnotationRecorder {
 	default void scanPause() {
 		record(ScanPause.class);
 	}
-	
+
 	@ScanResume
 	default void scanResume() {
 		record(ScanResume.class);
@@ -107,18 +107,18 @@ public interface AnnotationRecorder {
 	default void scanAbort() {
 		record(ScanAbort.class);
 	}
-	
+
 	@ScanFault
 	default void scanFault() {
 		record(ScanFault.class);
 	}
-	
+
 	@ScanFinally
 	default void scanFinally() {
 		record(ScanFinally.class);
 	}
 
 	void record(Class<? extends Annotation> method);
-	
+
 	int getCount(Class<? extends Annotation> methodName);
 }

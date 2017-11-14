@@ -23,24 +23,25 @@ import org.eclipse.scanning.api.points.models.IScanPathModel;
 
 class CompoundValidator implements IValidator<CompoundModel<?>> {
 
+	@Override
 	public void validate(CompoundModel<?> model) throws ValidationException, InstantiationException, IllegalAccessException {
-		
+
 		if (model.getModels()==null || model.getModels().isEmpty()) {
 			throw new ModelValidationException("There are no models defined.", model, "models");
 		}
-		
+
 		// Each model is ok
 		final IValidatorService vservice = new ValidatorService();
 		for (Object mod : model.getModels()) vservice.validate(mod);
-		
+
 		// Models are separate axes
 		validateAxes(model.getModels());
 
 	}
-	
+
 
 	private void validateAxes(List<Object> models) throws ValidationException {
-		
+
         List<String> usedAxes = new ArrayList<String>();
         for (Object model : models) {
 			if (model instanceof IScanPathModel) {

@@ -35,15 +35,15 @@ import org.junit.Test;
 public class SampleInformationTest extends ShellTest {
 
 	private static IInterfaceService interfaceService; // We really get this from OSGi services!
-	
+
 	@BeforeClass
-	public static void createServices() throws Exception {	
+	public static void createServices() throws Exception {
 		interfaceService = new InterfaceService(); // Just for testing! This comes from OSGi really.
 		UISuite.createTestServices(false);
 	}
-	
+
 	@AfterClass
-	public static void disposeServices() throws Exception {	
+	public static void disposeServices() throws Exception {
 		interfaceService = null;
 		UISuite.disposeTestServices();
 	}
@@ -53,11 +53,11 @@ public class SampleInformationTest extends ShellTest {
 
 	@Override
 	protected Shell createShell(Display display) throws Exception {
-		
+
 		this.config = new SampleData();
 		config.setName("Sample name");
 		config.setDescription("Hello World");
-		
+
 		this.viewer = interfaceService.createModelViewer();
 
 		Shell shell = new Shell(display);
@@ -65,7 +65,7 @@ public class SampleInformationTest extends ShellTest {
 		shell.setLayout(new GridLayout(1, false));
         viewer.createPartControl(shell);
 		viewer.setModel(config);
-		
+
 		shell.pack();
 		shell.setSize(500, 500);
 		shell.open();
@@ -78,30 +78,30 @@ public class SampleInformationTest extends ShellTest {
 	public void checkShell() throws Exception {
 		assertNotNull(bot.shell("Sample"));
 	}
-	
+
 	@Test
 	public void testDialog() throws Exception {
 		Shell shell = bot.shell("Sample").widget;
-		
+
 		List<Exception> errors = new ArrayList<>();
- 		shell.getDisplay().syncExec(()->{
- 			try {
- 				// Intentionally loose generics here because the
- 				// ModelCellEditor cannot type check so we mimik
- 				// what it does to reproduce an old defect
- 				IModelDialog dialog = interfaceService.createModelDialog(shell);
- 				dialog.create();
+		shell.getDisplay().syncExec(()->{
+			try {
+				// Intentionally loose generics here because the
+				// ModelCellEditor cannot type check so we mimik
+				// what it does to reproduce an old defect
+				IModelDialog dialog = interfaceService.createModelDialog(shell);
+				dialog.create();
 				dialog.setModel((Serializable)config);
- 			} catch (Exception ne) {
- 				errors.add(ne);
- 			}
+			} catch (Exception ne) {
+				errors.add(ne);
+			}
 		});
- 		if (errors.size()>0) throw errors.get(0);
+		if (errors.size()>0) throw errors.get(0);
 	}
 
 	@Test
 	public void checkInitialValues() throws Exception {
-		
+
 		assertEquals(config.getName(),        bot.table(0).cell(0, 1));
 		assertEquals(config.getDescription(), bot.table(0).cell(1, 1));
 
@@ -109,23 +109,23 @@ public class SampleInformationTest extends ShellTest {
 
 	@Test
 	public void checkApply() throws Exception {
-		
+
 		assertEquals(config.getDescription(),     bot.table(0).cell(1, 1));
-		bot.table(0).click(1, 1); 
-		
+		bot.table(0).click(1, 1);
+
 		SWTBotText text = bot.text(0);
 		assertNotNull(text);
 		assertEquals("Hello World", text.getText());
-		
+
 		assertEquals("Hello World", config.getDescription());
 		text.setText("Something else");
 		assertEquals("Hello World", config.getDescription());
 		assertEquals("Something else", text.getText());
-		
+
 		text.display.syncExec(()->viewer.applyEditorValue());
-		
+
 		assertEquals("Something else", config.getDescription());
 		assertEquals("Something else", bot.table(0).cell(1, 1));
-		
+
 	}
 }

@@ -12,6 +12,9 @@
 package org.eclipse.scanning.device.ui.model;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IContributionManager;
@@ -45,7 +48,7 @@ import org.slf4j.LoggerFactory;
 public class ModelView extends ViewPart implements ISelectionListener {
 
 	public static final String ID = "org.eclipse.scanning.device.ui.modelEditor";
-	
+
 	private static Logger logger = LoggerFactory.getLogger(ModelView.class);
 
 	// UI
@@ -53,50 +56,50 @@ public class ModelView extends ViewPart implements ISelectionListener {
 	private IModelViewer<?>   modelEditor;
 	private ControlTreeViewer treeViewer;
 
-	
+
 	@Override
-	public void createPartControl(Composite parent) {	
+	public void createPartControl(Composite parent) {
 
 		this.parent = parent;
 		try {
 			final Composite content = new Composite(parent, SWT.NONE);
 			content.setLayout(new GridLayout(1, false));
 			GridUtils.removeMargins(content);
-			
+
 			modelEditor = ServiceHolder.getInterfaceService().createModelViewer();
 			modelEditor.setViewSite(getViewSite());
 			modelEditor.createPartControl(content);
 			GridUtils.setVisible(modelEditor.getControl(), true);
-			
+
 			final DelegatingSelectionProvider prov = new DelegatingSelectionProvider((ISelectionProvider)modelEditor);
 			getSite().setSelectionProvider(prov);
-			
-			IScannableDeviceService cservice = ServiceHolder.getEventService().createRemoteService(new URI(CommandConstants.getScanningBrokerUri()), IScannableDeviceService.class);			
+
+			IScannableDeviceService cservice = ServiceHolder.getEventService().createRemoteService(new URI(CommandConstants.getScanningBrokerUri()), IScannableDeviceService.class);
 			treeViewer = new ControlTreeViewer(cservice, ControlViewerMode.INDIRECT_NO_SET_VALUE);
 			treeViewer.createPartControl(content, new ControlTree(), getViewSite().getActionBars().getMenuManager(), getViewSite().getActionBars().getToolBarManager());
 			GridUtils.setVisible(treeViewer.getControl(), false);
-			treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {				
+			treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 				@Override
 				public void selectionChanged(SelectionChangedEvent event) {
 					prov.fireSelection(event.getSelection());
 				}
 			});
-				
+
 			setActionsVisible(false);
-			
+
 			PageUtil.getPage(getSite()).addSelectionListener(this);
 
 		} catch (Exception ne) {
 			logger.error("Unable to create model table!", ne);
 		}
-		
+
 	}
 
 	@Override
 	public void setFocus() {
 		modelEditor.setFocus();
 	}
-	
+
 	@Override
 	public void dispose() {
 		if (modelEditor!=null) modelEditor.dispose();
@@ -106,18 +109,20 @@ public class ModelView extends ViewPart implements ISelectionListener {
 
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
+
+		if (!getViewSite().getPage().isPartVisible(this)) return;
 		if (selection instanceof IStructuredSelection) {
 			Object ob = ((IStructuredSelection)selection).getFirstElement();
 			String       name = null;
-			
+
 			if (ob instanceof ISeriesItemDescriptor) {
 				ISeriesItemDescriptor des = (ISeriesItemDescriptor)ob;
 				name = des.getLabel();
 				GridUtils.setVisible(modelEditor.getControl(), true);
 				GridUtils.setVisible(treeViewer.getControl(), false);
 				getSite().setSelectionProvider((ISelectionProvider)modelEditor);
-				setActionsVisible(false);
-	
+				setActionsVisible(false, ModelPersistAction.IDS);
+
 			} else if (ob instanceof DeviceInformation) {
 				DeviceInformation info = (DeviceInformation)ob;
 				name = info.getLabel();
@@ -127,7 +132,7 @@ public class ModelView extends ViewPart implements ISelectionListener {
 				GridUtils.setVisible(treeViewer.getControl(), false);
 				getSite().setSelectionProvider((ISelectionProvider)modelEditor);
 				setActionsVisible(false);
-				
+
 			} else if (ob instanceof ControlTree) {
 				ControlTree tree = (ControlTree)ob;
 				treeViewer.setControlTree(tree);
@@ -143,19 +148,25 @@ public class ModelView extends ViewPart implements ISelectionListener {
 			if (name!=null) setPartName(name);
 			Control control = modelEditor.getControl();
 			control.getParent().layout();
-		}		
+		}
 	}
 
-	private void setActionsVisible(boolean vis) {
-		setActionsVisible(getViewSite().getActionBars().getToolBarManager(), vis);
-		setActionsVisible(getViewSite().getActionBars().getMenuManager(), vis);
+	private void setActionsVisible(boolean vis, String... ignoredIds) {
+		setActionsVisible(getViewSite().getActionBars().getToolBarManager(), vis, ignoredIds);
+		setActionsVisible(getViewSite().getActionBars().getMenuManager(), vis, ignoredIds);
 		getViewSite().getActionBars().updateActionBars();
 		parent.getParent().layout(new Control[]{parent});
 		parent.layout(true);
 	}
 
-	private void setActionsVisible(IContributionManager man, boolean vis) {
+	private void setActionsVisible(IContributionManager man, boolean vis, String... ignoredIds) {
+
+		List<String> ignore = Arrays.asList(Optional.of(ignoredIds).orElse(new String[]{""}));
 		for (IContributionItem item : man.getItems()) {
+			if (ignore.contains(item.getId())) {
+				item.setVisible(true);
+				continue;
+			}
 			item.setVisible(vis);
 		}
 	}

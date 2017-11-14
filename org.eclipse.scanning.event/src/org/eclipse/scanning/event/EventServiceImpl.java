@@ -35,17 +35,17 @@ import org.eclipse.scanning.api.event.status.StatusBean;
 import org.eclipse.scanning.event.remote.RemoteServiceFactory;
 
 public class EventServiceImpl implements IEventService {
-	
+
 	static {
 		System.out.println("Started "+IEventService.class.getSimpleName());
 	}
-	
+
 	private static IEventConnectorService eventConnectorService;
-	
+
 	public EventServiceImpl() {
-		
+
 	}
-	
+
 	// For tests
 	public EventServiceImpl(IEventConnectorService serviceToUse) {
 		eventConnectorService = serviceToUse;
@@ -60,8 +60,8 @@ public class EventServiceImpl implements IEventService {
 	public <T extends EventListener> ISubscriber<T> createSubscriber(URI uri, String topicName) {
 		return new SubscriberImpl<T>(uri, topicName, eventConnectorService);
 	}
-	
-	
+
+
 	@Override
 	public <U> IPublisher<U> createPublisher(URI uri, String topicName) {
 		return new PublisherImpl<U>(uri, topicName, eventConnectorService);
@@ -78,24 +78,24 @@ public class EventServiceImpl implements IEventService {
 	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri) throws EventException {
 		return createConsumer(uri, SUBMISSION_QUEUE, STATUS_SET, STATUS_TOPIC, HEARTBEAT_TOPIC, CMD_TOPIC);
 	}
-	
+
 	@Override
-	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri, 
+	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri,
 			                               String submissionQName,
-			                               String statusQName, 
+			                               String statusQName,
 			                               String statusTName) throws EventException {
 		return createConsumer(uri, submissionQName, statusQName, statusTName, HEARTBEAT_TOPIC, CMD_TOPIC);
 	}
-	
+
 
 	@Override
-	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri, 
+	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri,
 			                               String submissionQName,
-			                               String statusQName, 
-			                               String statusTName, 
+			                               String statusQName,
+			                               String statusTName,
 			                               String heartbeatTName,
 			                               String commandTName) throws EventException {
-				
+
 		return new ConsumerImpl<U>(uri, submissionQName, statusQName, statusTName, heartbeatTName, commandTName, eventConnectorService, this);
 
 	}
@@ -121,7 +121,7 @@ public class EventServiceImpl implements IEventService {
 	public <T extends IdBean> IResponder<T> createResponder(URI uri, String requestTopic, String responseTopic) throws EventException {
 		return new ResponderImpl<T>(uri, requestTopic, responseTopic, this);
 	}
-	
+
 	@Override
 	public IEventConnectorService getEventConnectorService() {
 		return eventConnectorService;
@@ -131,12 +131,12 @@ public class EventServiceImpl implements IEventService {
 	public <T> IQueueReader<T> createQueueReader(URI uri, String queueName) {
 	    return new QueueReaderImpl<T>(uri, queueName, this);
 	}
-	
+
 	private Map<String, SoftReference<?>> cachedServices;
 
 	@Override
 	public synchronized <T> T createRemoteService(URI uri, Class<T> serviceClass) throws EventException {
-		
+
 		if (cachedServices==null) cachedServices = new HashMap<>(7);
 		try {
 			String key = ""+uri+serviceClass.getName();
@@ -160,7 +160,7 @@ public class EventServiceImpl implements IEventService {
 			T service = RemoteServiceFactory.getRemoteService(uri, serviceClass, this);
 			cachedServices.put(key, new SoftReference<T>(service));
 			return service;
-			
+
 		} catch (InstantiationException | IllegalAccessException e) {
 			throw new EventException("There problem creating service for "+serviceClass, e);
 		}

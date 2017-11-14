@@ -23,7 +23,7 @@ import org.eclipse.scanning.api.points.IMutator;
  * This class is designed to encapsulate the information
  * to required to provide all the locations, with regions
  * of an n-Dimensional scan.
- * 
+ *
  * <pre>
  * CompoundModel {
  *     models:  [ list of models]
@@ -32,7 +32,7 @@ import org.eclipse.scanning.api.points.IMutator;
  * }
  * Region {
  *     roi: geometric roi
- *     scannables: [ list of scannable names]   
+ *     scannables: [ list of scannable names]
  * }
  * </pre>
  * <b>Example:</b><p>
@@ -65,11 +65,11 @@ import org.eclipse.scanning.api.points.IMutator;
  *           }
  *        }
  *     ]
- * }   
- *    
- * 
+ * }
+ *
+ *
  * </pre>
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -79,39 +79,40 @@ public class CompoundModel<R> implements Cloneable {
 	private Collection<ScanRegion<R>>  regions;
 	private List<IMutator>	           mutators;
 	private double                     duration = -1;
-	
+
 	public CompoundModel() {
 		// Must have no-arg constructor
 	}
-	
+
 	/**
-	 * Clones the outer object but not the indder collections
-	 * of models, regions etc.
+	 * Returns a copy (clone) of the given {@link CompoundModel}.
+	 * @param toCopy the model to copy
 	 */
-	public CompoundModel<R> clone() {
-		CompoundModel<R> ret = new CompoundModel();
-		ret.models = models;
-		ret.regions = regions;
-		ret.mutators = mutators;
-		ret.duration = duration;
-		return ret;
+	public static <R> CompoundModel<R> copy(CompoundModel<R> toCopy) {
+		final CompoundModel<R> copy = new CompoundModel<>();
+		copy.models = toCopy.models;
+		copy.regions = toCopy.regions;
+		copy.mutators = toCopy.mutators;
+		copy.duration = toCopy.duration;
+		return copy;
 	}
+
 	/**
-	 * Clones the outer object but not the inner collections
-	 * of models, regions etc.
+	 * Returns a
 	 */
-	public CompoundModel<R> clone(List<Object> models) {
-		CompoundModel<R> ret = clone();
-		ret.models = models;
-		return ret;
+	public static <R> CompoundModel<R> copyAndSetModels(CompoundModel<R> toCopy, List<Object> models) {
+		CompoundModel<R> copy = copy(toCopy);
+		copy.models = models;
+		return copy;
 	}
 
 
-	public CompoundModel(Object... ms) {
-		if (ms!=null && ms.length==1 && ms[0] instanceof List) {
-			models = (List<Object>)ms[0];
+	@SuppressWarnings("unchecked")
+	public CompoundModel(Object... models) {
+		if (models !=null && models.length == 1 && models[0] instanceof List<?>) {
+			this.models = (List<Object>) models[0];
 		} else {
-		    models = Arrays.asList(ms);
+		    this.models = Arrays.asList(models);
 		}
 	}
 	public CompoundModel(List<Object> ms) {
@@ -119,65 +120,65 @@ public class CompoundModel<R> implements Cloneable {
 	}
 	public CompoundModel(IScanPathModel model, R region) {
 		if (region instanceof IScanPathModel) { // It's not a region
-			models = Arrays.asList(new IScanPathModel[]{model, (IScanPathModel)region});
+			models = Arrays.asList(model, (IScanPathModel)region);
 		} else {
 		    setData(model, region, model.getScannableNames());
 		}
 	}
-	
+
 	public void setData(IScanPathModel model, R region) {
 		if (region instanceof IScanPathModel) { // It's not a region
-			models = Arrays.asList(new IScanPathModel[]{model, (IScanPathModel)region});
+			models = Arrays.asList(model, (IScanPathModel)region);
 		} else {
 			setData(model, region, model.getScannableNames());
 		}
 	}
-	
+
 	public void setData(IScanPathModel model, R region, List<String> names) {
 		if (region instanceof IScanPathModel) throw new IllegalArgumentException("The region must not be a generator model!");
-		
+
 		// We do it this way to make setData(...) fast. This means addData(...) has to deal with unmodifiable lists.
 		this.models  = Arrays.asList(model);
-	    this.regions = Arrays.asList(new ScanRegion<R>(region, names)); 
+	    this.regions = Arrays.asList(new ScanRegion<R>(region, names));
 	}
 
 	/**
 	 * Method to add a model and regions which are assumed to act on the
 	 * model provided and are assigned to it using its scannable names.
-	 * 
+	 *
 	 * @param model
 	 * @param rois
 	 */
 	public void addData(Object model, Collection<R> rois) {
-		
-		if (models==null) models = new ArrayList<Object>(7);
+
+		if (models==null) models = new ArrayList<>(7);
 		try {
 			models.add(model);
 		} catch(Exception ne) {
-			// Models is allowed to be non-null and unmodifiable	
+			// Models is allowed to be non-null and unmodifiable
 			// If it is, we make it modifiable and add the model.
-			List<Object> tmp = new ArrayList<Object>(7);
+			List<Object> tmp = new ArrayList<>(7);
 			tmp.addAll(models);
 			tmp.add(model);
 			models = tmp;
 		}
-		
+
 		// They are not really ordered but for now we maintain order.
-		if (regions==null) regions = new LinkedHashSet<ScanRegion<R>>(7);
+		if (regions==null) regions = new LinkedHashSet<>(7);
 		if (rois!=null) for (R roi : rois) {
 			ScanRegion<R> region = new ScanRegion<>(roi, AbstractPointsModel.getScannableNames(model));
 			try {
 				this.regions.add(region);
 			} catch(Exception ne) {
 				// It might be unmodifiable
-				Collection<ScanRegion<R>> tmp = new LinkedHashSet<ScanRegion<R>>(7);
+				Collection<ScanRegion<R>> tmp = new LinkedHashSet<>(7);
 				tmp.addAll(this.regions);
 				tmp.add(region);
 				regions = tmp;
 			}
 		}
 	}
-	
+
 	public List<Object> getModels() {
 		return models;
 	}
@@ -188,12 +189,12 @@ public class CompoundModel<R> implements Cloneable {
 		this.models = Arrays.asList(models);
 	}
 	public Collection<ScanRegion<R>> getRegions() {
-		return (Collection<ScanRegion<R>>)regions;
+		return regions;
 	}
 	public void setRegions(Collection<ScanRegion<R>> regions) {
 		this.regions = regions;
 	}
-	public void setRegionsVarArgs(ScanRegion<R>... regions) {
+	public void setRegionsVarArgs(@SuppressWarnings("unchecked") ScanRegion<R>... regions) {
 		this.regions = Arrays.asList(regions);
 	}
 
@@ -212,7 +213,7 @@ public class CompoundModel<R> implements Cloneable {
 	public void setDuration(double duration) {
 		this.duration = duration;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -224,6 +225,7 @@ public class CompoundModel<R> implements Cloneable {
 		result = prime * result + (int)(durationBits ^ (durationBits >>> 32));
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -251,7 +253,7 @@ public class CompoundModel<R> implements Cloneable {
 			return false;
 		return true;
 	}
-	
+
 	/**
 	 * This equals does an equals on two collections
 	 * as if they were two lists because order matters with the names.
@@ -260,35 +262,41 @@ public class CompoundModel<R> implements Cloneable {
 	 * @return
 	 */
     private boolean equals(Collection<?> o, Collection<?> t) {
-        
-    	if (o == t)
+
+	if (o == t)
             return true;
-    	if (o == null && t == null)
+	if (o == null && t == null)
             return true;
-    	if (o == null || t == null)
+	if (o == null || t == null)
             return false;
- 
+
         Iterator<?> e1 = o.iterator();
         Iterator<?> e2 = t.iterator();
         while (e1.hasNext() && e2.hasNext()) {
             Object o1 = e1.next();
             Object o2 = e2.next();
-            
+
             // Collections go down to the same equals.
             if (o1 instanceof Collection && o2 instanceof Collection) {
-            	boolean collectionsEqual = equals((Collection<?>)o1,(Collection<?>)o2);
-            	if (!collectionsEqual) {
-            		return false;
-            	} else {
-            		continue;
-            	}
+		boolean collectionsEqual = equals((Collection<?>)o1,(Collection<?>)o2);
+		if (!collectionsEqual) {
+			return false;
+		} else {
+			continue;
+		}
             }
-            
+
             // Otherwise we use object equals.
             if (!(o1==null ? o2==null : o1.equals(o2)))
                 return false;
         }
         return !(e1.hasNext() || e2.hasNext());
     }
+
+	@Override
+	public String toString() {
+		return "CompoundModel [models=" + models + ", regions=" + regions + ", mutators=" + mutators + ", duration="
+				+ duration + "]";
+	}
 
 }

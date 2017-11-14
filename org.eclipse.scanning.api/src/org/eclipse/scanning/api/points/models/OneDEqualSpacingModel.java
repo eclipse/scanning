@@ -21,11 +21,11 @@ package org.eclipse.scanning.api.points.models;
 public class OneDEqualSpacingModel extends AbstractBoundingLineModel implements IBoundingLineModel {
 
 	private int points = 5;
-	
+
 	public OneDEqualSpacingModel() {
 		setName("Equal Spacing");
 	}
-	
+
 	public int getPoints() {
 		return points;
 	}
@@ -34,6 +34,12 @@ public class OneDEqualSpacingModel extends AbstractBoundingLineModel implements 
 		this.points = points;
 		this.pcs.firePropertyChange("points", oldValue, points);
 	}
+
+	@Override
+	public String toString() {
+		return "OneDEqualSpacingModel [points=" + points + ", " + super.toString() + "]";
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -41,6 +47,7 @@ public class OneDEqualSpacingModel extends AbstractBoundingLineModel implements 
 		result = prime * result + points;
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -54,4 +61,5 @@ public class OneDEqualSpacingModel extends AbstractBoundingLineModel implements 
 			return false;
 		return true;
 	}
+
 }

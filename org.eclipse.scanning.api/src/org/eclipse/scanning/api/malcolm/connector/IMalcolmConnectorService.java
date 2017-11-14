@@ -18,11 +18,11 @@ import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 import org.eclipse.scanning.api.malcolm.event.IMalcolmListener;
 
 /**
- * A connector service is used internally to abstract the 
+ * A connector service is used internally to abstract the
  * provision of a connection to malcolm. It provides the transport
  * mechanism (for instance Zeromq) and the serialization mechanism
  * (for instance Jackson or gson).
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -30,20 +30,20 @@ public interface IMalcolmConnectorService<T> {
 	/**
 	 * Method to start the connection. In the case of ZeroMQ this will open the
 	 * socket and throw an exception if the connection cannot be made.
-	 * 
+	 *
 	 * @param malcolmUri
 	 * @throws MalcolmDeviceException
 	 */
 	void connect(URI malcolmUri) throws MalcolmDeviceException;
 
 	/**
-	 * Call when the connection should be closed. In the case of ZeroMQ this will call 
+	 * Call when the connection should be closed. In the case of ZeroMQ this will call
 	 * socket.close() for instance.
-	 * 
+	 *
 	 * @throws MalcolmDeviceException
 	 */
 	void disconnect() throws MalcolmDeviceException;
-	
+
 
 	/**
 	 * Send the message and get one back, blocking, same as send(device, T, true)
@@ -71,10 +71,10 @@ public interface IMalcolmConnectorService<T> {
 	 */
 	public T unsubscribe(IMalcolmDevice<?> device, T msg, IMalcolmListener<T>... listeners) throws MalcolmDeviceException;
 
-	
+
 	/**
 	 * Creates the connection to Malcolm
-	 * 
+	 *
 	 * @param class1
 	 * @return
 	 */
@@ -83,16 +83,16 @@ public interface IMalcolmConnectorService<T> {
 	/**
 	 * Creates the connection to the device in the protocol as defined with this connector service, for instance ZeroMQ.
 	 * SerializedDeviceConnection encapsulates the encoding of objects sent down the connection, for instance using Jackson
-	 * 
+	 *
 	 * @return the connection to a device talking the appropriately serialized objects.
-	 * 
+	 *
 	 * @throws MalcolmDeviceException
 	 */
 	MessageGenerator<T> createDeviceConnection(IMalcolmDevice<?> device) throws MalcolmDeviceException;
 
 	/**
 	 * Listens to connection state changes on the device, notifying the specified listener of any change.
-	 * 
+	 *
 	 * @param device the device to listen to
 	 * @param listener the listener to be notified of changes
 	 * @throws MalcolmDeviceException

@@ -30,7 +30,7 @@ import org.python.core.PyUnicode;
 
 /**
  * Custom serialiser for PyDictionary.
- * TODO - make this non 'test' and finalise custom serialisation strategy for PyDictionaries 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for PyDictionaries
  * @author Matt Taylor
  *
  */
@@ -49,7 +49,7 @@ public class PyDictionarySerialiser implements IPVStructureSerialiser<PyDictiona
 		Map<String,?> dictionaryAsMap = convertMap(dictionary);
 		serialiser.getMapSerialiser().setMapValues(pvStructure, dictionaryAsMap);
 	}
-	
+
 	private LinkedHashMap<String, Object> convertMap(Map<Object, Object> maptoCopy) {
 		LinkedHashMap<String, Object> newObject = new LinkedHashMap<String, Object>();
 		for (Object key : maptoCopy.keySet()) {
@@ -58,7 +58,7 @@ public class PyDictionarySerialiser implements IPVStructureSerialiser<PyDictiona
 		}
 		return newObject;
 	}
-	
+
 	/**
 	 * Converts a python object into the raw java equivalent
 	 * @param pyObj THe python object to convert
@@ -70,13 +70,13 @@ public class PyDictionarySerialiser implements IPVStructureSerialiser<PyDictiona
 		}
 		if (pyObj instanceof PyList) {
 			PyList pyList = (PyList)pyObj;
-			
+
 			if (pyList.size() == 1) {
 				Object first = pyList.get(0);
 				if (first.getClass().isArray()) {
 					return convertPyObject(pyList.get(0));
 				}
-			} 
+			}
 			Object[] array = pyList.toArray();
 			LinkedList<Object> newList = new LinkedList<>();
 			for (Object listElement : array) {
@@ -111,12 +111,12 @@ public class PyDictionarySerialiser implements IPVStructureSerialiser<PyDictiona
 			String newString = pyString.getString();
 			return newString;
 		}
-		
+
 		if (pyObj.getClass().toString().contains("py")) {
 			System.err.println("NOT CAUGHT [" + pyObj + "] class = " + pyObj.getClass());
 		}
-		
+
 		return pyObj;
 	}
-	
+
 }

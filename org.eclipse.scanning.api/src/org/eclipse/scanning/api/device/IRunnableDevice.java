@@ -30,13 +30,13 @@ import org.eclipse.scanning.api.scan.ScanningException;
 
 
 /**
- * 
+ *
  * An IDevice is the runner for the whole scan but also for individual
- * detectors. Detectors, for instance an IMalcolmDevice can be run in 
+ * detectors. Detectors, for instance an IMalcolmDevice can be run in
  * the system as if it were an IDetector.
- * 
+ *
  * Anatomy of a CPU scan (non-malcolm)
- * 
+ *
  *  <br>
  *&nbsp;_________<br>
  *_|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|________  collectData() Tell detector to collect<br>
@@ -65,41 +65,53 @@ import org.eclipse.scanning.api.scan.ScanningException;
  * IRunnableDevice<ScanModel> scanner = sservice.createScanner(...);<br>
  * scanner.configure(model);<br>
  * scanner.run();<br>
- * 
+ *
  * </code></usage>
  *
  * <img src="./doc/device_state.png" />
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel, IConfigurable<T>, IResettableDevice, IValidator<T>, IModelProvider<T> {
-	
+
 	/**
-	 * 
+	 *
 	 * @return the current device State. This is not the same as the Status of the scan.
 	 */
 	public DeviceState getDeviceState() throws ScanningException;
-	
+
 	/**
-	 * 
-	 * @return the current device Status.
+	 *
+	 * @return the current device Health.
 	 */
-	public String getDeviceStatus() throws ScanningException;
-	
+	public String getDeviceHealth() throws ScanningException;
+
 	/**
-	 * 
+	 *
 	 * @return the current value of the device 'busy' flag.
 	 */
 	public boolean isDeviceBusy() throws ScanningException;
 
 	/**
+	 * This method is the same as calling run(null). I.e. run without specifying start position.
+	 *
+	 * @throws ScanningException
+	 * @throws InterruptedException
+	 * @throws TimeoutException
+	 * @throws ExecutionException
+	 */
+	default void run() throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
+		run(null);
+	}
+
+	/**
 	 * Blocking call to execute the scan. The position specified may be null.
-	 * 
+	 *
 	 * @throws ScanningException
 	 */
 	public void run(IPosition position) throws ScanningException, InterruptedException, TimeoutException, ExecutionException;
-	
+
 	/**
 	 * The default implementation of start simply executes run in a thread named using the getName() value.
 	 * @param pos
@@ -107,36 +119,33 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 	 * @throws InterruptedException
 	 */
 	default void start(final IPosition pos) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
-		
 		final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>(1));
-		final Thread thread = new Thread(new Runnable() {
-			public void run() {
-				try {
-					IRunnableDevice.this.run(pos);
-				} catch (ScanningException | InterruptedException | TimeoutException | ExecutionException e) {
-					// If you add an exception type to this catch clause,
-					// you must also add an "else if" clause for it inside
-					// the "if (!exceptions.isEmpty())" conditional below.
-					exceptions.add(e);
-				}
+		final Thread thread = new Thread(() -> {
+			try {
+				IRunnableDevice.this.run(pos);
+			} catch (ScanningException | InterruptedException | TimeoutException | ExecutionException e) {
+				// If you add an exception type to this catch clause,
+				// you must also add an "else if" clause for it inside
+				// the "if (!exceptions.isEmpty())" conditional below.
+				exceptions.add(e);
 			}
 		}, getName()+" execution thread");
 		thread.start();
-				
+
 		// Re-throw any exception from the thread.
 		createException(exceptions);
 	}
-	
+
 	/**
 	 * Creates an exception out of a list of exceptions and throws it if
 	 * the list is not empty.
-	 * 
+	 *
 	 * @param exceptions
 	 * @throws ScanningException
 	 * @throws InterruptedException
 	 */
 	default void createException(List<Throwable> exceptions) throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
-		
+
 		if (!exceptions.isEmpty()) {
 			Throwable ex = exceptions.get(0);
 
@@ -162,28 +171,28 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 
 	/**
 	 * Call to terminate the scan before it has finished.
-	 * 
+	 *
 	 * @throws ScanningException
 	 */
 	public void abort() throws ScanningException, InterruptedException;
-	
+
 	/**
 	 * Call to disable the device, stopping all activity.
-	 * 
+	 *
 	 * @throws ScanningException
 	 */
 	public void disable() throws ScanningException;
-	
+
 	/**
 	 * Latches until this run is complete if it was initiated from a start.
 	 * If a device does not have a latch, then this method always throws an exception.
-	 * 
+	 *
 	 * @throws ScanningException
 	 */
 	default void latch() throws ScanningException, InterruptedException, TimeoutException, ExecutionException {
 		throw new ScanningException("Latch is not implemnented for "+getClass().getSimpleName());
 	}
-	
+
 	default boolean latch(long time, TimeUnit unit) throws ScanningException, InterruptedException, TimeoutException, ExecutionException	{
 		throw new ScanningException("Latch is not implemnented for "+getClass().getSimpleName());
 	}
@@ -191,6 +200,7 @@ public interface IRunnableDevice<T> extends INameable, IDeviceRoleActor, ILevel,
 	 * The model being used for the device.
 	 * @return
 	 */
+	@Override
 	public T getModel();
 
 	/**

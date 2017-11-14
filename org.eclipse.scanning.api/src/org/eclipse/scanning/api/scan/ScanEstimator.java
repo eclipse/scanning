@@ -26,14 +26,14 @@ import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.IPosition;
 
 /**
- * 
+ *
  * Most scans are static and therefore they can have their shape and size
  * discovered. Those scans which truely are iterators and on the fly decide
  * the next position, can only have their shapes and sizes estimated.
- * 
+ *
  * This class is an estimator and not a data holder. Please use ScanInformation
  * to hold data to be sent around.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -43,34 +43,34 @@ public class ScanEstimator {
 	 * Size, number of points in scan
 	 */
 	private final int   size;
-	
+
 	/**
 	 * The rank of the scan
 	 */
 	private final int rank;
-	
+
 	/**
 	 * Estimated time of scan
 	 */
 	private final long  estimatedScanTime;
 
 	/**
-	 * 
+	 *
 	 */
 	private long  timePerPoint = -1;
 
 	/**
-	 * 
+	 *
 	 */
 	private final Iterable<IPosition> generator;
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private int[] shape;
-	
+
 	/**
-	 * 
+	 *
 	 * @param pservice
 	 * @param bean
 	 */
@@ -79,16 +79,16 @@ public class ScanEstimator {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param pservice
 	 * @param bean
 	 * @param timePerPoint ms
-	 * @throws GeneratorException 
+	 * @throws GeneratorException
 	 */
 	public ScanEstimator(IPointGeneratorService pservice, ScanRequest<?> request, long timePerPoint) throws GeneratorException {
 		this(pservice.createCompoundGenerator(request.getCompoundModel()), request.getDetectors(), timePerPoint);
 	}
-	
+
 	public ScanEstimator(Iterable<IPosition> positionIterable, List<IRunnableDevice<?>> detectors) throws GeneratorException {
 		this(positionIterable, detectorsToModels(detectors), 0);
 	}
@@ -96,9 +96,9 @@ public class ScanEstimator {
 	private static Collection<Object> detectorsToModels(List<IRunnableDevice<?>> detectors) {
 		return detectors == null ? null : detectors.stream().map(d -> d.getModel()).collect(Collectors.toList());
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param pservice
 	 * @param request
 	 * @param timePerPoint
@@ -107,7 +107,7 @@ public class ScanEstimator {
 	public ScanEstimator(IPointGenerator<?> gen, Map<String, Object> detectors, long timePerPoint) throws GeneratorException {
 		this(gen, detectors == null ? null : detectors.values(), timePerPoint);
 	}
-	
+
 	/**
 	 * Create a scan estimator for the given positions, (optional) detectors and (optional) time per point
 	 * @param positionIterable iteratable over positions in the scan
@@ -124,7 +124,7 @@ public class ScanEstimator {
 					.map(m -> Math.round(((IDetectorModel) m).getExposureTime() * 1000))
 					.reduce(0l, Math::max);
 		}
-		
+
 		this.generator = positionIterable;
 		this.size = getEstimatedSize(positionIterable);
 		this.rank = positionIterable.iterator().next().getScanRank();
@@ -133,17 +133,17 @@ public class ScanEstimator {
 	}
 
 	private int getEstimatedSize(Iterable<IPosition> gen) throws GeneratorException {
-		
+
 		int size=0;
 		if (gen instanceof IDeviceDependentIterable) {
 			size = ((IDeviceDependentIterable)gen).size();
-			
+
 		} else if (gen instanceof IPointGenerator) {
 			size = ((IPointGenerator<?>)gen).size();
 		} else  {
 			for (@SuppressWarnings("unused") IPosition unused : gen) size++; // Fast even for large stuff providing they do not check hardware on the next() call.
 		}
-		
+
 		return size;
 	}
 
@@ -166,11 +166,11 @@ public class ScanEstimator {
 	public int getRank() {
 		return rank;
 	}
-	
+
 	/**
 	 * The estimated scan shape. Clue is in the name, ScanEstimator
 	 * @return
-	 * @throws GeneratorException 
+	 * @throws GeneratorException
 	 */
 	public int[] getShape() throws GeneratorException {
 		if (shape == null) {
@@ -182,8 +182,8 @@ public class ScanEstimator {
 				throw new IllegalArgumentException("Cannot get scan shape");
 			}
 		}
-		
+
 		return shape;
 	}
-	
+
 }

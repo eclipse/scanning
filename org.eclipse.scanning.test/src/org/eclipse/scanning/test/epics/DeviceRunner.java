@@ -7,14 +7,14 @@ import org.eclipse.scanning.example.malcolm.EPICSv4ExampleDevice;
 import org.eclipse.scanning.example.malcolm.IEPICSv4Device;
 
 public class DeviceRunner {
-	
+
 	private Exception exception;
 	private Class<?> deviceClass;
 
 	public Exception getException() {
 		return exception;
 	}
-	
+
 	public DeviceRunner() {
 		this(EPICSv4ExampleDevice.class);
 	}
@@ -25,17 +25,17 @@ public class DeviceRunner {
 
 	public IEPICSv4Device start() throws Exception {
 		String deviceName = getTestDeviceName();
-		
+
 		Constructor<IEPICSv4Device> constructor = (Constructor<IEPICSv4Device>)deviceClass.getConstructor(String.class);
 		IEPICSv4Device device = constructor.newInstance(deviceName);
-		
+
 		Thread worker = new Thread(()->execute(device), "EPICSv4 Runner "+deviceName);
 		worker.setPriority(Thread.NORM_PRIORITY-2);
 		worker.start();
-		
+
 		return device;
 	}
-	
+
 	private void execute(IEPICSv4Device device) {
 		try {
 			device.start();

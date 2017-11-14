@@ -17,27 +17,29 @@ import org.eclipse.scanning.api.device.models.IDetectorModel;
 public class MockDetectorModel implements IDetectorModel {
 
 	public MockDetectorModel() {
-	
+
 	}
-	
+
 	public MockDetectorModel(double exposureTime) {
 		super();
 		this.exposureTime = exposureTime;
 	}
 
 	private double exposureTime;
-	
+
 	private int ran=0;
 	private int written=0;
 	private int abortCount=-1;
 	private String name;
     private boolean createImage = true;
     private int[] imageSize = new int[]{64, 64};
-	
+
+	@Override
 	public double getExposureTime() {
 		return exposureTime;
 	}
 
+	@Override
 	public void setExposureTime(double exposureTime) {
 		this.exposureTime = exposureTime;
 	}
@@ -108,10 +110,12 @@ public class MockDetectorModel implements IDetectorModel {
 		this.abortCount = abortCount;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}

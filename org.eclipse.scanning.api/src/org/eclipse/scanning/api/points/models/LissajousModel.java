@@ -22,7 +22,7 @@ public class LissajousModel extends AbstractBoundingBoxModel {
 	public LissajousModel() {
 		setName("Lissajous Curve");
 	}
-	
+
 	public double getA() {
 		return a;
 	}
@@ -63,6 +63,7 @@ public class LissajousModel extends AbstractBoundingBoxModel {
 		this.points = points;
 		this.pcs.firePropertyChange("points", oldValue, points);
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -79,6 +80,7 @@ public class LissajousModel extends AbstractBoundingBoxModel {
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -100,4 +102,12 @@ public class LissajousModel extends AbstractBoundingBoxModel {
 			return false;
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "LissajousModel [a=" + a + ", b=" + b + ", delta=" + delta + ", thetaStep=" + thetaStep + ", points="
+				+ points + ", " + super.toString() + "]";
+	}
+
+
 }

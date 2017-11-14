@@ -8,7 +8,7 @@
  *
  * Contributors:
  *    Matthew Gerring - initial API and implementation and/or initial documentation
- *******************************************************************************/ 
+ *******************************************************************************/
 package org.eclipse.scanning.example.xcen.ui.views;
 
 import java.io.File;
@@ -24,14 +24,14 @@ import org.osgi.framework.Bundle;
 
 /**
  *   BundleUtils
- *   
+ *
  *   Assumes that this class can be used before the Logger is loaded, therefore do not put Logging in here.
  *
  *   @author gerring
  *   @date Aug 2, 2010
  **/
 class BundleUtils {
-	
+
 	/**
 	 * @param bundleName
 	 * @return file this can return null if bundle is not found
@@ -44,12 +44,12 @@ class BundleUtils {
 		}
 		return FileLocator.getBundleFile(bundle);
 	}
-	
+
 	/**
 	 * Get the java.io.File location of a bundle.
 	 * @param bundleName
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public static File getBundleLocation(final Bundle bundle) throws IOException {
 		return FileLocator.getBundleFile(bundle);
@@ -63,7 +63,7 @@ class BundleUtils {
 	public static File getBundlePathNoLoading(String bundleName) {
 		return new File(new File(getEclipseHome(), "plugins"), bundleName);
 	}
-	
+
 	/**
 	 * Gets eclipse home in debug and in deployed application mode.
 	 * @return
@@ -85,20 +85,20 @@ class BundleUtils {
 		}
         return path;
 	}
-	
+
 	private static Pattern FEATURE_MATCH = Pattern.compile("org.dawnsci.base.product.feature_(.+)");
 	/**
 	 * Looks at installed features, gets newest uk.ac.diamond.dawn.product.feature
 	 * and returns that version.
-	 * 
+	 *
 	 * @return null if cannot find a dawn feature (might happen in debug mode)
 	 */
 	public static String getDawnVersion() {
-		
+
 		final File   dir = new File(getEclipseHome(), "features");
 		if (!dir.exists()) return null;
 		final File[] fa  = dir.listFiles();
-		
+
 		long date = -1;
 		String version = null;
 		for (File sd : fa) {
@@ -107,7 +107,7 @@ class BundleUtils {
 			if (matcher.matches()) {
 				if (date<sd.lastModified()) {
 					date    = sd.lastModified();
-					version = matcher.group(1); 
+					version = matcher.group(1);
 				}
 			}
 		}

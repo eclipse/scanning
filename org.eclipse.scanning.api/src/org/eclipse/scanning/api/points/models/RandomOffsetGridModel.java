@@ -16,7 +16,7 @@ import org.eclipse.scanning.api.annotation.Units;
 
 public class RandomOffsetGridModel extends GridModel {
 
-	
+
 	/**
 	 * The maximum allowed offset, as a percentage of fast axis step size
 	 */
@@ -53,6 +53,7 @@ public class RandomOffsetGridModel extends GridModel {
 		this.seed = newValue;
 		this.pcs.firePropertyChange("seed", oldValue, newValue);
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -62,6 +63,7 @@ public class RandomOffsetGridModel extends GridModel {
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

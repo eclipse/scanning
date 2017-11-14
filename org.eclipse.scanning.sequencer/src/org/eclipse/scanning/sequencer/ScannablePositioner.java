@@ -24,30 +24,34 @@ import org.eclipse.scanning.api.points.MapPosition;
 import org.eclipse.scanning.api.scan.LevelRole;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositioner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Positions several scannables by level, returning after all the blocking IScannable.setPosition(...)
  * methods have returned.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IPositioner {
-		
+	private static Logger logger = LoggerFactory.getLogger(ScannablePositioner.class);
+
 	private IScannableDeviceService     connectorService;
 	private List<IScannable<?>>         monitors;
+	private List<IScannable<?>>         scannables;
 
-	ScannablePositioner(IScannableDeviceService service) {	
-		
+	ScannablePositioner(IScannableDeviceService service) {
+
 		setLevelCachingAllowed(false);
 		this.connectorService = service;
-		
+
 		// This is setting the default but the actual value of the timeout
 		// is set by implementing ITimeoutable in your IScannable. The devices
 		// at a given level are checked for their timeout when they are run.
 		setTimeout(3*60); // Three minutes. If this needs to be increased implement getTimeout() on IScannable.
 	}
-	
+
 	/**
 	 * Objects at a given level are checked to find their maximum timeout.
 	 * By default those objects will return -1 so the three minute wait time is used.
@@ -56,7 +60,7 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 	public long getTimeout(List<IScannable<?>> objects) {
 		long defaultTimeout = super.getTimeout(objects); // Three minutes (see above)
 		if (objects==null) return defaultTimeout;
-		
+
 		long time = Long.MIN_VALUE;
 		for (IScannable<?> device : objects) {
 			time = Math.max(time, device.getTimeout());
@@ -74,7 +78,7 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 		}
 		return buf.toString();
 	}
-	
+
 	@Override
 	public boolean setPosition(IPosition position) throws ScanningException, InterruptedException {
 		run(position);
@@ -90,22 +94,31 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 				IScannable<?> scannable = connectorService.getScannable(name);
 			    ret.put(name, scannable.getPosition());
 			} catch (Exception ne) {
-				throw new ScanningException("Cannout read value of "+name, ne);
+				throw new ScanningException("Cannot read value of "+name, ne);
 			}
 		}
 		ret.setStepIndex(position.getStepIndex());
 		return ret;
 	}
-  
+
 
 	@Override
 	protected Collection<IScannable<?>> getDevices() throws ScanningException {
-		Collection<String> names = position.getNames();
-		if (names==null) return null;
-		final List<IScannable<?>> ret = new ArrayList<>(names.size());
-		for (String name : position.getNames()) ret.add(connectorService.getScannable(name));
-		if (monitors!=null) for(IScannable<?> mon : monitors) ret.add(mon);
-		return ret;
+		final List<IScannable<?>> devices = new ArrayList<>();
+
+		if (scannables == null) {
+			for (String name : position.getNames()) {
+				devices.add(connectorService.getScannable(name));
+			}
+		} else {
+			devices.addAll(scannables);
+		}
+
+		if (monitors != null) {
+			devices.addAll(monitors);
+		}
+
+		return devices;
 	}
 
 	@Override
@@ -125,62 +138,72 @@ final class ScannablePositioner extends LevelRunner<IScannable<?>> implements IP
 
 		@Override
 		public IPosition call() throws Exception {
-			
+
 			// Get the value in this position, may be null for monitors.
 			Object value    = position.get(scannable.getName());
 			Object achieved = value;
 			try {
 				achieved = setPosition(scannable, value, position);
-			    
+
 			} catch (Exception ne) {
 				abort(scannable, value, position, ne);
 				throw ne;
 			}
 			// achieved might not be equal to demand
 			if (achieved == null) achieved = scannable.getPosition();
-			return new MapPosition(scannable.getName(), position.getIndex(scannable.getName()), achieved); 
+			return new MapPosition(scannable.getName(), position.getIndex(scannable.getName()), achieved);
 		}
 
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		private Object setPosition(IScannable scannable, Object value, IPosition position) throws Exception {
-			
+
 			Object tolerance = scannable.getTolerance();
 			if (tolerance==null || !(value instanceof Number) || !(tolerance instanceof Number)) {
 				return scannable.setPosition(value, position);
 			}
 			Object currentValue = scannable.getPosition();
 			if (!(currentValue instanceof Number)) return scannable.setPosition(value, position);
-			
+
 			// Check tolerance against number
 			double tol = ((Number)tolerance).doubleValue();
 			double cur = ((Number)currentValue).doubleValue();
 			double val = ((Number)value).doubleValue();
-			
+
 			// If are already within tolerance return the value we are at
-			if (cur<(val+tol) && 
-			    cur>(val-tol)) { 
-				
+			if (cur<(val+tol) &&
+			    cur>(val-tol)) {
+
 				return currentValue;
 			}
-			
+
 			// We need to move and did an extra getPosition()
 			// Note sure if this is really faster, depends how
 			// hardware of a given system actually works.
 			return scannable.setPosition(value, position);
 		}
-		
+
 	}
 
-	public List<IScannable<?>> getMonitors() {
+	@Override
+	public List<IScannable<?>> getMonitorsPerPoint() {
 		return monitors;
 	}
 
-	public void setMonitors(List<IScannable<?>> monitors) {
+	@Override
+	public void setMonitorsPerPoint(List<IScannable<?>> monitors) {
+		logger.info("setMonitorsPerPoint({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = monitors;
 	}
-	
-	public void setMonitors(IScannable<?>... monitors) {
+
+	@Override
+	public void setMonitorsPerPoint(IScannable<?>... monitors) {
+		logger.info("setMonitorsPerPoint({}) was {} ({})", monitors, this.monitors, this);
 		this.monitors = Arrays.asList(monitors);
+	}
+
+	@Override
+	public void setScannables(List<IScannable<?>> scannables) {
+		this.scannables = scannables;
 	}
 
 	@Override

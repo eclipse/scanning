@@ -21,11 +21,11 @@ public class RerunHandler extends XcenHandler implements IRerunHandler<XcenBean>
 
 	@Override
 	public boolean run(XcenBean copy) throws Exception {
-		
-        boolean ok = MessageDialog.openQuestion(Display.getCurrent().getActiveShell(), "Rerun '"+copy.getName()+"'", 
+
+        boolean ok = MessageDialog.openQuestion(Display.getCurrent().getActiveShell(), "Rerun '"+copy.getName()+"'",
                         "Would you like to rerun X-Ray Centering?\n\n"+
                         "The bean was:\n"+copy);
-        if (ok) {      	
+        if (ok) {
             ISubmitter<XcenBean> submitter = eventService.createSubmitter(conf.getUri(), conf.getSubmissionQueue());
             copy.setName("Copy of "+copy.getName());
             submitter.submit(copy, true);

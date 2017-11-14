@@ -54,26 +54,26 @@ import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 
 public class ScanRequestCreationTest extends AbstractJythonTest {
-	
+
 	private IPointGeneratorService service;
-	
+
 	public ScanRequestCreationTest() {
 		super(false);
 	}
-	
+
 	@Before
 	public void before() throws Exception {
-		
+
 		createMarshaller();
 		service = new PointGeneratorService();
 		Services.setEventService(new EventServiceImpl(new ActivemqConnectorService()));
-		
+
 		RunnableDeviceServiceImpl impl = new RunnableDeviceServiceImpl(new MockScannableConnector(null));
 		impl._register(MockDetectorModel.class, MockWritableDetector.class);
 		impl._register(MockWritingMandlebrotModel.class, MockWritingMandelbrotDetector.class);
 		impl._register(MandelbrotModel.class, MandelbrotDetector.class);
 		impl._register(DummyMalcolmModel.class, DummyMalcolmDevice.class);
-		
+
 		final MockDetectorModel dmodel = new MockDetectorModel();
 		dmodel.setName("detector");
 		dmodel.setExposureTime(0.1);
@@ -193,7 +193,7 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		pi.exec("sr =                               "
 			+	"scan_request(                      "
 			+	"    step(my_scannable, -2, 5, 0.5),"
-			+	"    mon=['x', another_scannable],  "  // Monitor two scannables.
+			+	"    monitorsPerPoint=['x', another_scannable],  "  // Monitor two scannables.
 			+	"    det=detector('mandelbrot', 0.1),           "
 			+	")                                  ");
 		@SuppressWarnings("unchecked")
@@ -208,19 +208,19 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		assertEquals(5, smodel.getStop(), 1e-8);
 		assertEquals(0.5, smodel.getStep(), 1e-8);
 
-		Collection<String> monitors = request.getMonitorNames();
+		Collection<String> monitors = request.getMonitorNamesPerPoint();
 		assertEquals(2, monitors.size());
 		Iterator<String> monitorIterator = monitors.iterator();
 		assertEquals("x", monitorIterator.next());
 		assertEquals("bill", monitorIterator.next());
 	}
-	
+
 	@Test
 	public void testStepCommandWithMonitorsNoDetector() throws Exception {
 		pi.exec("sr =                               "
 			+	"scan_request(                      "
 			+	"    step(my_scannable, -2, 5, 0.5),"
-			+	"    mon=['x', another_scannable],  "  // Monitor two scannables.
+			+	"    monitorsPerPoint=['x', another_scannable],  "  // Monitor two scannables.
 			+	")                                  ");
 		@SuppressWarnings("unchecked")
 		ScanRequest<IROI> request = pi.get("sr", ScanRequest.class);
@@ -234,7 +234,7 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		assertEquals(5, smodel.getStop(), 1e-8);
 		assertEquals(0.5, smodel.getStep(), 1e-8);
 
-		Collection<String> monitors = request.getMonitorNames();
+		Collection<String> monitors = request.getMonitorNamesPerPoint();
 		assertEquals(2, monitors.size());
 		Iterator<String> monitorIterator = monitors.iterator();
 		assertEquals("x", monitorIterator.next());
@@ -246,7 +246,7 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		pi.exec("sr =                               "
 			+	"scan_request(                      "
 			+	"    repeat(my_scannable, 10, 2.2, 25),"
-			+	"    mon=['x', another_scannable],  "  // Monitor two scannables.
+			+	"    monitorsPerPoint=['x', another_scannable],  "  // Monitor two scannables.
 			+	"    det=detector('mandelbrot', 0.1),           "
 			+	")                                  ");
 		@SuppressWarnings("unchecked")
@@ -261,7 +261,7 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		assertEquals(2.2, smodel.getValue(), 1e-8);
 		assertEquals(25, smodel.getSleep(), 1e-8);
 
-		Collection<String> monitors = request.getMonitorNames();
+		Collection<String> monitors = request.getMonitorNamesPerPoint();
 		assertEquals(2, monitors.size());
 		Iterator<String> monitorIterator = monitors.iterator();
 		assertEquals("x", monitorIterator.next());
@@ -273,7 +273,7 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		pi.exec("sr =                               "
 			+	"scan_request(                      "
 			+	"    repeat(my_scannable, 10, 2.2, 25),"
-			+	"    mon=['x', another_scannable]  "  // Monitor two scannables.
+			+	"    monitorsPerPoint=['x', another_scannable]  "  // Monitor two scannables.
 			+	")                                  ");
 		@SuppressWarnings("unchecked")
 		ScanRequest<IROI> request = pi.get("sr", ScanRequest.class);
@@ -287,7 +287,7 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		assertEquals(2.2, smodel.getValue(), 1e-8);
 		assertEquals(25, smodel.getSleep(), 1e-8);
 
-		Collection<String> monitors = request.getMonitorNames();
+		Collection<String> monitors = request.getMonitorNamesPerPoint();
 		assertEquals(2, monitors.size());
 		Iterator<String> monitorIterator = monitors.iterator();
 		assertEquals("x", monitorIterator.next());
@@ -538,7 +538,7 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		assertEquals(1, amodel.getPositions().length);
 		assertEquals(5, amodel.getPositions()[0], 1e-8);
 	}
-	
+
 	@Test
 	public void testMoveToKeepStillCommandNoDetector() throws Exception {
 		pi.exec("sr =                                              "

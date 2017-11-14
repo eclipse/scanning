@@ -15,6 +15,7 @@ import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
 
 class CircularROIExpresser extends PyModelExpresser<CircularROI> {
 
+	@Override
 	public String pyExpress(CircularROI croi, boolean verbose) {
 		// TODO Use StringBuilder
 		return "circ("

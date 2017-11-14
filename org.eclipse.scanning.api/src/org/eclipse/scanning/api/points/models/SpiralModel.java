@@ -12,8 +12,6 @@
 
 package org.eclipse.scanning.api.points.models;
 
-import org.eclipse.scanning.api.points.models.AbstractBoundingBoxModel;
-
 public class SpiralModel extends AbstractBoundingBoxModel {
 
 	private double scale = 1;
@@ -65,7 +63,6 @@ public class SpiralModel extends AbstractBoundingBoxModel {
 	}
 	@Override
 	public String toString() {
-		return "SpiralModel [scale=" + scale + ", getFastAxisName()=" + getFastAxisName() + ", getSlowAxisName()="
-				+ getSlowAxisName() + "]";
+		return "SpiralModel [scale=" + scale + ", " + super.toString() + "]";
 	}
 }

@@ -8,7 +8,7 @@
 #
 # Contributors:
 #    Nic Bricknell - initial API and implementation and/or initial documentation
-# 
+#
 ###
 """A friendly interface to mapping scans.
 
@@ -51,17 +51,19 @@ from org.eclipse.dawnsci.analysis.dataset.roi import (
 from org.eclipse.scanning.api.event.IEventService import (
     SUBMISSION_QUEUE, STATUS_TOPIC)
 from org.eclipse.scanning.api.event.scan import (ScanBean, ScanRequest)
+
 from org.eclipse.scanning.api.points.models import (
-    StepModel, CollatedStepModel, GridModel, RasterModel, SinglePointModel,
+    StepModel, MultiStepModel, CollatedStepModel, GridModel, RasterModel, SinglePointModel,
     OneDEqualSpacingModel, OneDStepModel, ArrayModel,
     BoundingBox, BoundingLine, CompoundModel, RepeatedPointModel)
+
 from org.eclipse.scanning.command.Services import (
     getEventService, getRunnableDeviceService, getScannableDeviceService)
 
 
 # Grepping for 'mscan' in a GDA workspace shows up nothing, so it seems that
 # mscan is a free name.
-def mscan(path=None, mon=None, det=None, now=False, block=True,
+def mscan(path=None, monitorsPerPoint=None, monitorsPerScan=None, det=None, now=False, block=True,
           allow_preprocess=False, broker_uri=None):
     """Create a ScanRequest and submit it to the GDA server.
 
@@ -75,9 +77,11 @@ def mscan(path=None, mon=None, det=None, now=False, block=True,
     You can specify detector and arbitrary fields in their model with keyword arguments
     >>> mscan(..., det=[detector('mandelbrot', 0.1), detector('another_detector', 0.4, param1='foo', param2='bar')])
 
-    You can specify a scannable or list of scannables to monitor:
-    >>> mscan(..., mon=my_scannable, ...)  # or:
-    >>> mscan(..., mon=[my_scannable, another_scannable], ...)
+    You can specify a scannable or list of scannables to monitor per point and/or per scan:
+    >>> mscan(..., monitorsPerPoint=my_scannable, ...)  # or:
+    >>> mscan(..., monitorsPerPoint=[my_scannable, another_scannable], ...)
+    >>> mscan(..., monitorsPerScan=my_scannable, ...)  # or:
+    >>> mscan(..., monitorsPerScan=[my_scannable, another_scannable], ...)
 
     You can embed one scan path inside another to create a compound scan path:
     >>> mscan([step(s, 0, 10, 1), step(f, 1, 5, 1)], ...)
@@ -101,18 +105,18 @@ def mscan(path=None, mon=None, det=None, now=False, block=True,
     """
     if (broker_uri is None):
         broker_uri = getScanningBrokerUri()
-        
-    submit(request=scan_request(path=path, mon=mon, det=det, allow_preprocess=allow_preprocess),
+
+    submit(request=scan_request(path=path, monitorsPerPoint=monitorsPerPoint, monitorsPerScan=monitorsPerScan, det=det, allow_preprocess=allow_preprocess),
            now=now, block=block, broker_uri=broker_uri)
 
 def getScannable(name):
-    
+
     return getScannableDeviceService().getScannable(name)
-    
+
 
 def submit(request, now=False, block=True,
            broker_uri=None):
-    
+
     if (broker_uri is None):
         broker_uri = getScanningBrokerUri()
 
@@ -121,7 +125,7 @@ def submit(request, now=False, block=True,
     See the mscan() docstring for details of `now` and `block`.
     """
     scan_bean = ScanBean(request) # Generates a sensible name for the scan from the request.
-   
+
     # Throws an exception if we made a bad bean
     json = getEventService().getEventConnectorService().marshal(scan_bean)
 
@@ -130,7 +134,7 @@ def submit(request, now=False, block=True,
 
 
     submitter = getEventService().createSubmitter(URI(broker_uri), SUBMISSION_QUEUE)
-    
+
     if block:
         submitter.setTopicName(STATUS_TOPIC)
         submitter.blockingSubmit(scan_bean)
@@ -138,7 +142,7 @@ def submit(request, now=False, block=True,
         submitter.submit(scan_bean)
 
 def getScanningBrokerUri():
-    
+
     uri = System.getProperty("org.eclipse.scanning.broker.uri")
 
     if (uri is None):
@@ -150,7 +154,7 @@ def getScanningBrokerUri():
     return uri;
 
 
-def scan_request(path=None, mon=None, det=None, file=None, allow_preprocess=False):
+def scan_request(path=None, monitorsPerPoint=None, monitorsPerScan=None, det=None, file=None, allow_preprocess=False):
     """Create a ScanRequest object with the given configuration.
 
     See the mscan() docstring for usage.
@@ -166,12 +170,13 @@ def scan_request(path=None, mon=None, det=None, file=None, allow_preprocess=Fals
     # the monitors so users can pass either a monitor name in quotes or a
     # scannable object from the Jython namespace.
     scan_paths = _listify(path)
-    monitors = ArrayList(map(_stringify, _listify(mon)))
+    monitorNamesPerPoint = ArrayList(map(_stringify, _listify(monitorsPerPoint)))
+    monitorNamesPerScan = ArrayList(map(_stringify, _listify(monitorsPerScan)))
     detectors = _listify(det)
 
     (scan_path_models, _) = zip(*scan_paths)  # zip(* == unzip(
 
-    # ScanRequest expects CompoundModel 
+    # ScanRequest expects CompoundModel
     cmodel = CompoundModel()
     for (model, rois) in scan_paths:
         cmodel.addData(model, rois)
@@ -184,7 +189,8 @@ def scan_request(path=None, mon=None, det=None, file=None, allow_preprocess=Fals
     return _instantiate(ScanRequest,
                         {'compoundModel': cmodel,
                          'filePath' : file,
-                         'monitorNames': monitors,
+                         'monitorNamesPerPoint': monitorNamesPerPoint,
+                         'monitorNamesPerScan': monitorNamesPerScan,
                          'detectors': detector_map,
                          'ignorePreprocess': not allow_preprocess})
 
@@ -192,23 +198,23 @@ def scan_request(path=None, mon=None, det=None, file=None, allow_preprocess=Fals
 """
 The detector method returns a dictionary of detector name to the detector model.
 You must specific the detector name and exposure time
-You may optionally add keyword arguments which if set will 
+You may optionally add keyword arguments which if set will
 call the appropriate setter methods on the detector model. For instance
 if you want to set 'enableNoise' in the model you would have a keyword argument
 enableNoise=True so the detector function would be detector("mandelbrot", 0.1, enableNoise=True)
 """
 def detector(name, exposure, **kwargs):
-    
+
     detector = getRunnableDeviceService().getRunnableDevice(name)
 
     assert detector is not None, "Detector '"+name+"' not found."
-    
+
     model = detector.getModel()
     assert model is not None, "The model of detector '"+name+"' appears to be None."
-    
+
     if (exposure > 0):
         model.setExposureTime(exposure)
-    
+
     for key, value in kwargs.iteritems():
         setattr(model, key, value)
 
@@ -250,6 +256,37 @@ def step(axis=None, start=None, stop=None, step=None, **kwargs):
 
     return model, _listify(roi)
 
+def mstep(axis=None, stepModels=None, **kwargs):
+    """Define a multi step scan path to be passed to mscan().
+
+    Note that this function may be called with or without keyword syntax. That
+    is, the following are mutually equivalent:
+    >>> step(axis=my_scannable, start=0, stop=10, step=1)
+    >>> step(my_scannable, 0, 10, 1)
+    """
+    try:
+        assert None not in (axis, stepModels)
+    except (TypeError, ValueError):
+        raise ValueError(
+            '`axis`, `steps`, must be provided.')
+
+
+    # For the first argument, users can pass either a Scannable object
+    # or a string. IScanPathModels are only interested in the string (i.e.
+    # the Scannable's name).
+    axis = _stringify(axis)
+    _processKeywords(axis, kwargs)
+
+    # No such thing as ROIs for StepModels.
+    roi = None
+
+    model = _instantiate(
+                MultiStepModel,
+                {'name'       : axis,
+                 'stepModels' : stepModels})
+
+    return model, _listify(roi)
+
 def cstep(names=None, start=None, stop=None, step=None, **kwargs):
     """Define a step scan path to be passed to mscan().
 
@@ -257,10 +294,10 @@ def cstep(names=None, start=None, stop=None, step=None, **kwargs):
     is, the following are mutually equivalent:
     >>> step(axis=my_scannable, start=0, stop=10, step=1)
     >>> step(['x','y'], 0, 10, 1)
-    
+
     TODO This command is untested and no scan point generator exists than can do
     this on the Jython side.
-    
+
     """
     try:
         assert None not in (names, start, stop, step)
@@ -272,7 +309,7 @@ def cstep(names=None, start=None, stop=None, step=None, **kwargs):
     roi = None
 
     _processKeywords(names, kwargs)
-    
+
     model = _instantiate(
                 CollatedStepModel,
                 {'start': start,
@@ -353,7 +390,7 @@ def grid(axes=None, start=None, stop=None, step=None, count=None, snake=True,
         (xName, yName) = map(_stringify, axes)
     except (TypeError, ValueError):
         raise ValueError('`axes` must be a pair of scannables (x, y).')
-    
+
     _processKeywords(xName, kwargs)
     _processKeywords(yName, kwargs)
 
@@ -514,7 +551,7 @@ def val(axis=None, value=None, **kwargs):
 
     return array(axis, [value])
 
-    
+
 
 def point(x, y):
     """Define a point scan path to be passed to mscan().
@@ -620,12 +657,12 @@ def _instantiate(Bean, params):
 # -----------------------
 
 def _processKeywords(name, args):
-    
+
     if 'timeout' in args.keys():
         scannable = getScannable(name);
         if scannable is not None:
              scannable.setTimeout(long(args['timeout']))
-            
+
     # TODO Are other kwargs possible for models?
 
 def _listify(sheep):  # Idempotent.

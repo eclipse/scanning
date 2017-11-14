@@ -15,9 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.AbstractPosition;
@@ -29,38 +27,31 @@ import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.python.core.PyDictionary;
 
 /**
- * 
+ *
  * The compound generator must only compound positions
- * which implement AbstractPosition or  
- * 
+ * which implement AbstractPosition or
+ *
  * @author Matthew Gerring
  *
  */
-class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySerializable {
-	
+class CompoundGenerator extends AbstractGenerator<CompoundModel<Object>> implements PySerializable {
+
 	private IPointGenerator<?>[]     generators;
 	private List<Collection<String>> dimensionNames;
 
 	public CompoundGenerator(IPointGenerator<?>[] generators) throws GeneratorException {
 		super(createId(generators));
-        if (generators == null || generators.length<1) throw new GeneratorException("Cannot make a compound generator from a list of less than one generators!");
-        
+
         // We create a model with no regions from the generators.
         this.model = new CompoundModel<>();
         for (IPointGenerator<?> g : generators) model.addData(g.getModel(), g.getRegions());
         // This model is not designed to hold all the data because we have the actual generators!
-        
+
         this.generators = generators;
 	    this.dimensionNames = createDimensionNames(generators);
 		setLabel("Compound");
 		setDescription("Compound generator used when wrapping scans.");
 		setVisible(false);
-	}
-
-	private List<String> getScannableNames(List<Collection<String>> dNames) {
-		Set<String> names = new LinkedHashSet<>();
-		for (Collection<String> collection : dNames) names.addAll(collection);
-		return Arrays.asList(names.toArray(new String[names.size()]));
 	}
 
 	private List<Collection<String>> createDimensionNames(IPointGenerator<?>[] generators) {
@@ -75,8 +66,8 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 	}
 
 	private static String createId(IPointGenerator<?>[] gens) throws GeneratorException {
-        if (gens == null || gens.length<1) throw new GeneratorException("Cannot make a compound generator from a list of less than one generators!");
-	
+        if (gens == null || gens.length == 0) throw new GeneratorException("Cannot make a compound generator from a list of less than one generators!");
+
         final StringBuilder buf = new StringBuilder();
         for (IPointGenerator<?> gen : gens) buf.append("+"+gen);
         return buf.toString();
@@ -89,13 +80,13 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 		// turn each calls .validateModel(). Therefore we don't need to do any
 		// explicit validation here.
 	}
-	
+
 	@Override
-	public int sizeOfValidModel() throws GeneratorException {
-		Iterator<IPosition> it = (Iterator<IPosition>) iteratorFromValidModel();
+	public int sizeOfValidModel() throws GeneratorException  {
+		Iterator<IPosition> it = iteratorFromValidModel();
 		int size = 1;
-		if (it instanceof CompoundSpgIterator) {
-			size = ((CompoundSpgIterator)it).size();
+		if (it instanceof ScanPointIterator) {
+			size = ((ScanPointIterator) it).size();
 		} else {
 			for (int i = 0;i < generators.length; i++) {
 				size *= generators[i].size();
@@ -104,12 +95,13 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 		return size;
 	}
 
-    public PyDictionary toDict() {
+    @Override
+	public PyDictionary toDict() {
 		Iterator<?> it = iteratorFromValidModel();
 		if (it instanceof PySerializable) return ((PySerializable)it).toDict();
 		return null;
     }
-	
+
 	/**
 	 * The description is run on the fly for compound generator
 	 * and it provides the scan point summary.
@@ -131,31 +123,27 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 				buf.append(" ");
 			}
 			buf.append('\n');
-			
+
 			return buf.toString();
-			
+
 		} catch (Exception ne) {
 			return ne.getMessage() != null ? ne.getMessage() : ne.toString();
 		}
-		
+
 	}
-	
+
 	@Override
 	protected Iterator<IPosition> iteratorFromValidModel() {
-		try {
-			if (isScanPointGeneratorFactory()) {
-				return new CompoundSpgIterator(this);
-			} else {
-				return new CompoundIterator(this);
-			}
-		} catch (GeneratorException e) {
-			throw new IllegalArgumentException(e);
+		if (isScanPointGeneratorFactory()) {
+			return new CompoundSpgIteratorFactory().createCompoundSpgIterator(this);
+		} else {
+			return new CompoundIterator(this);
 		}
 	}
 
 	@Override
 	public List<IPosition> createPoints() throws GeneratorException {
-		
+
 		List<IPosition> points = new ArrayList<>(size());
 		createPoints(0, points, null);
 		for (int i = 0; i < points.size(); i++) points.get(i).setStepIndex(i);
@@ -164,13 +152,13 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 
 	/**
 	 * This simple recursive method is what nested scans reduce to.
-	 * 
+	 *
 	 * @param igen
 	 * @param points
 	 * @param parent
 	 */
 	private void createPoints(int igen, List<IPosition> points, IPosition parent) {
-		
+
 		IPointGenerator<?> gen = generators[igen];
 		Iterator<? extends IPosition>     it  = gen.iterator();
 		while(it.hasNext()) {
@@ -184,7 +172,7 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 				points.add(pos);
 			}
 		}
-	
+
 	}
 
 	public IPointGenerator<?>[] getGenerators() {
@@ -199,12 +187,19 @@ class CompoundGenerator extends AbstractGenerator<CompoundModel> implements PySe
 		this.dimensionNames = dimensionNames;
 	}
 
-	
+
+	@Override
 	public boolean isScanPointGeneratorFactory() {
 		for (IPointGenerator<?> gen : generators) {
 			if (!gen.isScanPointGeneratorFactory()) return false;
 		}
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return "CompoundGenerator [generators=" + Arrays.toString(generators) + ", dimensionNames=" + dimensionNames
+				+ ", AbstractGenerator [" + super.toString() + "]";
 	}
 
 }

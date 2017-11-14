@@ -52,7 +52,7 @@ public class SubmissionTest extends AbstractJythonTest {
 		eservice = new EventServiceImpl(new ActivemqConnectorService());
 		Services.setEventService(eservice);
 		org.eclipse.scanning.command.Services.setEventService(eservice);
-		
+
 		consumer = eservice.createConsumer(uri);
 
 		consumer.setRunner(new IProcessCreator<ScanBean>() {
@@ -82,17 +82,17 @@ public class SubmissionTest extends AbstractJythonTest {
 
 		// Put any old ScanRequest in the Python namespace.
 		pi.exec("sr = scan_request(step(my_scannable, 0, 10, 1), det=mandelbrot(0.001))");
-		
+
 		pi.exec("srNoDet = scan_request(step(my_scannable, 0, 10, 1))");
 
 	}
-	
+
 	@After
 	public void stop() throws EventException {
 		consumer.cleanQueue(consumer.getSubmitQueueName());
 		consumer.cleanQueue(consumer.getStatusSetName());
 	}
-	
+
 	@AfterClass
 	public static void disconnect() throws EventException {
 		consumer.disconnect();

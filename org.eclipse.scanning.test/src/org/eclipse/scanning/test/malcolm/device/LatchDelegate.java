@@ -24,9 +24,9 @@ import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
 
 public class LatchDelegate {
 
-	
+
 	protected Map<Long, CountDownLatch> testLatchMap;
-	
+
 	public LatchDelegate() {
 		this.testLatchMap = new ConcurrentHashMap<>(3);
 	}
@@ -34,7 +34,7 @@ public class LatchDelegate {
 	protected DeviceState latch(IMalcolmDevice device, DeviceState... ignored) throws Exception {
         return latch(device, -1, TimeUnit.SECONDS, ignored);
 	}
-	
+
 	protected DeviceState latch(IMalcolmDevice device, long time, TimeUnit unit, DeviceState... ignored) throws Exception {
 		Long id = Thread.currentThread().getId();
 		if (testLatchMap.containsKey(id)) {
@@ -59,11 +59,11 @@ public class LatchDelegate {
 					throw new MalcolmDeviceException(device, "Unexpected latch key thread '"+Thread.currentThread().getName()+"' not cleared!");
 				}
 			}
-		} 
-		
+		}
+
 		return device.getDeviceState();
 	}
-	
+
 	private final void await(IMalcolmDevice device, CountDownLatch latch, long timeout, TimeUnit unit) throws Exception {
 		try {
 			if (timeout < 1) {
@@ -80,7 +80,7 @@ public class LatchDelegate {
 	}
 
 	public void setState(DeviceState state) {
-		
+
 		if (testLatchMap != null) {
 			// Important, copy, clear, notify or will not work
 			CountDownLatch[] latches = testLatchMap.values().toArray(new CountDownLatch[testLatchMap.size()]);

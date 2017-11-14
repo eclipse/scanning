@@ -27,13 +27,13 @@ import org.eclipse.january.dataset.IDataset;
  * directly plotted.
  */
 class PathInfo {
-	
+
 	// TODO Encapsulate these fields properly...
 	protected int    pointCount      = 0;
 	protected double smallestXStep   = Double.MAX_VALUE;
 	protected double smallestYStep   = Double.MAX_VALUE;
 	protected double smallestAbsStep = Double.MAX_VALUE;
-	
+
 	// These fields have been encapsulated.
 	private List<Double> xCoordinates = new ArrayList<>();
 	private List<Double> yCoordinates = new ArrayList<>();
@@ -67,7 +67,7 @@ class PathInfo {
 		}
 		return yCoords;
 	}
-	
+
 	public IDataset getX() {
 		return DatasetFactory.createFromObject(getXCoordinates());
 	}
@@ -81,17 +81,17 @@ class PathInfo {
 		}
 		return String.format(doubleFormat, value);
 	}
-	
+
 	public Map<String, Object> toDict() {
 		Map<String, Object> ret = new HashMap<>(1);
 		ret.put(PathInfo.class.getSimpleName(), this);
 		return ret;
 	}
-	
+
 	public static PathInfo fromDict(Map<String, Object> map) {
 		return (PathInfo) map.get(PathInfo.class.getSimpleName());
 	}
-	
+
 	public int size() {
 		return xCoordinates.size();
 	}

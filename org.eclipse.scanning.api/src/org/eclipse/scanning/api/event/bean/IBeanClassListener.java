@@ -15,15 +15,15 @@ import java.util.EventListener;
 
 public interface IBeanClassListener<T> extends EventListener {
 
-	
+
 	/**
 	 * Optionally the bean class may be defined which provides
 	 * a hint as to how to deserialize the string.
-	 * 
+	 *
 	 * NOTE: In GDA9 and later most objects pass through a serialization
 	 * layer which also adds the bundle and class information. Therefore
 	 * it is not needed to provide an implementation of the bean class.
-	 * 
+	 *
 	 * @return
 	 */
 	default Class<T> getBeanClass() {

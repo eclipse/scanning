@@ -15,193 +15,130 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.scanning.api.device.models.IDetectorModel;
+import org.eclipse.scanning.api.event.queues.IQueueBeanFactory;
 import org.eclipse.scanning.api.event.queues.IQueueService;
+import org.eclipse.scanning.api.event.queues.models.DeviceModel;
+import org.eclipse.scanning.api.event.queues.models.arguments.IQueueValue;
 import org.eclipse.scanning.api.event.scan.ScanBean;
+import org.eclipse.scanning.api.event.scan.ScanRequest;
+import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.IScanPathModel;
 
 /**
- * ScanAtom is a type of {@link QueueAtom} which may be processed within an 
- * active-queue of an {@link IQueueService}. It contains all the configuration 
- * necessary to create a {@link ScanBean} which is submitted to the scan 
+ * ScanAtom is a type of {@link QueueAtom} which may be processed within an
+ * active-queue of an {@link IQueueService}. It contains all the configuration
+ * necessary to create a {@link ScanBean} which is submitted to the scan
  * service to actually run the desired scan.
- * 
+ *
  * @author Michael Wharmby
  *
  */
 public class ScanAtom extends QueueAtom implements IHasChildQueue {
-	
+
 	/**
-	 * Version ID for serialization. Should be updated when class changed. 
+	 * Version ID for serialization. Should be updated when class changed.
 	 */
 	private static final long serialVersionUID = 20161021L;
-	
-	private List<IScanPathModel> pathModels;
-	private Collection<String> monitors;
-	private Map<String,Object> detectorModels;
-//	private IProcess perPointProcess;//TODO
+
+	private ScanRequest<?> scanReq;
+
+	private Map<String, DeviceModel> detectorModelsModel;
+	private Map<String, DeviceModel> pathModelsModel;
+	private Collection<Object> monitorsModel;
+
 	private String queueMessage;
-	
+
 	private String scanSubmitQueueName;
 	private String scanStatusTopicName;
 	private String scanBrokerURI;
-	
+
 	/**
 	 * No arg constructor for JSON
 	 */
 	public ScanAtom() {
 		super();
 	}
-	
+
 	/**
-	 * Constructor with required arguments to configure a scan of positions 
-	 * using only detectors to collect data.
-	 * 
-	 * @param scName String name of scan
-	 * @param pMods List<IScanPathModel> describing the motion during the scan.
-	 * @param dMods Map<String,IDetectorModel> containing the detector 
-	 *              configuration for the scan.
+	 * Creates an instance which may be either a real or model atom and can be
+	 * populated as required with further method calls.
+	 *
+	 * @param monShrtNm String short name used within the
+	 *        {@link IQueueBeanFactory}
+	 * @param model boolean flag indicating whether this is a model
 	 */
-	public ScanAtom(String scName, List<IScanPathModel> pMods, Map<String,Object> dMods) {
+	public ScanAtom(String scShrtNm, boolean model) {
 		super();
-		setName(scName);
-		pathModels = pMods;
-		detectorModels = dMods;
+		setShortName(scShrtNm);
+		setModel(model);
 	}
-	
+
 	/**
-	 * Constructor with required arguments to configure a scan of positions 
+	 * Constructor which allows specification of a scan using the full API of
+	 * the {@link ScanRequest}.
+	 *
+	 * @param monShrtNm String short name used within the
+	 *        {@link IQueueBeanFactory}
+	 * @param scanReq {@link ScanRequest} describing the complete scan
+	 */
+	public ScanAtom(String scShrtNm, ScanRequest<?> scanReq) {
+		this(scShrtNm, false);
+		this.scanReq = scanReq;
+	}
+
+	/**
+	 * Constructor with required arguments to configure a scan of positions
 	 * using both detectors and monitors to collect data.
-	 * 
-	 * @param scName String name of scan
-	 * @param pMods List<IScanPathModel> describing the motion during the scan.
-	 * @param dMods Map<String,IDetectorModel> containing the detector 
-	 *              configuration for the scan.
-	 * @param mons List<String> names of monitors to use during scan.
+	 *
+	 * @param monShrtNm String short name used within the
+	 *        {@link IQueueBeanFactory}
+	 * @param pathModels List<IScanPathModel> describing the positions visited
+	 *        during the scan
+	 * @param detectorModels Map<String,Object> containing the detector
+	 *        configuration for the scan (get these by calling
+	 *        IRunnableDeviceService.getRunnableDevice(detector_name)
+	 * @param monitors List<String> names of monitors to use during scan
 	 */
-	public ScanAtom(String scName, List<IScanPathModel> pMods, Map<String,Object> dMods, Collection<String> mons) {
-		this(scName, pMods, dMods);
-		monitors = mons;
+	public ScanAtom(String scShrtNm, List<IScanPathModel> pathModels, Map<String,Object> detectorModels,
+			Collection<String> monitorNamesPerPoint, Collection<String> monitorNamesPerScan) {
+		this(scShrtNm, false);
+		scanReq = new ScanRequest<>();
+		scanReq.setCompoundModel(new CompoundModel<>(pathModels));
+		scanReq.setDetectors(detectorModels);
+		scanReq.setMonitorNamesPerPoint(monitorNamesPerPoint);
+		scanReq.setMonitorNamesPerScan(monitorNamesPerScan);
 	}
 
 	/**
-	 * Get the collection of models describing the motions during the scan.
-	 * 
-	 * @return Collection<IScanPathModel> models of motor moves.
+	 * Constructor to create a model instance of a {@link ScanAtom} which will
+	 * be converted to a real instance by the {@link IQueueBeanFactory}. The
+	 * final scan has positions, detectors and monitors defined.
+	 *
+	 * @param monShrtNm String short name used within the
+	 *        {@link IQueueBeanFactory}
+	 * @param pathModels Map of Strings and List of {@link IQueueValue} which
+	 *        define the positions visited during the scan
+	 * @param detectorModels Map of Strings and List of {@link IQueueValue}
+	 *        which define the detectors used during the scan
+	 * @param monitors Collection of {@link IQueueValue} defining monitors to
+	 *        be read
 	 */
-	public List<IScanPathModel> getPathModels() {
-		return pathModels;
+	public ScanAtom(String scShrtNm, Map<String, DeviceModel> pathModels, Map<String, DeviceModel> detectorModels, Collection<Object> monitors) {
+		this(scShrtNm, true);
+		pathModelsModel = pathModels;
+		detectorModelsModel = detectorModels;
+		monitorsModel = monitors;
 	}
 
-	/**
-	 * Change the collection of models describing the motor moves during scan.
-	 * 
-	 * @param pathModels Collection<IScanPathModel> models of motor moves.
-	 */
-	public void setPathModels(List<IScanPathModel> pathModels) {
-		this.pathModels = pathModels;
-	}
-	
-	/**
-	 * Add another motor movement model to the scan.
-	 * 
-	 * @param pathModel IScanPathModel model of motion for the scan.
-	 */
-	public void addPathModel(IScanPathModel pathModel) {
-		pathModels.add(pathModel);
-	}
-	
-	/**
-	 * Remove an existing motor movement model from the scan.
-	 * 
-	 * @param pathModel IScanPathModel to be removed from the scan.
-	 */
-	public void removePathModel(IScanPathModel pathModel) {
-		pathModels.remove(pathModel);
+	@SuppressWarnings("squid:S1452")
+	public ScanRequest<?> getScanReq() {
+		return scanReq;
 	}
 
-	/**
-	 * Return the monitors for which values will be recorded during the scan.
-	 * 
-	 * @return Collection<String> monitor names which will be polled during 
-	 *         scan.
-	 */
-	public Collection<String> getMonitors() {
-		return monitors;
+	public void setScanReq(ScanRequest<?> scanReq) {
+		this.scanReq = scanReq;
 	}
 
-	/**
-	 * Change the collection of monitors with values recorded during the scan.
-	 * 
-	 * @param monitors Collection<String> monitor names which will be polled 
-	 *                 during scan.
-	 */
-	public void setMonitors(Collection<String> monitors) {
-		this.monitors = monitors;
-	}
-	
-	/**
-	 * Add a monitor to the collection of monitors to be polled during the scan.
-	 *  
-	 * @param monitor String name of monitor to be added.
-	 */
-	public void addMonitor(String monitor) {
-		monitors.add(monitor);
-	}
-	
-	/**
-	 * Remove a monitor from the collection of monitors to be polled during the
-	 * scan.
-	 *  
-	 * @param monitor String name of monitor to be removed.
-	 */
-	public void removeMonitor(String monitor) {
-		monitors.remove(monitor);
-	}
-
-	/**
-	 * Return the mapping of names and models of detectors from which data will
-	 * be recorded during the scan.
-	 * 
-	 * @return Map<String, IDetectorModel> Key String names of detectors and 
-	 *         detector models.
-	 */
-	public Map<String, Object> getDetectorModels() {
-		return detectorModels;
-	}
-
-	/**
-	 * Replace the mapping of names and models of detectors from which data 
-	 * will be recorded during the scan.
-	 * 
-	 * @param Map<String, IDetectorModel> Key String names of detectors and 
-	 *         detector models.
-	 */
-	public void setDetectorModels(Map<String, Object> detModels) {
-		this.detectorModels = detModels;
-	}
-	
-	/**
-	 * Add a detector to the collection of detectors from which data will be 
-	 * recorded during the scan.
-	 * 
-	 * @param detName String name of detector.
-	 * @param detModel IDetectorModel configuration of detector.
-	 */
-	public void addDetector(String detName, IDetectorModel detModel) {
-		detectorModels.put(detName, detModel);
-	}
-	
-	/**
-	 * Remove a detector from the collection of detectors from which data will 
-	 * be recorded during the scan.
-	 * 
-	 * @param String name of detector to be removed.
-	 */
-	public void removeDetector(String detName) {
-		detectorModels.remove(detName);
-	}
-	
 	@Override
 	public String getQueueMessage() {
 		return queueMessage;
@@ -236,20 +173,46 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		this.scanBrokerURI = scanBrokerURI;
 	}
 
+	public Map<String, DeviceModel> getDetectorModelsModel() {
+		return detectorModelsModel;
+	}
+
+	public void setDetectorModelsModel(Map<String, DeviceModel> detectorModelsModel) {
+		this.detectorModelsModel = detectorModelsModel;
+	}
+
+	public Map<String, DeviceModel> getPathModelsModel() {
+		return pathModelsModel;
+	}
+
+	public void setpModsModel(Map<String, DeviceModel> pathModelsModel) {
+		this.pathModelsModel = pathModelsModel;
+	}
+
+	public Collection<Object> getMonitorsModel() {
+		return monitorsModel;
+	}
+
+	public void setMonsModel(Collection<Object> monitorsModel) {
+		this.monitorsModel = monitorsModel;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + ((detectorModels == null) ? 0 : detectorModels.hashCode());
-		result = prime * result + ((monitors == null) ? 0 : monitors.hashCode());
-		result = prime * result + ((pathModels == null) ? 0 : pathModels.hashCode());
+		result = prime * result + ((detectorModelsModel == null) ? 0 : detectorModelsModel.hashCode());
+		result = prime * result + ((monitorsModel == null) ? 0 : monitorsModel.hashCode());
+		result = prime * result + ((pathModelsModel == null) ? 0 : pathModelsModel.hashCode());
 		result = prime * result + ((queueMessage == null) ? 0 : queueMessage.hashCode());
 		result = prime * result + ((scanBrokerURI == null) ? 0 : scanBrokerURI.hashCode());
+		result = prime * result + ((scanReq == null) ? 0 : scanReq.hashCode());
 		result = prime * result + ((scanStatusTopicName == null) ? 0 : scanStatusTopicName.hashCode());
 		result = prime * result + ((scanSubmitQueueName == null) ? 0 : scanSubmitQueueName.hashCode());
 		return result;
 	}
 
+	@SuppressWarnings("squid:S3776")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -259,20 +222,20 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		if (getClass() != obj.getClass())
 			return false;
 		ScanAtom other = (ScanAtom) obj;
-		if (detectorModels == null) {
-			if (other.detectorModels != null)
+		if (detectorModelsModel == null) {
+			if (other.detectorModelsModel != null)
 				return false;
-		} else if (!detectorModels.equals(other.detectorModels))
+		} else if (!detectorModelsModel.equals(other.detectorModelsModel))
 			return false;
-		if (monitors == null) {
-			if (other.monitors != null)
+		if (monitorsModel == null) {
+			if (other.monitorsModel != null)
 				return false;
-		} else if (!monitors.equals(other.monitors))
+		} else if (!monitorsModel.equals(other.monitorsModel))
 			return false;
-		if (pathModels == null) {
-			if (other.pathModels != null)
+		if (pathModelsModel == null) {
+			if (other.pathModelsModel != null)
 				return false;
-		} else if (!pathModels.equals(other.pathModels))
+		} else if (!pathModelsModel.equals(other.pathModelsModel))
 			return false;
 		if (queueMessage == null) {
 			if (other.queueMessage != null)
@@ -283,6 +246,11 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 			if (other.scanBrokerURI != null)
 				return false;
 		} else if (!scanBrokerURI.equals(other.scanBrokerURI))
+			return false;
+		if (scanReq == null) {
+			if (other.scanReq != null)
+				return false;
+		} else if (!scanReq.equals(other.scanReq))
 			return false;
 		if (scanStatusTopicName == null) {
 			if (other.scanStatusTopicName != null)
@@ -295,6 +263,27 @@ public class ScanAtom extends QueueAtom implements IHasChildQueue {
 		} else if (!scanSubmitQueueName.equals(other.scanSubmitQueueName))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		String clazzName = this.getClass().getSimpleName();
+
+		StringBuffer scanDetailsStrBuff = new StringBuffer();
+		if (model) {
+			clazzName = clazzName + " (MODEL)";
+			scanDetailsStrBuff.append("{paths="+pathModelsModel);
+			scanDetailsStrBuff.append(", detectors="+detectorModelsModel);
+			scanDetailsStrBuff.append(", monitors="+monitorsModel+"}");
+		} else {
+			scanDetailsStrBuff.append(scanReq);
+		}
+		return clazzName + " [name=" + name + " (shortName="+shortName+"), scanReq=" + scanDetailsStrBuff
+				+ ", scanSubmitQueueName=" + scanSubmitQueueName + ", scanStatusTopicName=" + scanStatusTopicName
+				+ ", scanBrokerURI=" + scanBrokerURI + ", status=" + status + ", message=" + message
+				+ ", queueMessage=" + queueMessage + ", percentComplete=" + percentComplete + ", previousStatus="
+				+ previousStatus + ", runTime=" + runTime+ ", userName=" + userName+ ", hostName="
+				+ hostName + ", beamline="+ beamline + ", submissionTime=" + submissionTime + "]";
 	}
 
 }

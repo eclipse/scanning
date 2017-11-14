@@ -37,29 +37,29 @@ import org.junit.runner.RunWith;
 
 @RunWith(SWTBotJunit4ClassRunner.class)
 public class ScannableViewerTest extends ShellTest {
-	
+
 	@BeforeClass
-	public static void createServices() throws Exception {	
+	public static void createServices() throws Exception {
 		UISuite.createTestServices(true);
 	}
-	
+
 	@AfterClass
-	public static void disposeServices() throws Exception {	
+	public static void disposeServices() throws Exception {
 		UISuite.disposeTestServices();
 	}
-	
+
 	private ScannableViewer viewer;
 
 	@Override
 	protected Shell createShell(Display display) throws Exception {
-		
+
 		this.viewer = new ScannableViewer();
-	
+
 		Shell shell = new Shell(display);
 		shell.setText("Monitors");
 		shell.setLayout(new GridLayout(1, false));
         viewer.createPartControl(shell);
-		
+
 		shell.pack();
 		shell.setSize(500, 500);
 		shell.open();
@@ -71,7 +71,7 @@ public class ScannableViewerTest extends ShellTest {
 	public void checkShell() throws Exception {
 		assertNotNull(bot.shell("Monitors"));
 	}
-	
+
 	@Test
 	public void checkRows() throws Exception {
 		assertEquals(6, bot.table(0).rowCount());
@@ -82,10 +82,10 @@ public class ScannableViewerTest extends ShellTest {
 
 		synchExec(()->viewer.refresh());
 		assertEquals(6, bot.table(0).rowCount());
-		
+
 		IScannable<?> x = Services.getConnector().getScannable("x");
 		x.setActivated(true);
-		
+
 		synchExec(()->viewer.refresh());
 		assertEquals(7, bot.table(0).rowCount());
 
@@ -94,7 +94,7 @@ public class ScannableViewerTest extends ShellTest {
 		assertEquals(7, bot.table(0).rowCount());
 		assertEquals(6, getMonitors().size());
 	}
-	
+
 	@Test
 	public void checkActivate() throws Exception {
 
@@ -102,14 +102,14 @@ public class ScannableViewerTest extends ShellTest {
 		assertEquals(6, getMonitors().size());
 		bot.table(0).click(0, 0); // deselect
 		Thread.sleep(500);
-		
+
 		assertEquals(6, bot.table(0).rowCount());
 		assertEquals(5, getMonitors().size());
 
 		bot.table(0).click(0, 0); // select
 		Thread.sleep(500);
 		assertEquals(6, getMonitors().size());
-		
+
 	}
 
 	@Test
@@ -118,18 +118,18 @@ public class ScannableViewerTest extends ShellTest {
 		assertEquals(6, bot.table(0).rowCount());
 		IScannable<?> orig = Services.getConnector().getScannable("monitor0");
 		synchExec(()->viewer.setScannableSelected("monitor0"));
-		
+
 		IScannable<?> mon = synchExec(()->viewer.getSelection());
 		assertEquals(orig.getName(), mon.getName());
-		
+
 		synchExec(()->viewer.removeScannable());
 		assertFalse(orig.isActivated());
 		assertEquals(5, bot.table(0).rowCount());
-		
+
 		orig.setActivated(true);
 		synchExec(()->viewer.refresh());
 		assertEquals(6, bot.table(0).rowCount());
-		
+
 	}
 
 	@Test
@@ -137,14 +137,14 @@ public class ScannableViewerTest extends ShellTest {
 
 		Thread.sleep(100);
 		assertEquals(6, bot.table(0).rowCount());
-		
-		IScannable<Double> p = Services.getConnector().getScannable("p");		
+
+		IScannable<Double> p = Services.getConnector().getScannable("p");
 		assertEquals(p.getPosition()+"    µm", bot.table(0).cell(5, 2));
-		
+
 		p.setPosition(11.0);
 		synchExec(()->viewer.refresh()); // Shouldn't need this! Does not need it in the main UI.
 		assertEquals(p.getPosition()+"    µm", bot.table(0).cell(5, 2));
-		
+
 		p.setPosition(10.0);
 		synchExec(()->viewer.refresh()); // Shouldn't need this! Does not need it in the main UI.
 		assertEquals(p.getPosition()+"    µm", bot.table(0).cell(5, 2));
@@ -152,7 +152,7 @@ public class ScannableViewerTest extends ShellTest {
 
 	@Test
 	public void nothingThere() throws Exception {
-		
+
 		List<IScannable<?>> activated = new ArrayList<>();
 		try {
 			for (String name : Services.getConnector().getScannableNames()) {
@@ -160,23 +160,23 @@ public class ScannableViewerTest extends ShellTest {
 				if (scannable.isActivated()) activated.add(scannable);
 				scannable.setActivated(false);
 			}
-			
+
 			synchExec(()->viewer.reset());
-	
+
 			assertEquals(0, bot.table(0).rowCount());
 
 		} finally {
 			for (IScannable<?> scannable : activated) {
 				scannable.setActivated(true);
 			}
-	
+
 			synchExec(()->viewer.refresh()); // Shouldn't need this! Does not need it in the main UI.
 		}
 	}
-	
+
 	@Test
 	public void somethingFromNothing() throws Exception {
-		
+
 		List<IScannable<?>> activated = new ArrayList<>();
 		try {
 			for (String name : Services.getConnector().getScannableNames()) {
@@ -184,30 +184,30 @@ public class ScannableViewerTest extends ShellTest {
 				if (scannable.isActivated()) activated.add(scannable);
 				scannable.setActivated(false);
 			}
-			
+
 			synchExec(()->viewer.reset());
-	
+
 			assertEquals(0, bot.table(0).rowCount());
 
 			IScannable<?> orig = activated.get(0);
 			orig.setActivated(true);
 			synchExec(()->viewer.refresh()); // Shouldn't need this! Does not need it in the main UI.
 			assertEquals(1, bot.table(0).rowCount());
-		
+
 			synchExec(()->viewer.setScannableSelected(orig.getName()));
-			
+
 			IScannable<?> mon = synchExec(()->viewer.getSelection());
 			assertEquals(orig.getName(), mon.getName());
-			
+
 			synchExec(()->viewer.removeScannable());
 			assertFalse(orig.isActivated());
 			assertEquals(0, bot.table(0).rowCount());
-			
+
 		} finally {
 			for (IScannable<?> scannable : activated) {
 				scannable.setActivated(true);
 			}
-	
+
 			synchExec(()->viewer.refresh()); // Shouldn't need this! Does not need it in the main UI.
 		}
 	}
@@ -216,13 +216,13 @@ public class ScannableViewerTest extends ShellTest {
 	public void checkMonitorRole() throws Exception {
 
 		assertEquals(6, bot.table(0).rowCount());
-		
+
 		// The mocks which MockScannableConnector creates.
 		IScannable<?> a    = Services.getConnector().getScannable("a");
 		a.setMonitorRole(MonitorRole.NONE);
 		IScannable<?> mon0 = Services.getConnector().getScannable("monitor0");
 		mon0.setMonitorRole(MonitorRole.PER_SCAN);
- 	    IScannable<?> mon3 = Services.getConnector().getScannable("monitor3");
+	    IScannable<?> mon3 = Services.getConnector().getScannable("monitor3");
 		mon3.setMonitorRole(MonitorRole.PER_POINT);
 		IScannable<?> mon6 = Services.getConnector().getScannable("monitor6");
 		mon6.setMonitorRole(MonitorRole.NONE);
@@ -230,7 +230,7 @@ public class ScannableViewerTest extends ShellTest {
 		mon9.setMonitorRole(MonitorRole.PER_SCAN);
 		IScannable<?> p    = Services.getConnector().getScannable("p");
 		p.setMonitorRole(MonitorRole.PER_POINT);
-		
+
 		synchExec(()->viewer.refresh());
 
 		SWTBotTable table = bot.table(0);
@@ -241,9 +241,9 @@ public class ScannableViewerTest extends ShellTest {
 		assertEquals(MonitorRole.PER_SCAN.getLabel(), table.cell(4, 3));
 		assertEquals(MonitorRole.PER_POINT.getLabel(), table.cell(5, 3));
 	}
-		
+
 	private Collection<String> getMonitors() throws Exception {
-		
+
 		final Collection<DeviceInformation<?>> scannables = Services.getConnector().getDeviceInformation();
 		final List<String> ret = new ArrayList<String>();
 		for (DeviceInformation<?> info : scannables) {

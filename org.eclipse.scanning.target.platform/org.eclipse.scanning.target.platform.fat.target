@@ -6,11 +6,11 @@
 <repository location="http://download.eclipse.org/jetty/updates/jetty-bundles-9.x/9.2.13.v20150730/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
-<unit id="uk.ac.diamond.scisoft.peema.feature.feature.group" version="1.2.0.v20170418-1022"/>
-<unit id="uk.ac.diamond.dawn.product.feature.feature.group" version="2.5.0.v20170421-1543"/>
+<unit id="uk.ac.diamond.scisoft.peema.feature.feature.group" version="1.2.0.v20170615-1436"/>
+<unit id="uk.ac.diamond.dawn.product.feature.feature.group" version="2.5.0.v20170619-1505"/>
 <unit id="org.eclipse.equinox.executable.feature.group" version="3.6.200.v20150602-1417"/>
-<unit id="org.dawnsci.base.product.feature.feature.group" version="2.5.0.v20170421-1543"/>
-<repository location="http://www.opengda.org/DawnDiamond/master/updates/snapshot/"/>
+<unit id="org.dawnsci.base.product.feature.feature.group" version="2.5.0.v20170619-1505"/>
+<repository location="https://alfred.diamond.ac.uk/DawnDiamond/master/updates/snapshot/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
 <unit id="javax.websocket" version="1.0.0.v20140310-1603"/>
@@ -47,6 +47,11 @@
 <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20160221192158/repository/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
+<unit id="javax.measure.unit-api.source" version="1.0.0.v20170818-1538"/>
+<unit id="javax.measure.unit-api" version="1.0.0.v20170818-1538"/>
+<repository location="https://alfred.diamond.ac.uk/sites/download.eclipse.org/tools/orbit/downloads/drops/R20170919201930/repository/"/>
+</location>
+<location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
 <unit id="epp.package.rcp" version="4.5.2.20160218-0600"/>
 <unit id="org.eclipse.platform.feature.group" version="4.5.2.v20160212-1500"/>
 <unit id="org.eclipse.rcp.feature.group" version="4.5.2.v20160212-1500"/>
@@ -57,15 +62,15 @@
 <repository location="http://download.eclipse.org/releases/mars"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
-<unit id="org.eclipse.january.asserts" version="2.0.1.v201703300842"/>
-<unit id="org.eclipse.january.asserts.source" version="2.0.1.v201703300842"/>
-<unit id="org.eclipse.january" version="2.0.1.v201703300842"/>
-<unit id="org.eclipse.january.source" version="2.0.1.v201703300842"/>
-<repository location="https://alfred.diamond.ac.uk/sites/download.eclipse.org/january/releases/2.0.1/repository/"/>
+<unit id="org.eclipse.january.asserts" version="2.1.0.v201703300830"/>
+<unit id="org.eclipse.january.asserts.source" version="2.1.0.v201703300830"/>
+<unit id="org.eclipse.january" version="2.1.0.v201709281210"/>
+<unit id="org.eclipse.january.source" version="2.1.0.v201709281210"/>
+<repository location="https://alfred.diamond.ac.uk/sites/download.eclipse.org/january/releases/2.1/repository/"/>
 </location>
 <location includeAllPlatforms="true" includeConfigurePhase="true" includeMode="slicer" includeSource="false" type="InstallableUnit">
 <unit id="org.eclipse.dawnsci.third.feature.feature.group" version="1.0.0"/>
-<repository location="http://www.opengda.org/updates/tp_dawnsci/releases/1.1.0/"/>
+<repository location="https://alfred.diamond.ac.uk/opengda/updates/tp_dawnsci/releases/1.1.0/"/>
 </location>
 </locations>
 </target>

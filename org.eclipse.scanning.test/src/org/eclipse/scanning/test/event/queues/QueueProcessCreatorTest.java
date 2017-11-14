@@ -22,6 +22,7 @@ import org.eclipse.scanning.api.event.IEventService;
 import org.eclipse.scanning.api.event.core.IProcessCreator;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.queues.IQueueProcess;
+import org.eclipse.scanning.api.event.queues.beans.MonitorAtom;
 import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.api.event.queues.beans.ScanAtom;
@@ -39,94 +40,101 @@ import org.eclipse.scanning.test.event.queues.dummy.DummyHasQueueProcess;
 import org.eclipse.scanning.test.event.queues.mocks.MockPublisher;
 import org.eclipse.scanning.test.event.queues.util.TestAtomQueueBeanMaker;
 import org.eclipse.scanning.test.scan.mock.MockDetectorModel;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test the {@link QueueProcessCreator} class, which selects the process class to 
+ * Test the {@link QueueProcessCreator} class, which selects the process class to
  * create based on atom/bean type.
- * This test also tests the {@link AllBeanQueueProcessCreator} class, which 
+ * This test also tests the {@link AllBeanQueueProcessCreator} class, which
  * also has Dummy types.
- * 
+ *
  * @author Michael Wharmby
  *
  */
 public class QueueProcessCreatorTest {
-	
+
 	private IProcessCreator<Queueable> qpc;
 	private IQueueProcess<?, Queueable> qProc;
-	
+
 	//Infrastructure
 	private IPublisher<Queueable> statPub;
-	
+
 	/**
 	 * Populate map similar to that in the process creator
 	 */
 	@Before
 	public void setUp() throws Exception {
-		
+
 		qpc = new QueueProcessCreator<>(true);
-		
+
 		statPub = new MockPublisher<Queueable>(null, "test.topic");
+		QueueProcessFactory.initialize();
+	}
+
+	@After
+	public void tearDown() {
+		//Remove Dummy*Process so it doesn't cause bad behaviour in travis
 		QueueProcessFactory.initialize();
 	}
 
 	/**
 	 * Test of the standard registered Process classes
-	 * 
+	 *
 	 * Check correct Process is created.
-	 * 
+	 *
 	 * @throws Exception
 	 */
-	@Test //TODO FIXME
+	@Test //TODO FIXME Add missing bean types
 	@SuppressWarnings("unchecked")
 	public void testProcessTypeCreation() throws Exception {
 		List<Queueable> testAtoms = new ArrayList<>();
-//		testAtoms.add(new MonitorAtom("Read bpm3", "bpm3", 10000)); FIXME
+		testAtoms.add(new MonitorAtom("Read bpm3", "bpm3"));
 		testAtoms.add(new PositionerAtom("Move robot arm", "robot_arm", "1250"));
 		testAtoms.add(makeScanAtom());
 //		testAtoms.add(new ProcessAtom(...) TODO
 		testAtoms.add(TestAtomQueueBeanMaker.makeDummySubTaskBeanA());
 		testAtoms.add(TestAtomQueueBeanMaker.makeDummyTaskBeanA());
-		
+
 		for (Queueable atom : testAtoms) {
 			qProc = (IQueueProcess<?, Queueable>) qpc.createProcess(atom, statPub);
 			assertEquals("Class of test atom & processor do not match", atom.getClass(), qProc.getBeanClass());
 			assertEquals("Process has different publisher associated", statPub, qProc.getPublisher());
 		}
 	}
-	
+
 	/**
-	 * Test of the Dummy*Process creation only. These are not normally 
+	 * Test of the Dummy*Process creation only. These are not normally
 	 * registered.
-	 * 
+	 *
 	 * Check correct Process is created.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testDummyProcessTypeCreation() throws Exception {
 		QueueProcessFactory.registerProcesses(DummyAtomProcess.class, DummyBeanProcess.class, DummyHasQueueProcess.class);
-		
+
 		List<Queueable> testAtoms = new ArrayList<>();
 		testAtoms.add(new DummyAtom("Marvin", 10));
 		testAtoms.add(new DummyBean("Doris", 20));
 		testAtoms.add(new DummyHasQueue("Delores", 30));
-		
+
 		for (Queueable atom : testAtoms) {
 			qProc = (IQueueProcess<?,Queueable>) qpc.createProcess(atom, statPub);
-			
+
 			assertEquals("Class of test atom & processor do not match", atom.getClass(), qProc.getBeanClass());
-			assertEquals("The atom to be processed differs from the input", atom, qProc.getQueueBean());			
+			assertEquals("The atom to be processed differs from the input", atom, qProc.getQueueBean());
 			assertEquals("Publisher differs from the expect configuration", statPub, qProc.getPublisher());
 		}
 	}
-	
+
 //	@Test
 //	public void testNoRegisteredProcessorForBean() throws Exception {
 //		DummyAtom dAt = new DummyAtom("Marvin", 10);
-//		
+//
 //		try {
 //			qProc = (IQueueProcess<Queueable>) qpc.createProcess(dAt, statPub);
 //			fail("Should not be able to create QueueProcess for unregistered bean class");
@@ -134,24 +142,24 @@ public class QueueProcessCreatorTest {
 //			//Expected
 //		}
 //	}
-	
+
 	//TODO Check blocking persisted
 	//TODO Setting blocking on a per-processor basis.
-	
+
 	private ScanAtom makeScanAtom() {
 		//ScanAtomProcessor needs a ScanAtom with queue names etc.
 		List<IScanPathModel> scanAxes = new ArrayList<>();
 		scanAxes.add(new StepModel("ocs", 290, 80, 10));
 		scanAxes.add(new StepModel("xMotor", 150, 100, 5));
-		
+
 		Map<String, Object> detectors = new HashMap<>();
 		detectors.put("pe", new MockDetectorModel(30d));
-		
+
 		List<String> monitors = new ArrayList<>();
 		monitors.add("bpm3");
 		monitors.add("i0");
-		
-		ScanAtom scAt = new ScanAtom("VT scan across sample", scanAxes, detectors, monitors);
+
+		ScanAtom scAt = new ScanAtom("VT scan across sample", scanAxes, detectors, monitors, null);
 
 		scAt.setScanBrokerURI("tcp://localhost:8624");
 		scAt.setScanSubmitQueueName(IEventService.SUBMISSION_QUEUE);

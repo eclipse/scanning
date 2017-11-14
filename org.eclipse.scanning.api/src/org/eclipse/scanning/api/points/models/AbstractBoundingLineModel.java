@@ -15,16 +15,16 @@ import org.eclipse.scanning.api.annotation.UiHidden;
 import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
 
 public class AbstractBoundingLineModel extends AbstractMapModel implements IBoundingLineModel {
-	
+
 	@FieldDescriptor(editable=false) // We edit this with a popup.
 	private BoundingLine boundingLine;
-	
+
 	@Override
 	@UiHidden
 	public BoundingLine getBoundingLine() {
 		return boundingLine;
 	}
-	
+
 	@Override
 	public void setBoundingLine(BoundingLine boundingLine) {
 		BoundingLine oldValue = this.boundingLine;
@@ -39,6 +39,7 @@ public class AbstractBoundingLineModel extends AbstractMapModel implements IBoun
 		result = prime * result + ((boundingLine == null) ? 0 : boundingLine.hashCode());
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -54,6 +55,12 @@ public class AbstractBoundingLineModel extends AbstractMapModel implements IBoun
 		} else if (!boundingLine.equals(other.boundingLine))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName()+" [boundingLine=" + boundingLine + ", fastAxisName=" + getFastAxisName()
+			+ ", slowAxisName=" + getSlowAxisName() + ", continuous=" + isContinuous() + "]";
 	}
 
 }

@@ -19,15 +19,15 @@ import java.util.UUID;
 
 
 public class IdBean implements Serializable {
-	
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2967954413159475128L;
-	
+
 	private String    uniqueId;         // Unique id for each object.
 	private boolean   explicitlySetId;
-	
+
 	public IdBean() {
 		uniqueId = UUID.randomUUID().toString(); // Normally overridden
 	}
@@ -71,15 +71,15 @@ public class IdBean implements Serializable {
 
 	/**
 	 * Subclasses should override this method calling super.merge(...)
-	 * If they forget 
+	 * If they forget
 	 * @param with
 	 */
 	public <T extends IdBean> void merge(T with) {
 		this.uniqueId = with.getUniqueId();
-		
+
 		// We this class does not have its own merge then we
 		// try to do it with reflection
-		
+
 		final Method[] methods = getClass().getMethods();
 		for (Method method : methods) {
 			if (method.getName().equals("merge")) {
@@ -88,8 +88,8 @@ public class IdBean implements Serializable {
 				}
 			}
 		}
-		
-		// We try to mush fields with reflection in case the 
+
+		// We try to mush fields with reflection in case the
 		// class implementing this one forgets.
 		Field[] wfields = with.getClass().getDeclaredFields();
 		try {

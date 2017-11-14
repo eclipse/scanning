@@ -18,22 +18,22 @@ import org.eclipse.scanning.api.malcolm.MalcolmDeviceException;
  * Deals with details of:
  * 1. Serializing JSON   (for instance Jackson)
  * 2. Sending string (for instance over zeromq)
- * 
- * 
+ *
+ *
  * @author Matthew Gerring
  *
  */
 public interface MessageGenerator<T> {
 
 	/**
-	 * Automatically generates a call for a given method by using the method name from the stack.
-	 * 
-	 * @param stackTrace
+	 * Automatically generates a call for a given method
+	 *
+	 * @param method
 	 * @param running
 	 * @throws MalcolmDeviceException
 	 */
-	T call(StackTraceElement[] stackTrace, DeviceState... states) throws MalcolmDeviceException;
-	
+	T call(MalcolmMethod method, DeviceState... states) throws MalcolmDeviceException;
+
 	/**
 	 * Create a get message
 	 * @param endpointString
@@ -43,16 +43,16 @@ public interface MessageGenerator<T> {
 
 	/**
 	 * Create a call message
-	 * @param methodName
+	 * @param method
 	 * @param params
 	 * @return
 	 * @throws MalcolmDeviceException
 	 */
-	T createCallMessage(String methodName, Object params) throws MalcolmDeviceException;
+	T createCallMessage(MalcolmMethod method, Object params) throws MalcolmDeviceException;
 
-	
+
     /**
-     * 
+     *
      * @param subscription - for example "stateMachine"
      * @return
      */
@@ -60,7 +60,7 @@ public interface MessageGenerator<T> {
 
 
 	/**
-	 * 
+	 *
 	 * @return
 	 */
 	T createUnsubscribeMessage();

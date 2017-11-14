@@ -11,13 +11,10 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
@@ -28,22 +25,24 @@ import org.eclipse.dawnsci.analysis.dataset.roi.PolygonalROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.RectangularROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.SectorROI;
 import org.eclipse.scanning.api.points.IPosition;
-import org.eclipse.scanning.api.points.models.ScanRegion;
-import org.eclipse.scanning.jython.JythonObjectFactory;
 import org.eclipse.scanning.api.points.ScanPointIterator;
+import org.eclipse.scanning.api.points.models.ScanRegion;
 import org.python.core.PyDictionary;
-import org.python.core.PyList;
 import org.python.core.PyObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class AbstractScanPointIterator implements ScanPointIterator, PySerializable {
 
+	public static final PyObject[] EMPTY_PY_ARRAY = new PyObject[0];
+
 	private static Logger logger = LoggerFactory.getLogger(AbstractScanPointIterator.class);
 
-	private static Map<Class<?>, Function<IROI, PyObject>> roiDispatchMap = new HashMap<Class<?>, Function<IROI, PyObject>>();;
+	private static Map<Class<?>, Function<IROI, PyObject>> roiDispatchMap = new HashMap<>();
 
 	protected ScanPointIterator pyIterator;
+
+	private int index = 0;
 
 	public Iterator<IPosition> getPyIterator() {
 		return pyIterator;
@@ -51,19 +50,6 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 
 	public void setPyIterator(ScanPointIterator pyIterator) {
 		this.pyIterator = pyIterator;
-	}
-
-	protected ScanPointIterator createSpgCompoundGenerator(Iterator<?>[] iterators, Object[] regions,
-			String[] regionAxes, PyObject[] mutators) {
-		JythonObjectFactory<PyObject> excluderFactory = ScanPointGeneratorFactory.JExcluderFactory();
-		JythonObjectFactory<ScanPointIterator> cpgFactory = ScanPointGeneratorFactory.JCompoundGeneratorFactory();
-		List<PyObject> pyRegions = Arrays.asList(regions).stream().map(r -> makePyRoi(r)).collect(Collectors.toList());
-		pyRegions = pyRegions.stream()
-				.filter(r -> r != null)
-				.map(r -> excluderFactory.createObject(r, new PyList(Arrays.asList(regionAxes))))
-				.collect(Collectors.toList());
-		ScanPointIterator cpgIterator = cpgFactory.createObject(iterators, pyRegions.toArray(), mutators);
-		return cpgIterator;
 	}
 
 	static {
@@ -111,10 +97,25 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 		}
 	}
 
+	@Override
 	public PyDictionary toDict() {
 		return null;
 	}
-	
+
+	@Override
+	public boolean hasNext() {
+		return pyIterator.hasNext();
+	}
+
+	@Override
+	public IPosition next() {
+		final IPosition position = pyIterator.next();
+		position.setStepIndex(index);
+		index++;
+		return position;
+	}
+
+	@Override
 	public int size() {
 		return pyIterator.size();
 	}
@@ -128,7 +129,10 @@ public abstract class AbstractScanPointIterator implements ScanPointIterator, Py
 	public int getRank() {
 		return pyIterator.getRank();
 	}
-	
-	
-	
+
+	@Override
+	public int getIndex() {
+		return index;
+	}
+
 }

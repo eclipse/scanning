@@ -11,7 +11,6 @@
  *******************************************************************************/
 package org.eclipse.scanning.api.malcolm.models;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -32,7 +31,7 @@ public class MapMalcolmModel extends MalcolmModel {
 	private static final String EXPOSURE_NAME = "exposure";
 
 	private Map<String, Object> attributes;
-	
+
 	public MapMalcolmModel() {
 		attributes = new LinkedHashMap<>();
 	}
@@ -40,6 +39,7 @@ public class MapMalcolmModel extends MalcolmModel {
 		attributes = config;
 	}
 
+	@Override
 	public double getExposureTime() {
 		Object exposure = attributes.get(EXPOSURE_NAME);
 		if (exposure instanceof Number) {
@@ -49,6 +49,7 @@ public class MapMalcolmModel extends MalcolmModel {
 		}
 	}
 
+	@Override
 	public void setExposureTime(double exposureTime) {
 		attributes.put(EXPOSURE_NAME, Double.valueOf(exposureTime));
 	}
@@ -60,11 +61,11 @@ public class MapMalcolmModel extends MalcolmModel {
 	public void setParameterMap(Map<String, Object> parameterMap) {
 		attributes = parameterMap;
 	}
-	
+
 	public Map<String, Object> getAttributes() {
 		return attributes;
 	}
-	
+
 	public void setAttributes(Map<String, Object> attributes) {
 		this.attributes = attributes;
 	}

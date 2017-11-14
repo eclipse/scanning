@@ -1,6 +1,6 @@
 from utilities.listeners import MonitorHandler
 from utilities.connections import create_connection, set_handlers, subscribe_all, send_all
- 
+
 conn_dict = {'device-response-topic': "/topic/org.eclipse.scanning.response.device.topic",
              'device-request-topic': "/topic/org.eclipse.scanning.request.device.topic",
              }
@@ -24,6 +24,6 @@ messages = [
             ]
 
 send_all(conn, conn_dict, messages)
-  
+
 # Required to keep Python running indefinitely.
 raw_input()

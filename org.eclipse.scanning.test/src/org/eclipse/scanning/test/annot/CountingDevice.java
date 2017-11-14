@@ -21,18 +21,18 @@ import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.scan.ScanInformation;
 
 /**
- * 
+ *
  * Could use Mockito but always causes compilation issues
  *
  */
 public class CountingDevice extends CountableScannable<Double> {
-	
+
 	protected Double value;
-	
+
 	public CountingDevice() {
-		
+
 	}
-	
+
 	@PreConfigure
     public final void configure(ScanInformation info) throws Exception {
 		if (info==null) throw new Exception("No information!");
@@ -44,15 +44,15 @@ public class CountingDevice extends CountableScannable<Double> {
 		if (info==null) throw new Exception("No information!");
         count(Thread.currentThread().getStackTrace());
 	}
-	
+
 	@LevelStart
     public final void prepare() throws Exception {
         count(Thread.currentThread().getStackTrace());
 	}
-	
+
     @ScanStart
     public final void prepareVoltages() throws Exception {
-    	// Do a floating point op for timings
+	// Do a floating point op for timings
         double v1 = 2;
         double v2 = 2;
         double s = v1*v2;

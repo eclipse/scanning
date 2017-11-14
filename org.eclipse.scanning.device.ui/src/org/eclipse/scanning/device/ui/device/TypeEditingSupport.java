@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TypeEditingSupport extends EditingSupport {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(TypeEditingSupport.class);
 
 	public TypeEditingSupport(ColumnViewer viewer) {
@@ -36,25 +36,27 @@ public class TypeEditingSupport extends EditingSupport {
 
 	@Override
 	protected CellEditor getCellEditor(Object element) {
-		
+
 		final MonitorRole[] values = MonitorRole.values();
 	    final List<String> items  = Arrays.asList(values).stream().map(value -> value.getLabel()).collect(Collectors.toList());
-		
+
 		CComboCellEditor cellEd = new CComboCellEditor((Composite)getViewer().getControl(), items.toArray(new String[items.size()])) {
-    	    protected void doSetValue(Object value) {
+	    @Override
+			protected void doSetValue(Object value) {
                 if (value instanceof Enum) value = ((Enum) value).ordinal();
                 super.doSetValue(value);
-    	    }
-    		protected Object doGetValue() {
-    			Integer ordinal = (Integer)super.doGetValue();
-    			try {
-    			    return values[ordinal];
-    			} catch (IndexOutOfBoundsException ne) {
-    				return values[0];
-    			}
-    		}
+	    }
+		@Override
+			protected Object doGetValue() {
+			Integer ordinal = (Integer)super.doGetValue();
+			try {
+			    return values[ordinal];
+			} catch (IndexOutOfBoundsException ne) {
+				return values[0];
+			}
+		}
 		};
-		
+
 		return cellEd;
 	}
 

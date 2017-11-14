@@ -14,9 +14,9 @@ package org.eclipse.scanning.api.event.core;
 import java.net.URI;
 
 /**
- * 
+ *
  * A simple bean to hold the information about a queue.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -26,11 +26,11 @@ public class ConsumerConfiguration {
 	private String submissionQueue;
 	private String statusTopic;
 	private String statusSet;
-	
+
 	public ConsumerConfiguration() {
-		
+
 	}
-	
+
 	public ConsumerConfiguration(URI uri, String submissionQueue, String statusTopic, String statusSet) {
 		super();
 		this.uri = uri;
@@ -104,6 +104,6 @@ public class ConsumerConfiguration {
 			return false;
 		return true;
 	}
-	
-	
+
+
 }

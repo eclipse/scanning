@@ -31,36 +31,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Parent class for all {@link QueueService} queue processes. QueueProcess 
- * provides flow control to ensure post-match (i.e. after bean task) analysis 
+ * Parent class for all {@link QueueService} queue processes. QueueProcess
+ * provides flow control to ensure post-match (i.e. after bean task) analysis
  * is allowed to complete before other operations (e.g. termination) finish.
- * 
+ *
  * @author Michael Wharmby
  *
- * @param <Q> {@link Queueable} bean type to be operated on. 
- * @param <T> The {@link Queueable} specified by the {@link IConsumer} 
- *            instance using the IQueueProcess. This might be a 
- *            {@link QueueBean} or a {@link QueueAtom}. 
+ * @param <Q> {@link Queueable} bean type to be operated on.
+ * @param <T> The {@link Queueable} specified by the {@link IConsumer}
+ *            instance using the IQueueProcess. This might be a
+ *            {@link QueueBean} or a {@link QueueAtom}.
  */
-public abstract class QueueProcess<Q extends Queueable, T extends Queueable> 
-		extends AbstractLockingPausableProcess<T> implements IQueueProcess<Q, T>, IQueueBroadcaster<T> {
-	
+public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
+		extends AbstractLockingPausableProcess<T> implements IQueueProcess<Q, T>, IQueueBroadcaster<T>,
+		IPostMatchAnalyser {
+
 	private static Logger logger = LoggerFactory.getLogger(QueueProcess.class);
-	
+
 	protected final Q queueBean;
-	protected boolean blocking = true, executed = false, terminated = false, finished = false;
-	
+	 //Blocking should block (or not) this QueueProcess; runInThread runs calls to scanning
+	//infrastructure which themselves are blocking in a separate thread
+	protected boolean blocking = true, runInThread = false;
+	protected boolean executed = false, terminated = false, finished = false;
+
 	protected final CountDownLatch processLatch = new CountDownLatch(1);
-	
-	//Post-match analysis lock, ensures correct execution order of execute 
-	//method & control (e.g. terminate) methods 
+
+	//Post-match analysis lock, ensures correct execution order of execute
+	//method & control (e.g. terminate) methods
 	protected final ReentrantLock postMatchAnalysisLock;
 	protected final Condition analysisDone;
-	
+
 	@SuppressWarnings("unchecked")
 	protected QueueProcess(T bean, IPublisher<T> publisher, Boolean blocking) throws EventException {
 		super(bean, publisher);
-		
+
 		this.blocking = blocking;
 		if (bean.getClass().equals(getBeanClass())) {
 			this.queueBean = (Q)bean;
@@ -68,45 +72,160 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 			logger.error("Cannot set bean: Bean type "+bean.getClass().getSimpleName()+" not supported by "+getClass().getSimpleName()+".");
 			throw new EventException("Unsupported bean type");
 		}
-		
+
 		postMatchAnalysisLock = new ReentrantLock();
 		analysisDone = postMatchAnalysisLock.newCondition();
 	}
-	
+
 	@Override
 	public void execute() throws EventException, InterruptedException {
-		logger.debug("Processing "+bean.getClass().getSimpleName()+": '"+bean.getName()+"'");
-		run();
+		logger.info("Processing "+bean.getClass().getSimpleName()+": '"+bean.getName()+"'");
+		executed = true;
+		if (runInThread) {
+			runInThread();
+		} else {
+			run();
+		}
 		logger.debug("Waiting for processing of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' to complete...");
 		processLatch.await();
 		logger.debug("Post-match analysis of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' begins... (Status: "+bean.getStatus()+"; Percent: "+bean.getPercentComplete()+")");
-		postMatchAnalysis();
-		logger.debug("Processing of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' complete (Status: "+bean.getStatus()+"; Percent: "+bean.getPercentComplete()+")");
+		try {
+			postMatchAnalysisLock.lockInterruptibly();
+			postMatchAnalysis();
+		} finally {
+			//And we're done, so let other threads continue
+			executionEnded();
+			postMatchAnalysisLock.unlock();
+		}
+		logger.info("Processing of "+bean.getClass().getSimpleName()+" '"+bean.getName()+"' finished (Status: "+bean.getStatus()+"; Terminated? "+isTerminated()+"; Percent: "+bean.getPercentComplete()+")");
+
+		/*
+		 * Beans that have completed execution need to be broadcast.
+		 * N.B. Broadcasting needs to be done last; otherwise the next
+		 * queue may start when we're not ready.
+		 */
+		if (bean.getStatus().isFinal() || isTerminated()) {
+			if (!isTerminated()) {
+				//Terminated beans get broadcast by the AbstractPausibleLockingProcess, so we don't
+				broadcast();
+			}
+		} else {
+			logger.error(bean.getName()+" has a non-final state after processing complete (status="+bean.getStatus()+")");
+			throw new EventException(bean.getName()+" has a non-final state after processing complete!");
+		}
 	}
-	
+
 	/**
-	 * Performs the process described by the {@link Queueable} bean type to be 
+	 * Performs the process described by the {@link Queueable} bean type to be
 	 * processed, using the configured parameters from the input bean.
-	 * 
-	 * @throws EventException in case of broadcast failure or in case of 
-	 *         failure of {@link IEventService} infrastructure. Failures 
-	 *         during proceessing should also be re-thrown as 
-	 *         {@link EventExceptions}. 
+	 *
+	 * @throws EventException in case of broadcast failure or in case of
+	 *         failure of {@link IEventService} infrastructure. Failures
+	 *         during proceessing should also be re-thrown as
+	 *         {@link EventExceptions}.
 	 * @throws InterruptedException if child run thread is interrupted
 	 */
 	protected abstract void run() throws EventException, InterruptedException;
-	
+
 	/**
-	 * On completion of processing, determine the outcome - i.e. did 
+	 * Creates a separate thread in which the run() method will be called.
+	 * This is useful when the implementing class makes calls to blocking
+	 * methods in, for example, the scanning infrastructure. By putting these
+	 * calls into a thread, we retain the same sequence of behaviours. At the
+	 * end of the thread, the processLatch is released.
+	 */
+	private void runInThread() {
+		final Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					QueueProcess.this.run();
+				} catch (EventException | InterruptedException ex) {
+					//If we've been terminated, we don't want to report this as failed.
+					//Just ignore the exception
+					if (!isTerminated()) {
+						try {
+							logger.error("Processing "+queueBean.getClass().getSimpleName()+" '"+queueBean.getName()+"' failed with: '"+ex.getMessage()+"'");
+							broadcast(Status.FAILED, "Processing "+queueBean.getClass().getSimpleName()+" '"+queueBean.getName()+"' failed with: '"+ex.getMessage()+"'");
+						} catch (EventException evEx) {
+							logger.error("Broadcasting bean failed with: '"+evEx.getMessage()+"'");
+						}
+					}
+				} finally {
+					processLatch.countDown();
+				}
+			}
+		}, queueBean.getClass().getSimpleName()+" '"+queueBean.getName()+"' processing thread");
+		thread.setDaemon(true);
+		thread.setPriority(Thread.MAX_PRIORITY);
+		thread.start();
+	}
+
+	/**
+	 * On completion of processing, determine the outcome - i.e. did
 	 * processing complete or fail in some way? Report back a message.
-	 * 
-	 * Final statuses should be set on the bean here and nowhere else. 
-	 * 
+	 *
+	 * Final statuses should be set on the bean here and nowhere else.
+	 *
 	 * @throws EventException in case of broadcast failure.
 	 * @throws InterruptedException if the analysis lock is interrupted
 	 */
-	protected abstract void postMatchAnalysis() throws EventException, InterruptedException;
-	
+	private void postMatchAnalysis() throws EventException, InterruptedException {
+		if (isTerminated()) {
+			logger.debug("'"+bean.getName()+"' was requested to abort");
+			postMatchTerminated();
+		}
+		else if (queueBean.getPercentComplete() >= 99.4) {
+			postMatchCompleted();
+			updateBean(Status.COMPLETE, 100d, null);
+		}
+		else {
+			logger.error("'"+bean.getName()+"' failed. Last message was: '"+bean.getMessage()+"'");
+			postMatchFailed();
+			queueBean.setStatus(Status.FAILED);
+		}
+	};
+
+	/**
+	 * Method called by terminate() in {@link AbstractLockingPausableProcess}.
+	 * Prevents post-match analysis from starting before terminate actions
+	 * have completed. Once complete, the process latch is released and post-
+	 * match analysis starts.
+	 */
+	@Override
+	protected void doTerminate() throws EventException {
+		if (finished) return; //Stops spurious messages/behaviour when processing already finished
+		try {
+			//Reentrant lock ensures execution method (and hence post-match
+			//analysis) completes before terminate does
+			postMatchAnalysisLock.lockInterruptibly();
+
+			logger.info("'"+bean.getName()+"' requested to terminate...");
+			terminated = true;//<-- do this first, so specific actions can test we're terminated
+			terminateCleanupAction();
+			logger.debug("Releasing processLatch to start post-match analysis");
+			processLatch.countDown();
+
+			//Wait for post-match analysis to finish
+			continueIfExecutionEnded();
+		} catch (InterruptedException iEx) {
+			throw new EventException(iEx);
+		} finally {
+			postMatchAnalysisLock.unlock();
+		}
+	}
+
+	/**
+	 * Called from doTerminate, this method is called to perform the
+	 * termination actions. This is necessary so that doTerminate can lock out
+	 * other threads and will itself only complete when execution is complete.
+	 *
+	 * @throws EventException in case termination fails.
+	 */
+	protected void terminateCleanupAction() throws EventException {
+		//Mostly we don't need to do anything
+	}
+
 	@Override
 	public void updateBean(Status newStatus, Double newPercent, String newMessage) {
 		if (newStatus != null) {
@@ -115,7 +234,7 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 		}
 		if (newPercent != null) bean.setPercentComplete(newPercent);
 		if (newMessage != null) bean.setMessage(newMessage);
-		
+
 		if ((newStatus == null) && (newPercent == null) && (newMessage == null)) {
 			logger.warn("Bean updating prior to broadcast did not make any changes.");
 		}
@@ -143,12 +262,12 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 	public boolean isTerminated() {
 		return terminated;
 	}
-	
+
 	@Override
 	public Q getQueueBean() {
 		return queueBean;
 	}
-	
+
 	/**
 	 * Called at the end of post-match analysis to report the process finished
 	 */
@@ -156,10 +275,10 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 		finished = true;
 		analysisDone.signal();
 	}
-	
+
 	/**
 	 * Called when we would need to wait if post-match analysis hasn't yet run.
-	 * 
+	 *
 	 * @throws InterruptedException if wait is interrupted.
 	 */
 	protected void continueIfExecutionEnded() throws InterruptedException {
@@ -168,27 +287,14 @@ public abstract class QueueProcess<Q extends Queueable, T extends Queueable>
 			analysisDone.await();
 		}
 	}
-	
+
 	/**
 	 * Get the latch controlling whether post-match analysis can be performed.
-	 * 
+	 *
 	 * @return processLatch controlling released when run complete.
 	 */
 	public CountDownLatch getProcessLatch() {
 		return processLatch;
-	}
-
-
-	protected void reportFail(Exception ex, String message) {
-		logger.error(message);
-		try {
-			//Bean has failed, but we don't want to set a final status here.
-			broadcast(Status.RUNNING, message);
-		} catch(EventException evEx) {
-			logger.error("Broadcasting bean failed with: \""+evEx.getMessage()+"\".");
-		} finally {
-			processLatch.countDown();
-		}
 	}
 
 }

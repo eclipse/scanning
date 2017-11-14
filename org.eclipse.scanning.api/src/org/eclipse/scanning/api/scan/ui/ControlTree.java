@@ -24,19 +24,19 @@ import org.eclipse.scanning.api.INamedNode;
  * created from spring and serialized to json at different
  * points. Spring calls add(...) on the children and globalize(...)
  * on this class to force the static instance to be a given value.
- * 
+ *
  * There is one static instance but the object is not a singleton
  * because it is created from json files as well. The design is
  * therefore a multiple instance, single static value rather than
  * singleton. This is intentional.
- * 
+ *
  * @author Matthew Gerring
  *
  */
 public class ControlTree extends AbstractControl {
 
 	private static ControlTree instance;
-	
+
 	private Map<String, INamedNode> content;
 	private boolean treeEditable = true;
 
@@ -49,15 +49,15 @@ public class ControlTree extends AbstractControl {
 		setName(name);
 	}
 
-	
+
 	public static ControlTree getInstance() {
 		return instance;
 	}
-	
+
 	public void globalize() { // Called by spring
 		ControlTree.instance = this;
 	}
-	
+
 	/**
 	 * Used to register a control such that a subsequent call
 	 * to 'build' will create a legal tree.
@@ -68,12 +68,12 @@ public class ControlTree extends AbstractControl {
 		if (content.containsKey(object.getName())) throw new RuntimeException("The name '"+object.getName()+"' is already used!");
 		return content.put(object.getName(), object);
 	}
-	
+
 	public INamedNode insert(INamedNode parent, INamedNode child) {
-		
+
 		child.setParentName(parent.getName());
 		((AbstractControl)parent).addChild(child);
-		
+
 		return child;
 	}
 
@@ -84,7 +84,7 @@ public class ControlTree extends AbstractControl {
 
 		content.remove(node.getName());
 	}
-	
+
 	public boolean isEmpty() {
 		return content.isEmpty();
 	}
@@ -94,19 +94,19 @@ public class ControlTree extends AbstractControl {
 
 	/**
 	 * A call to this method tells the factory to validate by reading
-	 * the groups and controls created in spring. 
-	 * 
-	 * It is done this way because at the point where spring creates the 
+	 * the groups and controls created in spring.
+	 *
+	 * It is done this way because at the point where spring creates the
 	 * objects, they might not yet have their names and other details set.
 	 */
 	public boolean build() {
-		
+
 		final List<INamedNode> children = new ArrayList<>();
-		
+
 		for (String name : content.keySet()) {
-			
+
 			INamedNode iNameable = content.get(name);
-			
+
 			if (iNameable instanceof ControlGroup) {
 				children.add(iNameable);
 				iNameable.setParentName(getName());
@@ -126,10 +126,10 @@ public class ControlTree extends AbstractControl {
 				}
 			}
 		}
-	
+
 		return true;
 	}
-	
+
 
 	public Map<String, INamedNode> getContent() {
 		return content;
@@ -183,5 +183,8 @@ public class ControlTree extends AbstractControl {
 		this.treeEditable = treeEditable;
 	}
 
-
+	@Override
+	public String toString() {
+		return "ControlTree [" + super.toString() + ", content=" + content + ", treeEditable=" + treeEditable + "]";
+	}
 }

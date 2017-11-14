@@ -17,11 +17,11 @@ import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.status.StatusBean;
 
 public class FastRunCreator<T extends StatusBean> implements IProcessCreator<T> {
-	
+
 	private boolean blocking;
 	private long sleep;
 	private int start, stop, step;
-	
+
 	public FastRunCreator() {
 		this(true);
 	}

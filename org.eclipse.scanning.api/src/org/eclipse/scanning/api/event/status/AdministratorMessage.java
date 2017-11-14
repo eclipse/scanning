@@ -12,9 +12,9 @@
 package org.eclipse.scanning.api.event.status;
 
 /**
- * Class used by administrator to send messages about 
+ * Class used by administrator to send messages about
  * servers being restarted.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -63,5 +63,5 @@ public class AdministratorMessage {
 			return false;
 		return true;
 	}
-	
+
 }

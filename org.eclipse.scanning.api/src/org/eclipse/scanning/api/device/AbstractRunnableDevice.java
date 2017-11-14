@@ -42,26 +42,29 @@ import org.eclipse.scanning.api.scan.event.IPositionListenable;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
 import org.eclipse.scanning.api.scan.event.IRunListener;
 import org.eclipse.scanning.api.scan.event.RunEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A device should create its own model when its constructor is called. This
  * can be done by reading the current hardware state for the device. In this
  * case the runnable device service does not set its model. If a given device
  * does not set its own model, when the service makes the device, it will attempt
- * to create a new empty model and set this empty model as the current model. 
+ * to create a new empty model and set this empty model as the current model.
  * This means that the device does not have a null model and the user can get
  * the model and configure it.
- * 
+ *
  * @see IRunnableDevice
  * @author Matthew Gerring
  *
  * @param <T>
  */
-public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<T>, 
-                                                           IModelProvider<T>, 
-                                                           IScanAttributeContainer, 
+public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<T>,
+                                                           IModelProvider<T>,
+                                                           IScanAttributeContainer,
                                                            IPositionListenable,
                                                            IActivatable{
+	private static Logger logger = LoggerFactory.getLogger(AbstractRunnableDevice.class);
 
 	// Data
 	protected T                          model;
@@ -75,7 +78,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 
 	// Devices can either be the top of the scan or somewhere in the
 	// scan tree. By default they are the scan but if used in a nested
-	// scan, their primaryScanDevice will be set to false. This then 
+	// scan, their primaryScanDevice will be set to false. This then
 	// stops state being written to the main scan bean
 	private   boolean                    primaryScanDevice = true;
 
@@ -83,22 +86,22 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	protected IRunnableDeviceService     runnableDeviceService;
 	protected IScannableDeviceService    connectorService;
 	private   IPublisher<ScanBean>       publisher;
-	
+
 	// Listeners
 	private   Collection<IRunListener>   rlisteners;
 	private   Collection<IPositionListener> posListeners;
-	
+
 	// Attributes
 	private Map<String, Object>          scanAttributes;
-	
+
 	private volatile boolean busy = false;
 	private boolean requireMetrics;
-	
+
 	/**
 	 * Alive here is taken to represent the device being on and responding.
 	 */
 	private boolean alive = true;
-	
+
 	/**
 	 * Since making the tree takes a while we measure its
 	 * time and make that available to clients.
@@ -123,20 +126,20 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 
 	/**
 	 * Devices may be created during the cycle of a runnable device service being
-	 * made. Therefore the parameter dservice may be null. This is acceptable 
+	 * made. Therefore the parameter dservice may be null. This is acceptable
 	 * because when used in spring the service is going and then the register(...)
 	 * method may be used.
-	 * 
+	 *
 	 * @param dservice
 	 */
 	protected AbstractRunnableDevice(IRunnableDeviceService dservice) {
 		this();
 		setRunnableDeviceService(dservice);
 	}
-	
+
 	/**
 	 * Used by spring to register the detector with the Runnable device service
-	 * *WARNING* Before calling register the detector must be given a service to 
+	 * *WARNING* Before calling register the detector must be given a service to
 	 * register this. This can be done from the constructor super(IRunnableDeviceService)
 	 * of the detector to make it easy to instantiate a no-argument detector and
 	 * register it from spring.
@@ -150,7 +153,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		if (bean==null) bean = new ScanBean();
 		return bean;
 	}
-	
+
 	public void setBean(ScanBean bean) throws ScanningException {
 		this.bean = bean;
 		try {
@@ -176,35 +179,40 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		this.connectorService = connectorService;
 	}
 
+	@Override
 	public int getLevel() {
 		return level;
 	}
 
+	@Override
 	public void setLevel(int level) {
 		this.level = level;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
+	@Override
 	public void reset() throws ScanningException {
-		setDeviceState(DeviceState.IDLE);
+		setDeviceState(DeviceState.READY);
 	}
 
 
 	/**
-	 * 
+	 *
 	 * @param nstate
 	 * @param position
-	 * @throws ScanningException 
+	 * @throws ScanningException
 	 */
 	protected void setDeviceState(DeviceState nstate) throws ScanningException {
-		
+
 		if (!isPrimaryScanDevice()) return; // Overrall scan state is not managed by us.
 		try {
 			// The bean must be set in order to change state.
@@ -214,7 +222,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 			bean.setDeviceName(getName());
 			bean.setPreviousDeviceState(bean.getDeviceState());
 			bean.setDeviceState(nstate);
-			
+
 			fireStateChanged(bean.getPreviousDeviceState(), nstate);
 
 			if (publisher!=null) {
@@ -226,19 +234,20 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 			if (ne instanceof ScanningException) throw (ScanningException)ne;
 			throw new ScanningException(this, ne);
 		}
-		
+
 	}
-	
+
+	@Override
 	public DeviceState getDeviceState() throws ScanningException {
 		if (bean==null) return null;
 		return bean.getDeviceState();
 	}
 
-	
+
 	private long lastPositionTime = -1;
 	private long total=0;
 	/**
-	 * 
+	 *
 	 * @param pos
 	 * @param count 0-based position count (1 is added to calculate % complete)
 	 * @param size
@@ -246,7 +255,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	 * @throws ScanningException
 	 */
 	protected void positionComplete(IPosition pos, int count, int size) throws EventException, ScanningException {
-		
+
 		if (requireMetrics) {
 			long currentTime = System.currentTimeMillis();
 			if (lastPositionTime>-1) {
@@ -257,7 +266,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 			lastPositionTime = currentTime;
 		}
 		firePositionComplete(pos);
-		
+
 		final ScanBean bean = getBean();
 		bean.setPoint(count);
 		bean.setPosition(pos);
@@ -290,13 +299,13 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		if (rlisteners==null) rlisteners = Collections.synchronizedCollection(new LinkedHashSet<>());
 		rlisteners.add(l);
 	}
-	
+
 	@Override
 	public void removeRunListener(IRunListener l) {
 		if (rlisteners==null) return;
 		rlisteners.remove(l);
 	}
-	
+
 	@Override
 	public void addPositionListener(IPositionListener l) {
 		if (posListeners == null) {
@@ -304,30 +313,40 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		}
 		posListeners.add(l);
 	}
-	
+
 	@Override
 	public void removePositionListener(IPositionListener l) {
 		if (posListeners == null) return;
 		posListeners.remove(l);
 	}
 
-	public void firePositionComplete(IPosition position) throws ScanningException {
+	protected void firePositionComplete(IPosition position) throws ScanningException {
 		if (posListeners == null) return;
-		
+
 		final PositionEvent evt = new PositionEvent(position, this);
-		
+
 		// Make array, avoid multi-threading issues
 		final IPositionListener[] la = posListeners.toArray(new IPositionListener[posListeners.size()]);
 		for (IPositionListener l : la) l.positionPerformed(evt);
 	}
-	
-	public void fireStateChanged(DeviceState oldState, DeviceState newState) throws ScanningException {
-		
-		if (rlisteners==null) return;
-		
+
+	protected void firePositionMoveComplete(IPosition position) throws ScanningException {
+		if (posListeners == null) return;
+
+		final PositionEvent evt = new PositionEvent(position, this);
+
+		// Make array, avoid multi-threading issues
+		final IPositionListener[] la = posListeners.toArray(new IPositionListener[posListeners.size()]);
+		for (IPositionListener l : la) l.positionMovePerformed(evt);
+	}
+
+	protected void fireStateChanged(DeviceState oldState, DeviceState newState) throws ScanningException {
+
+		if (rlisteners==null || rlisteners.isEmpty()) return;
+
 		final RunEvent evt = new RunEvent(this, null, newState);
 		evt.setOldState(oldState);
-		
+
 		// Make array, avoid multi-threading issues.
 		final IRunListener[] la = rlisteners.toArray(new IRunListener[rlisteners.size()]);
 		for (IRunListener l : la) l.stateChanged(evt);
@@ -335,25 +354,27 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 
 
 	private long startTime;
-	
+
+	@Override
 	public void fireRunWillPerform(IPosition position) throws ScanningException {
-		
+
 		if (isRequireMetrics()) {
 			startTime = System.currentTimeMillis();
 			total     = 0;
 		}
 
 		if (rlisteners==null) return;
-		
+
 		final RunEvent evt = new RunEvent(this, position, getDeviceState());
-		
+
 		// Make array, avoid multi-threading issues.
 		final IRunListener[] la = rlisteners.toArray(new IRunListener[rlisteners.size()]);
 		for (IRunListener l : la) l.runWillPerform(evt);
 	}
-	
+
+	@Override
 	public void fireRunPerformed(IPosition position) throws ScanningException {
-		
+
 		if (isRequireMetrics()) {
 			long time = System.currentTimeMillis()-startTime;
 			System.out.println("Ran "+(position.getStepIndex()+1)+" points in *total* time of "+time+" ms.");
@@ -361,51 +382,55 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 				System.out.println("Average point time of "+(total/position.getStepIndex())+" ms/pnt");
 			}
 		}
-		
+
 		if (rlisteners==null) return;
-		
+
 		final RunEvent evt = new RunEvent(this, position, getDeviceState());
-		
+
 		// Make array, avoid multi-threading issues.
 		final IRunListener[] la = rlisteners.toArray(new IRunListener[rlisteners.size()]);
 		for (IRunListener l : la) l.runPerformed(evt);
 	}
-	
+
+	@Override
 	public void fireWriteWillPerform(IPosition position) throws ScanningException {
-		
+
 		if (rlisteners==null) return;
-		
+
 		final RunEvent evt = new RunEvent(this, position, getDeviceState());
-		
+
 		// Make array, avoid multi-threading issues.
 		final IRunListener[] la = rlisteners.toArray(new IRunListener[rlisteners.size()]);
 		for (IRunListener l : la) l.writeWillPerform(evt);
 	}
-	
+
+	@Override
 	public void fireWritePerformed(IPosition position) throws ScanningException {
-		
+
 		if (rlisteners==null) return;
-		
+
 		final RunEvent evt = new RunEvent(this, position, getDeviceState());
-		
+
 		// Make array, avoid multi-threading issues.
 		final IRunListener[] la = rlisteners.toArray(new IRunListener[rlisteners.size()]);
 		for (IRunListener l : la) l.writePerformed(evt);
 	}
 
 
+	@Override
 	public T getModel() {
 		return model;
 	}
 
+	@Override
 	public void setModel(T model) {
 		this.model = model;
 	}
-	
+
 	@Override
 	public void configure(T model) throws ScanningException {
 		this.model = model;
-		setDeviceState(DeviceState.READY);
+		setDeviceState(DeviceState.ARMED);
 	}
 
 
@@ -423,7 +448,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	public void pause() throws ScanningException, InterruptedException {
 
 	}
-	
+
 	@Override
 	public void seek(int stepNumber) throws ScanningException, InterruptedException {
        // Do nothing
@@ -436,7 +461,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	}
 
 	/**
-	 * 
+	 *
 	 * @return null if no attributes, otherwise collection of the names of the attributes set
 	 */
 	@Override
@@ -446,7 +471,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 
 	/**
 	 * Set any attribute the implementing classes may provide
-	 * 
+	 *
 	 * @param attributeName
 	 *            is the name of the attribute
 	 * @param value
@@ -461,7 +486,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 
 	/**
 	 * Get the value of the specified attribute
-	 * 
+	 *
 	 * @param attributeName
 	 *            is the name of the attribute
 	 * @return the value of the attribute
@@ -481,7 +506,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	 * @throws ScanningException
 	 */
 	public final DeviceInformation<T> getDeviceInformation() throws ScanningException {
- 		return getDeviceInformationIncludeNonAlive(false);
+		return getDeviceInformation(false);
 	}
 
 	/**
@@ -489,12 +514,12 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	 * Method is final for now to help avoid that problem.
 	 * Gets the device information, with the ability to specify whether to get information that is potentially held
 	 * on a device or not in the case that the device is not marked as being alive.
-	 * 
+	 *
 	 * @param includeNonAlive If set to false, if a device is not alive, information potentially held on the device will not be retrieved
 	 * @return
 	 * @throws ScanningException
 	 */
-	public final DeviceInformation<T> getDeviceInformationIncludeNonAlive(boolean includeNonAlive) throws ScanningException {
+	public final DeviceInformation<T> getDeviceInformation(boolean includeNonAlive) throws ScanningException {
 		if (deviceInformation==null) {
 			deviceInformation = new DeviceInformation<T>();
 		}
@@ -505,12 +530,12 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		deviceInformation.setLevel(getLevel());
 		deviceInformation.setActivated(isActivated());
 		deviceInformation.setAlive(isAlive());
-		
-		// Information below may come from an actual device. Check if device is alive before attempting to get this 
+
+		// Information below may come from an actual device. Check if device is alive before attempting to get this
 		if (includeNonAlive || deviceInformation.isAlive()) {
 			try {
 				deviceInformation.setState(getDeviceState());
-				deviceInformation.setStatus(getDeviceStatus());
+				deviceInformation.setHealth(getDeviceHealth());
 				deviceInformation.setBusy(isDeviceBusy());
 				deviceInformation.setAlive(isAlive());
 			} catch (Exception ex) {
@@ -525,12 +550,12 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		}
 		if (!deviceInformation.isAlive()) {
 			if (deviceInformation.getLabel() != null) {
-				deviceInformation.setLabel(deviceInformation.getLabel() + " [*]"); 
+				deviceInformation.setLabel(deviceInformation.getLabel() + " [*]");
 			}
 			deviceInformation.setState(DeviceState.OFFLINE);
 		}
-		
- 		return deviceInformation;
+
+		return deviceInformation;
 	}
 
 	public void setDeviceInformation(DeviceInformation<T> deviceInformation) {
@@ -544,7 +569,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	public void setPrimaryScanDevice(boolean primaryScanDevice) {
 		this.primaryScanDevice = primaryScanDevice;
 	}
-	
+
 	/**
 	 * If overriding don't forget the old super.validate(...)
 	 */
@@ -553,7 +578,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		if (model instanceof INameable) {
 			INameable dmodel = (INameable)model;
 		    if (dmodel.getName()==null || dmodel.getName().length()<1) {
-		    	throw new ModelValidationException("The name must be set!", model, "name");
+			throw new ModelValidationException("The name must be set!", model, "name");
 		    }
 		}
 		if (model instanceof IDetectorModel) {
@@ -561,34 +586,37 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 			if (dmodel.getExposureTime()<=0) throw new ModelValidationException("The exposure time for '"+getName()+"' must be non-zero!", model, "exposureTime");
 		}
 	}
-	
+
 	private boolean activated = false;
 
 	@Override
 	public boolean isActivated() {
 		return activated;
 	}
-	
+
 	@Override
 	public boolean setActivated(boolean activated) {
+		logger.trace("setActivated({}) was {} ({})", activated, this.activated, this);
 		boolean wasactivated = this.activated;
 		this.activated = activated;
 		return wasactivated;
 	}
-	
+
 	/**
-	 * Please override to provide a device status (which a malcolm device will have)
+	 * Please override to provide a device health (which a malcolm device will have)
 	 * The default returns null.
-	 * @return the current device Status.
+	 * @return the current device Health.
 	 */
-	public String getDeviceStatus() throws ScanningException {
+	@Override
+	public String getDeviceHealth() throws ScanningException {
 		return null;
 	}
-	
+
 	/**
 	 * Gets whether the device is busy or not
 	 * @return the current value of the device 'busy' flag.
 	 */
+	@Override
 	public boolean isDeviceBusy() throws ScanningException {
 		return busy;
 	}
@@ -600,30 +628,32 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	 * it is scanning on CPU devices. This means that the creator of
 	 * a Detector does not have to worry about setting it busy during
 	 * scans.
-	 * 
+	 *
 	 * @param busy
 	 */
 	public void setBusy(boolean busy) {
 		this.busy = busy;
 	}
-	
+
+	@Override
 	public DeviceRole getRole() {
 		return role;
 	}
 
+	@Override
 	public void setRole(DeviceRole role) {
 		this.role = role;
 	}
-	
+
 	@Override
 	public Set<ScanMode> getSupportedScanModes() {
 		return supportedScanModes;
 	}
-	
+
 	public void setSupportedScanModes(Set<ScanMode> supportedScanModes) {
 		this.supportedScanModes = supportedScanModes;
 	}
-	
+
 
 	protected void setSupportedScanModes(ScanMode... supportedScanModes) {
 		if (supportedScanModes==null) {
@@ -632,7 +662,7 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 		}
 		this.supportedScanModes = EnumSet.of(supportedScanModes[0], supportedScanModes);
 	}
-	
+
 	public void setSupportedScanMode(ScanMode supportedScanMode) {
 		this.supportedScanModes = EnumSet.of(supportedScanMode);
 	}
@@ -656,11 +686,13 @@ public abstract class AbstractRunnableDevice<T> implements IRunnableEventDevice<
 	public String toString() {
 		return getClass().getName() + '@' + Integer.toHexString(hashCode()) +" [name=" + name + "]";
 	}
-	
+
+	@Override
 	public boolean isAlive() {
 		return alive;
 	}
-	
+
+	@Override
 	public void setAlive(boolean alive) {
 		this.alive = alive;
 	}

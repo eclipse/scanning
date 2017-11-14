@@ -16,31 +16,31 @@ import org.eclipse.scanning.api.event.status.Status;
 
 /**
  * A request to acquire data from a particular detector
- * 
+ *
  * @author Matthew Dickie
  */
 public class AcquireRequest extends IdBean {
-	
+
 	private static final long serialVersionUID = 8640329010699426771L;
 
 	private String detectorName;
-	
+
 	private Object detectorModel;
-	
+
 	private String filePath;
-	
+
 	private Status status = Status.NONE;
-	
+
 	private String message;
-	
+
 	public AcquireRequest() {
 		// do nothing
 	}
-	
+
 	public AcquireRequest(String filePath) {
 		this.filePath = filePath;
 	}
-	
+
 	public AcquireRequest(String filePath, String detectorName, Object detectorModel) {
 		this(filePath);
 		this.detectorName = detectorName;

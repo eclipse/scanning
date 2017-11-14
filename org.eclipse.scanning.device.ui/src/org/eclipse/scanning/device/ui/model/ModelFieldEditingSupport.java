@@ -27,11 +27,11 @@ class ModelFieldEditingSupport extends EditingSupport implements IDisposable {
 	private static final Logger logger = LoggerFactory.getLogger(ModelFieldEditingSupport.class);
 
 	/**
-	 * 
+	 *
 	 */
 	private final ModelViewer<?> modelViewer;
 	private final ModelFieldEditorFactory factory;
-	
+
 	public ModelFieldEditingSupport(ModelViewer<?> modelViewer, ColumnViewer viewer, ColumnLabelProvider prov) {
 		super(viewer);
 		this.modelViewer = modelViewer;
@@ -70,6 +70,7 @@ class ModelFieldEditingSupport extends EditingSupport implements IDisposable {
 		}
 	}
 
+	@Override
 	public void dispose() {
 		factory.dispose();
 	}

@@ -32,12 +32,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * 
+ *
  * A view for adding and removing monitors. The monitors produced are
  * provided by the adaptable pattern as a list of strings. This list of
  * strings will be added to the ScanRequest as monitor names when the
  * scan is generated.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -45,7 +45,7 @@ public class MonitorView extends ViewPart {
 
 	public static final String ID = "org.eclipse.scanning.device.ui.device.MonitorView"; //$NON-NLS-1$
 	private static final Logger logger = LoggerFactory.getLogger(MonitorView.class);
-	
+
 	private ScannableViewer viewer;
 
 	public MonitorView() {
@@ -58,38 +58,40 @@ public class MonitorView extends ViewPart {
 	 */
 	@Override
 	public void createPartControl(Composite parent) {
-		
+
 		viewer.createPartControl(parent);
-		
+
 		getSite().setSelectionProvider(viewer.getSelectionProvider());
-		
+
 		createActions(getViewSite().getActionBars().getToolBarManager(), getViewSite().getActionBars().getMenuManager());
 	}
-    
+
 	/**
 	 * Create the actions.
 	 */
 	private void createActions(IContributionManager... managers) {
-		
+
 		List<IContributionManager> mans = new ArrayList<>(Arrays.asList(managers));
 		MenuManager     rightClick     = new MenuManager();
 		mans.add(rightClick);
-		
+
 		Activator.getDefault().getPreferenceStore().setDefault(DevicePreferenceConstants.SHOW_ACTIVATED_ONLY, true);
         IAction showActivated = createPreferenceAction("Show only active monitors", DevicePreferenceConstants.SHOW_ACTIVATED_ONLY, "icons/funnel--minus.png");
 
         ViewUtil.addGroups("view", mans, showActivated);
-        
-		
+
+
 		// Action to add a new ControlNode
 		final IAction addNode = new Action("Add monitor", Activator.getImageDescriptor("icons/ui-toolbar--plus.png")) {
+			@Override
 			public void run() {
 				viewer.addScannable();
 			}
 		};
-		
+
 		// Action to remove the currently selected ControlNode or ControlGroup
 		final IAction removeNode = new Action("Remove monitor", Activator.getImageDescriptor("icons/ui-toolbar--minus.png")) {
+			@Override
 			public void run() {
 				try {
 					viewer.removeScannable();
@@ -99,11 +101,11 @@ public class MonitorView extends ViewPart {
 			}
 		};
 		removeNode.setEnabled(false);
-			
+
 		ViewUtil.addGroups("add", mans, addNode, removeNode);
-		
+
 		viewer.getControl().setMenu(rightClick.createContextMenu(viewer.getControl()));
-		
+
 		viewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -111,8 +113,9 @@ public class MonitorView extends ViewPart {
 				removeNode.setEnabled(scannable != null); // can only remove node if one is selected
 			}
 		});
-		
+
 		IAction refresh = new Action("Refresh", Activator.getImageDescriptor("icons/recycle.png")) {
+			@Override
 			public void run() {
 				try {
 					viewer.refresh();
@@ -121,13 +124,14 @@ public class MonitorView extends ViewPart {
 				}
 			}
 		};
-		
+
 		ViewUtil.addGroups("refresh", mans, refresh);
 	}
-	
-	
+
+
 	private IAction createPreferenceAction(String label, String preference, String icon) {
 		IAction ret = new Action(label, IAction.AS_CHECK_BOX) {
+			@Override
 			public void run() {
 				Activator.getDefault().getPreferenceStore().setValue(preference, isChecked());
 				try {
@@ -138,7 +142,7 @@ public class MonitorView extends ViewPart {
 			}
 		};
 		ret.setImageDescriptor(Activator.getImageDescriptor(icon));
-		ret.setChecked(Activator.getDefault().getPreferenceStore().getBoolean(preference));	
+		ret.setChecked(Activator.getDefault().getPreferenceStore().getBoolean(preference));
 		return ret;
 	}
 

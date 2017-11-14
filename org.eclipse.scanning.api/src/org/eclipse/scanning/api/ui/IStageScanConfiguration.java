@@ -17,7 +17,7 @@ import java.beans.PropertyChangeListener;
 /**
  * Interface to allow the current configuration of a mapping scan
  * (or how it is displayed in the UI) to be determined
- * 
+ *
  */
 public interface IStageScanConfiguration {
 
@@ -32,28 +32,28 @@ public interface IStageScanConfiguration {
 	 * @return slow axis name
 	 */
 	String getActiveSlowScanAxis();
-	
+
 	/**
 	 * Returns the name of the associated axis. This may be the z-axis, for example.
 	 * @return associated axis name
 	 */
 	String getAssociatedAxis();
-	
+
 	/**
 	 * Add a property change listener
-	 * 
+	 *
 	 * @param listener
 	 */
 	void addPropertyChangeListener(PropertyChangeListener listener);
 
 	/**
 	 * Remove a property change listener
-	 * 
+	 *
 	 * @param listener
 	 */
 	void removePropertyChangeListener(PropertyChangeListener listener);
 
 
-	
+
 
 }

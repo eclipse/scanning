@@ -14,7 +14,6 @@ package org.eclipse.scanning.test.points;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,10 +30,9 @@ import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Point;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.GridModel;
-import org.junit.Assert;
 import org.junit.Test;
 
-public class GridTest extends GeneratorTest {
+public class GridTest extends AbstractGeneratorTest {
 
 	@Test
 	public void testFillingRectangleNoROI() throws Exception {
@@ -326,7 +324,7 @@ public class GridTest extends GeneratorTest {
 		checkPoints(pointList);
 		GeneratorUtil.testGeneratorPoints(gen, 20, 20);
 	}
-	
+
 	@Test
 	public void testGridWrtCompound() throws Exception {
 
@@ -361,7 +359,7 @@ public class GridTest extends GeneratorTest {
 		assertEquals(400, gen.size());
 		assertEquals(2, gen.getRank());
 		assertArrayEquals(new int[] { 20, 20 }, gen.getShape());
-		
+
 		Iterator<IPosition> it = gen.iterator();
 		List<IPosition> pointList = new ArrayList<>();
 		while (it.hasNext()) pointList.add(it.next());
@@ -414,7 +412,7 @@ public class GridTest extends GeneratorTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 //		GeneratorUtil.testGeneratorPoints(gen); // Rounding error in here causing test to fail
@@ -424,9 +422,10 @@ public class GridTest extends GeneratorTest {
 				new Point(2000, 0.4125, 2000, 15.375),
 				new Point(3100, 1.1325, 3100, 16.425) };
 		for (Point p : points) {
-			ArrayList<Collection<String>> names = new ArrayList<Collection<String>>();;
+			ArrayList<Collection<String>> names = new ArrayList<Collection<String>>();
 			names.add(Arrays.asList(new String[] {"x", "y"}));
 			p.setDimensionNames(names);
+			p.setStepIndex(p.getIndex(0));
 		}
 		assertEquals(points[0], pointList.get(0));
 		assertEquals(points[1], pointList.get(1));
@@ -460,15 +459,15 @@ public class GridTest extends GeneratorTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 
 		GeneratorUtil.testGeneratorPoints(gen);
 	}
-	
+
 	private void checkPoints(List<IPosition> pointList) {
-		
+
 		// Check correct number of points
 		assertEquals(20 * 20, pointList.size());
 
@@ -482,7 +481,7 @@ public class GridTest extends GeneratorTest {
 			assertEquals(i-20, pointList.get(i).getIndex("x"));
 			assertEquals(1, pointList.get(i).getIndex("y"));
 		}
-		
+
 		assertEquals(0.075, pointList.get(0).getValue("Y"), 1e-8);
 
 		assertEquals(0.075 + 3 * (3.0 / 20.0), pointList.get(3).getValue("X"), 1e-8);
@@ -513,14 +512,14 @@ public class GridTest extends GeneratorTest {
 		IPointGenerator<GridModel> gen = service.createGenerator(model, roi);
 		List<IPosition> pointList = gen.createPoints();
 
-		assertTrue(pointList.size()==9);
+		assertEquals(9, pointList.size());
 
 		// Check some points
-		assertTrue(pointList.get(0).equals(new Point(0, -9.5, 0, 5.5)));
-		assertTrue(pointList.get(1).equals(new Point(1, -8.5, 0, 5.5)));
-		assertTrue(pointList.get(3).equals(new Point(0, -9.5, 1, 6.5)));
-		assertTrue(pointList.get(5).equals(new Point(2, -7.5, 1, 6.5)));
-		assertTrue(pointList.get(7).equals(new Point(1, -8.5, 2, 7.5)));
+		assertEquals(new Point(0, -9.5, 0, 5.5, 0), pointList.get(0));
+		assertEquals(new Point(1, -8.5, 0, 5.5, 1), pointList.get(1));
+		assertEquals(new Point(0, -9.5, 1, 6.5, 3), pointList.get(3));
+		assertEquals(new Point(2, -7.5, 1, 6.5, 5), pointList.get(5));
+		assertEquals(new Point(1, -8.5, 2, 7.5, 7), pointList.get(7));
 	}
 
 	@Test
@@ -539,12 +538,12 @@ public class GridTest extends GeneratorTest {
 		IPointGenerator<GridModel> gen = service.createGenerator(model, roi);
 		List<IPosition> pointList = gen.createPoints();
 
-		assertTrue(pointList.size()==9);
+		assertEquals(9, pointList.size());
 
 		// Check some points
-		assertTrue(pointList.get(0).equals(new Point(0, 0.5, 0, 0.5)));
-		assertTrue(pointList.get(1).equals(new Point(1, 1.5, 0, 0.5)));
-		assertTrue(pointList.get(3).equals(new Point(2, 2.5, 1, 1.5)));
-		assertTrue(pointList.get(7).equals(new Point(1, 1.5, 2, 2.5)));
+		assertEquals(new Point(0, 0.5, 0, 0.5, 0), pointList.get(0));
+		assertEquals(new Point(1, 1.5, 0, 0.5, 1), pointList.get(1));
+		assertEquals(new Point(2, 2.5, 1, 1.5, 3), pointList.get(3));
+		assertEquals(new Point(1, 1.5, 2, 2.5, 7), pointList.get(7));
 	}
 }

@@ -32,7 +32,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom serialiser for Circular ROI.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -43,7 +43,7 @@ public class PolygonalROISerialiser implements IPVStructureSerialiser<PolygonalR
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
 
 		Union union = fieldCreate.createVariantUnion();
-		
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			addArray("point", ScalarType.pvDouble).
 			addArray("points", union).
@@ -55,11 +55,11 @@ public class PolygonalROISerialiser implements IPVStructureSerialiser<PolygonalR
 	@Override
 	public void populatePVStructure(Serialiser serialiser, PolygonalROI roi, PVStructure pvStructure) throws Exception {
 		PVDataCreate pvDataCreate = PVDataFactory.getPVDataCreate();
-		
+
 		PVDoubleArray point = pvStructure.getSubField(PVDoubleArray.class, "point");
 		point.put(0, roi.getPoint().length, roi.getPoint(), 0);
 		PVUnionArray points = pvStructure.getSubField(PVUnionArray.class, "points");
-		
+
 		List<IROI> pointsList = roi.getPoints();
 		PVUnion[] pvUnionArray = new PVUnion[pointsList.size()];
 		for (int i = 0; i < pointsList.size(); i++) {
@@ -67,8 +67,8 @@ public class PolygonalROISerialiser implements IPVStructureSerialiser<PolygonalR
 			pvUnion.set(serialiser.toPVStructure(pointsList.get(i)));
 			pvUnionArray[i] = pvUnion;
 		}
-		
+
 		points.put(0, pvUnionArray.length, pvUnionArray, 0);
 	}
-	
+
 }

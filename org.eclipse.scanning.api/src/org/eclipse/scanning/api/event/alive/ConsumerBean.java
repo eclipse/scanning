@@ -14,17 +14,18 @@ package org.eclipse.scanning.api.event.alive;
 import org.eclipse.scanning.api.INameable;
 
 /**
- * 
+ *
  * Bean send on the Constants.ALIVE_TOPIC to notify every now and then
- * 
- * 
+ *
+ *
  * @author Matthew Gerring
  * @deprecated replaced by HeartbeatBean. This is here in case new clients look at old consumers.
  */
+@Deprecated
 public class ConsumerBean implements INameable {
 
 	public static final ConsumerBean EMPTY = new ConsumerBean();
-	
+
 	private ConsumerStatus status;
 	private String         name;
 	private String         version;
@@ -33,16 +34,18 @@ public class ConsumerBean implements INameable {
 	private long           lastAlive;
 	private String         hostName;
 	private String         message;
-	
+
 	public ConsumerStatus getStatus() {
 		return status;
 	}
 	public void setStatus(ConsumerStatus status) {
 		this.status = status;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -58,7 +61,7 @@ public class ConsumerBean implements INameable {
 	public void setConsumerId(String consumerId) {
 		this.consumerId = consumerId;
 	}
-	
+
 	public HeartbeatBean toHeartbeat() {
 		HeartbeatBean ret = new HeartbeatBean();
 		ret.setConsumerName(getName());
@@ -145,5 +148,5 @@ public class ConsumerBean implements INameable {
 	public void setMessage(String message) {
 		this.message = message;
 	}
-	
+
 }

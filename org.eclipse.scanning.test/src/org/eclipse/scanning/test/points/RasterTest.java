@@ -28,14 +28,13 @@ import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.points.PointGeneratorService;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class RasterTest {
 
-	
+
 	private IPointGeneratorService service;
-	
+
 	@Before
 	public void before() throws Exception {
 		service = new PointGeneratorService();
@@ -53,12 +52,12 @@ public class RasterTest {
 
 		// Get the point list
 		IPointGenerator<RasterModel> gen = service.createGenerator(model, boundingRectangle);
-		
+
 		final int expectedSize = 16;
 		assertEquals(expectedSize, gen.size());
 		assertEquals(2, gen.getRank());
 		assertArrayEquals(new int[] { 4, 4 }, gen.getShape());
-				
+
 		// Check correct number of points
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
@@ -75,7 +74,7 @@ public class RasterTest {
 
 		assertEquals(3.0, pointList.get(11).getValue("X"), 1e-8);
 		assertEquals(2.0, pointList.get(11).getValue("Y"), 1e-8);
-		
+
         GeneratorUtil.testGeneratorPoints(gen);
 	}
 
@@ -92,8 +91,8 @@ public class RasterTest {
 		model.setFastAxisStep(1);
 		model.setSlowAxisStep(1);
 		model.setBoundingBox(box);
-		
-		
+
+
 
 		IPointGenerator<RasterModel> gen = service.createGenerator(model);
 		List<IPosition> pointList = gen.createPoints();
@@ -174,7 +173,7 @@ public class RasterTest {
 		roi.setPoint(Math.min(xStart, xStop), Math.min(yStart, yStop));
 		roi.setLengths(Math.abs(xStop - xStart), Math.abs(yStop - yStart));
 
-	
+
 		RasterModel model = new RasterModel("x", "y");
 		model.setFastAxisStep(xStep);
 		model.setSlowAxisStep(yStep);
@@ -189,10 +188,10 @@ public class RasterTest {
 		assertEquals("Point list size should be correct", rows * cols, pointList.size());
 
 		// Check some points
-		assertEquals(new Point(0, xStart, 0, yStart), pointList.get(0));
+		assertEquals(new Point(0, xStart, 0, yStart, 0), pointList.get(0));
 		assertEquals(xStart + 3 * xStep, pointList.get(3).getValue("X"), 1e-8);
 		// TODO more
-		
+
         GeneratorUtil.testGeneratorPoints(gen);
 	}
 
@@ -217,27 +216,27 @@ public class RasterTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(1, gen.getRank());
 		assertArrayEquals(new int[] { expectedSize }, gen.getShape());
-		
+
 		// Check the length of the points list
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 
 		// Check the points are correct and the order is maintained
-        assertEquals(new Point(0, 0.0, 0, -1.0, false), pointList.get(0));
-        assertEquals(new Point(1, -1.0, 1, 0.0, false), pointList.get(1));
-        assertEquals(new Point(2, 0.0, 2, 0.0, false), pointList.get(2));
-        assertEquals(new Point(3, 1.0, 3, 0.0, false), pointList.get(3));
-        assertEquals(new Point(4, 0.0, 4, 1.0, false), pointList.get(4));
-		
+        assertEquals(new Point(0, 0.0, 0, -1.0, 0, false), pointList.get(0));
+        assertEquals(new Point(1, -1.0, 1, 0.0, 1, false), pointList.get(1));
+        assertEquals(new Point(2, 0.0, 2, 0.0, 2, false), pointList.get(2));
+        assertEquals(new Point(3, 1.0, 3, 0.0, 3, false), pointList.get(3));
+        assertEquals(new Point(4, 0.0, 4, 1.0, 4, false), pointList.get(4));
+
         GeneratorUtil.testGeneratorPoints(gen, 5);
 	}
 
-	
+
 	@Test
 	public void testNestedNeXus() throws Exception {
-		
+
 		int[] sizes = {8,5};
-		
+
 		// Create scan points for a grid and make a generator
 		RasterModel rmodel = new RasterModel("x", "y");
 		rmodel.setFastAxisName("xNex");
@@ -245,22 +244,22 @@ public class RasterTest {
 		rmodel.setSlowAxisName("yNex");
 		rmodel.setSlowAxisStep(3d/sizes[0]);
 		rmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		final int[] expectedShape = new int[] { sizes[0] + 1, sizes[1] + 1 };
 		IPointGenerator<?> gen = service.createGenerator(rmodel);
 		final int expectedSize = expectedShape[0] * expectedShape[1];
 		assertEquals(expectedSize, gen.size());
 		assertEquals(sizes.length, gen.getRank());
 		assertArrayEquals(expectedShape, gen.getShape());
-    
+
 		IPosition first = gen.iterator().next();
 		assertEquals(0d, first.get("xNex"));
 		assertEquals(0d, first.get("yNex"));
-		
+
 		IPosition last = null;
 		Iterator<IPosition> it = gen.iterator();
 		while(it.hasNext()) last = it.next();
-		
+
 		assertEquals(3d, last.get("xNex"));
 		assertEquals(3d, last.get("yNex"));
 	}
@@ -287,10 +286,10 @@ public class RasterTest {
 		assertEquals(expectedSize, pointList.size());
 
 		// Check some points
-		assertEquals(new Point(0, -10.0, 0, 5.0), pointList.get(0));
-		assertEquals(new Point(1, -9.0, 0, 5.0), pointList.get(1));
-		assertEquals(new Point(0, -10.0, 1, 6.0), pointList.get(3));
-		assertEquals(new Point(1, -9.0, 2, 7.0), pointList.get(7));
+		assertEquals(new Point(0, -10.0, 0, 5.0, 0), pointList.get(0));
+		assertEquals(new Point(1, -9.0, 0, 5.0, 1), pointList.get(1));
+		assertEquals(new Point(0, -10.0, 1, 6.0, 3), pointList.get(3));
+		assertEquals(new Point(1, -9.0, 2, 7.0, 7), pointList.get(7));
 	}
 
 	@Test
@@ -311,15 +310,15 @@ public class RasterTest {
 		assertEquals(expectedSize, gen.size());
 		assertEquals(2, gen.getRank());
 		assertArrayEquals(new int[] { 3, 3 }, gen.getShape());
-		
+
 		List<IPosition> pointList = gen.createPoints();
 		assertEquals(expectedSize, pointList.size());
 
 		// Check some points
-		assertEquals(new Point(0, 1.0, 0, 1.0), pointList.get(0));
-		assertEquals(new Point(1, 2.0, 0, 1.0), pointList.get(1));
-		assertEquals(new Point(2, 3.0, 1, 2.0), pointList.get(3));
-		assertEquals(new Point(1, 2.0, 2, 3.0), pointList.get(7));
+		assertEquals(new Point(0, 1.0, 0, 1.0, 0), pointList.get(0));
+		assertEquals(new Point(1, 2.0, 0, 1.0, 1), pointList.get(1));
+		assertEquals(new Point(2, 3.0, 1, 2.0, 3), pointList.get(3));
+		assertEquals(new Point(1, 2.0, 2, 3.0, 7), pointList.get(7));
 	}
 
 }

@@ -21,15 +21,15 @@ import org.eclipse.scanning.api.event.bean.IBeanListener;
 import org.eclipse.scanning.api.event.core.IPublisher;
 import org.eclipse.scanning.api.event.core.IResponder;
 import org.eclipse.scanning.api.event.core.IResponseCreator;
-import org.eclipse.scanning.api.event.core.IResponseProcess;
+import org.eclipse.scanning.api.event.core.IRequestHandler;
 import org.eclipse.scanning.api.event.core.ISubscriber;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ResponderImpl<T extends IdBean> extends AbstractRequestResponseConnection implements IResponder<T> {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(ResponderImpl.class);
-	
+
 	private ISubscriber<IBeanListener<T>>      subscriber;
 	private IPublisher<T>                      publisher;
 	private IResponseCreator<T>                creator;
@@ -41,12 +41,12 @@ public class ResponderImpl<T extends IdBean> extends AbstractRequestResponseConn
 
 	@Override
 	public void setResponseCreator(IResponseCreator<T> res) throws EventException {
-		
+
 		if (subscriber!=null) throw new EventException("This responder is already connected with an IResponseCreator! Please call disconnect to stop it.");
-	
+
 		subscriber = eservice.createSubscriber(getUri(), getRequestTopic());
 		publisher  = eservice.createPublisher(getUri(), getResponseTopic());
-	    
+
 		this.creator = res;
 
 		subscriber.setSynchronous(res.isSynchronous());
@@ -55,10 +55,10 @@ public class ResponderImpl<T extends IdBean> extends AbstractRequestResponseConn
 			public void beanChangePerformed(BeanEvent<T> evt) {
 				T request = evt.getBean();
 				try {
-					IResponseProcess<T> process = creator.createResponder(request, publisher);
+					IRequestHandler<T> process = creator.createResponder(request, publisher);
 					T response = process.process(request);
 					publisher.broadcast(response);
-					
+
 				} catch (EventException ne) {
 					if (ne.getCause()!=null) System.out.println(ne.getCause().getMessage()); // Sometimes logging not working here!
 					logger.error("Request unable to be processed! "+request, ne);
@@ -69,7 +69,7 @@ public class ResponderImpl<T extends IdBean> extends AbstractRequestResponseConn
 				return ResponderImpl.this.getBeanClass();
 			}
 		});
-		
+
 	}
 
 	@Override

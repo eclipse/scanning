@@ -36,12 +36,12 @@ class ModelFieldLabelProvider extends EnableIfColumnLabelProvider {
 
 	private Image ticked;
 	private Image unticked;
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(ModelFieldLabelProvider.class);
-	
+
 	private IScannableDeviceService cservice;
 	private final ModelViewer       viewer;
-	
+
 	public ModelFieldLabelProvider(ModelViewer viewer) {
 		this.viewer = viewer;
 		try {
@@ -50,13 +50,15 @@ class ModelFieldLabelProvider extends EnableIfColumnLabelProvider {
 			logger.error("Unable to make a remote connection to "+IScannableDeviceService.class.getSimpleName());
 		}
 	}
-	
+
+	@Override
 	public void dispose() {
 		if (ticked!=null)   ticked.dispose();
 		if (unticked!=null) unticked.dispose();
 		super.dispose();
 	}
-	
+
+	@Override
 	public Color getForeground(Object ofield) {
 		Color ret = super.getForeground(ofield);
 		if (ret!=null) return ret;
@@ -73,10 +75,11 @@ class ModelFieldLabelProvider extends EnableIfColumnLabelProvider {
 	 * <code>ILabelProvider</code> method returns <code>null</code>.
 	 * Subclasses may override.
 	 */
+	@Override
 	public Image getImage(Object ofield) {
-		
+
 		if (ofield == null) return null;
-		
+
 		FieldValue field  = (FieldValue)ofield;
 		Object   element  = field.get();
 		if (element instanceof Boolean) {
@@ -92,14 +95,15 @@ class ModelFieldLabelProvider extends EnableIfColumnLabelProvider {
 	 * The <code>LabelProvider</code> implementation of this
 	 * <code>ILabelProvider</code> method returns the element's
 	 * <code>toString</code> string. Subclasses may override.
-	 * 
+	 *
 	 * This renderer is called by the table and some cell editors.
 	 * It does not always get asked to render a FieldValue
 	 */
+	@Override
 	public String getText(Object ofield) {
-		
+
 		if (ofield == null)            return "";
-		
+
 		StringBuilder buf = new StringBuilder();
 		try {
 			if (ofield instanceof FieldValue) {
@@ -114,7 +118,7 @@ class ModelFieldLabelProvider extends EnableIfColumnLabelProvider {
 		}
 		return buf.toString();
 	}
-	
+
 	private void appendFieldText(StringBuilder buf, FieldValue ofield) throws Exception {
 		FieldValue field  = (FieldValue)ofield;
 		Object   element  = field.get();
@@ -123,7 +127,7 @@ class ModelFieldLabelProvider extends EnableIfColumnLabelProvider {
 			return;
 		}
 		if (element instanceof Boolean) return;
-		
+
 		if (element.getClass()!=null &&element.getClass().isArray()) {
 			buf.append( StringUtils.toString(element) );
 		} else {
@@ -140,7 +144,7 @@ class ModelFieldLabelProvider extends EnableIfColumnLabelProvider {
 			buf.append(getUnit(field));
 		}
 	}
-	
+
 	private String getLabel(FieldValue field, Object element) throws Exception {
 		StringBuilder buf = new StringBuilder();
 		appendLabel(buf, field, element);
@@ -148,7 +152,7 @@ class ModelFieldLabelProvider extends EnableIfColumnLabelProvider {
 	}
 
 	private void appendCompoundText(StringBuilder buf, final String compoundLabel, Object element) throws Exception {
-		
+
 		try {
 		    Method ts = element.getClass().getMethod("toString");
 		    if (ts.getDeclaringClass()==element.getClass()) {
@@ -170,7 +174,7 @@ class ModelFieldLabelProvider extends EnableIfColumnLabelProvider {
 				};
 			}
 			buf.append(replace);
-			
+
 		} else {
 			buf.append("[");
 			for (FieldValue fieldValue : fields) {
@@ -178,34 +182,34 @@ class ModelFieldLabelProvider extends EnableIfColumnLabelProvider {
 				buf.append("=");
 				appendLabel(buf, fieldValue, fieldValue.get());
 				buf.append(", ");
-			}	
+			}
 			buf.append("]");
 		}
 	}
 
-	
+
 	private String getUnit(FieldValue field) {
-		
+
 		FieldDescriptor anot = field.getAnnotation();
 		if (anot!=null) {
 			if (anot.scannable().length()>0 && cservice !=null) {
 				try {
 				    String scannableName = (String)FieldValue.get(field.getModel(), anot.scannable());
-				    
+
 				    if (scannableName!=null && scannableName.length()>0) {
 					    IScannable<?> scannable = cservice.getScannable(scannableName);
-					    
+
 					    String unit = scannable.getUnit();
 					    if (unit!=null && unit.length()>0) {
 					        return " "+scannable.getUnit();
 					    }
 				    }
-				    
+
 				} catch (Exception ne) {
 					ne.printStackTrace();
 				}
 			}
-			
+
 			if (anot.unit().length()>0) return " "+anot.unit();
 		}
 		return "";

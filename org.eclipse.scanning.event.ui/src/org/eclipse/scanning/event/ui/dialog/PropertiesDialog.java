@@ -49,17 +49,18 @@ public class PropertiesDialog extends Dialog {
 		props.putAll(p);
 	}
 
+	@Override
 	protected Control createDialogArea(Composite parent) {
-		
+
 		// create a composite with standard margins and spacing
 		Composite composite = (Composite)super.createDialogArea(parent);
 		composite.setLayout(new GridLayout(1, false));
-		
+
 		final CLabel warning = new CLabel(composite, SWT.LEFT);
 		warning.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		warning.setImage(Activator.imageDescriptorFromPlugin(Activator.PLUGIN_ID, "icons/error.png").createImage());
 		warning.setText("Expert queue configuration parameters, please use with caution.");
-		
+
 		TableViewer viewer   = new TableViewer(composite, SWT.FULL_SELECTION | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
 		viewer.setUseHashlookup(true);
 		viewer.getTable().setHeaderVisible(true);
@@ -67,14 +68,15 @@ public class PropertiesDialog extends Dialog {
 
 		createColumns(viewer);
 		viewer.setContentProvider(createContentProvider());
-		
+
 		viewer.setInput(props);
 
 		final Button adv = new Button(composite, SWT.PUSH);
 		adv.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
 		adv.setText("Advanced...");
-		
-		adv.addSelectionListener(new SelectionAdapter() {			
+
+		adv.addSelectionListener(new SelectionAdapter() {
+			@Override
 			public void widgetSelected(SelectionEvent e) {
 				PreferenceDialog pref = PreferencesUtil.createPreferenceDialogOn(getShell(), "org.dawnsci.commandserver.ui.activemqPage", null, null);
 				if (pref != null) pref.open();
@@ -86,8 +88,8 @@ public class PropertiesDialog extends Dialog {
 
 	private IContentProvider createContentProvider() {
 		return new IStructuredContentProvider() {
-			
-			
+
+
 			private Set<Entry<Object, Object>> entries;
 
 			@Override
@@ -97,12 +99,12 @@ public class PropertiesDialog extends Dialog {
 				if (tmp==null) return;
 				this.entries = tmp.entrySet();
 			}
-			
+
 			@Override
 			public void dispose() {
-				
+
 			}
-			
+
 			@Override
 			public Object[] getElements(Object inputElement) {
 				return entries.toArray(new Entry[entries.size()]);
@@ -111,11 +113,12 @@ public class PropertiesDialog extends Dialog {
 	}
 
 	private void createColumns(final TableViewer viewer) {
-		
+
         final TableViewerColumn name = new TableViewerColumn(viewer, SWT.LEFT);
 		name.getColumn().setText("Name");
 		name.getColumn().setWidth(200);
 		name.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				return humanReadable(((Entry<?, ?>)element).getKey().toString());
 			}
@@ -125,6 +128,7 @@ public class PropertiesDialog extends Dialog {
         value.getColumn().setText("Value");
         value.getColumn().setWidth(300);
         value.setLabelProvider(new ColumnLabelProvider() {
+			@Override
 			public String getText(Object element) {
 				String val = ((Entry<?, ?>)element).getValue().toString();
 				return val.replace("%3A", ":");
@@ -151,16 +155,16 @@ public class PropertiesDialog extends Dialog {
 			@Override
 			protected void setValue(Object element, Object value) {
 				Entry<Object, Object> e = (Entry<Object, Object>)element;
-				
+
 				String val = (String)value;
 				val = val.replace(":", "%3A");
 				e.setValue(value);
 				viewer.refresh(element);
 			}
-        	
+
         });
 	}
-	
+
 	/**
 	 * Convert Camel Case to human readable.
 	 * @param s

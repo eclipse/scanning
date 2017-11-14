@@ -33,11 +33,13 @@ abstract class AbstractRequestResponseConnection implements IRequestResponseConn
 		this.responseTopic = resTopic;
 		this.eservice     = eservice;
 	}
-	
+
+	@Override
 	public IEventConnectorService getConnectorService() {
 		return eservice.getEventConnectorService();
 	}
 
+	@Override
 	public URI getUri() {
 		return uri;
 	}
@@ -46,26 +48,31 @@ abstract class AbstractRequestResponseConnection implements IRequestResponseConn
 		this.uri = uri;
 	}
 
+	@Override
 	public String getRequestTopic() {
 		return requestTopic;
 	}
 
+	@Override
 	public void setRequestTopic(String requestTopic) {
 		this.requestTopic = requestTopic;
 	}
 
+	@Override
 	public String getResponseTopic() {
 		return responseTopic;
 	}
 
+	@Override
 	public void setResponseTopic(String responseTopic) {
 		this.responseTopic = responseTopic;
 	}
-	
+
 	/**
 	 * Call to disconnect
 	 * @throws EventException
 	 */
+	@Override
 	public void disconnect() throws EventException {
 		setDisconnected(true);
 	}
@@ -108,6 +115,7 @@ abstract class AbstractRequestResponseConnection implements IRequestResponseConn
 		return true;
 	}
 
+	@Override
 	public boolean isDisconnected() {
 		return disconnected;
 	}

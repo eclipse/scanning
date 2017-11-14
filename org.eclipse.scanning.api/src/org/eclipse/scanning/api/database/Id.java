@@ -4,30 +4,30 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * 
+ *
  * This class represents one or more Ids as returned
- * by an operation on the database. 
- * 
+ * by an operation on the database.
+ *
  * It is desirable to have operations which do more than
  * one thing, therefore we allow compound operations.
  * Accordingly there is more than one return code for operations
- * like this. 
- * 
+ * like this.
+ *
  * @author Matthew Gerring
  *
  */
 public class Id {
 
 	public static final Id NONE = new Id(0L);
-	
+
 	private Map<String, Long>   ids;
 	private Map<String, String> errors;
-	
+
 	public Id() {
 		ids    = new LinkedHashMap<>();
 		errors = new LinkedHashMap<>();
 	}
-	
+
 	public Id(Long id) {
 		this();
 		ids.put(null, id);
@@ -36,9 +36,9 @@ public class Id {
 		this();
 		ids.put(name, id);
 	}
-	
+
     /**
-     * 
+     *
      * @return if this id contains one or more real ids
      */
 	public boolean is() {
@@ -51,7 +51,7 @@ public class Id {
 	public Long get() {
 		return ids.get(null);
 	}
-	
+
 	/**
 	 * Get named Id
 	 * @param name
@@ -70,7 +70,7 @@ public class Id {
 	public Long put(String name, Long id) {
 		return ids.put(name, id);
 	}
-	
+
 	public Long put(String name, Id id) {
 		if (id.size()!=1) throw new IllegalArgumentException("Only one id may be added at a time!");
 		return ids.put(name, id.get());
@@ -118,7 +118,7 @@ public class Id {
 	public int size() {
 		return ids.size();
 	}
-	
+
 
 	@Override
 	public int hashCode() {

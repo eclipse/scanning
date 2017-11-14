@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
+import java.util.NoSuchElementException;
+
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.GeneratorException;
@@ -21,7 +23,7 @@ import org.eclipse.scanning.api.points.models.StaticModel;
 
 /**
  * A software generator that generates a static (i.e. empty) point one or more times.
- * 
+ *
  * @author Matthew Dickie
  */
 class StaticGenerator extends AbstractGenerator<StaticModel> {
@@ -30,12 +32,12 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 
 		private final int size;
 		private int remaining = 0;
-		
+
 		public StaticPointIterator(final int size) {
 			this.size = size;
 			this.remaining = size;
 		}
-		
+
 		@Override
 		public boolean hasNext() {
 			return remaining > 0;
@@ -43,8 +45,12 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 
 		@Override
 		public IPosition next() {
+			if (!hasNext()) {
+				throw new NoSuchElementException();
+			}
+
 			remaining--;
-			return pos;
+			return STATIC_POSITION;
 		}
 
 		@Override
@@ -54,17 +60,25 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 
 		@Override
 		public int[] getShape() {
-			return new int[] { size };
+			return size == 1 ? EMPTY_SHAPE : new int[] { size };
 		}
 
 		@Override
 		public int getRank() {
-			return 1;
+			return size == 1 ? 0 : 1;
 		}
-	};
-	
-	private static final IPosition pos = new StaticPosition();
-	
+
+		@Override
+		public int getIndex() {
+			return size - remaining;
+		}
+
+	}
+
+	private static final int[] EMPTY_SHAPE = new int[0];
+
+	private static final IPosition STATIC_POSITION = new StaticPosition();
+
 	StaticGenerator() {
 		setLabel("Empty");
 		setDescription("Empty generator used when wrapping malcolm scans with no CPU steps.");
@@ -80,18 +94,20 @@ class StaticGenerator extends AbstractGenerator<StaticModel> {
 	protected ScanPointIterator iteratorFromValidModel() {
 		return new StaticPointIterator(model.getSize());
 	}
-	
+
 	// Users to not edit the StaticGenerator
+	@Override
 	public boolean isVisible() {
 		return false;
 	}
-	
+
+	@Override
 	public boolean isScanPointGeneratorFactory() {
 		return false;
 	}
 
 	@Override
 	public int[] getShape() throws GeneratorException {
-		return new int[] { model.getSize() };
+		return model.getSize() == 1 ? EMPTY_SHAPE : new int[] { model.getSize() };
 	}
 }

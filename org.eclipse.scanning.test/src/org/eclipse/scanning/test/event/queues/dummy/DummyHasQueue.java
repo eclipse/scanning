@@ -15,34 +15,36 @@ import org.eclipse.scanning.api.event.queues.beans.IHasChildQueue;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 
 /**
- * Generic class to mock behaviour of a POJO in a Queue. Has an additional 
+ * Generic class to mock behaviour of a POJO in a Queue. Has an additional
  * queue message option for testing a second message field
- * 
+ *
  * @author Michael Wharmby
  *
  */
 public class DummyHasQueue extends Queueable implements IHasChildQueue {
-	
+
 	private String queueMessage;
-	
+
 	public DummyHasQueue() {
 		super();
 	}
-	
+
 	public DummyHasQueue(String name, long time) {
 		super();
 		setName(name);
 		runTime = time;
 	}
 
+	@Override
 	public String getQueueMessage() {
 		return queueMessage;
 	}
 
+	@Override
 	public void setQueueMessage(String queueMessage) {
 		this.queueMessage = queueMessage;
 	}
-	
+
 	public void merge(DummyHasQueue with) {
 		super.merge(with);
 		this.queueMessage = with.queueMessage;
@@ -72,7 +74,7 @@ public class DummyHasQueue extends Queueable implements IHasChildQueue {
 			return false;
 		return true;
 	}
-	
-	
+
+
 
 }

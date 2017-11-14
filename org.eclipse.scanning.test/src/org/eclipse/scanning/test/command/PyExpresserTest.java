@@ -27,6 +27,7 @@ import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.GridModel;
+import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
 import org.eclipse.scanning.api.points.models.StepModel;
@@ -40,7 +41,7 @@ import org.junit.Test;
 
 
 public class PyExpresserTest {
-	
+
 	private PyExpressionFactory factory;
 
 	@Before
@@ -63,17 +64,17 @@ public class PyExpresserTest {
 		monitors.add("someMonitor");
 
 		ScanRequest<IROI> request = new ScanRequest<>();
-		request.setCompoundModel(new CompoundModel(smodel));
-		request.setMonitorNames(monitors);
+		request.setCompoundModel(new CompoundModel<IROI>(smodel));
+		request.setMonitorNamesPerPoint(monitors);
 
 		assertEquals(  // Concise.
 				"mscan(step('fred', 0.0, 10.0, 1.0), 'someMonitor')",
 				factory.pyExpress(request, false));
 		assertEquals(  // Verbose.
-				"mscan(path=[step(axis='fred', start=0.0, stop=10.0, step=1.0)], mon=['someMonitor'])",
+				"mscan(path=[step(axis='fred', start=0.0, stop=10.0, step=1.0)], monitorsPerPoint=['someMonitor'])",
 				factory.pyExpress(request, true));
 	}
-	
+
 	@Test
 	public void testScanRequestWithMonitor_Repeat()
 			throws Exception {
@@ -88,14 +89,14 @@ public class PyExpresserTest {
 		monitors.add("someMonitor");
 
 		ScanRequest<IROI> request = new ScanRequest<>();
-		request.setCompoundModel(new CompoundModel(rmodel));
-		request.setMonitorNames(monitors);
+		request.setCompoundModel(new CompoundModel<IROI>(rmodel));
+		request.setMonitorNamesPerPoint(monitors);
 
 		assertEquals(  // Concise.
 				"mscan(repeat('fred', 10, 2.2, 25), 'someMonitor')",
 				factory.pyExpress(request, false));
 		assertEquals(  // Verbose.
-				"mscan(path=[repeat(axis='fred', count=10, value=2.2, sleep=25)], mon=['someMonitor'])",
+				"mscan(path=[repeat(axis='fred', count=10, value=2.2, sleep=25)], monitorsPerPoint=['someMonitor'])",
 				factory.pyExpress(request, true));
 	}
 
@@ -116,11 +117,13 @@ public class PyExpresserTest {
 		gmodel.setBoundingBox(bbox);
 		gmodel.setFastAxisPoints(3);
 		gmodel.setSlowAxisPoints(4);
+		gmodel.setSnake(false);
+		gmodel.setContinuous(true);
 
 		CircularROI croi = new CircularROI();
 		ScanRequest<IROI> request = new ScanRequest<>();
 
-		CompoundModel cmodel = new CompoundModel();
+		CompoundModel<IROI> cmodel = new CompoundModel<>();
 		cmodel.setData(gmodel, croi);
 		request.setCompoundModel(cmodel);
 
@@ -128,7 +131,7 @@ public class PyExpresserTest {
 				"mscan(grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), count=(3, 4), snake=False, roi=circ((0.0, 0.0), 1.0)))",
 				factory.pyExpress(request, false));
 		assertEquals(  // Verbose.
-				"mscan(path=[grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=False, roi=[circ(origin=(0.0, 0.0), radius=1.0)])])",
+				"mscan(path=[grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=False, continuous=True, roi=[circ(origin=(0.0, 0.0), radius=1.0)])])",
 				factory.pyExpress(request, true));
 	}
 
@@ -147,7 +150,7 @@ public class PyExpresserTest {
 		amodel.setPositions(0.1);
 
 		ScanRequest<IROI> request = new ScanRequest<>();
-		request.setCompoundModel(new CompoundModel(smodel, amodel));
+		request.setCompoundModel(new CompoundModel<IROI>(smodel, amodel));
 
 		assertEquals(  // Concise.
 				"mscan([step('fred', 0.0, 10.0, 1.0), val('fred', 0.1)])",
@@ -175,8 +178,95 @@ public class PyExpresserTest {
 	}
 
 	@Test
-	public void testGridModel()
-			throws Exception {
+	public void testMultiStepModelNoSteps() throws Exception{
+
+		MultiStepModel mmodel = new MultiStepModel();
+		mmodel.setName("fred");
+
+		assertEquals(  // Concise.
+				"mstep('fred', [])",
+				factory.pyExpress(mmodel, false));
+		assertEquals(  // Verbose.
+				"mstep(axis='fred', stepModels=[])",
+				factory.pyExpress(mmodel, true));
+	}
+
+	@Test
+	public void testMultiStepModelOneStep() throws Exception{
+
+		MultiStepModel mmodel = new MultiStepModel();
+		mmodel.setName("fred");
+
+		StepModel smodel = new StepModel();
+		smodel.setStart(0);
+		smodel.setStop(10);
+		smodel.setStep(1);
+		smodel.setName("fred");
+		mmodel.addStepModel(smodel);
+
+		assertEquals(  // Concise.
+				"mstep('fred', [StepModel('fred', 0.0, 10.0, 1.0)])",
+				factory.pyExpress(mmodel, false));
+		assertEquals(  // Verbose.
+				"mstep(axis='fred', stepModels=[StepModel('fred', 0.0, 10.0, 1.0)])",
+				factory.pyExpress(mmodel, true));
+	}
+
+	@Test
+	public void testMultiStepModelOneStepWithExposure() throws Exception{
+
+		MultiStepModel mmodel = new MultiStepModel();
+		mmodel.setName("fred");
+
+		StepModel smodel = new StepModel();
+		smodel.setStart(0);
+		smodel.setStop(10);
+		smodel.setStep(1);
+		smodel.setName("fred");
+		smodel.setExposureTime(0.1);
+		mmodel.addStepModel(smodel);
+
+		assertEquals(  // Concise.
+				"mstep('fred', [StepModel('fred', 0.0, 10.0, 1.0, 0.1)])",
+				factory.pyExpress(mmodel, false));
+		assertEquals(  // Verbose.
+				"mstep(axis='fred', stepModels=[StepModel('fred', 0.0, 10.0, 1.0, 0.1)])",
+				factory.pyExpress(mmodel, true));
+	}
+
+	@Test
+	public void testMultiStepModelTwoSteps() throws Exception{
+
+		MultiStepModel mmodel = new MultiStepModel();
+		mmodel.setName("fred");
+
+		StepModel smodel = new StepModel();
+		smodel.setStart(0);
+		smodel.setStop(10);
+		smodel.setStep(1);
+		smodel.setName("fred");
+		mmodel.addStepModel(smodel);
+
+		smodel = new StepModel();
+		smodel.setStart(20);
+		smodel.setStop(30);
+		smodel.setStep(2);
+		smodel.setName("bill");
+		mmodel.addStepModel(smodel);
+
+		assertEquals(  // Concise.
+				"mstep('fred', [StepModel('fred', 0.0, 10.0, 1.0), StepModel('bill', 20.0, 30.0, 2.0)])",
+				factory.pyExpress(mmodel, false));
+
+		String expected = "mstep(axis='fred', stepModels=[StepModel('fred', 0.0, 10.0, 1.0), StepModel('bill', 20.0, 30.0, 2.0)])";
+		String actual   = factory.pyExpress(mmodel, true);
+		assertEquals(expected, actual);
+	}
+
+
+
+	@Test
+	public void testGridModel() throws Exception {
 
 		BoundingBox bbox = new BoundingBox();
 		bbox.setFastAxisStart(0);
@@ -190,15 +280,17 @@ public class PyExpresserTest {
 		gmodel.setBoundingBox(bbox);
 		gmodel.setFastAxisPoints(3);
 		gmodel.setSlowAxisPoints(4);
+		gmodel.setSnake(true);
+		gmodel.setContinuous(true);
 
 		assertEquals(  // Concise.
-				"grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), count=(3, 4), snake=False)",
+				"grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), count=(3, 4))",
 				factory.pyExpress(gmodel, new ArrayList<>(), false));
 		assertEquals(  // Verbose.
-				"grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=False)",
+				"grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=True, continuous=True)",
 				factory.pyExpress(gmodel, new ArrayList<>(), true));
 	}
-	
+
 	@Test
 	public void testScanRequestWithProcessing() throws Exception {
 
@@ -214,6 +306,8 @@ public class PyExpresserTest {
 		gmodel.setBoundingBox(bbox);
 		gmodel.setFastAxisPoints(2);
 		gmodel.setSlowAxisPoints(2);
+		gmodel.setContinuous(false);
+		gmodel.setSnake(false);
 
 		ScanRequest<IROI> request = new ScanRequest<>();
 		request.setCompoundModel(new CompoundModel(Arrays.asList(gmodel)));
@@ -223,11 +317,11 @@ public class PyExpresserTest {
 		request.setDetectors(detectors);
 
 		String mscan = factory.pyExpress(request, false);
-		String expected = "mscan(grid(('p', 'q'), (0.0, 1.0), (10.0, 12.0), count=(2, 2), snake=False), [detector('mandelbrot', 0.1), detector('processing', -1.0)])";
+		String expected = "mscan(grid(('p', 'q'), (0.0, 1.0), (10.0, 12.0), count=(2, 2), snake=False, continuous=False), [detector('mandelbrot', 0.1), detector('processing', -1.0)])";
 		assertEquals(expected, mscan);
-		
+
 		mscan = factory.pyExpress(request, true);
-		expected = "mscan(path=[grid(axes=('p', 'q'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(2, 2), snake=False)], det=[detector('mandelbrot', 0.1, maxIterations=500, escapeRadius=10.0, columns=301, rows=241, points=1000, maxRealCoordinate=1.5, maxImaginaryCoordinate=1.2, realAxisName='p', imaginaryAxisName='q', enableNoise=False, noiseFreeExposureTime=5.0, saveImage=True, saveSpectrum=True, saveValue=True), detector('processing', -1.0, detectorName='mandelbrot', processingFilePath='/tmp/something.nxs', xmx='1024m', timeOut=60000, numberOfCores=1)])";
+		expected = "mscan(path=[grid(axes=('p', 'q'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(2, 2), snake=False, continuous=False)], det=[detector('mandelbrot', 0.1, maxIterations=500, escapeRadius=10.0, columns=301, rows=241, points=1000, maxRealCoordinate=1.5, maxImaginaryCoordinate=1.2, realAxisName='p', imaginaryAxisName='q', enableNoise=False, noiseFreeExposureTime=5.0, saveImage=True, saveSpectrum=True, saveValue=True), detector('processing', -1.0, detectorName='mandelbrot', processingFilePath='/tmp/something.nxs', xmx='1024m', timeOut=60000, numberOfCores=1, monitorForOverwrite=False)])";
 		assertEquals(expected, mscan);
 	}
 
@@ -237,7 +331,7 @@ public class PyExpresserTest {
 		ClusterProcessingModel cmodel = new ClusterProcessingModel("processing", "mandelbrot", "/tmp/something.nxs");
 
 		String detector = factory.pyExpress(cmodel, true);
-		String expected = "detector('processing', -1.0, detectorName='mandelbrot', processingFilePath='/tmp/something.nxs', xmx='1024m', timeOut=60000, numberOfCores=1)";
+		String expected = "detector('processing', -1.0, detectorName='mandelbrot', processingFilePath='/tmp/something.nxs', xmx='1024m', timeOut=60000, numberOfCores=1, monitorForOverwrite=False)";
 		assertEquals(expected, detector);
 	}
 
@@ -264,7 +358,7 @@ public class PyExpresserTest {
 		assertEquals(expected, detector);
 	}
 
-	
+
 	@Test
 	public void testRasterModel() throws Exception {
 
@@ -281,12 +375,13 @@ public class PyExpresserTest {
 		rmodel.setFastAxisStep(3);
 		rmodel.setSlowAxisStep(4);
 		rmodel.setSnake(true);
+		rmodel.setContinuous(true);
 
 		assertEquals(  // Concise.
 				"grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), (3.0, 4.0))",
 				factory.pyExpress(rmodel, null, false));
 		assertEquals(  // Verbose.
-				"grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), step=(3.0, 4.0), snake=True)",
+				"grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), step=(3.0, 4.0), snake=True, continuous=True)",
 				factory.pyExpress(rmodel, null, true));
 	}
 

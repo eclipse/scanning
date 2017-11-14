@@ -16,10 +16,10 @@ import java.net.URI;
 /**
  * Clients do not need to consume this service, it is provided by a bundle in the
  * workspace. Tests can hardcode an implementation of this service.
- * 
+ *
  * A service which provides the marshalling (the implementation uses Jackson) and
  * the JMS service provider (the implementation uses ActiveMQ)
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -42,10 +42,10 @@ public interface IEventConnectorService {
 	<U> U unmarshal(String anyObject, Class<U> beanClass) throws Exception;
 
 	/**
-	 * Create a connection factory for sending events. This method 
+	 * Create a connection factory for sending events. This method
 	 * may return null or a class implementing javax.jms.ConnectionFactory
 	 * or javax.jms.QueueConnectionFactory
-	 * 
+	 *
 	 * @param uri
 	 * @return
 	 */

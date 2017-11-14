@@ -40,7 +40,7 @@ public class UnsupportedLanguageException extends Exception {
 	}
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -2654189216064929001L;
 

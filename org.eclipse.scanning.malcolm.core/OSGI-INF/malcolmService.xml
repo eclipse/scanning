@@ -5,5 +5,5 @@
       <provide interface="org.eclipse.scanning.api.malcolm.IMalcolmService"/>
    </service>
    <reference bind="setConnectorService" cardinality="1..1" interface="org.eclipse.scanning.api.malcolm.connector.IMalcolmConnectorService" name="IMalcolmConnectorService" policy="static"/>
-   <reference bind="setRunnableDeviceService" cardinality="1..1" interface="org.eclipse.scanning.api.device.IRunnableDeviceService" name="IRunnableDeviceService" policy="static"/> 
+   <reference bind="setRunnableDeviceService" cardinality="1..1" interface="org.eclipse.scanning.api.device.IRunnableDeviceService" name="IRunnableDeviceService" policy="static"/>
 </scr:component>

@@ -30,6 +30,7 @@ import org.eclipse.scanning.api.scan.PositionEvent;
 import org.eclipse.scanning.api.scan.ScanningException;
 import org.eclipse.scanning.api.scan.event.IPositionListenable;
 import org.eclipse.scanning.api.scan.event.IPositionListener;
+import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.event.EventServiceImpl;
 import org.eclipse.scanning.event.remote.RemoteServiceFactory;
 import org.eclipse.scanning.example.scannable.MockScannableConnector;
@@ -44,8 +45,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
-
 public class RemoteScannableServiceTest extends BrokerTest {
 
 	private static IScannableDeviceService      cservice;
@@ -55,11 +54,11 @@ public class RemoteScannableServiceTest extends BrokerTest {
 
 	@BeforeClass
 	public static void createServices() throws Exception {
-		
+
 		System.out.println("Create Services");
 		RemoteServiceFactory.setTimeout(1, TimeUnit.MINUTES); // Make test easier to debug.
-		
-		// We wire things together without OSGi here 
+
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		setUpNonOSGIActivemqMarshaller();
 		eservice = new EventServiceImpl(new ActivemqConnectorService()); // Do not copy this get the service from OSGi!
@@ -71,13 +70,13 @@ public class RemoteScannableServiceTest extends BrokerTest {
 		Services.setEventService(eservice);
 		Services.setConnector(cservice);
 		System.out.println("Set connectors");
-		
+
 		dservlet = new DeviceServlet();
 		dservlet.setBroker(uri.toString());
 		dservlet.setRequestTopic(IEventService.DEVICE_REQUEST_TOPIC);
 		dservlet.setResponseTopic(IEventService.DEVICE_RESPONSE_TOPIC);
 		dservlet.connect();
-		
+
 		pservlet = new PositionerServlet();
 		pservlet.setBroker(uri.toString());
 		pservlet.setRequestTopic(IEventService.POSITIONER_REQUEST_TOPIC);
@@ -86,18 +85,18 @@ public class RemoteScannableServiceTest extends BrokerTest {
 		System.out.println("Made Servlets");
 
 	}
-	
+
 	@Before
 	public void createService() throws EventException {
 		rservice = eservice.createRemoteService(uri, IScannableDeviceService.class);
 	}
-	
+
 	@After
 	public void disposeService() throws EventException {
 		((IDisconnectable)rservice).disconnect();
 	}
 
-	
+
 	@AfterClass
 	public static void cleanup() throws EventException {
 		dservlet.disconnect();
@@ -108,10 +107,10 @@ public class RemoteScannableServiceTest extends BrokerTest {
 	public void checkNotNull() throws Exception {
 		assertNotNull(rservice);
 	}
-	
+
 	@Test
 	public void testScannableNames() throws Exception {
-		
+
 		Collection<String> names1 = cservice.getScannableNames();
 		Collection<String> names2 = rservice.getScannableNames();
 		assertTrue(names1!=null);
@@ -122,24 +121,24 @@ public class RemoteScannableServiceTest extends BrokerTest {
 
 	@Test
 	public void testGetScannable() throws Exception {
-		
+
 		IScannable<Double> xNex1 = cservice.getScannable("xNex");
 		IScannable<Double> xNex2 = rservice.getScannable("xNex");
 		assertTrue(xNex1!=null);
 		assertTrue(xNex2!=null);
 	}
-	
+
 	@Test
 	public void testScannablePositionLocal() throws Exception {
-		
+
 		IScannable<Double> xNex1 = cservice.getScannable("xNex");
 		IScannable<Double> xNex2 = rservice.getScannable("xNex");
 		scannableValues(xNex1, xNex2);
 	}
-	
+
 	@Test
 	public void testScannablePositionRemote() throws Exception {
-		
+
 		IScannable<Double> xNex1 = cservice.getScannable("xNex");
 		IScannable<Double> xNex2 = rservice.getScannable("xNex");
 		scannableValues(xNex2, xNex1);
@@ -149,7 +148,7 @@ public class RemoteScannableServiceTest extends BrokerTest {
 	private void scannableValues(IScannable<Double> setter, IScannable<Double> getter) throws Exception {
 		assertTrue(setter!=null);
 		assertTrue(getter!=null);
-		
+
 		for (int i = 0; i < 10; i++) {
 			setter.setPosition(i*10d);
 //			System.out.println("Set "+setter.getName()+" to value "+(i*10d)+" It's value is "+setter.getPosition());
@@ -157,23 +156,24 @@ public class RemoteScannableServiceTest extends BrokerTest {
 //			System.out.println("The value of "+setter.getName()+" was also "+getter.getPosition());
 		}
 	}
-	
+
 	@Test
 	public void addFive() throws Exception {
 		checkTemperature(5);
 	}
-	
+
 	@Test
 	public void subtractFive() throws Exception {
 		checkTemperature(-5);
 	}
-	
+
 	private void checkTemperature(double delta) throws Exception {
-		
+
 		IScannable<Double> temp = rservice.getScannable("T");
-	
+
 		List<Double> positions = new ArrayList<>();
 		((IPositionListenable)temp).addPositionListener(new IPositionListener() {
+			@Override
 			public void positionChanged(PositionEvent evt) throws ScanningException {
 				double val = (Double)evt.getPosition().get("T");
 //				System.out.println("The value of T was at "+val);

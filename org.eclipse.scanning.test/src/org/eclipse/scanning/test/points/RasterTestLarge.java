@@ -32,17 +32,17 @@ import org.junit.Test;
 
 public class RasterTestLarge {
 
-	
+
 	private IPointGeneratorService service;
-	
+
 	@Before
 	public void before() throws Exception {
 		service = new PointGeneratorService();
 	}
-	
+
 	@Test
 	public void testApprox1millIteratorTimeCircle() throws Exception {
-		
+
 		// Create a simple bounding rectangle
 		CircularROI roi = new CircularROI(500, 500, 500);
 
@@ -53,10 +53,10 @@ public class RasterTestLarge {
 
 		testIteratorTime(model, roi, 785349, 10000, true);
 	}
-	
+
 	@Test
 	public void test10millIteratorTimeRectangle() throws Exception {
-		
+
 		// Create a simple bounding rectangle
 		RectangularROI roi = new RectangularROI(0, 0, 1000, 10000, 0);
 
@@ -68,21 +68,21 @@ public class RasterTestLarge {
 		testIteratorTime(model, roi, 10011001, 5000, false); // TODO Is 10011001 correct?
 	}
 
-	
+
 	private void testIteratorTime(RasterModel model, IROI roi, int size, long tenMilTime, boolean testAllPoints) throws Exception {
-		
-		
+
+
 		// Get the point list
 		IPointGenerator<RasterModel> gen = service.createGenerator(model, roi);
 		if (testAllPoints) GeneratorUtil.testGeneratorPoints(gen);
-		
-		long start = System.currentTimeMillis();		
+
+		long start = System.currentTimeMillis();
         Iterator<IPosition>       it  = gen.iterator();
 
 		long after1 = System.currentTimeMillis();
 
 		assertTrue(start>(after1-50)); // Shouldn't take that long to make it!
-		
+
 		// Now iterate a few, shouldn't take that long
 		int count = 0;
 		while (it.hasNext()) {
@@ -90,7 +90,7 @@ public class RasterTestLarge {
 			count++;
 			if (count>10000) break;
 		}
-		
+
 		long after2 = System.currentTimeMillis();
 		assertTrue(after1>(after2-200)); // Shouldn't take that long to make it!
 
@@ -98,13 +98,13 @@ public class RasterTestLarge {
 			Point point = (Point) it.next();
 			count++;
 		}
-		
+
 		long after3 = System.currentTimeMillis();
 		System.out.println("It took "+(after3-after2)+"ms to iterate "+size+" with "+roi.getClass().getSimpleName());
 		assertTrue(after2>(after3-tenMilTime)); // Shouldn't take that long to make it!
-		
+
 		assertEquals(size, count);
-		
+
 	}
 
 	@Ignore
@@ -112,7 +112,7 @@ public class RasterTestLarge {
 	public void test10millTimeInMemory() throws Exception {
 
 		long start = System.currentTimeMillis();
-		
+
 		// Create a simple bounding rectangle
 		RectangularROI boundingRectangle = new RectangularROI(0, 0, 1000, 10000, 0);
 
@@ -124,11 +124,11 @@ public class RasterTestLarge {
 		// Get the point list
 		IPointGenerator<RasterModel> gen = service.createGenerator(model, boundingRectangle);
 		List<IPosition> points = gen.createPoints();
-		
+
 		assertEquals(10011001, points.size()); // TODO Is 10011001 correct?
 
 		long after = System.currentTimeMillis();
-		
+
 		System.out.println("It took "+(after-start)+"ms to make 10million Point and keep in memory");
 
 	}

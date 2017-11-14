@@ -19,7 +19,7 @@ import org.eclipse.scanning.api.event.status.StatusBean;
 
 public class DryRunProcess<T extends StatusBean> extends AbstractLockingPausableProcess<T> {
 
-	
+
 	private boolean blocking;
 	private boolean terminated;
 
@@ -48,6 +48,7 @@ public class DryRunProcess<T extends StatusBean> extends AbstractLockingPausable
 			run(); // Block until process has run.
 		} else {
 			final Thread thread = new Thread(new Runnable() {
+				@Override
 				public void run() {
 					try {
 						DryRunProcess.this.run();
@@ -60,11 +61,11 @@ public class DryRunProcess<T extends StatusBean> extends AbstractLockingPausable
 			thread.setDaemon(true);
 			thread.setPriority(Thread.MAX_PRIORITY);
 			thread.start();
-		}		
+		}
 	}
-	
+
 	private void run()  throws EventException {
-		
+
 		this.thread = Thread.currentThread();
 		getBean().setPreviousStatus(Status.QUEUED);
 		getBean().setStatus(Status.RUNNING);
@@ -73,26 +74,26 @@ public class DryRunProcess<T extends StatusBean> extends AbstractLockingPausable
 
 		terminated = false;
 		for (int i = start; i <= stop; i+=step) {
-			
+
 			if (isTerminated()) {
 				getBean().setPreviousStatus(Status.RUNNING);
 				getBean().setStatus(Status.TERMINATED);
 				getPublisher().broadcast(getBean());
 				return;
 			}
-			
+
 			//Moved broadcast to before sleep to prevent another spurious broadcast.
 			//System.out.println("Dry run : "+getBean().getPercentComplete()+" : "+getBean().getName());
 			getBean().setPercentComplete((Double.valueOf(i)/Double.valueOf(stop))*100d);
 			getPublisher().broadcast(getBean());
-			
+
 			try {
 				Thread.sleep(sleep);
 			} catch (InterruptedException e) {
 				System.out.println("Cannot complete dry run");
 				e.printStackTrace();
 			}
-			
+
 			//This must happen after the broadcast, otherwise we get spurious messages sent on termination.
 			checkPaused(); // Blocks if is, sends events
 		}
@@ -110,6 +111,7 @@ public class DryRunProcess<T extends StatusBean> extends AbstractLockingPausable
 		terminated = true;
 	}
 
+	@Override
 	public boolean isBlocking() {
 		return blocking;
 	}

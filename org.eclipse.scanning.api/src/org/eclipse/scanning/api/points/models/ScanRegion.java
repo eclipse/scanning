@@ -17,21 +17,21 @@ import java.util.List;
 import org.eclipse.scanning.api.INameable;
 
 /**
- * 
+ *
  * A scan region encapsulates a geometric region of interest with
  * the names of the scan axes over which it is a region.
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
  */
 public class ScanRegion<T> implements INameable {
-	
+
 	private String       name;
 	private Object       type;
 	private T            roi;
 	private List<String> scannables;
-	
+
 	public ScanRegion() {
 		// We are a bean
 	}
@@ -52,7 +52,7 @@ public class ScanRegion<T> implements INameable {
 		this.roi = roi;
 		this.scannables = Arrays.asList(names);
 	}
-	
+
 	public T getRoi() {
 		return roi;
 	}
@@ -65,6 +65,7 @@ public class ScanRegion<T> implements INameable {
 	public void setScannables(List<String> scannables) {
 		this.scannables = scannables;
 	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -73,6 +74,7 @@ public class ScanRegion<T> implements INameable {
 		result = prime * result + ((scannables == null) ? 0 : scannables.hashCode());
 		return result;
 	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -81,7 +83,7 @@ public class ScanRegion<T> implements INameable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ScanRegion other = (ScanRegion) obj;
+		ScanRegion<?> other = (ScanRegion<?>) obj;
 		if (roi == null) {
 			if (other.roi != null)
 				return false;
@@ -95,10 +97,12 @@ public class ScanRegion<T> implements INameable {
 		return true;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -108,6 +112,7 @@ public class ScanRegion<T> implements INameable {
 	public void setType(Object type) {
 		this.type = type;
 	}
+
 	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder();

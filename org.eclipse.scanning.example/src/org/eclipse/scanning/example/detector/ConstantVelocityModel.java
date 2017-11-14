@@ -25,18 +25,18 @@ public class ConstantVelocityModel extends AbstractDetectorModel {
 	public ConstantVelocityModel() {
 
 	}
-	
+
 	public ConstantVelocityModel(String name, double start, double stop, double step) {
-		
+
 		this.name  = name;
 		this.start = start;
 		this.stop  = stop;
 		this.step  = step;
-		
+
 		double div = ((stop-start)/step);
 		this.lineSize = (int)Math.floor(div+1);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -87,9 +87,11 @@ public class ConstantVelocityModel extends AbstractDetectorModel {
 	public void setSpectraSize(int spectraSize) {
 		this.spectraSize = spectraSize;
 	}
+	@Override
 	public String getName() {
 		return name;
 	}
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -118,10 +120,12 @@ public class ConstantVelocityModel extends AbstractDetectorModel {
 		this.step = step;
 	}
 
+	@Override
 	public long getTimeout() {
 		return timeout;
 	}
 
+	@Override
 	public void setTimeout(long timeout) {
 		this.timeout = timeout;
 	}

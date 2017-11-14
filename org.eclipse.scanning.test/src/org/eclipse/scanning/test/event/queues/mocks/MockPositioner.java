@@ -20,7 +20,7 @@ import org.eclipse.scanning.api.scan.event.IPositionListener;
 import org.eclipse.scanning.api.scan.event.IPositioner;
 
 public class MockPositioner implements IPositioner {
-	
+
 	private IPosition pos;
 	private boolean aborted = false;
 	private Boolean moveComplete;
@@ -40,18 +40,18 @@ public class MockPositioner implements IPositioner {
 	@Override
 	public boolean setPosition(IPosition position) throws ScanningException,
 			InterruptedException {
-		
+
 		moveComplete = false;
 		Thread.sleep(100);
-		
+
 		//This is to test positioning failing.
 		if (position.getNames().contains("BadgerApocalypseButton") && position.get("BadgerApocalypseButton").equals("pushed")) {
 			throw new ScanningException("The badger apocalypse cometh! (EXPECTED - we pressed the button...)");
 		}
-		
+
 		pos = position;
 		Thread.sleep(250);
-		
+
 		moveComplete = true;
 		return true;
 	}
@@ -62,39 +62,40 @@ public class MockPositioner implements IPositioner {
 	}
 
 	@Override
-	public List<IScannable<?>> getMonitors() throws ScanningException {
-		// TODO Auto-generated method stub
+	public List<IScannable<?>> getMonitorsPerPoint() throws ScanningException {
 		return null;
 	}
 
 	@Override
-	public void setMonitors(List<IScannable<?>> monitors)
-			throws ScanningException {
-		// TODO Auto-generated method stub
-
+	public void setMonitorsPerPoint(List<IScannable<?>> monitors) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public void setMonitors(IScannable<?>... monitors) throws ScanningException {
-		// TODO Auto-generated method stub
+	public void setMonitorsPerPoint(IScannable<?>... monitors) {
+		throw new UnsupportedOperationException();
+	}
 
+	@Override
+	public void setScannables(List<IScannable<?>> scannables) {
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void abort() {
 		aborted = true;
 	}
-	
+
 
 	@Override
 	public void close() {
-		
+
 	}
-	
+
 	public boolean isAborted() {
 		return aborted;
 	}
-	
+
 	public boolean isMoveComplete() {
 		return moveComplete;
 	}

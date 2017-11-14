@@ -15,10 +15,10 @@ import java.util.Collection;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.scanning.api.points.models.RasterModel;
-import org.eclipse.scanning.command.PyExpressionNotImplementedException;
 
 class RasterModelExpresser extends PyModelExpresser<RasterModel> {
 
+	@Override
 	String pyExpress(RasterModel model, Collection<IROI> rois, boolean verbose) throws Exception {
 		return "grid("
 				+(verbose?"axes=":"")+"("
@@ -38,6 +38,9 @@ class RasterModelExpresser extends PyModelExpresser<RasterModel> {
 				+(verbose
 					? (", snake="+(model.isSnake()?"True":"False"))
 					: (model.isSnake()?"":", snake=False"))
+				+(verbose
+					? (", continuous="+(model.isContinuous()?"True":"False"))
+					: (model.isContinuous()?"":", continuous=False"))
 				+((rois == null)
 					? ""
 					: ((rois.size() == 0)

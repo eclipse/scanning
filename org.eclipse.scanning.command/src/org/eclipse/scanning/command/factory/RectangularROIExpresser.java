@@ -15,6 +15,7 @@ import org.eclipse.dawnsci.analysis.dataset.roi.RectangularROI;
 
 class RectangularROIExpresser extends PyModelExpresser<RectangularROI> {
 
+	@Override
 	public String pyExpress(RectangularROI rroi, boolean verbose) {
 		// TODO Use StringBuilder
 		return "rect("

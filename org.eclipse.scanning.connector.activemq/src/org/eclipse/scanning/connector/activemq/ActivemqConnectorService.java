@@ -34,7 +34,7 @@ import org.eclipse.scanning.api.event.IMessagingService;
  * <p>
  * JSON marshalling is done by delegating to the new JsonMarshaller service which encapsulates all JSON interactions
  * behind one cohesive interface.
- * 
+ *
  * @author Matthew Gerring
  * @author Colin Palmer
  *
@@ -85,23 +85,23 @@ public class ActivemqConnectorService implements IEventConnectorService, IMessag
 	}
 
 	private BrokerService service;
-	
+
 	/**
 	 * @param The activemq connector uri, for instance: "failover:(tcp://localhost:61616)?startupMaxReconnectAttempts=3"
 	 *        The failover:() is stipped out so that a tcp:// uri is created for the server.
 	 */
 	@Override
 	public URI start(String suggestedURI) throws EventException {
-		
+
 		try {
 			Pattern pattern = Pattern.compile(".*(tcp://[a-zA-Z\\.]+:\\d+).*");
 			Matcher matcher = pattern.matcher(suggestedURI);
 			if (matcher.matches()) suggestedURI = matcher.group(1);
-			
+
 			URI uri = new URI(suggestedURI); // Each test uses a new port if the port is running on another test.
 			service = new BrokerService();
 	        service.addConnector(uri);
-	        service.setPersistent(false); 
+	        service.setPersistent(false);
 			service.addConnector("stomp://localhost:61613"); // Allow stomp connections (for Python clients, etc.).
 	        SystemUsage systemUsage = service.getSystemUsage();
 	        systemUsage.getStoreUsage().setLimit(1024 * 1024 * 8);
@@ -109,7 +109,7 @@ public class ActivemqConnectorService implements IEventConnectorService, IMessag
 	        service.start();
 			service.waitUntilStarted();
 			return uri;
-			
+
 		} catch (Exception ne) {
 			throw new EventException(ne);
 		}
@@ -126,7 +126,7 @@ public class ActivemqConnectorService implements IEventConnectorService, IMessag
 			throw new EventException(ne);
 		}
 	}
-	
+
 	private static URI createUri(int start) {
 		try {
 			return new URI("tcp://localhost:"+getFreePort(start));
@@ -136,7 +136,7 @@ public class ActivemqConnectorService implements IEventConnectorService, IMessag
 		}
 	}
 
-	
+
 	private static int getFreePort(final int startPort) {
 
 	    int port = startPort;

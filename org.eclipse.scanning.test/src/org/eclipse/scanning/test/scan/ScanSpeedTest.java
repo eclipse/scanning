@@ -78,14 +78,14 @@ public class ScanSpeedTest extends BrokerTest {
 	private IPointGeneratorService      gservice;
 	private IEventService               eservice;
 	private ILoaderService              lservice;
-	
+
 	@Before
 	public void start() throws Exception {
-		
+
 		setUpNonOSGIActivemqMarshaller();
 		eservice  = new EventServiceImpl(new ActivemqConnectorService());
 
-		// We wire things together without OSGi here 
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		connector = new MockScannableConnector(eservice.createPublisher(uri, EventConstants.POSITION_TOPIC));
 		dservice  = new RunnableDeviceServiceImpl(connector);
@@ -97,9 +97,9 @@ public class ScanSpeedTest extends BrokerTest {
 
 		gservice  = new PointGeneratorService();
 
-		
+
 		lservice = new LoaderServiceMock();
-		
+
 		// Provide lots of services that OSGi would normally.
 		Services.setEventService(eservice);
 		Services.setRunnableDeviceService(dservice);
@@ -108,45 +108,45 @@ public class ScanSpeedTest extends BrokerTest {
 		ServiceHolder.setTestServices(lservice, new DefaultNexusBuilderFactory(), null);
 		org.eclipse.dawnsci.nexus.ServiceHolder.setNexusFileFactory(new NexusFileFactoryHDF5());
 	}
-	
+
 	/**
 	 * 2 scannables, 2 detectors each divided by into 10 levels.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void checkTimes1000PointsNoAnnotations() throws Exception {
-		
+
 		checkNoAnnotations(1000,2,2,5);
-		
+
 	}
 
 	/**
 	 * 2 scannables, 2 detectors each divided by into 10 levels.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void checkTimes10000PointsNoAnnotations() throws Exception {
-		
+
 		checkNoAnnotations(10000,2,2,5);
-		
+
 	}
 
 	/**
 	 * 100 scannables, 100 detectors each divided by into 10 levels.
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	@Test
 	public void checkTimes100PointsNoAnnotations() throws Exception {
-				
+
 		checkNoAnnotations(100,100,100,20);
-		
+
 	}
-	
+
 	private void checkNoAnnotations(	int pointCount, int scannableCount, int detectorCount, long pointTime) throws Exception {
-		
+
 		final List<IScannable<?>> scannables = new ArrayList<>();
 		MockScannableConnector mc = (MockScannableConnector)connector;
 		for (int i = 0; i < scannableCount; i++) {
@@ -155,35 +155,35 @@ public class ScanSpeedTest extends BrokerTest {
 			ms.setLevel(i%10);
 			mc.register(ms);
 			scannables.add(ms);
- 		}
-		
+		}
+
 		final List<IRunnableDevice<?>> detectors = new ArrayList<>(detectorCount);
 		for (int i = 0; i < detectorCount; i++) {
 			MockDetectorModel mod = new MockDetectorModel();
 			mod.setName("detector"+i);
 			mod.setCreateImage(false);  // Would put our times off.
 			mod.setExposureTime(0);
-			
+
 			IRunnableDevice<?> dev = dservice.createRunnableDevice(mod);
 			dev.setLevel(i%10);
 			detectors.add(dev);
 		}
-		
+
 		long time = checkTimes(pointCount, scannables, detectors, "no annotations");
 		assertTrue(time<pointTime);
 	}
 
 	@Test
 	public void checkTimes100PointsWithAnnotations() throws Exception {
-		
+
 		int pointCount     = 99;   // Gives 100 points because it's a step model
-		
+
 		final List<IScannable<?>>     scannables = createAnnotatedScannables("annotatedScannable", 100, false);
 		final List<IRunnableDevice<?>> detectors = createAnnotatedDetectors("annotatedDetector", 100, false);
-		
+
 		long time = checkTimes(pointCount, scannables, detectors, "all annotations");
 		assertTrue("Time should be less than 30ms and is: "+time, time<60);
-		
+
 		for (IScannable<?> s : scannables) {
 			AnnotatedMockScannable ams = (AnnotatedMockScannable)s;
 			assertEquals(1,    ams.getCount(ScanStart.class));
@@ -195,7 +195,7 @@ public class ScanSpeedTest extends BrokerTest {
 			assertEquals(100,  ams.getCount(LevelEnd.class));
 			assertEquals(1,    ams.getCount(ScanEnd.class));
 		}
-		
+
 		for (IRunnableDevice<?> d : detectors) {
 			AnnotatedMockWritableDetector ams = (AnnotatedMockWritableDetector)d;
 			assertEquals(1,    ams.getCount(PreConfigure.class));
@@ -214,7 +214,7 @@ public class ScanSpeedTest extends BrokerTest {
 
 	@Test
 	public void abortTest() throws Exception {
-		
+
 		final List<IScannable<?>>      scannables = createAnnotatedScannables("annotatedSleepingScannable", 10, true);
 		final List<IRunnableDevice<?>> detectors  = createAnnotatedDetectors("annotatedWritingDetector", 10, true);
 
@@ -231,7 +231,7 @@ public class ScanSpeedTest extends BrokerTest {
 			assertEquals(1,  ams.getCount(ScanAbort.class));
 			assertEquals(0,  ams.getCount(ScanEnd.class));
 		}
-		
+
 		for (IRunnableDevice<?> d : detectors) {
 			AnnotatedMockWritableDetector ams = (AnnotatedMockWritableDetector)d;
 			assertEquals(1,  ams.getCount(ScanStart.class));
@@ -243,10 +243,10 @@ public class ScanSpeedTest extends BrokerTest {
 
 
 	}
-	
+
 	@Test
 	public void pauseTest() throws Exception {
-		
+
 		final List<IScannable<?>>      scannables = createAnnotatedScannables("annotatedSleepingScannable", 10, true);
 		final List<IRunnableDevice<?>> detectors  = createAnnotatedDetectors("annotatedWritingDetector", 10, true);
 
@@ -268,7 +268,7 @@ public class ScanSpeedTest extends BrokerTest {
 			assertEquals(1,  ams.getCount(ScanEnd.class));
 			assertEquals(1,  ams.getCount(ScanFinally.class));
 		}
-		
+
 		for (IRunnableDevice<?> d : detectors) {
 			AnnotatedMockWritableDetector ams = (AnnotatedMockWritableDetector)d;
 			assertEquals(1,  ams.getCount(ScanStart.class));
@@ -285,14 +285,14 @@ public class ScanSpeedTest extends BrokerTest {
 
 
 	private List<IRunnableDevice<?>> createAnnotatedDetectors(String namefrag, int detectorCount, boolean createImage) throws ScanningException {
-		
+
 		final List<IRunnableDevice<?>> detectors = new ArrayList<>(detectorCount);
 		for (int i = 0; i < detectorCount; i++) {
 			MockDetectorModel mod = new AnnotatedMockDetectorModel();
 			mod.setName(namefrag+i);
 			mod.setCreateImage(createImage);  // Would put our times off.
 			mod.setExposureTime(0);
-			
+
 			IRunnableDevice<?> dev = dservice.createRunnableDevice(mod);
 			dev.setLevel(i%10);
 			detectors.add(dev);
@@ -309,43 +309,43 @@ public class ScanSpeedTest extends BrokerTest {
 			ms.setLevel(i%10);
 			mc.register(ms);
 			scannables.add(ms);
- 		}
+		}
 		return scannables;
 	}
 
-	
+
 	private long checkTimes(int pointCount, List<IScannable<?>> scannables, List<IRunnableDevice<?>> detectors, String msg) throws Exception {
-				
+
 
 		IRunnableDevice<?> device = createDevice(pointCount, scannables, detectors);
-		
+
 		long before = System.currentTimeMillis();
 		device.run(null);
 		long after = System.currentTimeMillis();
 		double single = (after-before)/(double)pointCount;
 		System.out.println("Time for one point was ("+msg+"): "+Math.round(single)+"ms");
-		
+
 		return Math.round(single);
 
 	}
-	
+
 	private IRunnableDevice<?> createDevice(int pointCount, List<IScannable<?>> scannables, List<IRunnableDevice<?>> detectors) throws Exception {
-		
+
 		final String[] names = new String[scannables.size()];
 		for (int i = 0; i < scannables.size(); i++) {
 			names[i] = scannables.get(i).getName();
- 		}
-		
+		}
+
 		final StepModel onek = new CollatedStepModel(0,pointCount,1,names);
 		Iterable<IPosition> gen = gservice.createGenerator(onek);
-		
+
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 
 		// Create a file to scan into.
 		smodel.setFilePath(null); // Intentionally no nexus writing
-		
-    	smodel.setDetectors(detectors);
+
+	smodel.setDetectors(detectors);
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);

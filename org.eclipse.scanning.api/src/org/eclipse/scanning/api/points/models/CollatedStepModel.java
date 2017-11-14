@@ -20,7 +20,7 @@ import java.util.List;
 public class CollatedStepModel extends StepModel {
 
 	private List<String> names;
-	
+
 	public CollatedStepModel() {
 	}
 	public CollatedStepModel(double start, double stop, double step, String... names) {
@@ -33,6 +33,7 @@ public class CollatedStepModel extends StepModel {
 	public List<String> getNames() {
 		return names;
 	}
+	@Override
 	public String getName() {
 		if (super.getName()!=null) return super.getName();
 		return names.get(0);

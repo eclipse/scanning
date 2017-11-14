@@ -43,12 +43,12 @@ import org.slf4j.LoggerFactory;
 
 class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, IPositionListenable, ITerminatable, ILocationListener {
 
-	private final static Logger logger = LoggerFactory.getLogger(_Scannable.class);
+	private static final Logger logger = LoggerFactory.getLogger(_Scannable.class);
 
 	private final ISubscriber<ILocationListener> subscriber;
-	
+
 	_Scannable(DeviceRequest req, URI uri, ISubscriber<ILocationListener> positionListener, IEventService eservice) throws EventException, InterruptedException {
-		super(req, 
+		super(req,
 			  Long.getLong("org.eclipse.scanning.event.remote.scannableTimeout", 250),
 			  uri,
 			  eservice);
@@ -66,14 +66,14 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 
 	/**
 	 * Calls setPosition and waits for up to five minutes.
-	 * 
+	 *
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public T setPosition(T value, IPosition position) throws Exception {
 		try {
-			// Will tell us that the value is changing by recording the time of the change 
-			addListener(); 
+			// Will tell us that the value is changing by recording the time of the change
+			addListener();
 
 			DeviceRequest req = new DeviceRequest(info.getName(), DeviceType.SCANNABLE);
 			req.setDeviceAction(DeviceAction.SET);
@@ -83,17 +83,17 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 			if (req.getDeviceInformation()!=null) {
 				merge((DeviceInformation<T>)req.getDeviceInformation());
 			}
-			
+
 		} catch (Exception ne) {
 			logger.error("Cannot update device info for "+info.getName(), ne);
 		}
 		return value;
 	}
-	
+
 
 	@Override
 	public void terminate(TerminationPreference pref) throws Exception {
-		
+
 		// Use a separate call
 		IRequester<DeviceRequest> srequestor = eservice.createRequestor(uri, EventConstants.DEVICE_REQUEST_TOPIC, EventConstants.DEVICE_RESPONSE_TOPIC);
 		srequestor.setTimeout(100, TimeUnit.SECONDS); /** TODO How long to wait until a motor <i>should</i> be terminated? **/
@@ -110,7 +110,6 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		}
 	}
 
-
 	@SuppressWarnings("unchecked")
 	@Override
 	protected DeviceRequest update() {
@@ -124,12 +123,12 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		}
 	}
 
+	@Override
 	public String getUnit() {
 		if (info==null) update();  // We assume that they do not change unit.
 		return info.getUnit();
 	}
-	
-	
+
 	/**
 	 * Gets the current upper limit.
 	 * @return upper limit
@@ -151,7 +150,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		if (info==null) update();
 		return (T)info.getLower();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public T[] getPermittedValues() {
@@ -160,7 +159,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 	}
 
 	private Collection<IPositionListener> listeners;
-	
+
 	@Override
 	public void addPositionListener(IPositionListener listener) {
 		addListener();
@@ -173,7 +172,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		if (listeners==null) return;
 		listeners.remove(listener);
 	}
-	
+
 	private boolean listenerAdded = false;
 	/**
 	 * A subscriber that notifies position and also resets
@@ -203,7 +202,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		lastActive = System.currentTimeMillis();
 		final Location      loc  = evt.getLocation();
 		if (loc.getType()==null) return;
-		
+
 		final PositionEvent evnt = new PositionEvent(loc.getPosition(), _Scannable.this);
 		evnt.setLevel(loc.getLevel());
 
@@ -216,7 +215,6 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 		} catch (Exception ne) {
 			logger.error("Cannot diseminate event "+loc, ne);
 		}
-
 	}
 
 	private ResponseWaiter createResponseWaiter() {
@@ -239,6 +237,7 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 	public boolean setActivated(boolean activated) throws ScanningException {
 		if (info==null) update();
 		boolean wasactivated = info.isActivated();
+		logger.info("setActivated({}) was {} ({})", activated, wasactivated, this);
 		method(new DeviceRequest(info.getName(), DeviceType.SCANNABLE, DeviceAction.ACTIVATE, activated));
 		return wasactivated;
 	}
@@ -253,8 +252,8 @@ class _Scannable<T> extends _AbstractRemoteDevice<T> implements IScannable<T>, I
 	public MonitorRole setMonitorRole(MonitorRole role) throws ScanningException {
 		if (info==null) update();
 		MonitorRole oldRole = info.getMonitorRole();
+		logger.info("setMonitorRole({}) was {} ({})", role, oldRole, this);
 		method(new DeviceRequest(info.getName(), DeviceType.SCANNABLE, DeviceAction.SET, role));
 		return oldRole;
 	}
-
 }

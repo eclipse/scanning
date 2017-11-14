@@ -5,10 +5,10 @@ from utilities.listeners import DelegatingListener
 
 def create_connection():
     conn = Connection12(host_and_ports=[('localhost', 61613)], auto_content_length=False)
-      
+
     conn.start()
     conn.connect('admin', 'admin', wait=True)
-    
+
     return conn
 
 def set_handlers(conn, handlers):

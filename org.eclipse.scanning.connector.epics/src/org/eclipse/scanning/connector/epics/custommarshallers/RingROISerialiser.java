@@ -27,7 +27,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom serialiser for Circular ROI.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -36,7 +36,7 @@ public class RingROISerialiser implements IPVStructureSerialiser<RingROI> {
 	@Override
 	public Structure buildStructure(Serialiser serialiser, RingROI roi) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-		
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			add("averageArea", ScalarType.pvBoolean).
 			add("dpp", ScalarType.pvDouble).
@@ -50,13 +50,13 @@ public class RingROISerialiser implements IPVStructureSerialiser<RingROI> {
 	@Override
 	public void populatePVStructure(Serialiser serialiser, RingROI roi, PVStructure pvStructure) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		PVBoolean averageArea = pvStructure.getSubField(PVBoolean.class, "averageArea");
-		averageArea.put(roi.isAverageArea());		
+		averageArea.put(roi.isAverageArea());
 		PVDouble dpp = pvStructure.getSubField(PVDouble.class, "dpp");
-		dpp.put(roi.getDpp());		
+		dpp.put(roi.getDpp());
 		PVDoubleArray radii = pvStructure.getSubField(PVDoubleArray.class, "radii");
 		radii.put(0, roi.getRadii().length, roi.getRadii(), 0);
 		PVDoubleArray point = pvStructure.getSubField(PVDoubleArray.class, "point");
 		point.put(0, roi.getPoint().length, roi.getPoint(), 0);
 	}
-	
+
 }

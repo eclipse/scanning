@@ -37,17 +37,18 @@ class _ScannableDeviceService extends AbstractRemoteService implements IScannabl
 	private IRequester<DeviceRequest>  requester;
 	private Map<String, IScannable<?>> scannables;
 	private ISubscriber<ILocationListener> subscriber;
-	
+
+	@Override
 	public void init() throws EventException {
 		requester = eservice.createRequestor(uri, IEventService.DEVICE_REQUEST_TOPIC, IEventService.DEVICE_RESPONSE_TOPIC);
-		long timeout = Long.getLong("org.eclipse.scanning.event.remote.scannableServiceTimeout", 100); 
+		long timeout = Long.getLong("org.eclipse.scanning.event.remote.scannableServiceTimeout", 100);
 	    logger.debug("Setting timeout {} {}" , timeout , " ms");
-	    requester.setTimeout(timeout, TimeUnit.MILLISECONDS); 
+	    requester.setTimeout(timeout, TimeUnit.MILLISECONDS);
 	    scannables = new HashMap<>();
-	    
+
 		subscriber = eservice.createSubscriber(uri, EventConstants.POSITION_TOPIC);
 	}
-	
+
 	@Override
 	public void disconnect() throws EventException {
 		requester.disconnect(); // Requester can still be used again after a disconnect
@@ -59,16 +60,16 @@ class _ScannableDeviceService extends AbstractRemoteService implements IScannabl
 		scannables.clear();
 		setDisconnected(true);
 	}
-	
+
 	@Override
 	public List<String> getScannableNames() throws ScanningException {
-		
+
 		DeviceInformation<?>[] devices = getDevices();
 	    String[] names = new String[devices.length];
 	    for (int i = 0; i < devices.length; i++) names[i] = devices[i].getName();
 		return Arrays.asList(names);
 	}
-	
+
 	@Override
 	public Collection<DeviceInformation<?>> getDeviceInformation() throws ScanningException {
 		return Arrays.asList(getDevices());
@@ -86,7 +87,7 @@ class _ScannableDeviceService extends AbstractRemoteService implements IScannabl
 
 	@Override
 	public <T> IScannable<T> getScannable(String name) throws ScanningException {
-		
+
 		if (scannables.containsKey(name)) return (IScannable<T>)scannables.get(name);
 		try {
 			_Scannable<T> ret = new _Scannable<T>(new DeviceRequest(name, DeviceType.SCANNABLE), uri, subscriber, eservice);

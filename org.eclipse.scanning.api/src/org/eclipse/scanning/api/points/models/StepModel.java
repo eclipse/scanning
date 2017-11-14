@@ -13,6 +13,7 @@ package org.eclipse.scanning.api.points.models;
 
 import org.eclipse.scanning.api.annotation.ui.DeviceType;
 import org.eclipse.scanning.api.annotation.ui.FieldDescriptor;
+import org.eclipse.scanning.api.annotation.ui.FieldRole;
 
 /**
  * A model for a scan along one axis with start and stop positions and a step size.
@@ -21,31 +22,50 @@ public class StepModel extends AbstractPointsModel {
 
 	@FieldDescriptor(label="Device", device=DeviceType.SCANNABLE, fieldPosition=0)
 	private String name;
-	
+
+	@FieldDescriptor(visible=false)
+	private String label;
+
 	@FieldDescriptor(label="Start", scannable="name", hint="This is the start position for the scan", fieldPosition=1) // The scannable lookup gets the units
 	private double start;
-	
+
 	@FieldDescriptor(label="Stop", scannable="name", hint="This is the stop position for the scan", fieldPosition=2) // The scannable lookup gets the units
 	private double stop;
-	
+
 	@FieldDescriptor(label="Step", scannable="name", hint="This is the step during the scan", fieldPosition=3) // The scannable lookup gets the units
 	private double step;
-	
+
+	@FieldDescriptor(label="Exposure Time",
+			         hint="If you set this field the exposure times for all\ndetectors in the scan will be changed when the first\npoint of the step is moved.",
+			         unit="s",
+			         minimum=0.001,
+			         fieldPosition=4,
+			         role=FieldRole.EXPERT,
+			         visible=false)
+	private double exposureTime;
+
 	public StepModel() {
-	
+
 	}
-	
+
 	public StepModel(String name, double start, double stop, double step) {
+		this(name, start, stop, step, 0d);
+	}
+
+	public StepModel(String name, double start, double stop, double step, double exposureTime) {
 		super();
 		this.name = name;
 		this.start = start;
 		this.stop = stop;
 		this.step = step;
+		this.exposureTime = exposureTime;
 	}
-	
+
+	@Override
 	public String getName() {
 		return name;
 	}
+	@Override
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -67,13 +87,16 @@ public class StepModel extends AbstractPointsModel {
 	public void setStep(double step) {
 		this.step = step;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		int result = super.hashCode();
 		long temp;
+		temp = Double.doubleToLongBits(exposureTime);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((label == null) ? 0 : label.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		temp = Double.doubleToLongBits(start);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(step);
@@ -82,35 +105,63 @@ public class StepModel extends AbstractPointsModel {
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		return result;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		if (!super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
 		StepModel other = (StepModel) obj;
+		if (Double.doubleToLongBits(exposureTime) != Double.doubleToLongBits(other.exposureTime))
+			return false;
+		if (label == null) {
+			if (other.label != null)
+				return false;
+		} else if (!label.equals(other.label))
+			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (Double.doubleToLongBits(start) != Double
-				.doubleToLongBits(other.start))
+		if (Double.doubleToLongBits(start) != Double.doubleToLongBits(other.start))
 			return false;
-		if (Double.doubleToLongBits(step) != Double
-				.doubleToLongBits(other.step))
+		if (Double.doubleToLongBits(step) != Double.doubleToLongBits(other.step))
 			return false;
-		if (Double.doubleToLongBits(stop) != Double
-				.doubleToLongBits(other.stop))
+		if (Double.doubleToLongBits(stop) != Double.doubleToLongBits(other.stop))
 			return false;
 		return true;
 	}
 
 	@Override
 	public String toString() {
-		return "StepModel [name=" + name + ", start=" + start + ", stop=" + stop + ", step=" + step + "]";
+		return "StepModel [name=" + name + ", label=" + label + ", start=" + start + ", stop=" + stop + ", step=" + step
+				+ ", exposureTime=" + exposureTime + "]";
+	}
+
+	public double getExposureTime() {
+		return exposureTime;
+	}
+
+	public void setExposureTime(double exposureTime) {
+		this.exposureTime = exposureTime;
+	}
+
+	public int size() {
+		// copied from StepGenerator.sizeOfValidModel
+		double div = ((getStop()-getStart())/getStep());
+		div += 0.01;
+		return Math.toIntExact(Math.round(Math.floor(div+1d)));
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
 	}
 }

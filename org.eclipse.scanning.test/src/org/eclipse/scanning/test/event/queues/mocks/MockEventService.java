@@ -34,15 +34,15 @@ import org.eclipse.scanning.api.event.status.StatusBean;
 import org.eclipse.scanning.event.queues.ServicesHolder;
 
 public class MockEventService implements IEventService {
-	
+
 	private Map<String, MockConsumer<? extends StatusBean>> mockConsumers = new HashMap<>(); //Submit Q name, consumer
-	
+
 	private MockPublisher<?> mockPublisher;
 	private MockPublisher<? extends ConsumerCommandBean> mockCmdPub;
 	private MockSubmitter<? extends StatusBean> mockSubmitter;
 	private MockSubscriber<? extends EventListener> mockSubscriber;
-	private MockRequester<? extends IdBean> mockRequester; 
-	
+	private MockRequester<? extends IdBean> mockRequester;
+
 	private boolean noConsumerFill = false;
 
 	@Override
@@ -93,7 +93,7 @@ public class MockEventService implements IEventService {
 	public <U extends StatusBean> IConsumer<U> createConsumer(URI uri, String submissionQName, String statusQName,
 			String statusTName, String heartbeatTName, String commandTName) throws EventException {
 		MockConsumer.setNoFill(noConsumerFill);
-		
+
 		//If the test have set a consumer on this event service, return that, otherwise create a new instance
 		MockConsumer<? extends StatusBean> mockConsumer;
 		if (mockConsumers.get("defaultCons") == null) {
@@ -102,12 +102,12 @@ public class MockEventService implements IEventService {
 		} else {
 			mockConsumer = mockConsumers.get("defaultCons");
 		}
-		
+
 		mockConsumer.setCommandTopicName(commandTName);
 		mockConsumer.setStatusTopicName(statusTName);
 		mockConsumer.setStatusSetName(statusQName);
 		mockConsumer.setSubmitQueueName(submissionQName);
-		
+
 		return (IConsumer<U>) mockConsumer;
 	}
 
@@ -152,31 +152,31 @@ public class MockEventService implements IEventService {
 	public void setMockPublisher(MockPublisher<?> mockPublisher) {
 		this.mockPublisher = mockPublisher;
 	}
-	
+
 	public void setMockCmdPublisher(MockPublisher<ConsumerCommandBean> mockCmdPub) {
 		this.mockCmdPub = mockCmdPub;
 	}
-	
+
 	public <U extends StatusBean> void setMockConsumer(MockConsumer<U> mockCons) {
 		mockConsumers.put("defaultCons", mockCons);
 	}
-	
+
 	public <U extends StatusBean> void setMockSubmitter(MockSubmitter<U> mockSub) {
 		this.mockSubmitter = mockSub;
 	}
-	
+
 	public <U extends EventListener> void setMockSubscriber(MockSubscriber<U> mockSub) {
 		this.mockSubscriber = mockSub;
 	}
-	
+
 	public <T extends IdBean> void setMockRequester(MockRequester<T> mockReq) {
 		this.mockRequester = mockReq;
 	}
-	
+
 	public Map<String, MockConsumer<? extends StatusBean>> getRegisteredConsumers() {
 		return mockConsumers;
 	}
-	
+
 	public MockConsumer<? extends StatusBean> getConsumerForQID(String qID) {
 		for (Map.Entry<String, MockConsumer<? extends StatusBean>> entry : mockConsumers.entrySet()) {
 			if (entry.getKey().startsWith(qID)) {
@@ -185,13 +185,13 @@ public class MockEventService implements IEventService {
 		}
 		throw new NoSuchElementException("No consumer for queueID '"+qID+"' found in MockEventService");
 	}
-	
+
 	public void clearRegisteredConsumers() {
 		MockConsumer<? extends StatusBean> mc = mockConsumers.get("defaultCons");
 		mockConsumers = new HashMap<>();
 		mockConsumers.put("defaultCons", mc);
 	}
-	
+
 	/**
 	 * Do not prepopulate consumer with StatusBeans!
 	 */

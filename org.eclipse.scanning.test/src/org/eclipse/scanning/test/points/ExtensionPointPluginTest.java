@@ -21,9 +21,9 @@ import org.junit.Test;
 
 // Run as plugin test
 public class ExtensionPointPluginTest {
-	
+
 	private IPointGeneratorService service;
-	
+
 	@Before
 	public void setup() {
 		service = new PointGeneratorService(); // Can't be bothered to set up OSGi for this test.
@@ -32,10 +32,10 @@ public class ExtensionPointPluginTest {
 	// Must be plugin test because uses extension points.
 	@Test
 	public void testExtendedGenerators() throws Exception {
-		
+
 		TestGeneratorModel model = new TestGeneratorModel();
 		final IPointGenerator<TestGeneratorModel> gen = service.createGenerator(model);
-		
+
 		assertNotNull(gen); // Simple as that
 	}
 }

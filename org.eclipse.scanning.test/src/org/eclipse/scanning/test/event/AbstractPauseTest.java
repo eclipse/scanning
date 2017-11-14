@@ -11,7 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.event;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -33,7 +34,6 @@ import org.eclipse.scanning.api.event.core.ISubscriber;
 import org.eclipse.scanning.api.event.dry.FastRunCreator;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.event.status.StatusBean;
-import org.eclipse.scanning.event.AbstractQueueConnection;
 import org.eclipse.scanning.test.BrokerTest;
 import org.junit.After;
 import org.junit.Ignore;
@@ -207,8 +207,8 @@ public class AbstractPauseTest extends BrokerTest{
 
 		consumer.setRunner(new FastRunCreator<StatusBean>(0,100,10,100, true));
 		consumer.start();
-		
-		Thread.sleep(500); 
+
+		Thread.sleep(500);
 		IPublisher<PauseBean> pauser = eservice.createPublisher(submitter.getUri(), IEventService.CMD_TOPIC);
 		pauser.setStatusSetName(IEventService.CMD_SET);
 		pauser.setStatusSetAddRequired(true);
@@ -216,12 +216,12 @@ public class AbstractPauseTest extends BrokerTest{
 		PauseBean pbean = new PauseBean();
 		pbean.setQueueName(consumer.getSubmitQueueName());
 		pauser.broadcast(pbean);
-		
+
 		Thread.sleep(500);
 		assertTrue(!consumer.isActive());
-		
+
 		// Submit two things.
-		StatusBean bean = null; 
+		StatusBean bean = null;
 		for (int i = 0; i < 2; i++) {
 			bean = new StatusBean();
 			bean.setName("Submission"+i);
@@ -232,13 +232,13 @@ public class AbstractPauseTest extends BrokerTest{
 			bean.setUserName(String.valueOf(i));
 			submitter.submit(bean);
 		}
-	
+
 		submitter.reorder(bean, consumer.getSubmitQueueName(), 1);
-		
+
 		Thread.sleep(500);
 		assertTrue(!consumer.isActive());
 		assertEquals(2, submitter.getQueue().size());
-		
+
 		pbean.setPause(false);
 		pauser.broadcast(pbean);
 

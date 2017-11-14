@@ -16,12 +16,12 @@ import org.eclipse.scanning.api.annotation.ui.FileType;
 
 public class ProcessingModel extends SlicingModel {
 
-	
+
 	@FieldDescriptor(file=FileType.EXISTING_FILE, hint="A reference to any file created in the processing perspective.\n"
 			                                           + "The pipeline should be saved to file and the file must be\n"
 			                                           + "available to the scanning server.")
 	private String operationsFile;
-	
+
 	/**
 	 * Just for testing, set an operation directly
 	 * to be run by the device.
@@ -29,16 +29,16 @@ public class ProcessingModel extends SlicingModel {
 	@FieldDescriptor(visible=false)
 	private Object operation;
 
-	
+
 	public ProcessingModel() {
-		
+
 	}
-	
+
     public ProcessingModel(String detectorName, String dataFile, String operationsFile, long timeout) {
-    	super(detectorName,dataFile,timeout);
-       	this.operationsFile = operationsFile;
+	super(detectorName,dataFile,timeout);
+	this.operationsFile = operationsFile;
     }
-	
+
 	public String getOperationsFile() {
 		return operationsFile;
 	}

@@ -15,6 +15,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.scanning.api.annotation.UiHidden;
@@ -30,7 +31,7 @@ public abstract class AbstractPointsModel implements IScanPathModel {
 
 
 	protected final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-	
+
 	@Override
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		this.pcs.addPropertyChangeListener(listener);
@@ -39,22 +40,23 @@ public abstract class AbstractPointsModel implements IScanPathModel {
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 		this.pcs.removePropertyChangeListener(listener);
 	}
-	
+
 	@FieldDescriptor(visible=false)
 	private String name;
 
+	@Override
 	public String getName() {
 		return name;
 	}
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	@Override
 	public List<String> getScannableNames() {
 		return Arrays.asList(getName());
 	}
-	
+
 	@UiHidden
 	public String getSummary() {
 		StringBuilder buf = new StringBuilder();
@@ -67,7 +69,7 @@ public abstract class AbstractPointsModel implements IScanPathModel {
 		buf.append(names);
 		return buf.toString();
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -91,18 +93,22 @@ public abstract class AbstractPointsModel implements IScanPathModel {
 			return false;
 		return true;
 	}
-	
-	
+
+
 	public static List<String> getScannableNames(Object model) {
 		if (model instanceof IScanPathModel) return ((IScanPathModel)model).getScannableNames();
 		try {
 			Method method = model.getClass().getMethod("getScannableNames");
 			Object ret    = method.invoke(model);
-			if (ret instanceof List) return (List<String>)ret;
-			return null;
+			if (ret instanceof List) {
+				@SuppressWarnings("unchecked")
+				final List<String> names = (List<String>) ret;
+				return names;
+			}
 		} catch (Exception ne) {
-			return null;
+			// fall through to return empty list
 		}
-		
+
+		return Collections.emptyList();
 	}
 }

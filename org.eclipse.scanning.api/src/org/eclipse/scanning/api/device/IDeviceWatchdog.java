@@ -16,32 +16,32 @@ import org.eclipse.scanning.api.INameable;
 import org.eclipse.scanning.api.device.models.DeviceWatchdogModel;
 
 /**
- * 
+ *
  * A watchdog may be started to run with a scan.
- * 
- * It will attempt to pause a scan when topup is about 
+ *
+ * It will attempt to pause a scan when topup is about
  * to happen and restart it after topup has finished.
- * 
+ *
  * Once made a watch dog is active if the activate method
  * is called. The deactivate method may be called to stop
  * a given watchdog watching scans.
- * 
+ *
  * https://en.wikipedia.org/wiki/Watchdog_timer
- * 
+ *
  * NOTE: IDeviceWatchdog concrete class MUST have a no-argument constructor.
- * 
+ *
 <pre>
 PV's often used by watchdogs to monitor the scan.
-SR-CS-FILL-01:STACOUNTDN: 
-this is an integer counter that runs to zero at the start of TopUp fill 
+SR-CS-FILL-01:STACOUNTDN:
+this is an integer counter that runs to zero at the start of TopUp fill
 and is reset immediately to the time to next TopUp fill, fillPeriod,
 
 SR-CS-FILL-01:COUNTDOWN: this is a float-valued counter that runs to zero
-at the start of TopUp and remains there until the fill is complete when 
+at the start of TopUp and remains there until the fill is complete when
 it resets to time before next TopUp fill,
 
-SR-CS-FILL-01:ENDCOUNTDN: this is an integer counter that runs to zero 
-at the end of TopUp fill and resets immediately to an estimate of the 
+SR-CS-FILL-01:ENDCOUNTDN: this is an integer counter that runs to zero
+at the end of TopUp fill and resets immediately to an estimate of the
 time before the end of the next TopUp fill.
 </pre>
 
@@ -64,7 +64,7 @@ Example XML configuration
  *
  */
 public interface IDeviceWatchdog extends IModelProvider<DeviceWatchdogModel>, INameable {
-	
+
     /**
 	 * Make this device active, it will then be used in any scans run
 	 * IMPORTANT: Call this method when the object is created in spring to register with the service.
@@ -75,24 +75,24 @@ public interface IDeviceWatchdog extends IModelProvider<DeviceWatchdogModel>, IN
 	 * Make this device inactive, removes the watchdog from the service.
 	 */
 	void deactivate();
-	
+
 	/**
-	 * 
+	 *
 	 * @return true if the watchdog is active in a scan and checking things.
 	 */
 	boolean isActive();
-	
+
 	/**
 	 * A disabled watch dog does not participate in a scan, but
 	 * is not removed from the service.
-	 * 
+	 *
 	 * @param enabled
 	 */
 	void setEnabled(boolean enabled);
-	
+
 	/**
 	 * A disabled watch dog does not participate in a scan, but
-	 * is not removed from the service.	 * 
+	 * is not removed from the service.	 *
 	 */
 	boolean isEnabled();
 
@@ -103,14 +103,16 @@ public interface IDeviceWatchdog extends IModelProvider<DeviceWatchdogModel>, IN
 	void setController(IDeviceController controller);
 
 	/**
-	 * 
+	 *
 	 */
+	@Override
 	DeviceWatchdogModel getModel();
 
 	/**
-	 * 
+	 *
 	 * @param model
 	 */
+	@Override
 	void setModel(DeviceWatchdogModel model);
 
 }

@@ -42,17 +42,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Reads a Queue of json beans from the activemq queue and deserializes the 
+ * Reads a Queue of json beans from the activemq queue and deserializes the
  * json beans to a specific class.
- * 
+ *
  * @author Matthew Gerring
  *
  * @param <T>
  */
 public final class QueueReader<T> {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(QueueReader.class);
-	
+
 	private Comparator<? super T> comparator;
 
 	private IEventConnectorService service;
@@ -60,17 +60,17 @@ public final class QueueReader<T> {
 	public QueueReader(IEventConnectorService service) {
 		this(service, null);
 	}
-	
+
 	public QueueReader(IEventConnectorService service, Comparator<? super T> comparator) {
 		this.service    = service;
 		this.comparator = comparator;
 	}
 
-	
+
 	/**
 	 * Read the status beans from any queue.
 	 * Returns a list of optionally date-ordered beans in the queue.
-	 * 
+	 *
 	 * @param uri
 	 * @param queueName
 	 * @param clazz
@@ -79,9 +79,9 @@ public final class QueueReader<T> {
 	 * @throws Exception
 	 */
 	public List<T> getBeans(final URI uri, final String queueName, final Class<T> beanClass) throws Exception {
-		
+
 		QueueConnection qCon = null;
-		try {	        
+		try {
 			QueueConnectionFactory connectionFactory = (QueueConnectionFactory)service.createConnectionFactory(uri);
 			qCon  = connectionFactory.createQueueConnection(); // This times out when the server is not there.
 			QueueSession    qSes  = qCon.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -111,7 +111,7 @@ public final class QueueReader<T> {
 					try {
 						final T bean = (T)service.unmarshal(json, beanClass != null ? beanClass : statusBeanClass);
 						list.add(bean);
-						
+
 					} catch (Exception unmarshallable) {
 						System.out.println("Removing old message "+json);
 						String jMSMessageID = m.getJMSMessageID();
@@ -134,7 +134,7 @@ public final class QueueReader<T> {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param uri
 	 * @param topicName
 	 * @param clazz
@@ -142,7 +142,7 @@ public final class QueueReader<T> {
 	 * @return
 	 */
 	public Map<String, T> getHeartbeats(final URI uri, final String topicName, final Class<T> clazz, final long monitorTime) throws Exception {
-		
+
 		final Map<String, T> ret = new HashMap<String, T>(3);
 		Connection topicConnection = null;
 		try {
@@ -157,7 +157,8 @@ public final class QueueReader<T> {
 
 
 			MessageListener listener = new MessageListener() {
-				public void onMessage(Message message) {		            	
+				@Override
+				public void onMessage(Message message) {
 					try {
 						if (message instanceof TextMessage) {
 							TextMessage t = (TextMessage) message;
@@ -172,7 +173,7 @@ public final class QueueReader<T> {
 			};
 			consumer.setMessageListener(listener);
 			Thread.sleep(monitorTime);
-			
+
 			return ret;
 
 		} catch (Exception ne) {

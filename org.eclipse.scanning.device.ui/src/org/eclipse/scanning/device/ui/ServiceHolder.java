@@ -22,7 +22,9 @@ import org.eclipse.scanning.api.ISpringParser;
 import org.eclipse.scanning.api.IValidatorService;
 import org.eclipse.scanning.api.event.IEventConnectorService;
 import org.eclipse.scanning.api.event.IEventService;
+import org.eclipse.scanning.api.event.queues.IQueueSpoolerService;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
+import org.eclipse.scanning.api.scan.IFilePathService;
 import org.eclipse.scanning.api.scan.IParserService;
 import org.eclipse.scanning.api.stashing.IStashingService;
 import org.eclipse.scanning.api.ui.CommandConstants;
@@ -47,7 +49,7 @@ public class ServiceHolder {
 	private static IInterfaceService      interfaceService;
 	private static IStashingService       stashingService;
 	private static EventAdmin             eventAdmin;
-	
+
 	private static BundleContext context;
 
 	public static IEventConnectorService getEventConnectorService() {
@@ -98,7 +100,7 @@ public class ServiceHolder {
 	public void start(BundleContext context) {
 		ServiceHolder.context = context;
 	}
-	
+
 	private static <T> T getService(Class<T> clazz) {
 		if (context == null) return null;
 		try {
@@ -108,7 +110,7 @@ public class ServiceHolder {
 			return null;
 		}
 	}
-	
+
 	public static <T> T getRemote(Class<T> clazz) throws Exception {
 		return (T)ServiceHolder.getEventService().createRemoteService(new URI(CommandConstants.getScanningBrokerUri()), clazz);
 	}
@@ -192,5 +194,31 @@ public class ServiceHolder {
 
 	public static void setStashingService(IStashingService stashingService) {
 		ServiceHolder.stashingService = stashingService;
+	}
+
+	private static IFilePathService filePathService;
+
+	public static IFilePathService getFilePathService() {
+		if (filePathService==null) filePathService = getService(IFilePathService.class);
+		return filePathService;
+	}
+
+	public static void setFilePathService(IFilePathService filePathService) {
+		ServiceHolder.filePathService = filePathService;
+	}
+
+	private static IQueueSpoolerService queueSpoolerService;
+
+	public static IQueueSpoolerService getQueueSpoolerService() {
+		if (queueSpoolerService == null) queueSpoolerService = getService(IQueueSpoolerService.class);
+		return queueSpoolerService;
+	}
+
+	public static void setQueueSpoolerService(IQueueSpoolerService queueSpoolerService) {
+		ServiceHolder.queueSpoolerService = queueSpoolerService;
+	}
+
+	public static BundleContext getContext() {
+		return context;
 	}
 }

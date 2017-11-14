@@ -24,17 +24,17 @@ import org.eclipse.scanning.api.scan.ScanningException;
  * This service talks to the middleware layer state machine for controlling
  * the scan. If working inside Diamond there is a wiki here:
  * http://confluence.diamond.ac.uk/display/MAP/WP4+Middlelayer+Design+Specification
- * 
+ *
  * A version of this design is also in Malcolm.pdf in this package.
- * 
+ *
  * The name malcolm is chosen for the middleware layer between the Java OSGi server and
- * the hardware - inspired by the sitcom 'Malcolm in the Middle' 
+ * the hardware - inspired by the sitcom 'Malcolm in the Middle'
  * https://en.wikipedia.org/wiki/Malcolm_in_the_Middle
- * 
+ *
  * This interface attempts to mirror how the hardware in the python looks, hence the
  * fact that it does not look very 'Java'. So instead of setPaused(boolean) we have
  * pause() and resume().
- * 
+ *
  * Usage:
  * <code>
  <p>
@@ -51,7 +51,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
 		<br>
 		final State state = zebra.getState();<br>
         // ... We did something!<br>
-</p>        
+</p>
 </code>
 
  * <img src="./doc/device_state.png" />
@@ -61,23 +61,14 @@ import org.eclipse.scanning.api.scan.ScanningException;
  *
  */
 public interface IMalcolmDevice<T> extends IRunnableEventDevice<T>, IMalcolmEventPublisher, ILatchableDevice, IAttributableDevice, IValidator<T> {
-	
-	public static final String ATTRIBUTE_NAME_DATASETS = "datasets";
-	public static final String ATTRIBUTE_NAME_AXES_TO_MOVE = "axesToMove";
-	public static final String DATASETS_TABLE_COLUMN_NAME = "name";
-	public static final String DATASETS_TABLE_COLUMN_FILENAME = "filename";
-	public static final String DATASETS_TABLE_COLUMN_PATH = "path";
-	public static final String DATASETS_TABLE_COLUMN_TYPE = "type";
-	public static final String DATASETS_TABLE_COLUMN_RANK = "rank";
-	public static final String DATASETS_TABLE_COLUMN_UNIQUEID = "uniqueid";
-	
+
 	/**
 	 * Attempts to determine if the device is locked doing something like a configure or a run.
-	 * 
+	 *
 	 * @return true if not in locked state, otherwise false.
 	 */
 	public boolean isLocked() throws MalcolmDeviceException ;
-	
+
 	/**
 	 * Returns the axes that this malcolm device can move.
 	 * @return

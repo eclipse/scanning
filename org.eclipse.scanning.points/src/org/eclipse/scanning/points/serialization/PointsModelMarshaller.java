@@ -15,7 +15,6 @@ import org.eclipse.dawnsci.analysis.api.persistence.IMarshaller;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.IPosition;
 
-@SuppressWarnings("unchecked")
 public class PointsModelMarshaller implements IMarshaller {
 
 	@Override
@@ -32,12 +31,12 @@ public class PointsModelMarshaller implements IMarshaller {
 	public Class<PositionDeserializer> getDeserializerClass() {
 		return PositionDeserializer.class;
 	}
-	
+
 	@Override
 	public Class<ScanRequest> getMixinAnnotationType() {
 		return ScanRequest.class;
 	}
-	
+
 	@Override
 	public Class<ScanRequestMixIn> getMixinAnnotationClass() {
 		return ScanRequestMixIn.class;

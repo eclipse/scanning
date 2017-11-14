@@ -16,7 +16,7 @@ import org.eclipse.scanning.api.INameable;
 public class ControlFileNode extends AbstractControl implements INameable {
 
 	private String file;
-	
+
 	public ControlFileNode() {
 	}
 	public ControlFileNode(String name) {
@@ -28,12 +28,12 @@ public class ControlFileNode extends AbstractControl implements INameable {
 		setParentName(parentName);
 	}
 
-	
+
 	public String getFile() {
 		return file;
 	}
 	public void setFile(String file) {
 		this.file = file;
 	}
-	
+
 }

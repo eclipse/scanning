@@ -21,9 +21,9 @@ import org.eclipse.january.dataset.IDataset;
 
 /**
  * Maths operations are bascially just for testing at the moment.
- * 
+ *
  * They do not currently operate in a generic way, see FIXMEs below.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -34,23 +34,25 @@ abstract class MockAbstractMathsOperation<T extends ValueModel, D extends Operat
 	 */
 	@Override
 	public OperationData execute(IDataset a, IMonitor monitor) throws OperationException {
-		
+
 		try {
 			IDataset result= operation(a, model.getValue());
 			// TODO Need to set up axes and meta correctly.
 			return new OperationData(result);
-			
+
 		} catch (Exception e) {
 			throw new OperationException(this, e);
 		}
 	}
-	
+
 	protected abstract IDataset operation(IDataset a, Object value);
 
-	
+
+	@Override
 	public OperationRank getInputRank() {
 		return OperationRank.ANY; // Images
 	}
+	@Override
 	public OperationRank getOutputRank() {
 		return OperationRank.SAME; // Addition for instance
 	}

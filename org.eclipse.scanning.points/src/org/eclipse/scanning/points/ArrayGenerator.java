@@ -17,9 +17,10 @@ import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.ArrayModel;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 
 public class ArrayGenerator extends AbstractGenerator<ArrayModel> {
-	
+
 	public ArrayGenerator() {
 		setLabel("Array Scan");
 		setDescription("Creates a scan from an array of positions");
@@ -40,10 +41,17 @@ public class ArrayGenerator extends AbstractGenerator<ArrayModel> {
 		}
 		return model.getPositions().length;
 	}
-	
+
 	@Override
 	protected ScanPointIterator iteratorFromValidModel() {
-		return new ArrayIterator(this);
+		final ArrayModel model = getModel();
+        final JythonObjectFactory<ScanPointIterator> arrayGeneratorFactory = ScanPointGeneratorFactory.JArrayGeneratorFactory();
+
+        final double[] points = model.getPositions();
+
+		final ScanPointIterator pyIterator = arrayGeneratorFactory.createObject(
+				model.getName(), "mm", points);
+        return new SpgIterator(pyIterator);
 	}
 
 	@Override

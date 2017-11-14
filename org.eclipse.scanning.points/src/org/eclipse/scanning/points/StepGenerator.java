@@ -16,13 +16,14 @@ import org.eclipse.scanning.api.points.AbstractGenerator;
 import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.ScanPointIterator;
 import org.eclipse.scanning.api.points.models.StepModel;
+import org.eclipse.scanning.jython.JythonObjectFactory;
 
 class StepGenerator extends AbstractGenerator<StepModel> {
-	
+
 	StepGenerator() {
 		setLabel("Step");
 		setDescription("Creates a step scan.\nIf the last requested point is within 1%\nof the end it will still be included in the scan");
-		setIconPath("icons/scanner--step.png"); // This icon exists in the rendering bundle 
+		setIconPath("icons/scanner--step.png"); // This icon exists in the rendering bundle
 	}
 
 	@Override
@@ -36,19 +37,36 @@ class StepGenerator extends AbstractGenerator<StepModel> {
 	@Override
 	public int sizeOfValidModel() throws GeneratorException {
 		if (containers!=null) throw new GeneratorException("Cannot deal with regions in a step scan!");
-		double div = ((model.getStop()-model.getStart())/model.getStep());
-		div += (Math.abs(model.getStep()) / 100); // add tolerance of 1% of step value
-		return (int)Math.floor(div+1);
+		return getModel().size();
 	}
-	
+
+	protected ScanPointIterator createPyIterator() {
+		final StepModel model = getModel();
+
+        final JythonObjectFactory<ScanPointIterator> lineGeneratorFactory = ScanPointGeneratorFactory.JLineGenerator1DFactory();
+
+        final String name   = model.getName();
+        final double start  = model.getStart();
+        final double stop   = model.getStop();
+        final int numPoints = model.size();
+
+		return lineGeneratorFactory.createObject(name, "mm", start, stop, numPoints);
+	}
+
 	@Override
 	public ScanPointIterator iteratorFromValidModel() {
-		return new LineIterator(this);
+		final ScanPointIterator pyIterator = createPyIterator();
+		return new StepIterator(getModel(), pyIterator);
 	}
 
 	@Override
 	public int[] getShape() throws GeneratorException {
 		return new int[] { sizeOfValidModel() };
+	}
+
+	@Override
+	public String toString() {
+		return "StepGenerator [" + super.toString() + "]";
 	}
 
 }

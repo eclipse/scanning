@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.points;
 
+import java.util.NoSuchElementException;
+
 import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Scalar;
 import org.eclipse.scanning.api.points.ScanPointIterator;
@@ -20,7 +22,7 @@ public class RepeatedPointIterator implements ScanPointIterator {
 
 	private RepeatedPointModel   model;
 	private int count = 0;
-	
+
 	public RepeatedPointIterator(RepeatedPointGenerator gen) {
 		this.model= gen.getModel();
 	}
@@ -29,30 +31,19 @@ public class RepeatedPointIterator implements ScanPointIterator {
 	public boolean hasNext() {
 		return count<model.getCount();
 	}
-	
-	private static boolean countSleeps;
-	private static int     sleepCount;
-	   /**
-     * For testing we may count the sleeps of an interation
-     * @param b
-     */
-	public static void _setCountSleeps(boolean count) {
-		countSleeps = count;
-		sleepCount  = 0;
-	}
-
-	public static int _getSleepCount() {
-		return sleepCount;
-	}
 
 	@Override
 	public IPosition next() {
-		
+		if (!hasNext()) {
+			throw new NoSuchElementException();
+		}
+
 		if (model.getSleep()>0) {
 			try {
 				Thread.sleep(model.getSleep());
 				if (countSleeps) sleepCount++;
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 				throw new RuntimeException(e);
 			}
 		}
@@ -60,10 +51,6 @@ public class RepeatedPointIterator implements ScanPointIterator {
 		count++;
 		return point;
 	}
-
-	public void remove() {
-        throw new UnsupportedOperationException("remove");
-    }
 
 	@Override
 	public int size() {
@@ -79,5 +66,27 @@ public class RepeatedPointIterator implements ScanPointIterator {
 	public int getRank() {
 		return 1;
 	}
+
+	@Override
+	public int getIndex() {
+		return count;
+	}
+
+	// TODO: 2017-10-09 Matt D: These two fields and the get and set methods for countSleeps exist
+	// only to test/ the number of times the iterator is iterated over during a scan in ScanProcessTest
+	// We should find another way to do this
+	private static boolean countSleeps;
+	private static int     sleepCount;
+
+	public static void _setCountSleeps(boolean count) {
+		countSleeps = count;
+		sleepCount  = 0;
+	}
+
+	public static int _getSleepCount() {
+		return sleepCount;
+	}
+
+
 
 }

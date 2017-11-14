@@ -32,9 +32,9 @@ public class MockWritingMandlebrotModel {
 	private NexusFile file;
 	private int    xSize;
 	private int    ySize;
-	
+
 	public MockWritingMandlebrotModel() throws IOException {
-		
+
 		maxIterations = 500;
 		escapeRadius  = 10.0;
 		columns       = 301;
@@ -47,7 +47,7 @@ public class MockWritingMandlebrotModel {
 		xSize         = -1;
 		ySize         = -1;
 	}
-	
+
 	public int getMaxIterations() {
 		return maxIterations;
 	}
@@ -210,5 +210,5 @@ public class MockWritingMandlebrotModel {
 		this.ySize = ySize;
 	}
 
-	
+
 }

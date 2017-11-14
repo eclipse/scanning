@@ -19,19 +19,19 @@ import org.eclipse.scanning.event.queues.ServicesHolder;
 import org.junit.BeforeClass;
 
 public class QueueServiceIntegrationTest extends QueueServiceIntegrationPluginTest {
-	
+
 
 	@BeforeClass
 	public static void fakeOSGiSetup() {
 		setUpNonOSGIActivemqMarshaller();
-		
+
 		IEventService evServ =  new EventServiceImpl(new ActivemqConnectorService());
 		ServicesHolder.setEventService(evServ);
-		
+
 		QueueService qServ = new QueueService();
 		ServicesHolder.setQueueService(qServ);
 		ServicesHolder.setQueueControllerService(qServ);
-		
+
 	}
 
 }

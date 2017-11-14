@@ -11,55 +11,57 @@
  *******************************************************************************/
 package org.eclipse.scanning.api.event.scan;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 
 import org.eclipse.scanning.api.ModelValidationException;
 import org.eclipse.scanning.api.ValidationException;
 import org.eclipse.scanning.api.annotation.ui.DeviceType;
+import org.eclipse.scanning.api.device.IAttributableDevice;
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.IdBean;
+import org.eclipse.scanning.api.malcolm.attributes.IDeviceAttribute;
 import org.eclipse.scanning.api.points.IPosition;
 
 /**
- * 
+ *
  * Object used to query which devices are available from a given broker.
  * The solstice server for instance asks the IRunnableDeviceService what is available
  * and returns a list of devices and their configuration.
- * 
+ *
  * Servlet may also be used to configure a given device and return the result, set its value
  * get its value. It can be used for Scannables and Detectors.
- * 
+ *
  * <pre>
  * Usage:
- * 1. Set nothing, post returns list of DeviceInformation for all devices. 
+ * 1. Set nothing, post returns list of DeviceInformation for all devices.
  * 2. Set the device name, post returns the device with this name.               IRunnableDeviceService.getRunnableDevice()
- * 3. Set name and model, named device is retrieved and configured.        
+ * 3. Set name and model, named device is retrieved and configured.
  * 4. Set the device model and the configure boolean, get a new device created.  IRunnableDeviceService.createRunnableDevice()
  * 5. Set the device action and the device name to call specific methods.
- * 
+ *
  * </pre>
- * 
+ *
  * TODO The data in this class has become a little overloaded. We could have one class for scannables
  * and one for runnable devices (detectors) to simplify things. The reason that this refactor has not
  * been done is that it is not clear if we want Solstice to be delivering client-side services this
  * way in the future. The hand coding of post and response which this message is part of has advantages and
  * disadvantages. Current the design meets the requirement of server without an endpoint (multiple servers)
  * and allows any technology like python/stomp to interact with it. However the Java client design then
- * becomes a little inelegant because the services have these remote versions implemented. 
- * 
+ * becomes a little inelegant because the services have these remote versions implemented.
+ *
  * @author Matthew Gerring
  *
  */
 public class DeviceRequest extends IdBean {
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3680277076626446185L;
+
+	private static final long serialVersionUID = 3497960665336985413L;
 
 	private DeviceType deviceType = DeviceType.RUNNABLE;
-	
+
 	/**
 	 * List of all devices
 	 */
@@ -69,13 +71,13 @@ public class DeviceRequest extends IdBean {
 	 * The name of the device required or null if more than one device is required.
 	 */
 	private String deviceName;
-	
+
 	/**
 	 * The device's model. Normally used to configure a device.
 	 * The Object must json through the marshaller.
 	 */
 	private Object deviceModel;
-	
+
 	/**
 	 * The device's value, if any. For instance for a scannable it
 	 * would be it's scalar position, usually a Double.
@@ -87,30 +89,47 @@ public class DeviceRequest extends IdBean {
 	 * should call configure on the device.
 	 */
 	private boolean configure = true;
-	
+
 	/**
 	 * The action to call if a method should be called on the device.
 	 */
 	private DeviceAction deviceAction;
-	
+
 	/**
 	 * The position to start at for a run call.
 	 */
 	private IPosition position;
-	
+
+	/**
+	 * If this field is set to a value, and the device implements {@link IAttributableDevice},
+	 * the {@link DeviceInformation} for this device will include the value of this attribute.
+	 */
+	private String attributeName = null;
+
+	/**
+	 * If this field is set to <code>true</code>, and the device implements {@link IAttributableDevice},
+	 * the {@link DeviceInformation} for this device will include the values of all attributes for this device.
+	 */
+	private boolean getAllAttributes = false;
+
+	/**
+	 * The device attributes. This field is set by the server.
+	 */
+	private Map<String, IDeviceAttribute<?>> attributes = null;
+
 	/**
 	 * If there is an error in the request.
 	 */
 	private String errorMessage;
-	
+
 	private String[] errorFieldNames;
 
 	/**
-	 * Set whether to get device information that is potentially held 
+	 * Set whether to get device information that is potentially held
 	 * the device itself from a device that is marked as not being alive.
 	 */
 	private boolean includeNonAlive = false;
-	
+
 	@Override
 	public <A extends IdBean> void merge(A with) {
 		super.merge(with);
@@ -123,20 +142,23 @@ public class DeviceRequest extends IdBean {
 		deviceValue      = dr.deviceValue;
 		configure        = dr.configure;
 		position         = dr.position;
+		attributeName    = dr.attributeName;
+		getAllAttributes = dr.getAllAttributes;
 		errorMessage     = dr.errorMessage;
 		errorFieldNames  = dr.errorFieldNames;
+		attributes       = dr.attributes;
 		includeNonAlive  = dr.includeNonAlive;
 	}
 
-	
+
 	public DeviceRequest() {
-	
+
 	}
 
 	public DeviceRequest(DeviceType type) {
 		this.deviceType = type;
 	}
-	
+
 	/**
 	 * For IRunnableDeviceService.getRunnableDevice()
 	 * @param name
@@ -144,7 +166,7 @@ public class DeviceRequest extends IdBean {
 	public DeviceRequest(String name) {
 		this.deviceName = name;
 	}
-	
+
 	/**
 	 * For IRunnableDeviceService.getRunnableDevice()
 	 * @param name
@@ -168,7 +190,7 @@ public class DeviceRequest extends IdBean {
 		this.deviceModel = model;
 		this.configure   = conf;
 	}
-	
+
 	/**
 	 * For IRunnableDeviceService.getRunnableDevice(...)
 	 * then device.configure(...)
@@ -208,12 +230,12 @@ public class DeviceRequest extends IdBean {
 	public void setDevices(Collection<DeviceInformation<?>> devices) {
 		this.devices = devices;
 	}
-	
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
+		result = prime * result + ((attributeName == null) ? 0 : attributeName.hashCode());
 		result = prime * result + (configure ? 1231 : 1237);
 		result = prime * result + ((deviceAction == null) ? 0 : deviceAction.hashCode());
 		result = prime * result + ((deviceModel == null) ? 0 : deviceModel.hashCode());
@@ -221,11 +243,16 @@ public class DeviceRequest extends IdBean {
 		result = prime * result + ((deviceType == null) ? 0 : deviceType.hashCode());
 		result = prime * result + ((deviceValue == null) ? 0 : deviceValue.hashCode());
 		result = prime * result + ((devices == null) ? 0 : devices.hashCode());
+		result = prime * result + Arrays.hashCode(errorFieldNames);
 		result = prime * result + ((errorMessage == null) ? 0 : errorMessage.hashCode());
+		result = prime * result + (getAllAttributes ? 1231 : 1237);
+		result = prime * result + (includeNonAlive ? 1231 : 1237);
 		result = prime * result + ((position == null) ? 0 : position.hashCode());
+		result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
 		return result;
 	}
 
+	@SuppressWarnings("squid:S3776")
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -235,9 +262,12 @@ public class DeviceRequest extends IdBean {
 		if (getClass() != obj.getClass())
 			return false;
 		DeviceRequest other = (DeviceRequest) obj;
-		if (configure != other.configure)
+		if (attributeName == null) {
+			if (other.attributeName != null)
+				return false;
+		} else if (!attributeName.equals(other.attributeName))
 			return false;
-		if (includeNonAlive != other.includeNonAlive)
+		if (configure != other.configure)
 			return false;
 		if (deviceAction != other.deviceAction)
 			return false;
@@ -263,18 +293,30 @@ public class DeviceRequest extends IdBean {
 				return false;
 		} else if (!devices.equals(other.devices))
 			return false;
+		if (!Arrays.equals(errorFieldNames, other.errorFieldNames))
+			return false;
 		if (errorMessage == null) {
 			if (other.errorMessage != null)
 				return false;
 		} else if (!errorMessage.equals(other.errorMessage))
+			return false;
+		if (getAllAttributes != other.getAllAttributes)
+			return false;
+		if (includeNonAlive != other.includeNonAlive)
 			return false;
 		if (position == null) {
 			if (other.position != null)
 				return false;
 		} else if (!position.equals(other.position))
 			return false;
+		if (attributes == null) {
+			if (other.attributes != null)
+				return false;
+		} else if (!attributes.equals(other.attributes))
+			return false;
 		return true;
 	}
+
 
 	public void addDeviceInformation(DeviceInformation<?> info) {
 		if (devices==null) devices = new LinkedHashSet<DeviceInformation<?>>(7);
@@ -316,6 +358,38 @@ public class DeviceRequest extends IdBean {
 
 	public void setDeviceType(DeviceType deviceType) {
 		this.deviceType = deviceType;
+	}
+
+	public String getAttributeName() {
+		return attributeName;
+	}
+
+	public void setAttributeName(String attributeName) {
+		this.attributeName = attributeName;
+	}
+
+	public boolean isGetAllAttributes() {
+		return getAllAttributes;
+	}
+
+	public void setGetAllAttributes(boolean getAllAttributes) {
+		this.getAllAttributes = getAllAttributes;
+	}
+
+	public Map<String, IDeviceAttribute<?>> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, IDeviceAttribute<?>> attributes) {
+		this.attributes = attributes;
+	}
+
+	public void addAttribute(IDeviceAttribute<?> attribute) {
+		if (attributes == null) {
+			attributes = new HashMap<>();
+		}
+
+		attributes.put(attribute.getName(), attribute);
 	}
 
 	public boolean isConfigure() {
@@ -362,18 +436,16 @@ public class DeviceRequest extends IdBean {
 		this.deviceValue = deviceValue;
 	}
 
-
 	@Override
 	public String toString() {
 		return "DeviceRequest [deviceType=" + deviceType + ", deviceName=" + deviceName + ", deviceValue=" + deviceValue
-				+ ", deviceAction=" + deviceAction + ", errorMessage=" + errorMessage + "]";
+				+ ", deviceAction=" + deviceAction + ", attributeName=" + attributeName + ", getAllAttributes="
+				+ getAllAttributes + ", errorMessage=" + errorMessage + "]";
 	}
-
 
 	public String[] getErrorFieldNames() {
 		return errorFieldNames;
 	}
-
 
 	public void setErrorFieldNames(String[] errorFieldNames) {
 		this.errorFieldNames = errorFieldNames;
@@ -382,7 +454,7 @@ public class DeviceRequest extends IdBean {
 	public boolean isIncludeNonAlive() {
 		return includeNonAlive;
 	}
-	
+
 	public void setIncludeNonAlive(boolean includeNonAlive) {
 		this.includeNonAlive = includeNonAlive;
 	}

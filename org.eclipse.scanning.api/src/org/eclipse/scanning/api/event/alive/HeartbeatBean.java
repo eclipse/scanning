@@ -19,12 +19,12 @@ public class HeartbeatBean extends ConsumerCommandBean {
 	 * Beamline that the acquisition server is controlling
 	 */
 	private String  beamline;
-	
+
 	/**
 	 * Time that the beat happened on the server
 	 */
 	private long    publishTime;
-	
+
 	/**
 	 * Time that the heartbeater started or -1 is the checker does not provide this information
 	 */
@@ -42,7 +42,7 @@ public class HeartbeatBean extends ConsumerCommandBean {
 
 
 	private ConsumerStatus consumerStatus;
-	
+
 	private String hostName;
 
 	public long getConceptionTime() {
@@ -158,7 +158,7 @@ public class HeartbeatBean extends ConsumerCommandBean {
 	}
 
 	public boolean equalsIgnoreLastAlive(HeartbeatBean obj) {
-		
+
 		if (!super.equals(obj)) return false;
 
 		if (this == obj)

@@ -16,13 +16,13 @@ public class RegisteredTypeBeanV1 {
 	private int value1;
 	private String value2;
 	private double value3;
-	
+
 	public RegisteredTypeBeanV1() {
 		value1 = 1;
 		value2 = "2";
 		value3 = 3.0d;
 	}
-	
+
 	public int getValue1() {
 		return value1;
 	}
@@ -72,6 +72,6 @@ public class RegisteredTypeBeanV1 {
 			return false;
 		return true;
 	}
-	
-	
+
+
 }

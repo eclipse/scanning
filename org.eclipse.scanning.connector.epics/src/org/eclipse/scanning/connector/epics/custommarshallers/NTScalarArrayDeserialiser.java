@@ -26,7 +26,7 @@ import org.epics.pvmarshaller.marshaller.deserialisers.Deserialiser;
  *
  */
 public class NTScalarArrayDeserialiser implements IPVStructureDeserialiser {
-	
+
 	private final String valueField = "value";
 	private final String numberTypeField = "dtype";
 	private final String metaField = "meta";
@@ -37,7 +37,7 @@ public class NTScalarArrayDeserialiser implements IPVStructureDeserialiser {
 
 	@Override
 	public Object fromPVStructure(Deserialiser deserialiser, PVStructure pvStructure) throws Exception {
-		
+
 		PVStructure metaStructure = pvStructure.getStructureField(metaField);
 		String metaId = metaStructure.getStructure().getID();
 		String description = metaStructure.getStringField(descriptionField).get();
@@ -46,48 +46,48 @@ public class NTScalarArrayDeserialiser implements IPVStructureDeserialiser {
 		PVStringArray tagsArray = metaStructure.getSubField(PVStringArray.class, tagsField);
 		StringArrayData tagsArrayData = new StringArrayData();
 		tagsArray.get(0, tagsArray.getLength(), tagsArrayData);
-		
+
 		if (metaId.startsWith(StringArrayAttribute.STRINGARRAY_ID)) {
 			StringArrayAttribute attribute = new StringArrayAttribute();
-			
+
 			attribute.setDescription(description);
 			attribute.setLabel(label);
 			attribute.setTags(tagsArrayData.data);
 			attribute.setWriteable(writeable);
 			attribute.setName(pvStructure.getFullName());
-			
+
 			deserialiser.getScalarArrayDeserialiser().deserialise(attribute, "value", pvStructure.getSubField(PVStringArray.class, valueField));
 
 			return attribute;
 		} else if (metaId.startsWith(BooleanArrayAttribute.BOOLEANARRAY_ID)) {
 			BooleanArrayAttribute attribute = new BooleanArrayAttribute();
-			
+
 			attribute.setDescription(description);
 			attribute.setLabel(label);
 			attribute.setTags(tagsArrayData.data);
 			attribute.setWriteable(writeable);
 			attribute.setName(pvStructure.getFullName());
-			
+
 			deserialiser.getScalarArrayDeserialiser().deserialise(attribute, "value", pvStructure.getSubField(PVStringArray.class, valueField));
 
 			return attribute;
 		} else if (metaId.startsWith(NumberArrayAttribute.NUMBERARRAY_ID)) {
 			NumberArrayAttribute attribute = new NumberArrayAttribute();
-			
+
 			attribute.setDescription(description);
 			attribute.setLabel(label);
 			attribute.setTags(tagsArrayData.data);
 			attribute.setWriteable(writeable);
 			attribute.setName(pvStructure.getFullName());
-			
+
 			String numberType = metaStructure.getStringField(numberTypeField).get();
 			attribute.setDtype(numberType);
-			
+
 			deserialiser.getScalarArrayDeserialiser().deserialise(attribute, "value", pvStructure.getSubField(PVStringArray.class, valueField));
 
 			return attribute;
 		}
-		
+
 		throw new Exception("Unrecognised NTScalarArray type: " + metaId);
 	}
 }

@@ -25,7 +25,7 @@ import org.eclipse.scanning.api.scan.ScanningException;
 
 abstract class _AbstractRemoteDevice<M> extends AbstractRemoteService {
 
-	
+
 	protected String                          name;
 	protected DeviceInformation<M>            info;
 	protected final IRequester<DeviceRequest> requester;
@@ -40,24 +40,25 @@ abstract class _AbstractRemoteDevice<M> extends AbstractRemoteService {
 	_AbstractRemoteDevice(DeviceRequest req, URI uri, IEventService eservice) throws EventException, InterruptedException {
 		this(uri, eservice);
 	    logger.debug("Setting timeout {} {}", RemoteServiceFactory.getTime(), RemoteServiceFactory.getTimeUnit());
-	    requester.setTimeout(RemoteServiceFactory.getTime(), RemoteServiceFactory.getTimeUnit()); // Useful for debugging testing 
+	    requester.setTimeout(RemoteServiceFactory.getTime(), RemoteServiceFactory.getTimeUnit()); // Useful for debugging testing
 	    connect(req);
 	}
 
 	_AbstractRemoteDevice(DeviceRequest req, long timeoutMs, URI uri, IEventService eservice) throws EventException, InterruptedException {
 		this(uri, eservice);
 	    logger.debug("Setting  {} {}", timeoutMs, "ms");
-	    requester.setTimeout(timeoutMs, TimeUnit.MILLISECONDS); // Useful for debugging testing 
+	    requester.setTimeout(timeoutMs, TimeUnit.MILLISECONDS); // Useful for debugging testing
 	    connect(req);
 	}
-	
+
 	private void connect(DeviceRequest req) throws EventException, InterruptedException, ValidationException {
 		req = requester.post(req);
 		req.checkException();
 		info = (DeviceInformation<M>)req.getDeviceInformation();
 		this.name = info.getName();
 	}
-	
+
+	@Override
 	public void disconnect() throws EventException {
 		requester.disconnect(); // Requester can still be used again after a disconnect
 		setDisconnected(true);
@@ -85,16 +86,16 @@ abstract class _AbstractRemoteDevice<M> extends AbstractRemoteService {
 
 	protected abstract DeviceRequest update();
 
-	
+
 	protected void merge(DeviceInformation<M> info) {
 		if (info == null) return; // Nothing to merge
 		if (this.info == null) {
 			this.info = info;
 			return;
 		}
-		this.info.merge(info);       
+		this.info.merge(info);
 	}
-	
+
 	protected void method(DeviceRequest deviceRequest) throws ScanningException {
 		try {
 			DeviceRequest req = requester.post(deviceRequest);

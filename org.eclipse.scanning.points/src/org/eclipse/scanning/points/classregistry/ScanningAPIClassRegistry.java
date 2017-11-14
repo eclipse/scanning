@@ -42,6 +42,7 @@ import org.eclipse.scanning.api.malcolm.MalcolmTable;
 import org.eclipse.scanning.api.malcolm.attributes.BooleanArrayAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.BooleanAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.ChoiceAttribute;
+import org.eclipse.scanning.api.malcolm.attributes.HealthAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.MalcolmAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.NumberArrayAttribute;
 import org.eclipse.scanning.api.malcolm.attributes.NumberAttribute;
@@ -86,10 +87,10 @@ import org.eclipse.scanning.api.script.ScriptRequest;
 import org.eclipse.scanning.api.script.ScriptResponse;
 
 /**
- * 
+ *
  * The registry is here because it makes dependencies on DAWNSCI
- * in order to link in beans to the marshaller. 
- * 
+ * in order to link in beans to the marshaller.
+ *
  * @author Martin Gaughran
  * @author Matthew Gerring
  *
@@ -99,7 +100,7 @@ public class ScanningAPIClassRegistry implements IClassRegistry {
 	private static final Map<String, Class<?>> idToClassMap;
 	static {
 		Map<String, Class<?>> tmp = new HashMap<String, Class<?>>();
-		
+
 		// event.scan
 		registerClass(tmp, DeviceRequest.class);
 		registerClass(tmp, MonitorRole.class);  // TODO Is this wrong? Should enums not need explicit registration.
@@ -111,13 +112,13 @@ public class ScanningAPIClassRegistry implements IClassRegistry {
 		registerClass(tmp, ScanRequest.class);
 		registerClass(tmp, ScanMetadata.class);
 		registerClass(tmp, DeviceValueMultiPosition.class);
-		
+
 		// points
 		registerClass(tmp, StaticPosition.class);
 		registerClass(tmp, MapPosition.class);
 		registerClass(tmp, Point.class);
 		registerClass(tmp, Scalar.class);
-		
+
 		// points.models
 		registerClass(tmp, ArrayModel.class);
 		registerClass(tmp, BoundingBox.class);
@@ -137,7 +138,7 @@ public class ScanningAPIClassRegistry implements IClassRegistry {
 		registerClass(tmp, RepeatedPointModel.class);
 		registerClass(tmp, StepModel.class);
 		registerClass(tmp, MultiStepModel.class);
-		
+
 		// scan.ui
 		registerClass(tmp, ControlEnumNode.class);
 		registerClass(tmp, ControlFileNode.class);
@@ -145,16 +146,16 @@ public class ScanningAPIClassRegistry implements IClassRegistry {
 		registerClass(tmp, ControlNode.class);
 		registerClass(tmp, ControlTree.class);
 		registerClass(tmp, AxisConfiguration.class);
-		
+
 		// event.alive
 		registerClass(tmp, HeartbeatBean.class);
 		registerClass(tmp, KillBean.class);
 		registerClass(tmp, PauseBean.class);
-		
+
 		// event.status
 		registerClass(tmp, AdministratorMessage.class);
 		registerClass(tmp, StatusBean.class);
-		
+
 		// event.queues.beans
 		registerClass(tmp, QueueRequest.class);
 		registerClass(tmp, MonitorAtom.class);
@@ -162,7 +163,7 @@ public class ScanningAPIClassRegistry implements IClassRegistry {
 		registerClass(tmp, ScanAtom.class);
 		registerClass(tmp, SubTaskAtom.class);
 		registerClass(tmp, TaskBean.class);
-		
+
 		// malcolm.event
 		registerClass(tmp, MalcolmModel.class);
 		registerClass(tmp, Float.class);
@@ -178,13 +179,14 @@ public class ScanningAPIClassRegistry implements IClassRegistry {
 		registerClass(tmp, StringArrayAttribute.class);
 		registerClass(tmp, StringAttribute.class);
 		registerClass(tmp, TableAttribute.class);
+		registerClass(tmp, HealthAttribute.class);
 
 		// api.scan
 		registerClass(tmp, PositionEvent.class);
 
 		// scan.event
 		registerClass(tmp, Location.class);
-		
+
 		// device.models
 		registerClass(tmp, ProcessingModel.class);
 		registerClass(tmp, ClusterProcessingModel.class);
@@ -193,13 +195,13 @@ public class ScanningAPIClassRegistry implements IClassRegistry {
 		registerClass(tmp, ScriptLanguage.class);
 		registerClass(tmp, ScriptRequest.class);
 		registerClass(tmp, ScriptResponse.class);
-		
+
 
 		idToClassMap = tmp;
 	}
-	
+
 	public ScanningAPIClassRegistry() {
-		
+
 	}
 	public ScanningAPIClassRegistry(Class<?>... extras) {
 		if (extras!=null) {
@@ -208,7 +210,7 @@ public class ScanningAPIClassRegistry implements IClassRegistry {
 			}
 		}
 	}
-	
+
 	private static void registerClass(Map<String, Class<?>> map, Class<?> clazz) {
 		map.put(clazz.getSimpleName(), clazz);
 	}

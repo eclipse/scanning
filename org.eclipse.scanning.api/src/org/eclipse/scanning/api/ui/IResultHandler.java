@@ -16,7 +16,7 @@ import java.text.MessageFormat;
 import org.eclipse.scanning.api.event.status.StatusBean;
 
 public interface IResultHandler<T extends StatusBean> extends IHandler<T> {
-	
+
 	/**
 	 * Called to open the result from the beam.
 	 * @param bean
@@ -24,13 +24,13 @@ public interface IResultHandler<T extends StatusBean> extends IHandler<T> {
 	 * @return true if result open handled ok, false otherwise. Normally if the user chooses not to proceed true is still returned.
 	 */
 	public boolean open(T bean) throws Exception;
-	
+
 	default public String getErrorMessage(T bean) {
 		return MessageFormat.format("Cannot open {0} normally.\n\nPlease contact your support representative.", getLocation(bean));
 	}
-	
+
 	default public String getLocation(T bean) {
 		return bean.getRunDirectory();
 	}
-	
+
 }

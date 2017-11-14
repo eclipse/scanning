@@ -24,10 +24,10 @@ public class BeanMerge {
 	 * to send events without having to set all properties
 	 * in each event manually.
 	 * @param event
-	 * @throws IntrospectionException 
-	 * @throws InvocationTargetException 
-	 * @throws IllegalArgumentException 
-	 * @throws IllegalAccessException 
+	 * @throws IntrospectionException
+	 * @throws InvocationTargetException
+	 * @throws IllegalArgumentException
+	 * @throws IllegalAccessException
 	 */
 	public static <M> void merge(M template, M destination) throws IntrospectionException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 

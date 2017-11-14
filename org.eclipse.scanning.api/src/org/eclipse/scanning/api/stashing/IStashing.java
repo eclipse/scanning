@@ -16,7 +16,25 @@ import java.io.File;
 public interface IStashing {
 
 	/**
-	 * 
+	 * Get the name of the stash. Used when messages are shown to the user
+	 * @param name
+	 * @return
+	 */
+	default String getStashName() {
+		return "scans";
+	}
+
+	/**
+	 * Set the name of the stash. Used when messages are shown to the user
+	 * @param name
+	 * @return
+	 */
+	default String setStashName(String name) {
+		return "scans";
+	}
+
+	/**
+	 *
 	 * @return true if the file exists and has something in it.
 	 */
 	boolean isStashed();
@@ -27,7 +45,7 @@ public interface IStashing {
 	 * @throws Exception
 	 */
 	<T> void stash(T object) throws Exception;
-	
+
 	/**
 	 * Unstash and return the file.
 	 * @param clazz
@@ -42,18 +60,18 @@ public interface IStashing {
 	 * @param object
 	 */
 	<T> void save(T object);
-	
+
 	/**
 	 * Load the object from the stash, showing a dialog to the user if the
 	 * object cannot be retrived from the stash.
-	 * 
+	 *
 	 * @param clazz
 	 * @return
 	 */
 	<T> T load(Class<T> clazz);
-	
+
 	/**
-	 * 
+	 *
 	 * @return the file to which we are stashing.
 	 */
 	File getFile();

@@ -1,26 +1,24 @@
 package org.eclipse.scanning.test;
 
-import org.eclipse.scanning.test.command.ScanRequestTest;
-import org.eclipse.scanning.test.scan.ThreadScanTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite.SuiteClasses;
 
 /**
  * This is all the suites which is just a convenient way
  * to run a lot of tests locally.
- * 
+ *
  * NOTE: To run you need an enviroment in your path:
- * 
+ *
  * Windows:		PATH=${project_loc:hdf.hdf5lib}\lib\${target.os}-${target.arch}
  * Linux:		LD_LIBRARY_PATH=${project_loc:hdf.hdf5lib}/lib/${target.os}-${target.arch}
  * Mac:			Not sure perhaps LD_LIBRARY_PATH
- * 
+ *
  * @author Matthew Gerring
  *
  */
 @RunWith(org.junit.runners.Suite.class)
 @SuiteClasses({
-	
+
 	org.eclipse.scanning.test.annot.Suite.class,
 	org.eclipse.scanning.test.command.Suite.class,
 	org.eclipse.scanning.test.epics.Suite.class,
@@ -40,7 +38,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	org.eclipse.scanning.test.scan.Suite.class,
 	org.eclipse.scanning.test.stashing.Suite.class,
 	org.eclipse.scanning.test.validation.Suite.class,
-	
+
 })
 public class All {
 

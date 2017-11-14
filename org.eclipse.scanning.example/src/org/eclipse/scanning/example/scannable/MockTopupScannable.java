@@ -16,10 +16,10 @@ import org.eclipse.scanning.api.points.IPosition;
 import org.eclipse.scanning.api.points.Scalar;
 
 /**
- * Designed to monitor topup (pretty badly, just conceptually). 
+ * Designed to monitor topup (pretty badly, just conceptually).
  * On a step divisible by ten, will force a wait
  * until imaginary topup value is reached.
- * 
+ *
  * @author Matthew Gerring
  *
  */
@@ -30,7 +30,7 @@ public class MockTopupScannable extends MockScannable implements IDisconnectable
     private volatile boolean isRunning;
 	private Thread thread;
 	/**
-	 * 
+	 *
 	 * @param name
 	 * @param period in ms that topup happens over e.g. 5000 for testing
 	 */
@@ -39,9 +39,9 @@ public class MockTopupScannable extends MockScannable implements IDisconnectable
 		setUnit("ms");
 		this.period = period;
 	}
-	
+
 	public void start() {
-		
+
 		if (thread!=null && isRunning) return; // We have one going.
 		this.start = System.currentTimeMillis();
 		this.thread = new Thread(()->{
@@ -65,7 +65,7 @@ public class MockTopupScannable extends MockScannable implements IDisconnectable
 		thread.start();
 		System.out.println("Topup started @ 10Hz");
 	}
-	
+
 	@Override
 	public void disconnect() {
 		isRunning = false;
@@ -78,15 +78,17 @@ public class MockTopupScannable extends MockScannable implements IDisconnectable
 		return !isRunning;
 	}
 
+	@Override
 	public Number setPosition(Number position) throws Exception {
 		return setPosition(position, null);
 	}
+	@Override
 	public Number setPosition(Number position, IPosition loc) throws Exception {
 		this.position = position;
 	    delegate.firePositionChanged(getLevel(), new Scalar(getName(), -1, position));
 	    return this.position;
 	}
-	
+
 	/**
 	 * Time in ms until next topup
 	 */

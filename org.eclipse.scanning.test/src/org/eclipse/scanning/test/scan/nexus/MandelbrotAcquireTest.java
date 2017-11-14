@@ -13,6 +13,7 @@ package org.eclipse.scanning.test.scan.nexus;
 
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertAxes;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertSignal;
+import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertSolsticeScanGroup;
 import static org.eclipse.scanning.test.scan.nexus.NexusAssert.assertTarget;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -54,7 +55,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class MandelbrotAcquireTest extends NexusTest {
-	
+
 	private static IWritableDetector<MandelbrotModel> detector;
 
 	@Before
@@ -63,29 +64,31 @@ public class MandelbrotAcquireTest extends NexusTest {
 		detector = (IWritableDetector<MandelbrotModel>)dservice.createRunnableDevice(model);
 		assertNotNull(detector);
 	}
-	
+
 	@Test
 	public void testAcquire() throws Exception {
 		IRunnableDevice<ScanModel> scanner = createAcquireScan(detector, output);
 		scanner.run(null);
-	
+
 		checkNexusFile(scanner);
 	}
-	
+
 	private void checkNexusFile(IRunnableDevice<ScanModel> scanner) throws Exception {
 		final ScanModel scanModel = ((AbstractRunnableDevice<ScanModel>) scanner).getModel();
-		assertEquals(DeviceState.READY, scanner.getDeviceState());
+		assertEquals(DeviceState.ARMED, scanner.getDeviceState());
 
 		NXroot rootNode = getNexusRoot(scanner);
 		NXentry entry = rootNode.getEntry();
 		NXinstrument instrument = entry.getInstrument();
-		
+
+		assertSolsticeScanGroup(entry, false, false);
+
 		LinkedHashMap<String, List<String>> signalFieldAxes = new LinkedHashMap<>();
 		// axis for additional dimensions of a datafield, e.g. image
 		signalFieldAxes.put(NXdetector.NX_DATA, Arrays.asList("real", "imaginary"));
 		signalFieldAxes.put("spectrum", Arrays.asList("spectrum_axis"));
 		signalFieldAxes.put("value", Collections.emptyList());
-		
+
 		String detectorName = scanModel.getDetectors().get(0).getName();
 		NXdetector detector = instrument.getDetector(detectorName);
 		// map of detector data field to name of nxData group where that field is the @signal field
@@ -133,16 +136,16 @@ public class MandelbrotAcquireTest extends NexusTest {
 			assertAxes(nxData, expectedAxesNames.toArray(new String[expectedAxesNames.size()]));
 		}
 	}
-	
+
 	private IRunnableDevice<ScanModel> createAcquireScan(final IRunnableDevice<?> detector, File file) throws Exception {
 		StaticModel emptyModel = new StaticModel();
 		IPointGenerator<?> gen = gservice.createGenerator(emptyModel);
 //		gen = gservice.createCompoundGenerator(gen); // not required for this test, fails as EmptyGenerator not implemented in Jython
-		
+
 		// Create the model for an acquire scan
 		ScanModel smodel = new ScanModel();
 		smodel.setDetectors(detector);
-		
+
 		// Create a file to scan into.
 		smodel.setFilePath(file.getAbsolutePath());
 		smodel.setPositionIterable(gen);
@@ -150,7 +153,7 @@ public class MandelbrotAcquireTest extends NexusTest {
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override
 			public void runWillPerform(RunEvent evt) throws ScanningException {

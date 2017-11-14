@@ -28,7 +28,7 @@ import org.eclipse.scanning.api.points.models.AbstractPointsModel;
  * <p>
  * Do not extend this class to allow arbitrary information to be sent.
  * The event encapsulated by this bean should be sending just the information
- * defined here, metadata that cannot circumvent the nexus file. 
+ * defined here, metadata that cannot circumvent the nexus file.
  * <p>
  * For instance adding a dynamic set of information, a map perhaps, would
  * allow information which should be saved in the Nexus file to circumvent
@@ -36,50 +36,50 @@ import org.eclipse.scanning.api.points.models.AbstractPointsModel;
  * that doing this could mean that some data is not recorded as it should be
  * in nexus. Therefore these events are simply designed to contain events
  * not data. They are not the same as the old ScanDataPoint system in GDA
- * 
+ *
  * @author Matthew Gerring
  *
  */
-public final class ScanBean extends StatusBean { 
-	
+public final class ScanBean extends StatusBean {
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8191863784268392626L;
 
 	// Field required to start a scan, may be null.
 	private ScanRequest<?> scanRequest;
-		
+
 	// General Information
 	private String  deviceName;
 	private String  beamline;
-	
+
 	// Where are we in the scan
 	private int       point;
-	
+
 	/**
 	 * Estimated by running the stack. For most static scans size is a constant.
 	 * However scans are allowed to define logic on the iterable.
 	 * In this case size == estimated size!
 	 */
-	private int       size;  
-	
-	
+	private int       size;
+
+
 	private IPosition position;
-	
+
 	// State information
 	private DeviceState   deviceState;
 	private DeviceState   previousDeviceState;
-	
+
 	// Dataset information
 	private String  filePath;
 	private String  datasetPath;
 	private int     scanNumber;
-		
+
 	public ScanBean() {
         super();
 	}
-	
+
 	public ScanBean(ScanRequest<?> req) throws UnknownHostException {
         super();
         this.scanRequest = req;
@@ -88,17 +88,17 @@ public final class ScanBean extends StatusBean {
 		setName(createNameFromRequest(req));
 	}
 
-	
+
 	private String createNameFromRequest(ScanRequest<?> req) {
-		
+
 		String sname = "Scan";
-		if (req.getSampleData()!=null               && 
-			req.getSampleData().getName()!=null     && 
+		if (req.getSampleData()!=null               &&
+			req.getSampleData().getName()!=null     &&
 			req.getSampleData().getName().length()>0) {
-			
+
 			sname = req.getSampleData().getName();
 		}
-		
+
 		StringBuilder buf = new StringBuilder();
 		buf.append(sname);
 		buf.append(" [");
@@ -111,7 +111,7 @@ public final class ScanBean extends StatusBean {
 			}
 			if (it.hasNext()) buf.append(", ");
 		}
-		
+
 		if (req.getDetectors()==null || req.getDetectors().isEmpty()) {
 			buf.append("] ");
 
@@ -124,7 +124,7 @@ public final class ScanBean extends StatusBean {
 			}
 			buf.append("] ");
 		}
-		
+
 	    return buf.toString();
 
 	}
@@ -137,8 +137,8 @@ public final class ScanBean extends StatusBean {
 	public ScanBean(DeviceState state) {
 		this.deviceState = state;
 	}
-	
-	
+
+
 	public String getFilePath() {
 		return filePath;
 	}
@@ -177,10 +177,12 @@ public final class ScanBean extends StatusBean {
 		this.deviceState = state;
 	}
 
+	@Override
 	public String getMessage() {
 		return message;
 	}
 
+	@Override
 	public void setMessage(String message) {
 		this.message = message;
 	}
@@ -236,7 +238,7 @@ public final class ScanBean extends StatusBean {
 	 * is not constant for some custom scan types! However
 	 * for the vast majority of linear scans size and shape
 	 * are constant.
-	 * 
+	 *
 	 * @param size
 	 */
 	public void setSize(int size) {
@@ -250,7 +252,7 @@ public final class ScanBean extends StatusBean {
 	public void setPosition(IPosition value) {
 		this.position = value;
 	}
-	
+
 	public void putPosition(String name, int index, Object val) {
 		IPosition tmp = new MapPosition(name, index, val);
 		this.position = tmp.compound(position);
@@ -267,7 +269,7 @@ public final class ScanBean extends StatusBean {
 	 * @return whether the scan has just ended, i.e. transitioned from a RUNNING/RESUMED state to a post-running state.
 	 */
 	public boolean scanEnd() {
-		if (previousStatus == null || status == null) return false; 
+		if (previousStatus == null || status == null) return false;
 		return previousStatus.isRunning() && status.isFinal();
 	}
 

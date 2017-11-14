@@ -26,11 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class NameEditingSupport extends EditingSupport {
-	
+
 	private static final Logger logger = LoggerFactory.getLogger(NameEditingSupport.class);
 	private ControlTreeViewer controlView;
 	private ModelFieldEditorFactory factory;
-	
+
 	public NameEditingSupport(ControlTreeViewer cview) {
 		super(cview.getViewer());
 		this.controlView = cview;
@@ -42,7 +42,7 @@ class NameEditingSupport extends EditingSupport {
 		try {
 			if (element instanceof ControlNode) {
 				return factory.getDeviceEditor(DeviceType.SCANNABLE, (Composite)getViewer().getControl());
-			} 
+			}
 		} catch (Exception ne) {
 			logger.error("Cannot get a proper scannable editor!", ne);
 		}
@@ -71,20 +71,27 @@ class NameEditingSupport extends EditingSupport {
 
 	@Override
 	protected void setValue(Object element, Object value) {
-		
-		String name = (String)value;
-		INamedNode node = (INamedNode)element;
-		
+		if (element == null) {
+			logger.warn("Cannot save entry as row is null");
+			return;
+		}
+		final INamedNode node = (INamedNode)element;
+
+		final String name = (String)value;
+		if (name == null || name.length() == 0) {
+			logger.warn("Cannot save entry as name is null or empty");
+			return;
+		}
+
 		ControlTree tree = controlView.getControlTree();
 		if (tree.contains(name)) {
 			INamedNode other = tree.getNode(name);
 			MessageDialog.openError(getViewer().getControl().getShell(), "Invalid Name '"+name+"'", "The name '"+name+"' is already used for another control.\n\n"
 					+ "The control has a label of '"+other.getDisplayName()+"' and is linked to '"+other.getName()+"' and cannot be redefined.");
 			return;
-			
 		}
 		tree.setName(node, name);
-		
+
 		node.setDisplayName(name);
 		getViewer().refresh();
 	}

@@ -30,7 +30,7 @@ public class RunTest extends BrokerTest{
 
 	private IEventService            eservice;
 	private IPublisher<TestScanBean> publisher;
-	
+
 	@Before
 	public void before() throws URISyntaxException {
 		ActivemqConnectorService.setJsonMarshaller(new MarshallerService(new PointsModelMarshaller()));
@@ -38,14 +38,14 @@ public class RunTest extends BrokerTest{
 		// Use in memory broker removes requirement on network and external ActiveMQ process
 		// http://activemq.apache.org/how-to-unit-test-jms-code.html
 		publisher = eservice.createPublisher(uri, "org.eclipse.scanning.test.scan.real.test");
-		
+
 	}
-	
+
 	@After
 	public void after() throws EventException {
 		publisher.disconnect();
 	}
-	
+
 	@Test
 	public void testSendScan() throws Exception {
 		TestScanBean info = new TestScanBean();

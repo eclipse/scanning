@@ -29,12 +29,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class QueueControllerEventConnector implements IQueueControllerEventConnector {
-	
+
 	private static Logger logger = LoggerFactory.getLogger(QueueControllerEventConnector.class);
-	
+
 	private IEventService eventService;
 	private URI uri;
-	
+
 	@Override
 	public <T extends Queueable> void submit(T bean, String submitQueue) throws EventException {
 		//Prepare the bean for submission
@@ -54,20 +54,20 @@ public class QueueControllerEventConnector implements IQueueControllerEventConne
 		submitter.submit(bean);
 		submitter.disconnect();
 	}
-	
+
 	@Override
 	public <T extends Queueable> boolean remove(T bean, String submitQueue) throws EventException {
 		//Create a submitter and remove the bean
 		ISubmitter<T> submitter = eventService.createSubmitter(uri, submitQueue);
 		boolean result = submitter.remove(bean);
 		submitter.disconnect();
-		
+
 		return result;
 	}
-	
+
 	@Override
 	public <T extends Queueable> boolean reorder(T bean, int move, String submitQueue) throws EventException {
-		
+
 		//Create a submitter and move bean by the given amount
 		ISubmitter<T> submitter = eventService.createSubmitter(uri, submitQueue);
 		boolean result = submitter.reorder(bean, move);
@@ -75,7 +75,7 @@ public class QueueControllerEventConnector implements IQueueControllerEventConne
 
 		return result;
 	}
-	
+
 	@Override
 	public <T extends Queueable> void publishBean(T bean, String topicName) throws EventException {
 		//Set up the publisher & publish the bean (with state set)
@@ -83,24 +83,24 @@ public class QueueControllerEventConnector implements IQueueControllerEventConne
 		commander.broadcast(bean);
 		commander.disconnect();
 	}
-	
+
 	@Override
 	public <T extends ConsumerCommandBean> void publishCommandBean(T commandBean, String commandTopicName) throws EventException {
 		IPublisher<T> commander = eventService.createPublisher(uri, commandTopicName);
 		commander.broadcast(commandBean);
 		commander.disconnect();
 	}
-	
+
 	@Override
 	public <T extends EventListener> ISubscriber<T> createQueueSubscriber(String statusTopicName) {
 		return eventService.createSubscriber(uri, statusTopicName);
 	}
-	
+
 	@Override
 	public void setEventService(IEventService eventService) {
 		this.eventService = eventService;
 	}
-	
+
 	@Override
 	public void setUri(URI uri) {
 		this.uri = uri;

@@ -26,7 +26,7 @@ import org.epics.pvmarshaller.marshaller.serialisers.Serialiser;
 
 /**
  * Custom serialiser for Circular ROI.
- * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs 
+ * TODO - make this non 'test' and finalise custom serialisation strategy for ROIs
  * @author Matt Taylor
  *
  */
@@ -35,7 +35,7 @@ public class GridROISerialiser implements IPVStructureSerialiser<GridROI> {
 	@Override
 	public Structure buildStructure(Serialiser serialiser, GridROI roi) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		FieldCreate fieldCreate = FieldFactory.getFieldCreate();
-		
+
 		Structure structure = fieldCreate.createFieldBuilder().
 			add("xSpacing", ScalarType.pvDouble).
 			add("ySpacing", ScalarType.pvDouble).
@@ -49,7 +49,7 @@ public class GridROISerialiser implements IPVStructureSerialiser<GridROI> {
 	@Override
 	public void populatePVStructure(Serialiser serialiser, GridROI roi, PVStructure pvStructure) throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
 		PVDouble xSpacing = pvStructure.getSubField(PVDouble.class, "xSpacing");
-		xSpacing.put(roi.getxSpacing());		
+		xSpacing.put(roi.getxSpacing());
 		PVDouble ySpacing = pvStructure.getSubField(PVDouble.class, "ySpacing");
 		ySpacing.put(roi.getySpacing());
 		PVDoubleArray spacing = pvStructure.getSubField(PVDoubleArray.class, "spacing");
@@ -60,5 +60,5 @@ public class GridROISerialiser implements IPVStructureSerialiser<GridROI> {
 		PVDoubleArray point = pvStructure.getSubField(PVDoubleArray.class, "point");
 		point.put(0, roi.getPoint().length, roi.getPoint(), 0);
 	}
-	
+
 }

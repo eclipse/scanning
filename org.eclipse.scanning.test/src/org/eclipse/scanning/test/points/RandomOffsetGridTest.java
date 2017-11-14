@@ -35,7 +35,7 @@ public class RandomOffsetGridTest {
 	public void before() throws Exception {
 		service = new PointGeneratorService();
 	}
-	
+
 	@Test
 	public void testSimpleBox() throws Exception {
 

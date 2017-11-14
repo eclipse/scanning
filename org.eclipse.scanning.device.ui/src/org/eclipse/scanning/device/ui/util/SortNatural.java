@@ -8,7 +8,7 @@
  *
  * Contributors:
  *    Matthew Gerring - initial API and implementation and/or initial documentation
- *******************************************************************************/ 
+ *******************************************************************************/
 
 package org.eclipse.scanning.device.ui.util;
 
@@ -20,7 +20,7 @@ import java.util.Comparator;
  *
  */
 public class SortNatural<E> implements Comparator<E> {
-	
+
 	private final boolean isCaseSensitive;
 	/**
 	 * @param isCaseSensitive
@@ -72,15 +72,15 @@ public class SortNatural<E> implements Comparator<E> {
 	 * @return i
 	 */
 	public int compare(Object o1, Object o2, boolean isCaseSensitive) {
-		
+
 		String a,b;
 		if (o1==null) o1 = "";
 		if (o2==null) o2 = "";
-		
+
 		String o1String = getName(o1);
 		String o2String = getName(o2);
-				        
-				        
+
+
 		if (isCaseSensitive) {
 		    a = o1String;
 		    b = o2String;
@@ -90,7 +90,7 @@ public class SortNatural<E> implements Comparator<E> {
 		    String alc = o1String.toLowerCase();
 		    String blc = o2String.toLowerCase();
 		    if (alc.equals(blc)&&!a.equals(b)) {
-		    	return compare(o1,o2,true);
+			return compare(o1,o2,true);
 		    }
 		    a = alc;
 		    b = blc;
@@ -159,14 +159,14 @@ public class SortNatural<E> implements Comparator<E> {
 			final Method getName = o.getClass().getMethod("getName");
 			if (getName.isAccessible()) return (String)getName.invoke(o);
 		} catch (Exception ignored) {
-			
+
 		}
 		return o.toString();
 	}
 	static char charAt(String s, int i) {
 		if (i >= s.length()) {
 			return 0;
-		} 
+		}
 	    return s.charAt(i);
 
 	}

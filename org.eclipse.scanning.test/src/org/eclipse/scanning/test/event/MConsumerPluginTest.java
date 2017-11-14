@@ -18,7 +18,7 @@ import org.junit.Before;
 
 public class MConsumerPluginTest extends AbstractMConsumerTest {
 
-	
+
     private static IEventService service;
 
 	public static IEventService getService() {
@@ -31,18 +31,18 @@ public class MConsumerPluginTest extends AbstractMConsumerTest {
 
 	@Before
 	public void createServices() throws Exception {
-		
+
 		eservice = MConsumerPluginTest.service;
-		
+
 		// We use the long winded constructor because we need to pass in the connector.
-		// In production we would normally 
+		// In production we would normally
 		submitter  = eservice.createSubmitter(uri, IEventService.SUBMISSION_QUEUE);
 		consumer   = eservice.createConsumer(uri, IEventService.SUBMISSION_QUEUE, IEventService.STATUS_SET, IEventService.STATUS_TOPIC, IEventService.HEARTBEAT_TOPIC, IEventService.CMD_TOPIC);
 		consumer.setName("Test Consumer 1");
 		consumer.clearQueue(IEventService.SUBMISSION_QUEUE);
 		consumer.clearQueue(IEventService.STATUS_SET);
 	}
-	
+
 	@After
 	public void dispose() throws EventException {
 		submitter.disconnect();

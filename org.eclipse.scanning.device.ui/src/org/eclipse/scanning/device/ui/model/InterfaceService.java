@@ -20,7 +20,7 @@ import org.eclipse.scanning.api.ui.auto.InterfaceInvalidException;
 import org.eclipse.swt.widgets.Shell;
 
 public class InterfaceService implements IInterfaceService {
-	
+
 	static {
 		System.out.println("Starting "+InterfaceService.class.getSimpleName());
 	}

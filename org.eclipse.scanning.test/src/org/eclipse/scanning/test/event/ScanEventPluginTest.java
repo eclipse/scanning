@@ -11,8 +11,6 @@
  *******************************************************************************/
 package org.eclipse.scanning.test.event;
 
-import java.net.URI;
-
 import org.eclipse.scanning.api.event.IEventService;
 import org.junit.Before;
 
@@ -35,12 +33,12 @@ public class ScanEventPluginTest extends AbstractScanEventTest{
 
 	@Before
 	public void createServices() throws Exception {
-		
+
 		eservice = service;
-		
+
 		// We use the long winded constructor because we need to pass in the connector.
-		// In production we would normally 
-		publisher  = eservice.createPublisher(uri, IEventService.SCAN_TOPIC);		
+		// In production we would normally
+		publisher  = eservice.createPublisher(uri, IEventService.SCAN_TOPIC);
 		subscriber = eservice.createSubscriber(uri, IEventService.SCAN_TOPIC);
 	}
 }

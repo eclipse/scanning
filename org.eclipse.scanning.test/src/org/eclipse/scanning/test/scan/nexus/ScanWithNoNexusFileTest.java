@@ -36,23 +36,23 @@ import org.junit.Test;
  * In particular, a bug was discovered whereby the write() methods in the detectors were
  * still called even though createNexusObject has not been. This caused a NullPointerException
  * in MandelbrotDetector as the datasets being written to were null.
- * 
+ *
  * TODO: the fix was to set the writers in AcquisitionDevice to LevelRunner.createEmptyRunner().
  * However, it is arguable that it should be the detectors who check for this instead as it may
  * be possible that they have other things to do on write.
  */
 public class ScanWithNoNexusFileTest extends NexusTest {
-	
+
 	private static IWritableDetector<MandelbrotModel> detector;
 
 	@Before
 	public void before() throws Exception {
-		
+
 		MandelbrotModel model = createMandelbrotModel();
 		detector = (IWritableDetector<MandelbrotModel>)dservice.createRunnableDevice(model);
 		assertNotNull(detector);
 	}
-	
+
 	@Test
 	public void test2DNexusScan() throws Exception {
 		int[] shape = { 2, 5 };
@@ -60,7 +60,7 @@ public class ScanWithNoNexusFileTest extends NexusTest {
 		scanner.run(null);
 	}
 	private IRunnableDevice<ScanModel> createGridScan(final IRunnableDevice<?> detector, File file, int... size) throws Exception {
-		
+
 		// Create scan points for a grid and make a generator
 		GridModel gmodel = new GridModel();
 		gmodel.setFastAxisName("xNex");
@@ -68,12 +68,12 @@ public class ScanWithNoNexusFileTest extends NexusTest {
 		gmodel.setSlowAxisName("yNex");
 		gmodel.setSlowAxisPoints(size[size.length-2]);
 		gmodel.setBoundingBox(new BoundingBox(0,0,3,3));
-		
+
 		IPointGenerator<?> gen = gservice.createGenerator(gmodel);
-		
+
 		IPointGenerator<?>[] gens = new IPointGenerator<?>[size.length - 1];
 		// We add the outer scans, if any
-		if (size.length > 2) { 
+		if (size.length > 2) {
 			for (int dim = size.length-3; dim>-1; dim--) {
 				final StepModel model;
 				if (size[dim]-1>0) {
@@ -88,19 +88,19 @@ public class ScanWithNoNexusFileTest extends NexusTest {
 		gens[size.length - 2] = gen;
 
 		gen = gservice.createCompoundGenerator(gens);
-	
+
 		// Create the model for a scan.
 		final ScanModel  smodel = new ScanModel();
 		smodel.setPositionIterable(gen);
 		smodel.setDetectors(detector);
-		
+
 		// Do not create a file to scan into, no nexus file should be written
-		smodel.setFilePath(null); 
+		smodel.setFilePath(null);
 		System.out.println("File writing is not set, so no NeXus file is created.");
 
 		// Create a scan and run it without publishing events
 		IRunnableDevice<ScanModel> scanner = dservice.createRunnableDevice(smodel, null);
-		
+
 		final IPointGenerator<?> fgen = gen;
 		((IRunnableEventDevice<ScanModel>)scanner).addRunListener(new IRunListener() {
 			@Override

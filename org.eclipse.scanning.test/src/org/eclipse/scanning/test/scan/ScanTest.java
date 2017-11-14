@@ -26,8 +26,8 @@ import org.junit.Before;
 import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 public class ScanTest extends AbstractScanTest {
-	
-	
+
+
 	@Before
 	public void setup() throws ScanningException {
 
@@ -35,7 +35,7 @@ public class ScanTest extends AbstractScanTest {
 		setUpNonOSGIActivemqMarshaller();
 		eservice  = new EventServiceImpl(new ActivemqConnectorService());
 
-		// We wire things together without OSGi here 
+		// We wire things together without OSGi here
 		// DO NOT COPY THIS IN NON-TEST CODE!
 		connector = new MockScannableConnector(eservice.createPublisher(uri, EventConstants.POSITION_TOPIC));
 		dservice  = new RunnableDeviceServiceImpl(connector);

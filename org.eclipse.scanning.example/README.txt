@@ -3,11 +3,11 @@
 
 	Server			org.eclipse.scanning.target.platform.target
 					org.eclipse.scanning.target.platform.fat.target
-					
-					
+
+
 	Client			org.eclipse.scanning.target.platform.target
 					org.eclipse.scanning.target.platform.fat.target
-					
+
 	Client.fat		org.eclipse.scanning.target.platform.fat.target
 
 

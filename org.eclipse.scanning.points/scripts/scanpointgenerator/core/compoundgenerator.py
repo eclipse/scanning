@@ -23,7 +23,7 @@ from scanpointgenerator.core.excluder import Excluder
 from scanpointgenerator.excluders.roiexcluder import ROIExcluder
 from scanpointgenerator.core.mutator import Mutator
 from scanpointgenerator.rois import RectangularROI
-from scanpointgenerator.generators import LineGenerator
+from scanpointgenerator.generators import LineGenerator, NullPointGenerator
 
 
 class CompoundGenerator(object):
@@ -32,13 +32,14 @@ class CompoundGenerator(object):
 
     typeid = "scanpointgenerator:generator/CompoundGenerator:1.0"
 
-    def __init__(self, generators, excluders, mutators, duration=-1):
+    def __init__(self, generators, excluders, mutators, duration=-1, continuous=True):
         """
         Args:
             generators(list(Generator)): List of Generators to nest
             excluders(list(Excluder)): List of Excluders to filter points by
             mutators(list(Mutator)): List of Mutators to apply to each point
             duration(double): Point durations in seconds (-1 for variable)
+            continuous(boolean): Make points continuous (set upper/lower bounds)
         """
 
         self.size = 0
@@ -58,6 +59,7 @@ class CompoundGenerator(object):
         self.duration = duration
         self._dim_meta = {}
         self._prepared = False
+        self.continuous = continuous
         for generator in generators:
             logging.debug("Generator passed to Compound init")
             logging.debug(generator.to_dict())
@@ -135,42 +137,31 @@ class CompoundGenerator(object):
             generator.prepare_positions()
             self.dimensions.append(Dimension(generator))
         # only the inner-most generator needs to have bounds calculated
-        generators[-1].prepare_bounds()
+        if self.continuous:
+            generators[-1].prepare_bounds()
 
         for excluder in excluders:
-            axis_1, axis_2 = excluder.axes
-            gen_1 = [g for g in generators if axis_1 in g.axes][0]
-            gen_2 = [g for g in generators if axis_2 in g.axes][0]
-            gen_diff = generators.index(gen_1) \
-                - generators.index(gen_2)
-            if gen_diff < -1 or gen_diff > 1:
+            matched_dims = [d for d in self.dimensions if len(set(d.axes) & set(excluder.axes)) != 0]
+            if len(matched_dims) == 0:
                 raise ValueError(
-                    "Excluders must be defined on axes that are adjacent in " \
-                        "generator order")
-
-            # merge dimensions if region spans two
-            dim_1 = [i for i in self.dimensions if axis_1 in i.axes][0]
-            dim_2 = [i for i in self.dimensions if axis_2 in i.axes][0]
-            dim_diff = self.dimensions.index(dim_1) \
-                - self.dimensions.index(dim_2)
-            if dim_diff == 1:
-                dim_1, dim_2 = dim_2, dim_1
-                dim_diff = -1
-            if dim_1.alternate != dim_2.alternate \
-                    and dim_1 is not self.dimensions[0]:
-                raise ValueError(
-                    "Generators tied by regions must have the same " \
-                            "alternate setting")
-            # merge "inner" into "outer"
-            if dim_diff == -1:
-                # dim_1 is "outer" - preserves axis ordering
-                new_dim = Dimension.merge_dimensions(dim_1, dim_2)
-                self.dimensions[self.dimensions.index(dim_1)] = new_dim
-                self.dimensions.remove(dim_2)
-                dim = new_dim
+                        "Excluder references axes that have not been provided by generators: %s" % str(excluder.axes))
+            d_start = self.dimensions.index(matched_dims[0])
+            d_end = self.dimensions.index(matched_dims[-1])
+            if d_start != d_end:
+                # merge all excluders between d_start and d_end (inclusive)
+                alternate = self.dimensions[d_end].alternate
+                # verify consistent alternate settings (ignoring outermost dimesion where it doesn't matter)
+                for d in self.dimensions[max(1, d_start):d_end]:
+                    # filter out dimensions consisting of a single NullPointGenerator, since alternation means nothing
+                    if len(d.generators) == 1 and isinstance(d.generators[0], NullPointGenerator):
+                        continue
+                    if alternate != d.alternate:
+                        raise ValueError("Nested generators connected by regions must have the same alternate setting")
+                merged_dim = Dimension.merge_dimensions(self.dimensions[d_start:d_end+1])
+                self.dimensions = self.dimensions[:d_start] + [merged_dim] + self.dimensions[d_end+1:]
+                dim = merged_dim
             else:
-                dim = dim_1
-
+                dim = self.dimensions[d_start]
             dim.apply_excluder(excluder)
 
         self.size = 1
@@ -267,7 +258,7 @@ class CompoundGenerator(object):
                 for axis in g.axes:
                     point.positions[axis] = g.positions[axis][j]
                     # apply "real" bounds to the "innermost" generator only
-                    if dim is self.dimensions[-1] and g is dim.generators[-1]:
+                    if self.continuous and dim is self.dimensions[-1] and g is dim.generators[-1]:
                         point.lower[axis] = g.bounds[axis][j_lower]
                         point.upper[axis] = g.bounds[axis][j_upper]
                     else:
@@ -286,6 +277,7 @@ class CompoundGenerator(object):
         d['excluders'] = [e.to_dict() for e in self.excluders]
         d['mutators'] = [m.to_dict() for m in self.mutators]
         d['duration'] = float(self.duration)
+        d['continuous'] = self.continuous
         return d
 
     @classmethod
@@ -302,4 +294,5 @@ class CompoundGenerator(object):
         excluders = [Excluder.from_dict(e) for e in d['excluders']]
         mutators = [Mutator.from_dict(m) for m in d['mutators']]
         duration = d['duration']
-        return cls(generators, excluders, mutators, duration)
+        continuous = d['continuous']
+        return cls(generators, excluders, mutators, duration, continuous)

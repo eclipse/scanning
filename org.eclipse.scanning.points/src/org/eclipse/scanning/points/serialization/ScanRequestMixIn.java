@@ -32,10 +32,10 @@ public abstract class ScanRequestMixIn {
 	@JsonProperty abstract void setMonitorNames(Collection<String> monitorNames);
 
 	@JsonIgnore abstract void setMonitorNames(String... monitorNames);
-	
+
 	@JsonProperty abstract void setMetadataScannableNames(Collection<String> metadataScannableNames);
-	
+
 	@JsonIgnore abstract void setMetadataScannableNames(String... metadataScannableNames);
-	
-	
+
+
 }

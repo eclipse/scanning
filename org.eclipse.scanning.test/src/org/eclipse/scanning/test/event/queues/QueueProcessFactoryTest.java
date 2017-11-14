@@ -16,8 +16,10 @@ import static org.junit.Assert.fail;
 
 import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.event.queues.IQueueProcess;
+import org.eclipse.scanning.api.event.queues.beans.PositionerAtom;
 import org.eclipse.scanning.api.event.queues.beans.Queueable;
 import org.eclipse.scanning.event.queues.QueueProcessFactory;
+import org.eclipse.scanning.event.queues.processes.PositionerAtomProcess;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtom;
 import org.eclipse.scanning.test.event.queues.dummy.DummyAtomProcess;
 import org.eclipse.scanning.test.event.queues.dummy.DummyBean;
@@ -25,55 +27,61 @@ import org.eclipse.scanning.test.event.queues.dummy.DummyBeanProcess;
 import org.eclipse.scanning.test.event.queues.dummy.DummyHasQueue;
 import org.eclipse.scanning.test.event.queues.dummy.DummyHasQueueProcess;
 import org.eclipse.scanning.test.event.queues.mocks.MockPublisher;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 public class QueueProcessFactoryTest {
-	
+
 	@Before
 	public void setUp() {
 		QueueProcessFactory.initialize();
 	}
-	
+
+	@After
+	public void tearDown() {
+		//Remove Dummy*Process so it doesn't cause bad behaviour in travis
+		QueueProcessFactory.initialize();
+	}
+
 	@Test
 	public void testRegisterProcessor() throws EventException {
 		int nRegistered = QueueProcessFactory.getProcessors().size();
-		
+
 		//Register a single processor
 		QueueProcessFactory.registerProcess(DummyAtomProcess.class);
 		assertEquals("No change in number of registered processors!", nRegistered+1, QueueProcessFactory.getProcessors().size());
-		
+
 		//Register multiple processors by varargs
 		QueueProcessFactory.registerProcesses(DummyBeanProcess.class, DummyHasQueueProcess.class);
 		assertEquals("Processors already registered!", nRegistered+3, QueueProcessFactory.getProcessors().size());
 	}
-	
+
 	@Test
 	public void testReturnProcessorForAtom() throws EventException {
 		QueueProcessFactory.registerProcesses(DummyAtomProcess.class, DummyBeanProcess.class);
-		
+
 		MockPublisher<Queueable> mockPub = new MockPublisher<>(null, null);
-		
+
 		DummyAtom dAt = new DummyAtom("Bill", 750);
 		IQueueProcess<?,?> processOne = QueueProcessFactory.getProcessor(dAt, mockPub, false);
 		if(!(processOne instanceof DummyAtomProcess)) fail("Wrong IProcessor type returned for DummyAtom.");
-		
+
 		DummyBean dBe = new DummyBean("Ben", 750);
 		IQueueProcess<?,?> processTwo = QueueProcessFactory.getProcessor(dBe, mockPub, false);
 		if(!(processTwo instanceof DummyBeanProcess)) fail("Wrong IProcessor type returned for DummyBean.");
-		
-//		FIXME
-//		MoveAtom mvAt = new MoveAtom("Sam1", "Sam1", 3, 20);
-//		IQueueProcess<?,?> processThree = QueueProcessFactory.getProcessor(mvAt.getClass().getName());
-//		if(!(processThree instanceof MoveAtomProcessor)) fail("Wrong IProcessor type returned for MoveAtom.");
-		
+
+		PositionerAtom mvAt = new PositionerAtom("Sam1", "Sam1", 3);
+		IQueueProcess<?,?> processThree = QueueProcessFactory.getProcessor(mvAt, mockPub, false);
+		if(!(processThree instanceof PositionerAtomProcess)) fail("Wrong IProcessor type returned for MoveAtom.");
+
 		try {
 			DummyHasQueue dHQ = new DummyHasQueue("Dilbert", 25);
 			@SuppressWarnings("unused")
 			IQueueProcess<?,?> processFour = QueueProcessFactory.getProcessor(dHQ, mockPub, false);
 			fail("DummyHasQueue not registered, should not be able to get processor!");
 		} catch (EventException evEx) {
-			//Expected
+			System.out.println("^---- Expected exception");
 		}
 	}
 

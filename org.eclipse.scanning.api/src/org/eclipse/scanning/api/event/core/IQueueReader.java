@@ -23,12 +23,13 @@ public interface IQueueReader<T> extends IURIConnection, IBeanClass<T> {
 	 * @throws EventException
 	 */
 	public List<T> getQueue() throws EventException;
-	
-	
+
+
 	/**
 	 * Call to disconnect all publishers and subscribers when the connection goes down.
 	 * @throws EventException
 	 */
+	@Override
 	public void disconnect() throws EventException;
 
 

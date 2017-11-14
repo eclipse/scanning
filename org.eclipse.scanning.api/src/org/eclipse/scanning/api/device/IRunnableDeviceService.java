@@ -23,9 +23,9 @@ import org.eclipse.scanning.api.scan.event.IPositionerService;
 
 
 /**
- * 
+ *
  * Anatomy of a CPU scan (non-malcolm)
- * 
+ *
  *  <br>
  *&nbsp;_________<br>
  *_|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|________  collectData() Tell detector to collect<br>
@@ -54,9 +54,9 @@ import org.eclipse.scanning.api.scan.event.IPositionerService;
  * IRunnableDevice<ScanModel> scanner = sservice.createScanner(...);
  * scanner.configure(model);
  * scanner.run();
- * 
+ *
  * </code></usage>
- * 
+ *
  * <img src="./doc/device_state.png" />
  *
  * @author Matthew Gerring
@@ -64,42 +64,42 @@ import org.eclipse.scanning.api.scan.event.IPositionerService;
  * @see {@link IMalcolmService}, {@link IMalcolmConnection}
  */
 public interface IRunnableDeviceService extends IPositionerService {
-	
+
 	/**
 	 * Used to register a device. This is required so that spring may create
 	 * detectors and call the register method by telling the detector to register
 	 * itself.
-	 * 
+	 *
 	 * @param device
 	 */
 	<T> void register(IRunnableDevice<T> device);
-	
+
 	/**
 	 * Create a new runnable device from a model. If the device has a name the
 	 * new device will be recorded in the name to device map and be retrievable by name.
-	 * 
-	 * The model is provided and the configure(...) method called on the device 
+	 *
+	 * The model is provided and the configure(...) method called on the device
 	 * automatically. A ScanningException is thrown if the model is invalid.
-	 * 
-	 * If the model is for a malcolm device it must be of type {@link org.eclipse.scanning.api.malcolm.models.MalcolmDetectorConfiguration}. 
+	 *
+	 * If the model is for a malcolm device it must be of type {@link org.eclipse.scanning.api.malcolm.models.MalcolmDetectorConfiguration}.
 	 * This class holds a bean with the port, hostname, and device name to make a connection to the device.
-	 * 
+	 *
 	 * @param model, information to do the scan
 	 * @return
 	 * @throws ScanningException
 	 */
 	<T> IRunnableDevice<T> createRunnableDevice(T model) throws ScanningException;
-	
+
 	/**
 	 * Create a new runnable device from a model. If the device has a name the
 	 * new device will be recorded in the name to device map and be retrievable by name.
-	 * 
-	 * The model is provided and the configure(...) method called on the device 
+	 *
+	 * The model is provided and the configure(...) method called on the device
 	 * automatically. A ScanningException is thrown if the model is invalid.
-	 * 
-	 * If the model is for a malcolm device it must be of type {@link org.eclipse.scanning.api.malcolm.models.MalcolmDetectorConfiguration}. 
+	 *
+	 * If the model is for a malcolm device it must be of type {@link org.eclipse.scanning.api.malcolm.models.MalcolmDetectorConfiguration}.
 	 * This class holds a bean with the port, hostname, and device name to make a connection to the device.
-	 * 
+	 *
 	 * @param model, information to do the scan
 	 * @param configure
 	 * @return
@@ -110,11 +110,11 @@ public interface IRunnableDeviceService extends IPositionerService {
 	/**
 	 * Create a new runnable device from a model. If the device has a name the
 	 * new device will be recorded in the name to device map and be retrievable by name.
-	 * 
-	 * The model is provided and the configure(...) method called on the scanner 
+	 *
+	 * The model is provided and the configure(...) method called on the scanner
 	 * automatically. A ScanningException is thrown if the model is invalid.
-	 * 
-	 * If the model is for a malcolm device it must be of type {@link org.eclipse.scanning.api.malcolm.models.MalcolmDetectorConfiguration}. 
+	 *
+	 * If the model is for a malcolm device it must be of type {@link org.eclipse.scanning.api.malcolm.models.MalcolmDetectorConfiguration}.
 	 * This class holds a bean with the port, hostname, and device name to make a connection to the device.
      *
 	 * @param model, information to do the scan
@@ -123,15 +123,15 @@ public interface IRunnableDeviceService extends IPositionerService {
 	 * @throws ScanningException
 	 */
 	<T> IRunnableDevice<T> createRunnableDevice(T model, IPublisher<ScanBean> publisher) throws ScanningException;
-	
+
 	/**
 	 * Create a new runnable device from a model. If the device has a name the
 	 * new device will be recorded in the name to device map and be retrievable by name.
-	 * 
-	 * The model is provided and the configure(...) method called on the scanner 
+	 *
+	 * The model is provided and the configure(...) method called on the scanner
 	 * automatically. A ScanningException is thrown if the model is invalid.
-	 * 
-	 * If the model is for a malcolm device it must be of type {@link org.eclipse.scanning.api.malcolm.models.MalcolmDetectorConfiguration}. 
+	 *
+	 * If the model is for a malcolm device it must be of type {@link org.eclipse.scanning.api.malcolm.models.MalcolmDetectorConfiguration}.
 	 * This class holds a bean with the port, hostname, and device name to make a connection to the device.
      *
 	 * @param model information to do the scan
@@ -143,35 +143,35 @@ public interface IRunnableDeviceService extends IPositionerService {
 
 	/**
 	 * Get a runnable device by name. If the device was created by spring it may need configuring
-	 * before use. If the device was added to the service after a createRunnableDevice(...) call, 
-	 * it will already be configured. 
-	 * 
+	 * before use. If the device was added to the service after a createRunnableDevice(...) call,
+	 * it will already be configured.
+	 *
 	 * @param name
 	 * @return
 	 * @throws ScanningException
 	 */
 	<T> IRunnableDevice<T> getRunnableDevice(String name) throws ScanningException;
-	
-	
+
+
 	/**
 	 * Get a runnable device by name. If the device was created by spring it may need configuring
-	 * before use. If the device was added to the service after a createRunnableDevice(...) call, 
+	 * before use. If the device was added to the service after a createRunnableDevice(...) call,
 	 * it will already be configured.
-	 * 
-	 * @param name 
+	 *
+	 * @param name
 	 * @param publisher used for a particular run of the device. This must be set with care as only one publisher may be active on a device at a time.
 	 * @return
 	 * @throws ScanningException
 	 */
 	<T> IRunnableDevice<T> getRunnableDevice(String name, IPublisher<ScanBean> publisher) throws ScanningException;
-	
+
 	/**
 	 * A list of the current named runnable devices which may be retrieved and configured.
 	 * @return
 	 * @throws ScanningException
 	 */
     Collection<String> getRunnableDeviceNames() throws ScanningException;
-    
+
     /**
      * Get the service being used to connect this service to the underlying hardware devices.
      * @return
@@ -184,20 +184,20 @@ public interface IRunnableDeviceService extends IPositionerService {
      * @return
      */
 	Collection<DeviceInformation<?>> getDeviceInformation() throws ScanningException;
-	
+
     /**
      * Get the information for all the runnable devices currently created with a specific role.
      * Will not get device information that is potentially held on the device if the device is not alive.
      * @return
      */
 	Collection<DeviceInformation<?>> getDeviceInformation(DeviceRole role) throws ScanningException;
-	
+
     /**
      * Get the information for the named runnable device.
      * @return
      */
 	DeviceInformation<?> getDeviceInformation(String name) throws ScanningException;
-	
+
     /**
      * Get the information for all the runnable devices currently created.
      * Will attempt to get device information that is potentially held on the device even if the device is not alive.
@@ -206,15 +206,15 @@ public interface IRunnableDeviceService extends IPositionerService {
 	Collection<DeviceInformation<?>> getDeviceInformationIncludingNonAlive() throws ScanningException;
 
     /**
-     * This is a convenience method for getting the currently active scanner. 
+     * This is a convenience method for getting the currently active scanner.
      * It is useful if the scan is paused and it is required to seek the scan
      * to a new location from Jython. The returned scanner will be null unless
      * a scan is currently running, therefore it is of limited usage normally.
-     * 
+     *
      * @return current actively scanning device.
      */
 	default <T> IRunnableDevice<T> getActiveScanner() {
 		throw new IllegalArgumentException("The get active scanner method is not availble!");
 	}
-	
+
 }

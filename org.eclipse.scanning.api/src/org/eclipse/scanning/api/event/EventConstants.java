@@ -13,8 +13,8 @@ package org.eclipse.scanning.api.event;
 
 
 /**
- * This class represents 
- * 
+ * This class represents
+ *
  * @author Matthew Gerring
  */
 public interface EventConstants {
@@ -29,13 +29,13 @@ public interface EventConstants {
      * It is usually better to use your own topic rather than the default.
      */
 	public static final String STATUS_TOPIC      = "org.eclipse.scanning.status.topic";
-	
+
 	/**
 	 * The default topic used for heartbeat events.
      * It is usually better to use your own topic rather than the default.
 	 */
 	public static final String HEARTBEAT_TOPIC = "org.eclipse.scanning.alive.topic";
-	
+
 	/**
 	 * The default topic used for pause and terminate events. This topic is generally used internally.
 	 */
@@ -58,7 +58,7 @@ public interface EventConstants {
 	 * date submitted (usually) when the user looks at the queue.
 	 */
 	public static final String STATUS_SET = "org.eclipse.scanning.status.set";
-	
+
 	/**
 	 * Topic used to tell UI users that a give consumer will be going down.
      * It is usually better to use your own topic rather than the default.
@@ -66,14 +66,12 @@ public interface EventConstants {
 	public static final String ADMIN_MESSAGE_TOPIC = "org.eclipse.scanning.consumer.administratorMessage";
 
     /**
-     * The default topic used for requests. It is usually better to use your own topic rather than the default.
-     * It is usually better to use your own topic rather than the default.
+     * The topic used for requests for device information.
      */
 	public static final String DEVICE_REQUEST_TOPIC      = "org.eclipse.scanning.request.device.topic";
 
     /**
-     * The default topic used for responses.  It is usually better to use your own topic rather than the default.
-     * It is usually better to use your own topic rather than the default.
+     * The topic used for responses to requests for device information.
      */
 	public static final String DEVICE_RESPONSE_TOPIC      = "org.eclipse.scanning.response.device.topic";
 
@@ -82,29 +80,27 @@ public interface EventConstants {
 	 * not at a rate that JMS should not be able to handle providing the message is kept small.
 	 */
 	public static final String POSITION_TOPIC              = "org.eclipse.scanning.request.position.topic";
-    
+
 	/**
-     * The default topic used for requests. It is usually better to use your own topic rather than the default.
-     * It is usually better to use your own topic rather than the default.
+     * The topic used for positioner requests. This can be used to set the position of one or more scannables.
      */
 	public static final String POSITIONER_REQUEST_TOPIC      = "org.eclipse.scanning.request.positioner.topic";
 
     /**
-     * The default topic used for responses.  It is usually better to use your own topic rather than the default.
-     * It is usually better to use your own topic rather than the default.
+     * The topic used for positioner requests.
      */
 	public static final String POSITIONER_RESPONSE_TOPIC      = "org.eclipse.scanning.response.positioner.topic";
-	
+
 	/**
 	 * The is the topic for requests to acquire data from a detector.
 	 */
 	public static final String ACQUIRE_REQUEST_TOPIC = "org.eclipse.scanning.request.acquire.topic";
-	
+
 	/**
-	 * The is the topic for responses to acquire data f
+	 * The is the topic for responses to acquire data from a detector.
 	 */
 	public static final String ACQUIRE_RESPONSE_TOPIC = "org.eclipse.scanning.response.acquire.topic";
-	
+
 	/**
 	 * When the user sets up the axes, an AxisConfiguration object will be broadcast on this event.
 	 */
