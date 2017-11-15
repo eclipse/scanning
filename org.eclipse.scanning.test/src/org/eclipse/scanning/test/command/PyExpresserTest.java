@@ -28,6 +28,7 @@ import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.GridModel;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
+import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
 import org.eclipse.scanning.api.points.models.StepModel;
@@ -263,6 +264,30 @@ public class PyExpresserTest {
 		assertEquals(expected, actual);
 	}
 
+	@Test
+	public void testRandomOffsetGridModel() throws Exception {
+		BoundingBox bbox = new BoundingBox();
+		bbox.setFastAxisStart(0);
+		bbox.setSlowAxisStart(1);
+		bbox.setFastAxisLength(10);
+		bbox.setSlowAxisLength(11);
+
+		RandomOffsetGridModel model = new RandomOffsetGridModel();
+		model.setFastAxisName("myFast");
+		model.setSlowAxisName("mySlow");
+		model.setBoundingBox(bbox);
+		model.setFastAxisPoints(3);
+		model.setSlowAxisPoints(4);
+		model.setSnake(true);
+		model.setContinuous(true);
+		model.setSeed(5);
+		model.setOffset(10.0);
+
+		String expectedConcise = "random_offset_grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), (3, 4), True, True)";
+		String expectedVerbose = "random_offset_grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=True, continuous=True)";
+		assertEquals(expectedConcise, factory.pyExpress(model, false));
+		assertEquals(expectedVerbose, factory.pyExpress(model, true));
+	}
 
 
 	@Test

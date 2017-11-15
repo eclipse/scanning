@@ -28,6 +28,7 @@ import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.GridModel;
 import org.eclipse.scanning.api.points.models.OneDEqualSpacingModel;
 import org.eclipse.scanning.api.points.models.OneDStepModel;
+import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
 import org.eclipse.scanning.api.points.models.SinglePointModel;
@@ -138,6 +139,40 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 
 		MandelbrotModel mmodel = (MandelbrotModel) dmodel;
 		assertEquals(0.1, mmodel.getExposureTime(), 1e-8);
+	}
+
+	@Test
+	public void testRandomOffsetGridCommand() {
+		pi.exec("sr =                             "
+				+	"scan_request(                    "
+				+	"    random_offset_grid(			"
+				+	"        axes=(my_scannable, 'y'),"
+				+	"        start=(0, 2),            "
+				+	"        stop=(10, 11),           "
+				+	"        count=(5, 6),            "
+				+	"		 offset=5,				  "
+				+	"        roi=circ((4, 6), 5)      "
+				+	"    ),                           "
+				+	"    det=detector('mandelbrot', 0.1),         "
+				+	")                                ");
+			@SuppressWarnings("unchecked")
+			ScanRequest<IROI> request = pi.get("sr", ScanRequest.class);
+
+			Collection<Object> models = request.getCompoundModel().getModels();
+			assertEquals(1, models.size());  // I.e. this is not a compound scan.
+
+			Object model = models.iterator().next();
+			assertEquals(RandomOffsetGridModel.class, model.getClass());
+
+			RandomOffsetGridModel rogmodel = (RandomOffsetGridModel) model;
+			assertEquals("fred", rogmodel.getFastAxisName());
+			assertEquals("y", rogmodel.getSlowAxisName());
+			assertEquals(5, rogmodel.getFastAxisPoints());
+			assertEquals(6, rogmodel.getSlowAxisPoints());
+			assertEquals(true, rogmodel.isSnake());
+			assertEquals(5, rogmodel.getOffset(), 1e-8);
+			assertEquals(0, rogmodel.getSeed());
+
 	}
 
 	@Test

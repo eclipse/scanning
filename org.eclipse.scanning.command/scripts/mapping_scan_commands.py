@@ -55,7 +55,8 @@ from org.eclipse.scanning.api.event.scan import (ScanBean, ScanRequest)
 from org.eclipse.scanning.api.points.models import (
     StepModel, MultiStepModel, CollatedStepModel, GridModel, RasterModel, SinglePointModel,
     OneDEqualSpacingModel, OneDStepModel, ArrayModel,
-    BoundingBox, BoundingLine, CompoundModel, RepeatedPointModel)
+    BoundingBox, BoundingLine, CompoundModel, RepeatedPointModel,
+    RandomOffsetGridModel)
 
 from org.eclipse.scanning.command.Services import (
     getEventService, getRunnableDeviceService, getScannableDeviceService)
@@ -222,6 +223,59 @@ def detector(name, exposure, **kwargs):
 
 # Scan paths
 # ----------
+def random_offset_grid(axes=None, start=None, stop=None, count=None, snake=True,
+         roi=None, seed=0, offset=0, **kwargs):
+    try:
+        assert None not in (axes, start, stop, count)
+    except AssertionError:
+        raise ValueError(
+            '`axes`, `start`, `stop` and `count` must be provided to random_offset_grid().')
+
+    try:
+        (xName, yName) = map(_stringify, axes)
+    except (TypeError, ValueError):
+        raise ValueError('`axes` must be a pair of scannables (x, y).')
+
+    _processKeywords(xName, kwargs)
+    _processKeywords(yName, kwargs)
+
+    try:
+        (xStart, yStart) = start
+    except (TypeError, ValueError):
+        raise ValueError('`start` must be a pair of values (x0, y0).')
+
+    try:
+        (xStop, yStop) = stop
+    except (TypeError, ValueError):
+        raise ValueError('`stop` must be a pair of values (w, h).')
+
+    bbox = _instantiate(BoundingBox,
+                        {'fastAxisStart': xStart,
+                         'slowAxisStart': yStart,
+                         'fastAxisLength': xStop - xStart,
+                         'slowAxisLength': yStop - yStart})
+
+
+    try:
+        (rows, cols) = count
+    except (TypeError, ValueError):
+        raise ValueError('`count` must be a pair of integers (r, c).')
+
+    model = _instantiate(
+                RandomOffsetGridModel,
+                {'fastAxisName': xName,
+                 'slowAxisName': yName})
+    
+    model.setFastAxisPoints(rows)
+    model.setSlowAxisPoints(cols)
+    model.setSnake(snake)
+    model.setBoundingBox(bbox)
+    model.setSeed(seed)
+    model.setOffset(offset)
+    
+    # We _listify() the ROI inputs, so users can type either
+    # roi=circ(x, y, r) or roi=[circ(x, y, r), rect(x, y, w, h, angle)].
+    return model, _listify(roi)
 
 def step(axis=None, start=None, stop=None, step=None, **kwargs):
     """Define a step scan path to be passed to mscan().
