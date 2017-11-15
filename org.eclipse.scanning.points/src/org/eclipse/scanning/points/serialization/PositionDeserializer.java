@@ -25,7 +25,7 @@ public class PositionDeserializer extends JsonDeserializer<IPosition> {
 
 	@Override
 	public IPosition deserialize(JsonParser parser, DeserializationContext context) throws IOException, JsonProcessingException {
-		PositionBean<?> bean = parser.readValueAs(PositionBean.class);
+		PositionBean bean = parser.readValueAs(PositionBean.class);
 		return bean.toPosition();
 	}
 
