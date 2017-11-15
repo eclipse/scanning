@@ -32,6 +32,7 @@ import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
 import org.eclipse.scanning.api.points.models.SinglePointModel;
+import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.command.Services;
 import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
@@ -172,6 +173,32 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 			assertEquals(true, rogmodel.isSnake());
 			assertEquals(5, rogmodel.getOffset(), 1e-8);
 			assertEquals(0, rogmodel.getSeed());
+
+	}
+
+	@Test
+	public void testSpiralCommand() {
+		pi.exec("sr =                             	  "
+				+	"scan_request(                    "
+				+	"    spiral(			          "
+				+	"        axes=(my_scannable, 'y'),"
+				+	"        start=(0, 2),            "
+				+	"        stop=(10, 11),           "
+				+   "		 scale=(0.5),			  "
+				+	"        roi=circ((4, 6), 5)      "
+				+	"    )                            "
+				+	")                                ");
+			@SuppressWarnings("unchecked")
+			ScanRequest<IROI> request = pi.get("sr", ScanRequest.class);
+
+			Collection<Object> models = request.getCompoundModel().getModels();
+			assertEquals(1, models.size());  // I.e. this is not a compound scan.
+
+			Object model = models.iterator().next();
+			assertEquals(SpiralModel.class, model.getClass());
+
+			SpiralModel spiral = (SpiralModel) model;
+			assertEquals(0.5, spiral.getScale(), 1e-8);
 
 	}
 

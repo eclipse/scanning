@@ -31,6 +31,7 @@ import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
+import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.command.ParserServiceImpl;
 import org.eclipse.scanning.command.factory.PyExpressionFactory;
@@ -381,6 +382,35 @@ public class PyExpresserTest {
 		String detector = factory.pyExpress(mmodel, false);
 		String expected = "detector('malcolm', 0.1)";
 		assertEquals(expected, detector);
+	}
+
+	@Test
+	public void testSpiralModel() throws Exception {
+		BoundingBox bbox = new BoundingBox();
+		bbox.setFastAxisStart(0);
+		bbox.setSlowAxisStart(1);
+		bbox.setFastAxisLength(10);
+		bbox.setSlowAxisLength(11);
+
+		SpiralModel model = new SpiralModel();
+		model.setFastAxisName("myFast");
+		model.setSlowAxisName("mySlow");
+		model.setBoundingBox(bbox);
+		model.setScale(1.5);
+		model.setContinuous(false);
+
+		CircularROI croi = new CircularROI();
+		ScanRequest<IROI> request = new ScanRequest<>();
+
+		CompoundModel<IROI> cmodel = new CompoundModel<>();
+		cmodel.setData(model, croi);
+		request.setCompoundModel(cmodel);
+
+		String expectedConcise = "spiral(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), 1.5, False, circ((0.0, 0.0), 1.0))";
+		assertEquals(expectedConcise, factory.pyExpress(model, Arrays.asList(croi), false));
+
+		String expectedVerbose = "spiral(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), scale=1.5, continuous=False, roi=[circ(origin=(0.0, 0.0), radius=1.0)])";
+		assertEquals(expectedVerbose, factory.pyExpress(model, Arrays.asList(croi), true));
 	}
 
 

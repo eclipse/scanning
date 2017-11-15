@@ -28,6 +28,7 @@ import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
+import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.command.PyExpressionNotImplementedException;
 
@@ -57,6 +58,7 @@ public class PyExpressionFactory {
 		exp.put(RasterModel.class,         new RasterModelExpresser());
 		exp.put(ArrayModel.class,          new ArrayModelExpresser());
 		exp.put(RepeatedPointModel.class,  new RepeatedPointExpresser());
+		exp.put(SpiralModel.class,		   new SpiralModelExpresser());
 
 		exp.put(Collection.class,      new ROICollectionExpresser());
 		exp.put(List.class,            new ROICollectionExpresser());
