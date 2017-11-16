@@ -35,17 +35,9 @@ class RasterModelExpresser extends PyModelExpresser<RasterModel> {
 				+(verbose?"step=":"")+"("
 					+model.getFastAxisStep()+", "
 					+model.getSlowAxisStep()+")"
-				+(verbose
-					? (", snake="+(model.isSnake()?"True":"False"))
-					: (model.isSnake()?"":", snake=False"))
-				+(verbose
-					? (", continuous="+(model.isContinuous()?"True":"False"))
-					: (model.isContinuous()?"":", continuous=False"))
-				+((rois == null)
-					? ""
-					: ((rois.size() == 0)
-						? ""
-						: ", roi="+factory.pyExpress(rois, verbose)))
+				+", "+getBooleanPyExpression("snake", model.isSnake(), verbose)
+				+", "+getBooleanPyExpression("continuous", model.isContinuous(), verbose)
+				+getROIPyExpression(rois, verbose)
 			+")";
 	}
 

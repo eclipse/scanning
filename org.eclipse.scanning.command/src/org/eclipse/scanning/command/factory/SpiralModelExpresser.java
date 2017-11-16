@@ -19,7 +19,6 @@
 package org.eclipse.scanning.command.factory;
 
 import java.util.Collection;
-import java.util.Objects;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.scanning.api.points.models.SpiralModel;
@@ -50,22 +49,13 @@ public class SpiralModelExpresser extends PyModelExpresser<SpiralModel> {
 		sb.append(model.getScale()+", ");
 
 		// continuous
-		sb.append(isContinuous(model, verbose));
+		sb.append(getBooleanPyExpression("continuous", model.isContinuous(), verbose));
 
 		// rois
-		if (Objects.nonNull(rois) && !rois.isEmpty()) {
-			sb.append(", ");
-			sb.append(verbose?"roi=":"");
-			sb.append(factory.pyExpress(rois, verbose));
-		}
+		sb.append(getROIPyExpression(rois, verbose));
 
 		sb.append(")");
 		return sb.toString();
-	}
-
-	private String isContinuous(SpiralModel model, boolean verbose) {
-		String pythonBoolean = model.isContinuous() ? "True" : "False";
-		return (verbose ? "continuous=" : "") + pythonBoolean;
 	}
 
 }

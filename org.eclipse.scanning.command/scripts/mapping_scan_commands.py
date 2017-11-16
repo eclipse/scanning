@@ -224,7 +224,7 @@ def detector(name, exposure, **kwargs):
 # Scan paths
 # ----------
 def random_offset_grid(axes=None, start=None, stop=None, count=None, snake=True,
-         roi=None, seed=0, offset=0, **kwargs):
+         roi=None, seed=0, offset=0):
     try:
         assert None not in (axes, start, stop, count)
     except AssertionError:
@@ -236,25 +236,7 @@ def random_offset_grid(axes=None, start=None, stop=None, count=None, snake=True,
     except (TypeError, ValueError):
         raise ValueError('`axes` must be a pair of scannables (x, y).')
 
-    _processKeywords(xName, kwargs)
-    _processKeywords(yName, kwargs)
-
-    try:
-        (xStart, yStart) = start
-    except (TypeError, ValueError):
-        raise ValueError('`start` must be a pair of values (x0, y0).')
-
-    try:
-        (xStop, yStop) = stop
-    except (TypeError, ValueError):
-        raise ValueError('`stop` must be a pair of values (w, h).')
-
-    bbox = _instantiate(BoundingBox,
-                        {'fastAxisStart': xStart,
-                         'slowAxisStart': yStart,
-                         'fastAxisLength': xStop - xStart,
-                         'slowAxisLength': yStop - yStart})
-
+    bbox = _makeBoundingBox(start, stop)
 
     try:
         (rows, cols) = count
@@ -264,17 +246,14 @@ def random_offset_grid(axes=None, start=None, stop=None, count=None, snake=True,
     model = _instantiate(
                 RandomOffsetGridModel,
                 {'fastAxisName': xName,
-                 'slowAxisName': yName})
+                 'slowAxisName': yName,
+                 'fastAxisPoints': rows,
+                 'slowAxisPoints': cols,
+                 'snake': snake,
+                 'boundingBox': bbox,
+                 'seed': seed,
+                 'offset': offset})
     
-    model.setFastAxisPoints(rows)
-    model.setSlowAxisPoints(cols)
-    model.setSnake(snake)
-    model.setBoundingBox(bbox)
-    model.setSeed(seed)
-    model.setOffset(offset)
-    
-    # We _listify() the ROI inputs, so users can type either
-    # roi=circ(x, y, r) or roi=[circ(x, y, r), rect(x, y, w, h, angle)].
     return model, _listify(roi)
 
 def step(axis=None, start=None, stop=None, step=None, **kwargs):
@@ -386,35 +365,16 @@ def spiral(axes=None, start=None, stop=None, scale=1, continuous=True, roi=None)
     except (TypeError, ValueError):
         raise ValueError('`axes` must be a pair of scannables (x, y).')
 
-        
-    try:
-        (xStart, yStart) = start
-    except (TypeError, ValueError):
-        raise ValueError('`start` must be a pair of values (x0, y0).')
-
-    try:
-        (xStop, yStop) = stop
-    except (TypeError, ValueError):
-        raise ValueError('`stop` must be a pair of values (w, h).')
-
-    bbox = _instantiate(BoundingBox,
-                        {'fastAxisStart': xStart,
-                         'slowAxisStart': yStart,
-                         'fastAxisLength': xStop - xStart,
-                         'slowAxisLength': yStop - yStart})
-
+    bbox = _makeBoundingBox(start, stop)
 
     model = _instantiate(
                 SpiralModel,
                 {'fastAxisName': xName,
-                 'slowAxisName': yName})
+                 'slowAxisName': yName,
+                 'boundingBox': bbox,
+                 'scale': scale,
+                 'continuous': continuous})
     
-    model.setBoundingBox(bbox)
-    model.setScale(scale)
-    model.setContinuous(continuous)
-    
-    # We _listify() the ROI inputs, so users can type either
-    # roi=circ(x, y, r) or roi=[circ(x, y, r), rect(x, y, w, h, angle)].
     return model, _listify(roi)
 
 def lissajous(axes=None, start=None, stop=None, a=1.0, b=0.25, delta=0.0, theta=0.05, points=100, continuous=True, roi=None):
@@ -429,24 +389,8 @@ def lissajous(axes=None, start=None, stop=None, a=1.0, b=0.25, delta=0.0, theta=
     except (TypeError, ValueError):
         raise ValueError('`axes` must be a pair of scannables (x, y).')
 
-        
-    try:
-        (xStart, yStart) = start
-    except (TypeError, ValueError):
-        raise ValueError('`start` must be a pair of values (x0, y0).')
-
-    try:
-        (xStop, yStop) = stop
-    except (TypeError, ValueError):
-        raise ValueError('`stop` must be a pair of values (w, h).')
-
-    bbox = _instantiate(BoundingBox,
-                        {'fastAxisStart': xStart,
-                         'slowAxisStart': yStart,
-                         'fastAxisLength': xStop - xStart,
-                         'slowAxisLength': yStop - yStart})
-
-
+    bbox = _makeBoundingBox(start, stop)
+    
     model = _instantiate(
                 LissajousModel,
                 {'fastAxisName': xName,
@@ -534,21 +478,7 @@ def grid(axes=None, start=None, stop=None, step=None, count=None, snake=True,
     _processKeywords(xName, kwargs)
     _processKeywords(yName, kwargs)
 
-    try:
-        (xStart, yStart) = start
-    except (TypeError, ValueError):
-        raise ValueError('`start` must be a pair of values (x0, y0).')
-
-    try:
-        (xStop, yStop) = stop
-    except (TypeError, ValueError):
-        raise ValueError('`stop` must be a pair of values (w, h).')
-
-    bbox = _instantiate(BoundingBox,
-                        {'fastAxisStart': xStart,
-                         'slowAxisStart': yStart,
-                         'fastAxisLength': xStop - xStart,
-                         'slowAxisLength': yStop - yStart})
+    bbox = _makeBoundingBox(start, stop)
 
     if count is not None:
         try:
@@ -826,3 +756,21 @@ def _stringify(scannable):
             raise ValueError(
                 str(scannable)+' has no getName() method and is not a string.')
             # TODO: Test for this exception.
+
+
+def _makeBoundingBox(start, stop):
+    try:
+        (xStart, yStart) = start
+    except (TypeError, ValueError):
+        raise ValueError('`start` must be a pair of values (x0, y0).')
+
+    try:
+        (xStop, yStop) = stop
+    except (TypeError, ValueError):
+        raise ValueError('`stop` must be a pair of values (w, h).')
+    
+    return _instantiate(BoundingBox,
+                    {'fastAxisStart': xStart,
+                     'slowAxisStart': yStart,
+                     'fastAxisLength': xStop - xStart,
+                     'slowAxisLength': yStop - yStart})
