@@ -595,7 +595,7 @@ def poly(*vertices):
     point_rois = map(lambda (x, y): PointROI(x, y), vertices)
 
     # PolygonalROI closes the polygon for us.
-    return PolygonalROI(PolylineROI(*point_rois))
+    return PolygonalROI(PolylineROI(point_rois))
 
 
 def rect(origin=None, size=None, angle=0):

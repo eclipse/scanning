@@ -19,17 +19,21 @@ class PolygonalROIExpresser extends PyModelExpresser<PolygonalROI> {
 
 	@Override
 	public String pyExpress(PolygonalROI proi, boolean verbose) {
-		// TODO Use StringBuilder
-		String fragment = "poly(";
+		StringBuilder fragment = new StringBuilder();
+		fragment.append("poly(");
 
 		boolean pointListPartiallyWritten = false;
 		for (IROI p : proi.getPoints()) {
-			if (pointListPartiallyWritten) fragment += ", ";
-			fragment += "("+((PointROI) p).getPointX()+", "+((PointROI) p).getPointY()+")";
+			if (pointListPartiallyWritten) fragment.append(", ");
+			fragment.append("(")
+					.append(((PointROI) p).getPointX())
+					.append(", ")
+					.append(((PointROI) p).getPointY())
+					.append(")");
+			pointListPartiallyWritten |= true;
 		}
 
-		fragment += ")";
-		return fragment;
+		return fragment.append(")").toString();
 	}
 
 }
