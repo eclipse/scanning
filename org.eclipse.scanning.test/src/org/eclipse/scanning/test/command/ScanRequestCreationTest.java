@@ -26,6 +26,7 @@ import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.GridModel;
+import org.eclipse.scanning.api.points.models.LissajousModel;
 import org.eclipse.scanning.api.points.models.OneDEqualSpacingModel;
 import org.eclipse.scanning.api.points.models.OneDStepModel;
 import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
@@ -199,7 +200,39 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 
 			SpiralModel spiral = (SpiralModel) model;
 			assertEquals(0.5, spiral.getScale(), 1e-8);
+	}
 
+	@Test
+	public void testLissajousCommand() {
+		pi.exec("sr =                             	  "
+				+	"scan_request(                    "
+				+	"    lissajous(			          "
+				+	"        axes=(my_scannable, 'y'),"
+				+	"        start=(0, 2),            "
+				+	"        stop=(10, 11),           "
+				+   "		 a=(0.5),			 	  "
+				+   "		 b=(0.1),			 	  "
+				+   "		 delta=(5),			 	  "
+				+   "		 theta=(3),			 	  "
+				+   "		 points=(40),		 	  "
+				+	"        roi=circ((4, 6), 5)      "
+				+	"    )                            "
+				+	")                                ");
+			@SuppressWarnings("unchecked")
+			ScanRequest<IROI> request = pi.get("sr", ScanRequest.class);
+
+			Collection<Object> models = request.getCompoundModel().getModels();
+			assertEquals(1, models.size());  // I.e. this is not a compound scan.
+
+			Object model = models.iterator().next();
+			assertEquals(LissajousModel.class, model.getClass());
+
+			LissajousModel lissajous = (LissajousModel) model;
+			assertEquals(0.5, lissajous.getA(), 1e-8);
+			assertEquals(0.1, lissajous.getB(), 1e-8);
+			assertEquals(5, lissajous.getDelta(), 1e-8);
+			assertEquals(3, lissajous.getThetaStep(), 1e-8);
+			assertEquals(40, lissajous.getPoints());
 	}
 
 	@Test

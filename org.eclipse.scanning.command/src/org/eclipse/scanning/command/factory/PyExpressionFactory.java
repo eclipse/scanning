@@ -24,6 +24,7 @@ import org.eclipse.scanning.api.device.models.IReflectedModel;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.api.points.models.GridModel;
+import org.eclipse.scanning.api.points.models.LissajousModel;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
@@ -59,6 +60,7 @@ public class PyExpressionFactory {
 		exp.put(ArrayModel.class,          new ArrayModelExpresser());
 		exp.put(RepeatedPointModel.class,  new RepeatedPointExpresser());
 		exp.put(SpiralModel.class,		   new SpiralModelExpresser());
+		exp.put(LissajousModel.class, 	   new LissajousModelExpresser());
 
 		exp.put(Collection.class,      new ROICollectionExpresser());
 		exp.put(List.class,            new ROICollectionExpresser());

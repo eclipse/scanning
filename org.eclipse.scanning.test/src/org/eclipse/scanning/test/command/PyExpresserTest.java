@@ -27,6 +27,7 @@ import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.GridModel;
+import org.eclipse.scanning.api.points.models.LissajousModel;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
 import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
@@ -413,6 +414,29 @@ public class PyExpresserTest {
 		assertEquals(expectedVerbose, factory.pyExpress(model, Arrays.asList(croi), true));
 	}
 
+	@Test
+	public void testLissajousModel() throws Exception {
+		BoundingBox bbox = new BoundingBox();
+		bbox.setFastAxisStart(0);
+		bbox.setSlowAxisStart(1);
+		bbox.setFastAxisLength(10);
+		bbox.setSlowAxisLength(11);
+
+		LissajousModel model = new LissajousModel();
+		model.setFastAxisName("myFast");
+		model.setSlowAxisName("mySlow");
+		model.setBoundingBox(bbox);
+		model.setA(1);
+		model.setB(0.25);
+		model.setDelta(0);
+		model.setPoints(100);
+		model.setThetaStep(0.05);
+
+		String expectedConcise = "lissajous(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), 1.0, 0.25, 0.0, 0.05, 100, False)";
+		String expectedVerbose = "lissajous(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), a=1.0, b=0.25, delta=0.0, theta=0.05, points=100, continuous=False)";
+		assertEquals(expectedConcise, factory.pyExpress(model, false));
+		assertEquals(expectedVerbose, factory.pyExpress(model, true));
+	}
 
 	@Test
 	public void testRasterModel() throws Exception {
