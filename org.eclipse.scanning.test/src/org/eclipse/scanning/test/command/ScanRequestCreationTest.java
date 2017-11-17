@@ -21,8 +21,10 @@ import java.util.Map;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.PolygonalROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.RectangularROI;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
+import org.eclipse.scanning.api.points.GeneratorException;
 import org.eclipse.scanning.api.points.IPointGeneratorService;
 import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.api.points.models.BoundingBox;
@@ -34,6 +36,7 @@ import org.eclipse.scanning.api.points.models.RepeatedPointModel;
 import org.eclipse.scanning.api.points.models.SinglePointModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.command.Services;
+import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 import org.eclipse.scanning.event.EventServiceImpl;
 import org.eclipse.scanning.example.detector.MandelbrotDetector;
 import org.eclipse.scanning.example.detector.MandelbrotModel;
@@ -49,8 +52,6 @@ import org.eclipse.scanning.test.scan.mock.MockWritingMandlebrotModel;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
-import org.eclipse.scanning.connector.activemq.ActivemqConnectorService;
 
 
 public class ScanRequestCreationTest extends AbstractJythonTest {
@@ -188,6 +189,42 @@ public class ScanRequestCreationTest extends AbstractJythonTest {
 		assertEquals(5, cregion.getRadius(), 1e-8);
 	}
 
+	@Test
+	public void testGridWithPolygonROI() throws GeneratorException {
+		pi.exec("sr =                             "
+			+	"scan_request(                    "
+			+	"    grid(                        "
+			+	"        axes=(my_scannable, 'y'),"  // Can use Scannable objects or strings.
+			+	"        start=(0, 2),            "
+			+	"        stop=(10, 11),           "
+			+	"        count=(5, 6),            "
+			+	"        roi=poly((0, 0),(1, 5),(1, -2))"
+			+	"    ),                           "
+			+	")                                ");
+		@SuppressWarnings("unchecked")
+		ScanRequest<IROI> request = pi.get("sr", ScanRequest.class);
+
+		Collection<Object> models = request.getCompoundModel().getModels();
+		assertEquals(1, models.size());  // I.e. this is not a compound scan.
+
+		Object model = models.iterator().next();
+
+		Collection<IROI> regions = service.findRegions((GridModel) model, request.getCompoundModel().getRegions());
+		assertEquals(1, regions.size());
+
+		IROI region = regions.iterator().next();
+		assertEquals(PolygonalROI.class, region.getClass());
+
+		PolygonalROI poly = (PolygonalROI) region;
+		assertEquals(3, poly.getNumberOfPoints());
+
+		assertEquals(0., poly.getPoint(0).getPointX(), 1e-8);
+		assertEquals(0., poly.getPoint(0).getPointY(), 1e-8);
+		assertEquals(1., poly.getPoint(1).getPointX(), 1e-8);
+		assertEquals(5., poly.getPoint(1).getPointY(), 1e-8);
+		assertEquals(1., poly.getPoint(2).getPointX(), 1e-8);
+		assertEquals(-2., poly.getPoint(2).getPointY(), 1e-8);
+	}
 	@Test
 	public void testStepCommandWithMonitors() throws Exception {
 		pi.exec("sr =                               "
