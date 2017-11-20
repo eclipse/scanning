@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -45,8 +46,13 @@ import org.eclipse.scanning.api.event.core.IQueueReader;
 import org.eclipse.scanning.api.event.core.ISubmitter;
 import org.eclipse.scanning.api.event.status.Status;
 import org.eclipse.scanning.api.event.status.StatusBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractQueueConnection<U extends StatusBean> extends AbstractConnection implements IQueueConnection<U>{
+
+
+	private static final Logger logger = LoggerFactory.getLogger(AbstractQueueConnection.class);
 
 	protected IEventService          eservice;
 
@@ -498,7 +504,8 @@ public abstract class AbstractQueueConnection<U extends StatusBean> extends Abst
 
 	}
 
-	protected static final long TWO_DAYS = 48*60*60*1000; // ms
+	protected static final long TWO_DAYS = TimeUnit.DAYS.toMillis(2);
+//			48*60*60*1000; // ms
 	protected static final long A_WEEK   = 7*24*60*60*1000; // ms
 
 	/**

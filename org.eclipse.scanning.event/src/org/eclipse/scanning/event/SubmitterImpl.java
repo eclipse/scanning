@@ -33,8 +33,12 @@ import org.eclipse.scanning.api.event.scan.IScanListener;
 import org.eclipse.scanning.api.event.scan.ScanBean;
 import org.eclipse.scanning.api.event.scan.ScanEvent;
 import org.eclipse.scanning.api.event.status.StatusBean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class SubmitterImpl<T extends StatusBean> extends AbstractQueueConnection<T> implements ISubmitter<T> {
+
+	private static final Logger logger = LoggerFactory.getLogger(SubmitterImpl.class);
 
 	// Message things
 	private String uniqueId;

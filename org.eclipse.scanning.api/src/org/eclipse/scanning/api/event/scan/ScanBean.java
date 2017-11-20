@@ -164,8 +164,8 @@ public final class ScanBean extends StatusBean {
 		return beamline;
 	}
 
-	public void setBeamline(String beanline) {
-		this.beamline = beanline;
+	public void setBeamline(String beamline) {
+		this.beamline = beamline;
 	}
 
 	public DeviceState getDeviceState() {
