@@ -29,9 +29,9 @@ import org.eclipse.scanning.api.event.status.StatusBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class AbstractConnection {
+abstract class AbstractConnection {
 
-	protected static Logger logger = LoggerFactory.getLogger(AbstractConnection.class);
+	private static final Logger logger = LoggerFactory.getLogger(AbstractConnection.class);
 
 	protected final URI              uri;
 	protected String                 topicName;

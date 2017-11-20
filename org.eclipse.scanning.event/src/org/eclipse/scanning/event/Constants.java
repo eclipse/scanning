@@ -11,6 +11,8 @@
  *******************************************************************************/
 package org.eclipse.scanning.event;
 
+import java.util.concurrent.TimeUnit;
+
 public class Constants {
 
 	/**
@@ -39,7 +41,7 @@ public class Constants {
     /**
       * The timeout in ms, default 1 day. Set org.eclipse.scanning.event.heartbeat.timeout to change (in ms)
 	 */
-	public static final long TIMEOUT = 24*60*60*1000; //  a day!
+	public static final long TIMEOUT = TimeUnit.DAYS.toMillis(1);
 
     public static long getTimeout() {
 	return Long.getLong("org.eclipse.scanning.event.heartbeat.timeout", TIMEOUT);

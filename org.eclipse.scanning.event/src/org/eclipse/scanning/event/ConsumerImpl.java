@@ -14,7 +14,9 @@ package org.eclipse.scanning.event;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +61,8 @@ import org.slf4j.LoggerFactory;
 
 final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U> implements IConsumer<U> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ConsumerImpl.class);
-	private static final long   ADAY   = 24*60*60*1000; // ms
+	private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerImpl.class);
+	private static final long   ONE_DAY   = 24*60*60*1000; // ms
 
 	private String                        name;
 	private UUID                          consumerId;
@@ -81,7 +83,7 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 	private volatile Map<String, WeakReference<IConsumerProcess<U>>>  processes;
 	private Map<String, U>                overrideMap;
 
-	/*
+	/**
 	 * Concurrency design recommended by Keith Ralphs after investigating
 	 * how to pause and resume a collection cycle using Reentrant locks.
 	 * Design requires these three fields.
@@ -107,7 +109,7 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 		durable    = true;
 		consumerId = UUID.randomUUID();
 		name       = "Consumer "+consumerId; // This will hopefully be changed to something meaningful...
-		this.processes       = new Hashtable<>(7); // Synch!
+		this.processes       = Collections.synchronizedMap(new HashMap<>());
 		this.heartbeatTopicName = heartbeatTName;
 		connect();
 	}
@@ -174,13 +176,12 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 			}
 
 		} catch (Exception ne) {
-			ne.printStackTrace();
-			logger.error("Unable to process pause command on consumer '"+getName()+"'. Consumer will stop.", ne);
+			LOGGER.error("Unable to process pause command on consumer '{}'. Consumer will stop.", getName(), ne);
 			try {
 				stop();
 				disconnect();
 			} catch (EventException e) {
-				logger.error("An internal error occurred trying to terminate the consumer "+getName()+" "+getConsumerId());
+				LOGGER.error("An internal error occurred trying to terminate the consumer "+getName()+" "+getConsumerId());
 			}
 		}
 	}
@@ -190,46 +191,39 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 			stop();
 			if (kbean.isDisconnect()) disconnect();
 		} catch (EventException e) {
-			logger.error("An internal error occurred trying to terminate the consumer "+getName()+" "+getConsumerId());
+			LOGGER.error("An internal error occurred trying to terminate the consumer "+getName()+" "+getConsumerId());
 		}
 		if (kbean.isExitProcess()) {
 			try {
 				Thread.sleep(2500);
 			} catch (InterruptedException e) {
-				logger.error("Unable to pause before exit", e);
+				LOGGER.error("Unable to pause before exit", e);
 			}
-			main();
+			exit();
 		}
 		if (kbean.isRestart()) {
 			try {
-				if (kbean.isDisconnect()) connect();
-			    start();
+				if (kbean.isDisconnect()) {
+					connect();
+				}
+				start();
 			} catch (EventException e) {
-				logger.error("Unable to restart, please contact your support representative.", e);
+				LOGGER.error("Unable to restart, please contact your support representative.", e);
 			}
 		}
 	}
 
-	/**
-	 * Exit is protected inside a main() method
-	 * because doing this gets around the sonarqube
-	 * rule which says System.exit(...) must not be
-	 * called except inside a main method.
-	 *
-	 * @param args
-	 */
-	public static final void main(String... args) {
+	public void exit() {
+		// TODO: We should almost certainly not be killing the VM. We need to investigate
+		// further why we would want to do this and what we should do instead.
+		// - when called from processException() maybe just return false
+		// - when called from terminate? possibly just set active to false
 		System.exit(0); // Normal orderly exit
 	}
 
 	protected boolean isCommandForMe(ConsumerCommandBean bean) {
-		if (bean.getConsumerId()!=null) {
-			if (bean.getConsumerId().equals(getConsumerId())) return true;
-		}
-		if (bean.getQueueName()!=null) {
-			if (bean.getQueueName().equals(getSubmitQueueName())) return true;
-		}
-		return false;
+		return bean.getConsumerId()!=null && bean.getConsumerId().equals(getConsumerId())
+				|| bean.getQueueName()!=null && bean.getQueueName().equals(getSubmitQueueName());
 	}
 
 	protected void updateQueue(U bean) throws EventException {
@@ -325,11 +319,11 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 				try {
 					ConsumerImpl.this.run();
 				} catch (Exception ne) {
-					logger.trace("Internal error running consumer "+getName(), ne);
+					LOGGER.trace("Internal error running consumer "+getName(), ne);
 					try {
 						ConsumerImpl.this.stop();
 					} catch (EventException e) {
-						logger.error("Cannot complete stop", ne);
+						LOGGER.error("Cannot complete stop", ne);
 					}
 				}
 			}
@@ -365,14 +359,14 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 			}
 
 		} catch (Exception ne) {
-			logger.error("Cannot get queue "+EventConstants.CMD_SET, ne);
+			LOGGER.error("Cannot get queue "+EventConstants.CMD_SET, ne);
 			return null;
 
 		} finally {
 			try {
 				if (qr!=null) qr.disconnect();
 			} catch (EventException e) {
-				logger.error("Cannot get disconnect "+EventConstants.CMD_SET, e);
+				LOGGER.error("Cannot get disconnect "+EventConstants.CMD_SET, e);
 			}
 		}
 		return null;
@@ -403,7 +397,7 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 					}
 				}
 			} catch (EventException ne) {
-				logger.error("Internal error, please contact your support representative.", ne);
+				LOGGER.error("Internal error, please contact your support representative.", ne);
 			}
 		}
 
@@ -453,19 +447,12 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 		init();
 
 		while(isActive()) {
-		try {
-	            boolean ok = consume();
-	            if (!ok) break;
-
-		} catch (Throwable ne) {
-			boolean stayAlive = processException(ne);
-			if (stayAlive) {
-				continue;
-			} else {
-				break;
+			try {
+				consume();
+			} catch (Throwable ne) {
+				boolean stayAlive = processException(ne);
+				if (!stayAlive) break;
 			}
-		}
-
 		}
 	}
 
@@ -488,121 +475,107 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 		// need to choose the visit again and get the baton.
 		// NOTE: Not all consumers check the submit queue and
 		// pause before they start.
-        checkStartPaused();
+		checkStartPaused();
 
 		// It is possible to call start() and then awaitStart().
 		if (latchStart!=null) latchStart.countDown();
 	}
 
-	private boolean consume() throws Exception {
+	private void consume() throws Exception {
 
 		checkPaused(); // blocks until not paused.
-		if (!isActive()) return false; // Might have pasued for a long time.
+		if (!isActive()) return; // Might have pasued for a long time.
 
 		// Consumes messages from the queue.
-	Message m = getMessage(uri, getSubmitQueueName());
-        if (m!=null) {
-		waitTime = 0; // We got a message
+		Message m = getMessage(uri, getSubmitQueueName());
+		if (m != null) {
+			waitTime = 0; // We got a message
 
-		// TODO FIXME Check if we have the max number of processes
-		// exceeded and wait until we don't...
-
-		TextMessage t = (TextMessage)m;
-
-		final String json  = t.getText();
-
-			@SuppressWarnings("unchecked")
-			final U bean   = (U) service.unmarshal(json, getBeanClass());
-
-		executeBean(bean);
-        }
-        return true;
+			// TODO FIXME Check if we have the max number of processes
+			// exceeded and wait until we don't...
+			TextMessage t = (TextMessage) m;
+			final String json = t.getText();
+			final U bean = service.unmarshal(json, getBeanClass());
+			executeBean(bean);
+		}
 	}
 
-	private boolean processException(Throwable ne) throws EventException {
+	private boolean processException(Throwable e) throws EventException {
+		LOGGER.debug("Processing error in consumer", e);
 
-		if (ne instanceof EventException || ne instanceof InterruptedException) {
+		// if error occurred deserializing the bean, log a specific message and don't fail even if not durable
+		if (e.getClass().getSimpleName().contains("Json") || e.getClass().getSimpleName().endsWith("UnrecognizedPropertyException")) {
+			LOGGER.error("Could not deserialize bean.", e);
+			return true;
+		}
+
+		// normal error case, log error message and continue if
+		if (e instanceof EventException || e instanceof InterruptedException) {
 			if (Thread.interrupted()) return false;
-			logger.trace("Cannot consume message ", ne);
-			if (isDurable()) {
-				return true;
-			}
-			return false;
+			LOGGER.error("Cannot consume message ", e);
+			return isDurable();
 		}
-
-		logger.debug("Error in consumer!", ne);
-		if (ne.getClass().getSimpleName().contains("Json")) {
-			logger.error("Fatal except deserializing object!", ne);
-			return true;
-		}
-		if (ne.getClass().getSimpleName().endsWith("UnrecognizedPropertyException")) {
-			logger.error("Cannot deserialize bean!", ne);
-			return true;
-		}
-
-		if (ne.getClass().getSimpleName().endsWith("ClassCastException")) {
-			logger.error("Problem with serialization?", ne);
-		}
-
 
 		if (!isDurable()) return false;
 
+		// TODO: below assumes some conenction problem with activemq. why would any remaining
+		// exception be a connection problem?
+		LOGGER.warn("{} ActiveMQ connection to {} lost.", getName(), uri, e);
+		LOGGER.warn("We will check every 2 seconds for 24 hours, until it comes back.");
 		try {
 			if (Thread.interrupted()) return false;
+			// Wait for 2 seconds (default time)
 			Thread.sleep(Constants.getNotificationFrequency());
-		} catch (InterruptedException e) {
-			throw new EventException("The consumer was unable to wait!", e);
+		} catch (InterruptedException ie) {
+			throw new EventException("The consumer was unable to wait!", ie);
 		}
 
-		waitTime+=Constants.getNotificationFrequency();
-		checkTime(waitTime);
-
-		logger.warn(getName()+" ActiveMQ connection to "+uri+" lost.");
-		logger.warn("We will check every 2 seconds for 24 hours, until it comes back.");
+		waitTime += Constants.getNotificationFrequency();
+		checkTime(waitTime); // Exits if wait time more than one day
 
 		return true;
 	}
 
 	private void checkStartPaused() throws EventException {
-
 		if (!isPauseOnStart()) {
 			return;
 		}
 
 		List<U> items = getSubmissionQueue();
-		if (items!=null && items.size()>0) {
+		if (items != null && !items.isEmpty()) {
 			pause();
 
 			IPublisher<PauseBean> pauser = eservice.createPublisher(getUri(), IEventService.CMD_TOPIC);
-			pauser.setStatusSetName(IEventService.CMD_SET); // The set that other clients may check
+			pauser.setStatusSetName(EventConstants.CMD_SET); // The set that other clients may check
 			pauser.setStatusSetAddRequired(true);
 
 			PauseBean pbean = new PauseBean();
 			pbean.setQueueName(getSubmitQueueName()); // The queue we are pausing
 			pbean.setPause(true);
 			pauser.broadcast(pbean);
-
 		}
 	}
 
 	private void checkPaused() throws Exception {
 
-		if (!isActive()) throw new Exception("The consumer is not active and cannot be paused!");
+		if (!isActive())
+			throw new Exception("The consumer is not active and cannot be paused!");
 
 		// Check the locking using a condition
-	if(!lock.tryLock(1, TimeUnit.SECONDS)) {
-		throw new EventException("Internal Error - Could not obtain lock to run device!");
-	}
-	try {
-		if (!isActive()) throw new Exception("The consumer is not active and cannot be paused!");
-	    if (awaitPaused) {
-		setActive(false);
-			paused.await(); // Until unpaused
-		setActive(true);
-	    }
-	} finally {
-		lock.unlock();
-	}
+		if (!lock.tryLock(1, TimeUnit.SECONDS)) {
+			throw new EventException("Internal Error - Could not obtain lock to run device!");
+		}
+		try {
+			if (!isActive())
+				throw new Exception("The consumer is not active and cannot be paused!");
+			if (awaitPaused) {
+				setActive(false);
+				paused.await(); // Until unpaused
+				setActive(true);
+			}
+		} finally {
+			lock.unlock();
+		}
 
 	}
 
@@ -620,7 +593,7 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 			awaitPaused = true;
 			if (mconsumer!=null) mconsumer.close();
 			mconsumer = null; // Force unpaused consumers to make a new connection.
-			logger.info(getName()+" is paused");
+			LOGGER.info(getName()+" is paused");
 			System.out.println(getName()+" is paused");
 
 		} catch (Exception ne) {
@@ -643,7 +616,7 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 			awaitPaused = false;
 			// We don't have to actually start anything again because the getMessage(...) call reconnects automatically.
 			paused.signalAll();
-			logger.info(getName()+" running");
+			LOGGER.info(getName()+" running");
 			System.out.println(getName()+" running");
 
 		} finally {
@@ -676,7 +649,7 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 			U o = overrideMap.remove(bean.getUniqueId());
 			bean.setStatus(o.getStatus());
 		}
-		logger.trace("Moving "+bean+" to "+mover.getSubmitQueueName());
+		LOGGER.trace("Moving {} to {}", bean, mover.getSubmitQueueName());
 		mover.submit(bean);
 
 		// Run the process
@@ -700,20 +673,31 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 			return;
 		}
 
-		if (bean.getStatus().isFinal()) return; // This is not the bean you are looking for.
+		if (bean.getStatus().isFinal()) return; // Sanity check, the bean status should not be final
 
-		IConsumerProcess<U> process = runner.createProcess(bean, status);
-		processes.put(bean.getUniqueId(), new WeakReference<IConsumerProcess<U>>(process));
+		try {
+			IConsumerProcess<U> process = runner.createProcess(bean, status);
+			processes.put(bean.getUniqueId(), new WeakReference<IConsumerProcess<U>>(process));
 
-		process.start(); // Depending on the process may run in a separate thread (default is not to)
+			process.start(); // Depending on the process may run in a separate thread (default is not to)
+		} catch (Exception e) {
+			// if an exception is thrown, set the bean status to failed. Note the exception is logged in processException()
+			bean.setStatus(Status.FAILED);
+			bean.setMessage(e.getMessage());
+			status.broadcast(bean);
+			throw e;
+		}
 	}
 
+	/**
+	 * Exits the whole VM(!) if wait time has exceeded one day.
+	 * @param waitTime
+	 */
 	protected void checkTime(long waitTime) {
-
-		if (waitTime>ADAY) {
+		if (waitTime > ONE_DAY) {
 			setActive(false);
-			logger.warn("ActiveMQ permanently lost. "+getName()+" will now shutdown!");
-			main();
+			LOGGER.warn("ActiveMQ permanently lost. {} will now shutdown!", getName());
+			exit();
 		}
 	}
 
@@ -731,7 +715,7 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 			try {
 				connection.close();
 			} catch (Exception expected) {
-				logger.info("Cannot close old connection", ne);
+				LOGGER.info("Cannot close old connection", ne);
 			}
 			throw ne;
 		}
@@ -747,11 +731,10 @@ final class ConsumerImpl<U extends StatusBean> extends AbstractQueueConnection<U
 		final MessageConsumer consumer = session.createConsumer(queue);
 		connection.start();
 
-		logger.info(getName()+" Submission ActiveMQ connection to "+uri+" made.");
+		LOGGER.info("{} Submission ActiveMQ connection to {} made.", getName(), uri);
 
 		return consumer;
 	}
-
 
 	@Override
 	public IProcessCreator<U> getRunner() {
