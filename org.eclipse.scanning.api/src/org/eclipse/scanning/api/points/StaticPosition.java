@@ -54,6 +54,12 @@ public class StaticPosition extends AbstractPosition {
 
 	@Override
 	public int getScanRank() {
+		return 1;
+	}
+
+	@Override
+	public int getIndex(int dimension) {
+		// TODO: how do we get the index when the number of StaticPositions is > 1?
 		return 0;
 	}
 

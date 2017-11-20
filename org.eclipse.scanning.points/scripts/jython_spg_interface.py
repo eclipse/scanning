@@ -14,6 +14,7 @@
 from org.eclipse.scanning.api.points import Point
 from org.eclipse.scanning.api.points import Scalar
 from org.eclipse.scanning.api.points import MapPosition
+from org.eclipse.scanning.api.points import StaticPosition
 from org.eclipse.scanning.api.points import ScanPointIterator
 from org.eclipse.scanning.points import PySerializable
 from java.util import ArrayList
@@ -22,6 +23,7 @@ from scanpointgenerator import LineGenerator
 from scanpointgenerator import ArrayGenerator
 from scanpointgenerator import SpiralGenerator
 from scanpointgenerator import LissajousGenerator
+from scanpointgenerator import NullPointGenerator
 from scanpointgenerator import CompoundGenerator
 from scanpointgenerator import RandomOffsetMutator
 from scanpointgenerator import CircularROI
@@ -229,6 +231,22 @@ class JLissajousGenerator(JavaIteratorWrapper):
 
             yield java_point
 
+
+class JStaticPointGenerator(JavaIteratorWrapper):
+    """
+    Wrap a NullPointGenerator and produce StaticPosition objects
+    """
+
+    def __init__(self, size):
+        super(JStaticPointGenerator, self).__init__()
+        g = NullPointGenerator(size)
+        self.generator = CompoundGenerator([g], [], [])
+        self.generator.prepare()
+        logging.debug(self.generator.to_dict())
+
+    def _iterator(self):
+        for p in self.generator.iterator():
+            yield StaticPosition()
 
 class JCompoundGenerator(JavaIteratorWrapper):
     """
