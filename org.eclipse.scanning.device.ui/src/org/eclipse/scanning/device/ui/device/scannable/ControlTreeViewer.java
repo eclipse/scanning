@@ -11,10 +11,10 @@
  *******************************************************************************/
 package org.eclipse.scanning.device.ui.device.scannable;
 
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -29,7 +29,6 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
@@ -37,7 +36,6 @@ import org.eclipse.richbeans.widgets.internal.GridUtils;
 import org.eclipse.scanning.api.INamedNode;
 import org.eclipse.scanning.api.IScannable;
 import org.eclipse.scanning.api.device.IScannableDeviceService;
-import org.eclipse.scanning.api.event.EventException;
 import org.eclipse.scanning.api.scan.ui.ControlGroup;
 import org.eclipse.scanning.api.scan.ui.ControlNode;
 import org.eclipse.scanning.api.scan.ui.ControlTree;
@@ -144,6 +142,8 @@ public class ControlTreeViewer {
 	private String            defaultGroupName = null;
 	private final ControlViewerMode controlViewerMode;
 
+	private ISelectionChangedListener selectionChangedListener;
+
 
 	/**
 	 * Create a ContolTreeViewer with the given mode, specifying whether to link to
@@ -185,8 +185,12 @@ public class ControlTreeViewer {
 		if (defaultTree==null && tree==null) throw new IllegalArgumentException("No control tree has been defined!");
 
 		// Clone this tree so that they can reset it!
-		if (defaultTree==null) defaultTree = ControlTreeUtils.clone(tree);
-        if (tree == null)      tree        = ControlTreeUtils.clone(defaultTree);
+		if (defaultTree==null) {
+			defaultTree = ControlTreeUtils.clone(tree);
+		}
+        if (tree == null) {
+        	tree = ControlTreeUtils.clone(defaultTree);
+        }
 
        if (setUseFilteredTree) {
 		FilteredTree ftree = new FilteredTree(parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE, new NamedNodeFilter(), true);
@@ -214,12 +218,6 @@ public class ControlTreeViewer {
 
 		createActions(viewer, tree, managers);
 		setSearchVisible(false);
-
-		try {
-		    registerAll();
-		} catch (Exception ne) {
-			logger.error("Cannot listen to motor values changing...");
-		}
 
 		return content;
 	}
@@ -291,17 +289,32 @@ public class ControlTreeViewer {
 		removeNode.setEnabled(false);
 		removeNode.setId(ACTION_ID_REMOVE_ELEMENT);
 
-		ViewUtil.addGroups("add", mans, addGroup, addNode, removeNode);
+		// Action to move selected scannable up
+		final IAction moveNodeUp = new Action("Move scannable up", Activator.getImageDescriptor("icons/arrow-090-medium.png")) {
+			@Override
+			public void run() {
+				reorder(Direction.UP);
+			}
+		};
+		moveNodeUp.setId("move_up");
+
+		// Action to move selected scannable down
+		final IAction moveNodeDown = new Action("Move scannable down", Activator.getImageDescriptor("icons/arrow-270-medium.png")) {
+			@Override
+			public void run() {
+				reorder(Direction.DOWN);
+			}
+		};
+		moveNodeDown.setId("move_down");
+
+		ViewUtil.addGroups("add", mans, addGroup, addNode, removeNode, moveNodeUp, moveNodeDown);
+
+
 
 		// Action to fully expand the control tree
 		IAction expandAll = new Action("Expand All", Activator.getImageDescriptor("icons/expand_all.png")) {
 			@Override
 			public void run() {
-				try {
-					registerAll();
-				} catch (Exception e) {
-					logger.error("Unable to reconnect all listeners!", e);
-				}
 				refresh();
 			}
 		};
@@ -337,7 +350,6 @@ public class ControlTreeViewer {
 		IAction setAllToCurrentValue;
 		if (controlViewerMode.isDirectlyConnected()) {
 			setToCurrentValue = null;
-			setAllToCurrentValue = null;
 		} else {
 			// Action to set the selected control node to the current value of the underlying scannable
 			setToCurrentValue = new Action("Set to current value", Activator.getImageDescriptor("icons/reset-value.png")) {
@@ -384,22 +396,56 @@ public class ControlTreeViewer {
 		setShowTip.setImageDescriptor(Activator.getImageDescriptor("icons/balloon.png"));
 		ViewUtil.addGroups("tip", mans, setShowTip);
 
-		tviewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				INamedNode selectedNode = getSelection();
-				ControlTree tree = (ControlTree)viewer.getInput(); // They might have called setControlTree()!
-				removeNode.setEnabled(tree.isTreeEditable() && selectedNode != null); // can only remove node if one is selected
-				addNode.setEnabled(tree.isTreeEditable() && selectedNode != null || defaultGroupName != null); // can only add a node if one is selected (can still add a group)
-				if (setToCurrentValue != null) {
-					setToCurrentValue.setEnabled(selectedNode instanceof ControlNode);
-				}
-			}
-		});
+		selectionChangedListener = event -> {
+			INamedNode selectedNode = getSelection();
+			ControlTree controlTree = (ControlTree)viewer.getInput(); // They might have called setControlTree()!
+			removeNode.setEnabled(controlTree.isTreeEditable() && selectedNode != null); // can only remove node if one is selected
+			addNode.setEnabled(controlTree.isTreeEditable() && selectedNode != null || defaultGroupName != null); // can only add a node if one is selected (can still add a group)
+			if (setToCurrentValue != null) setToCurrentValue.setEnabled(selectedNode instanceof ControlNode);
+			moveNodeUp.setEnabled(validMove(selectedNode, Direction.UP));
+			moveNodeDown.setEnabled(validMove(selectedNode, Direction.DOWN));
+		};
+
+		tviewer.addSelectionChangedListener(selectionChangedListener);
 
 		this.editActions = Arrays.asList(addGroup, removeNode, addNode, edit, resetAll);
 		setNodeActionsEnabled(tree.isTreeEditable());
 		viewer.getControl().setMenu(rightClick.createContextMenu(viewer.getControl()));
+	}
+
+	private boolean validMove(INamedNode selection, Direction direction) {
+		if (Objects.isNull(selection)) return false;
+		List<INamedNode> allNodes = new ArrayList<>(Arrays.asList((getControlTree().getNode(defaultGroupName)).getChildren()));
+		final int selectionIndex = allNodes.indexOf(selection);
+		if (direction.equals(Direction.UP)) return selectionIndex > 0;
+		return selectionIndex < allNodes.size()-1 && selectionIndex >= 0;
+	}
+
+	private enum Direction {
+		UP(-1), DOWN(1);
+		private int increment;
+		private Direction(int increment) {
+			this.increment = increment;
+		}
+
+		public int moveIndex(int originalIndex) {
+			return originalIndex + increment;
+		}
+	}
+
+	private void reorder(Direction direction) {
+		INamedNode selection = getSelection();
+		final List<INamedNode> allScannables = new ArrayList<>(Arrays.asList((getControlTree().getNode(defaultGroupName)).getChildren()));
+		final int originalSelectionIndex = allScannables.indexOf(selection);
+		allScannables.remove(selection);
+		final int newIndex = direction.moveIndex(originalSelectionIndex);
+		allScannables.add(newIndex, selection);
+		ControlTree reorderedControlGroup = new ControlTree();
+		ControlGroup group = new ControlGroup();
+		group.setName(defaultGroupName);
+		reorderedControlGroup.add(group);
+		allScannables.forEach(reorderedControlGroup::add);
+		setControlTree(reorderedControlGroup);
 	}
 
 	private void setNodeActionsEnabled(boolean treeEditable) {
@@ -478,23 +524,6 @@ public class ControlTreeViewer {
 
 	public void setDefaultGroupName(String defaultGroupName) {
 		this.defaultGroupName = defaultGroupName;
-	}
-
-	public void dispose() {
-
-	}
-
-
-	/**
-	 * Clears all the current listeners and registers all the new ones.
-	 *
-	 * @throws EventException
-	 * @throws URISyntaxException
-	 */
-	private void registerAll() throws EventException, URISyntaxException {
-
-		if (!controlViewerMode.isDirectlyConnected()) return; // Nothing to monitor.
-
 	}
 
 	/**
@@ -596,6 +625,10 @@ public class ControlTreeViewer {
 				// Sometimes happens in unit tests.
 			}
 		});
+	}
+
+	public void dispose() {
+		removeSelectionChangedListener(selectionChangedListener);
 	}
 
 }
