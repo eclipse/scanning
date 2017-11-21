@@ -27,9 +27,12 @@ import org.eclipse.scanning.api.points.models.ArrayModel;
 import org.eclipse.scanning.api.points.models.BoundingBox;
 import org.eclipse.scanning.api.points.models.CompoundModel;
 import org.eclipse.scanning.api.points.models.GridModel;
+import org.eclipse.scanning.api.points.models.LissajousModel;
 import org.eclipse.scanning.api.points.models.MultiStepModel;
+import org.eclipse.scanning.api.points.models.RandomOffsetGridModel;
 import org.eclipse.scanning.api.points.models.RasterModel;
 import org.eclipse.scanning.api.points.models.RepeatedPointModel;
+import org.eclipse.scanning.api.points.models.SpiralModel;
 import org.eclipse.scanning.api.points.models.StepModel;
 import org.eclipse.scanning.command.ParserServiceImpl;
 import org.eclipse.scanning.command.factory.PyExpressionFactory;
@@ -128,7 +131,7 @@ public class PyExpresserTest {
 		request.setCompoundModel(cmodel);
 
 		assertEquals(  // Concise.
-				"mscan(grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), count=(3, 4), snake=False, roi=circ((0.0, 0.0), 1.0)))",
+				"mscan(grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), count=(3, 4), False, True, circ((0.0, 0.0), 1.0)))",
 				factory.pyExpress(request, false));
 		assertEquals(  // Verbose.
 				"mscan(path=[grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=False, continuous=True, roi=[circ(origin=(0.0, 0.0), radius=1.0)])])",
@@ -263,6 +266,30 @@ public class PyExpresserTest {
 		assertEquals(expected, actual);
 	}
 
+	@Test
+	public void testRandomOffsetGridModel() throws Exception {
+		BoundingBox bbox = new BoundingBox();
+		bbox.setFastAxisStart(0);
+		bbox.setSlowAxisStart(1);
+		bbox.setFastAxisLength(10);
+		bbox.setSlowAxisLength(11);
+
+		RandomOffsetGridModel model = new RandomOffsetGridModel();
+		model.setFastAxisName("myFast");
+		model.setSlowAxisName("mySlow");
+		model.setBoundingBox(bbox);
+		model.setFastAxisPoints(3);
+		model.setSlowAxisPoints(4);
+		model.setSnake(true);
+		model.setContinuous(true);
+		model.setSeed(5);
+		model.setOffset(10.0);
+
+		String expectedConcise = "random_offset_grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), (3, 4), True, True)";
+		String expectedVerbose = "random_offset_grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=True, continuous=True)";
+		assertEquals(expectedConcise, factory.pyExpress(model, false));
+		assertEquals(expectedVerbose, factory.pyExpress(model, true));
+	}
 
 
 	@Test
@@ -284,7 +311,7 @@ public class PyExpresserTest {
 		gmodel.setContinuous(true);
 
 		assertEquals(  // Concise.
-				"grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), count=(3, 4))",
+				"grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), count=(3, 4), True, True)",
 				factory.pyExpress(gmodel, new ArrayList<>(), false));
 		assertEquals(  // Verbose.
 				"grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=True, continuous=True)",
@@ -310,14 +337,14 @@ public class PyExpresserTest {
 		gmodel.setSnake(false);
 
 		ScanRequest<IROI> request = new ScanRequest<>();
-		request.setCompoundModel(new CompoundModel(Arrays.asList(gmodel)));
+		request.setCompoundModel(new CompoundModel<IROI>(Arrays.asList(gmodel)));
 		Map<String,Object> detectors = new LinkedHashMap<>();
 		detectors.put("mandelbrot", new MandelbrotModel("p", "q"));
 		detectors.put("processing", new ClusterProcessingModel("processing", "mandelbrot", "/tmp/something.nxs"));
 		request.setDetectors(detectors);
 
 		String mscan = factory.pyExpress(request, false);
-		String expected = "mscan(grid(('p', 'q'), (0.0, 1.0), (10.0, 12.0), count=(2, 2), snake=False, continuous=False), [detector('mandelbrot', 0.1), detector('processing', -1.0)])";
+		String expected = "mscan(grid(('p', 'q'), (0.0, 1.0), (10.0, 12.0), count=(2, 2), False, False), [detector('mandelbrot', 0.1), detector('processing', -1.0)])";
 		assertEquals(expected, mscan);
 
 		mscan = factory.pyExpress(request, true);
@@ -358,6 +385,58 @@ public class PyExpresserTest {
 		assertEquals(expected, detector);
 	}
 
+	@Test
+	public void testSpiralModel() throws Exception {
+		BoundingBox bbox = new BoundingBox();
+		bbox.setFastAxisStart(0);
+		bbox.setSlowAxisStart(1);
+		bbox.setFastAxisLength(10);
+		bbox.setSlowAxisLength(11);
+
+		SpiralModel model = new SpiralModel();
+		model.setFastAxisName("myFast");
+		model.setSlowAxisName("mySlow");
+		model.setBoundingBox(bbox);
+		model.setScale(1.5);
+		model.setContinuous(false);
+
+		CircularROI croi = new CircularROI();
+		ScanRequest<IROI> request = new ScanRequest<>();
+
+		CompoundModel<IROI> cmodel = new CompoundModel<>();
+		cmodel.setData(model, croi);
+		request.setCompoundModel(cmodel);
+
+		String expectedConcise = "spiral(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), 1.5, False, circ((0.0, 0.0), 1.0))";
+		assertEquals(expectedConcise, factory.pyExpress(model, Arrays.asList(croi), false));
+
+		String expectedVerbose = "spiral(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), scale=1.5, continuous=False, roi=[circ(origin=(0.0, 0.0), radius=1.0)])";
+		assertEquals(expectedVerbose, factory.pyExpress(model, Arrays.asList(croi), true));
+	}
+
+	@Test
+	public void testLissajousModel() throws Exception {
+		BoundingBox bbox = new BoundingBox();
+		bbox.setFastAxisStart(0);
+		bbox.setSlowAxisStart(1);
+		bbox.setFastAxisLength(10);
+		bbox.setSlowAxisLength(11);
+
+		LissajousModel model = new LissajousModel();
+		model.setFastAxisName("myFast");
+		model.setSlowAxisName("mySlow");
+		model.setBoundingBox(bbox);
+		model.setA(1);
+		model.setB(0.25);
+		model.setDelta(0);
+		model.setPoints(100);
+		model.setThetaStep(0.05);
+
+		String expectedConcise = "lissajous(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), 1.0, 0.25, 0.0, 0.05, 100, False)";
+		String expectedVerbose = "lissajous(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), a=1.0, b=0.25, delta=0.0, theta=0.05, points=100, continuous=False)";
+		assertEquals(expectedConcise, factory.pyExpress(model, false));
+		assertEquals(expectedVerbose, factory.pyExpress(model, true));
+	}
 
 	@Test
 	public void testRasterModel() throws Exception {
@@ -378,7 +457,7 @@ public class PyExpresserTest {
 		rmodel.setContinuous(true);
 
 		assertEquals(  // Concise.
-				"grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), (3.0, 4.0))",
+				"grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), (3.0, 4.0), True, True)",
 				factory.pyExpress(rmodel, null, false));
 		assertEquals(  // Verbose.
 				"grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), step=(3.0, 4.0), snake=True, continuous=True)",

@@ -37,15 +37,9 @@ class GridModelExpresser extends PyModelExpresser<GridModel> {
 			+"count=("
 				+model.getFastAxisPoints()+", "
 				+model.getSlowAxisPoints()+")"
-			+(verbose
-				? (", snake="+(model.isSnake()?"True":"False"))
-				: (model.isSnake()?"":", snake=False"))
-			+(verbose
-				? (", continuous="+(model.isContinuous()?"True":"False"))
-				: (model.isContinuous()?"":", continuous=False"))
-			+((rois == null || rois.isEmpty())
-				? ""
-				: (", roi="+factory.pyExpress(rois, verbose)))
+			+", "+getBooleanPyExpression("snake", model.isSnake(), verbose)
+			+", "+getBooleanPyExpression("continuous", model.isContinuous(), verbose)
+			+getROIPyExpression(rois, verbose)
 			+")";
 	}
 

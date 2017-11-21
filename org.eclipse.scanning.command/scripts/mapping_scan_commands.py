@@ -55,7 +55,8 @@ from org.eclipse.scanning.api.event.scan import (ScanBean, ScanRequest)
 from org.eclipse.scanning.api.points.models import (
     StepModel, MultiStepModel, CollatedStepModel, GridModel, RasterModel, SinglePointModel,
     OneDEqualSpacingModel, OneDStepModel, ArrayModel,
-    BoundingBox, BoundingLine, CompoundModel, RepeatedPointModel)
+    BoundingBox, BoundingLine, CompoundModel, RepeatedPointModel,
+    RandomOffsetGridModel, SpiralModel, LissajousModel)
 
 from org.eclipse.scanning.command.Services import (
     getEventService, getRunnableDeviceService, getScannableDeviceService)
@@ -222,6 +223,38 @@ def detector(name, exposure, **kwargs):
 
 # Scan paths
 # ----------
+def random_offset_grid(axes=None, start=None, stop=None, count=None, snake=True,
+         roi=None, seed=0, offset=0):
+    try:
+        assert None not in (axes, start, stop, count)
+    except AssertionError:
+        raise ValueError(
+            '`axes`, `start`, `stop` and `count` must be provided to random_offset_grid().')
+
+    try:
+        (xName, yName) = map(_stringify, axes)
+    except (TypeError, ValueError):
+        raise ValueError('`axes` must be a pair of scannables (x, y).')
+
+    bbox = _makeBoundingBox(start, stop)
+
+    try:
+        (rows, cols) = count
+    except (TypeError, ValueError):
+        raise ValueError('`count` must be a pair of integers (r, c).')
+
+    model = _instantiate(
+                RandomOffsetGridModel,
+                {'fastAxisName': xName,
+                 'slowAxisName': yName,
+                 'fastAxisPoints': rows,
+                 'slowAxisPoints': cols,
+                 'snake': snake,
+                 'boundingBox': bbox,
+                 'seed': seed,
+                 'offset': offset})
+    
+    return model, _listify(roi)
 
 def step(axis=None, start=None, stop=None, step=None, **kwargs):
     """Define a step scan path to be passed to mscan().
@@ -319,6 +352,57 @@ def cstep(names=None, start=None, stop=None, step=None, **kwargs):
 
     return model, _listify(roi)
 
+def spiral(axes=None, start=None, stop=None, scale=1, continuous=True, roi=None):
+    
+    try:
+        assert None not in (axes, start, stop, roi)
+    except (TypeError, ValueError):
+        raise ValueError(
+            '`axes`, `start`, `stop` and `roi` must be provided.')
+        
+    try:
+        (xName, yName) = map(_stringify, axes)
+    except (TypeError, ValueError):
+        raise ValueError('`axes` must be a pair of scannables (x, y).')
+
+    bbox = _makeBoundingBox(start, stop)
+
+    model = _instantiate(
+                SpiralModel,
+                {'fastAxisName': xName,
+                 'slowAxisName': yName,
+                 'boundingBox': bbox,
+                 'scale': scale,
+                 'continuous': continuous})
+    
+    return model, _listify(roi)
+
+def lissajous(axes=None, start=None, stop=None, a=1.0, b=0.25, delta=0.0, theta=0.05, points=100, continuous=True, roi=None):
+    try:
+        assert None not in (axes, start, stop, roi)
+    except (TypeError, ValueError):
+        raise ValueError(
+            '`axes`, `start`, `stop` and `roi` must be provided.')
+        
+    try:
+        (xName, yName) = map(_stringify, axes)
+    except (TypeError, ValueError):
+        raise ValueError('`axes` must be a pair of scannables (x, y).')
+
+    bbox = _makeBoundingBox(start, stop)
+    
+    model = _instantiate(
+                LissajousModel,
+                {'fastAxisName': xName,
+                 'slowAxisName': yName,
+                 'boundingBox': bbox,
+                 'a': a,
+                 'b': b,
+                 'delta': delta,
+                 'thetaStep': theta,
+                 'points': points,
+                 'continuous': continuous})
+    return model, _listify(roi)
 
 def repeat(axis=None, count=None, value=None, sleep=None, **kwargs):
     """Define a repeat scan path to be passed to mscan().
@@ -394,21 +478,7 @@ def grid(axes=None, start=None, stop=None, step=None, count=None, snake=True,
     _processKeywords(xName, kwargs)
     _processKeywords(yName, kwargs)
 
-    try:
-        (xStart, yStart) = start
-    except (TypeError, ValueError):
-        raise ValueError('`start` must be a pair of values (x0, y0).')
-
-    try:
-        (xStop, yStop) = stop
-    except (TypeError, ValueError):
-        raise ValueError('`stop` must be a pair of values (w, h).')
-
-    bbox = _instantiate(BoundingBox,
-                        {'fastAxisStart': xStart,
-                         'slowAxisStart': yStart,
-                         'fastAxisLength': xStop - xStart,
-                         'slowAxisLength': yStop - yStart})
+    bbox = _makeBoundingBox(start, stop)
 
     if count is not None:
         try:
@@ -686,3 +756,21 @@ def _stringify(scannable):
             raise ValueError(
                 str(scannable)+' has no getName() method and is not a string.')
             # TODO: Test for this exception.
+
+
+def _makeBoundingBox(start, stop):
+    try:
+        (xStart, yStart) = start
+    except (TypeError, ValueError):
+        raise ValueError('`start` must be a pair of values (x0, y0).')
+
+    try:
+        (xStop, yStop) = stop
+    except (TypeError, ValueError):
+        raise ValueError('`stop` must be a pair of values (w, h).')
+    
+    return _instantiate(BoundingBox,
+                    {'fastAxisStart': xStart,
+                     'slowAxisStart': yStart,
+                     'fastAxisLength': xStop - xStart,
+                     'slowAxisLength': yStop - yStart})
