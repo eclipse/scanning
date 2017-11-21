@@ -17,6 +17,7 @@ import java.util.Map;
 import org.eclipse.dawnsci.analysis.api.persistence.IClassRegistry;
 import org.eclipse.scanning.api.MonitorRole;
 import org.eclipse.scanning.api.device.models.ClusterProcessingModel;
+import org.eclipse.scanning.api.device.models.GenericModel;
 import org.eclipse.scanning.api.device.models.MalcolmModel;
 import org.eclipse.scanning.api.device.models.ProcessingModel;
 import org.eclipse.scanning.api.event.alive.HeartbeatBean;
@@ -138,6 +139,7 @@ public class ScanningAPIClassRegistry implements IClassRegistry {
 		registerClass(tmp, RepeatedPointModel.class);
 		registerClass(tmp, StepModel.class);
 		registerClass(tmp, MultiStepModel.class);
+		registerClass(tmp, GenericModel.class);
 
 		// scan.ui
 		registerClass(tmp, ControlEnumNode.class);
