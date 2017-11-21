@@ -17,10 +17,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.dawnsci.analysis.api.roi.IROI;
 import org.eclipse.dawnsci.analysis.dataset.roi.CircularROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.PointROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.PolygonalROI;
+import org.eclipse.dawnsci.analysis.dataset.roi.PolylineROI;
 import org.eclipse.scanning.api.device.models.ClusterProcessingModel;
 import org.eclipse.scanning.api.event.scan.ScanRequest;
 import org.eclipse.scanning.api.points.models.ArrayModel;
@@ -289,6 +293,38 @@ public class PyExpresserTest {
 		assertEquals(  // Verbose.
 				"grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=True, continuous=True)",
 				factory.pyExpress(gmodel, new ArrayList<>(), true));
+	}
+
+	@Test
+	public void testGridModelWithPolygonalROI() throws Exception {
+
+		BoundingBox bbox = new BoundingBox();
+		bbox.setFastAxisStart(0);
+		bbox.setSlowAxisStart(1);
+		bbox.setFastAxisLength(10);
+		bbox.setSlowAxisLength(11);
+
+		GridModel gmodel = new GridModel();
+		gmodel.setFastAxisName("myFast");
+		gmodel.setSlowAxisName("mySlow");
+		gmodel.setBoundingBox(bbox);
+		gmodel.setFastAxisPoints(3);
+		gmodel.setSlowAxisPoints(4);
+		gmodel.setSnake(true);
+		gmodel.setContinuous(true);
+
+		List<PointROI> points = new ArrayList<>();
+		points.add(new PointROI(0, 0));
+		points.add(new PointROI(0, 1));
+		points.add(new PointROI(1, 0));
+		PolygonalROI roi = new PolygonalROI(new PolylineROI(points));
+
+		assertEquals(  // Concise.
+				"grid(('myFast', 'mySlow'), (0.0, 1.0), (10.0, 12.0), count=(3, 4), roi=poly((0.0, 0.0), (0.0, 1.0), (1.0, 0.0)))",
+				factory.pyExpress(gmodel, Arrays.asList(roi), false));
+		assertEquals(  // Verbose.
+				"grid(axes=('myFast', 'mySlow'), start=(0.0, 1.0), stop=(10.0, 12.0), count=(3, 4), snake=True, continuous=True, roi=[poly((0.0, 0.0), (0.0, 1.0), (1.0, 0.0))])",
+				factory.pyExpress(gmodel, Arrays.asList(roi), true));
 	}
 
 	@Test
