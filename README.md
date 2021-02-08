@@ -21,3 +21,19 @@ Example: [org.eclipse.scanning.test.points.Suite](https://github.com/eclipse/sca
 5. After setting this target as the target platform, your code should compile
 6. Start an apachemq on localhost:61616
 7. Run the example server and example client and go to the 'X-Ray Centering' example erspective or the 'Scanning' perspective.
+
+# Where is Scanning Used
+
+Currently the scanning project is used as part of [Generic Data Acquisition](http://www.opengda.org/) for certain scan types, those linked to NeXus writing, layered scans and mapping including [Malcolm Devices](https://alfred.diamond.ac.uk/documentation/manuals/GDA_Developer_Guide/master/malcolm.html#use-of-malcolm-in-new-style-scanning). You can read more about how the scanning project is used at
+ [Mapping and Solstice Scanning](https://alfred.diamond.ac.uk/documentation/manuals/GDA_Developer_Guide/master/use_cases.html#use-case-new-style-solstice). [Diamond Light Source Ltd.](http://diamond.ac.uk/) produce their own Java API for the scanning library [javadocs here](https://alfred.diamond.ac.uk/documentation/javadocs/GDA/master/org/eclipse/scanning/api/package-summary.html) .
+
+
+* Class Diagram of core scanning components:
+[![Scanning Classes](./NewScanning_ClassDiagram.png)](https://alfred.diamond.ac.uk/documentation/manuals/GDA_Developer_Guide/master/use_cases.html#use-case-new-style-solstice)
+
+* Sequence Diagram
+![Sequence Diagram](./AcquisitionDeviceRun_SeqDiagram.png)
+
+* Class Diagram Malcolm
+[![Malcolm Classes Scanning](./MalcolmDevice_ClassDiagram.png)](https://alfred.diamond.ac.uk/documentation/manuals/GDA_Developer_Guide/master/_images/MalcolmDevice_ClassDiagram.png)
+
